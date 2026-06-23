@@ -1899,7 +1899,7 @@ app.get('/api/retell-agents', async (req, res): Promise<void> => {
 
 // POST: Actualizar temporalmente la voz de un agente de Retell AI en caliente para pruebas
 app.post('/api/admin/update-agent-voice-temp', async (req, res): Promise<void> => {
-  const { agent_id, voice_id, responsiveness } = req.body;
+  const { agent_id, voice_id, responsiveness, voice_speed, voice_temperature } = req.body;
   if (!agent_id) {
     res.status(400).json({ error: 'Faltan campos requeridos (agent_id).' });
     return;
@@ -1912,14 +1912,20 @@ app.post('/api/admin/update-agent-voice-temp', async (req, res): Promise<void> =
       return;
     }
 
-    console.log(`[Hot Voice Update] Actualizando agente ${agent_id} (Voz: ${voice_id || 'no_change'}, Responsiveness: ${responsiveness !== undefined ? responsiveness : 'default'}) en Retell AI...`);
+    console.log(`[Hot Voice Update] Actualizando agente ${agent_id} (Voz: ${voice_id || 'no_change'}, Responsiveness: ${responsiveness}, Speed: ${voice_speed}, Temp: ${voice_temperature}) en Retell AI...`);
     
     const patchPayload: any = {};
-    if (voice_id) patchPayload.voice_id = voice_id;
+    if (voice_id && !voice_id.startsWith('custom_voice_')) {
+      patchPayload.voice_id = voice_id;
+    }
     if (responsiveness !== undefined) {
       patchPayload.responsiveness = Number(responsiveness);
-    } else {
-      patchPayload.responsiveness = 1.0;
+    }
+    if (voice_speed !== undefined) {
+      patchPayload.voice_speed = Number(voice_speed);
+    }
+    if (voice_temperature !== undefined) {
+      patchPayload.voice_temperature = Number(voice_temperature);
     }
     patchPayload.interruption_sensitivity = 0.8;
 
@@ -1936,8 +1942,18 @@ app.post('/api/admin/update-agent-voice-temp', async (req, res): Promise<void> =
 
     res.json({ status: 'success', agent: response.data });
   } catch (err: any) {
+    const errStatus = err.response?.status;
+    const errMsg = err.response?.data?.message || err.message || '';
     console.error('Error al actualizar voz del agente en Retell:', err.response?.data || err.message);
-    res.status(500).json({ error: err.response?.data?.message || err.message });
+    
+    if (errStatus === 422 || errMsg.includes('published agent') || errMsg.includes('Cannot update published agent')) {
+      res.json({ 
+        status: 'warning', 
+        message: 'El agente está publicado en Retell AI y es inmutable. Para aplicar los cambios de voz y configuración, despublícalo o crea un borrador en el panel de Retell AI.' 
+      });
+    } else {
+      res.status(500).json({ error: errMsg });
+    }
   }
 });
 

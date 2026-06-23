@@ -200,126 +200,116 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
       // 2. Compilar el prompt dinámico y actualizar el LLM de Retell
       const systemPrompt = compileSystemPrompt(tenant);
       console.log(`⚙️ Actualizando el LLM ${llmId} con el prompt personalizado y herramientas...`);
-      await retellClient.patch(`/update-retell-llm/${llmId}`, {
-        general_prompt: systemPrompt,
-        model: 'gpt-4o', // Asegurar el uso de GPT-4o para alto rendimiento y baja latencia
-        general_tools: [
-          {
-            type: 'end_call',
-            name: 'end_call',
-            description: 'Finaliza y cuelga la llamada telefónica con el usuario. Ejecútalo únicamente después de despedirte formalmente del cliente.'
-          },
-          {
-            type: 'custom',
-            name: 'consultar_disponibilidad',
-            description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
-            url: `${webhookBaseUrl}/api/webhook/get-availability?tenant_id=${tenant.id}`,
-            parameters: {
-              type: 'object',
-              properties: {
-                date: {
-                  type: 'string',
-                  description: 'La fecha para consultar en formato YYYY-MM-DD (ej. 2026-06-20).',
-                },
-              },
-              required: ['date'],
+      try {
+        await retellClient.patch(`/update-retell-llm/${llmId}`, {
+          general_prompt: systemPrompt,
+          model: 'gpt-4o', // Asegurar el uso de GPT-4o para alto rendimiento y baja latencia
+          general_tools: [
+            {
+              type: 'end_call',
+              name: 'end_call',
+              description: 'Finaliza y cuelga la llamada telefónica con el usuario. Ejecútalo únicamente después de despedirte formalmente del cliente.'
             },
-          },
-          {
-            type: 'custom',
-            name: 'crear_cita',
-            description: 'Reserva una cita en el calendario tras confirmar los datos con el paciente.',
-            url: `${webhookBaseUrl}/api/webhook/book-appointment?tenant_id=${tenant.id}`,
-            parameters: {
-              type: 'object',
-              properties: {
-                date: {
-                  type: 'string',
-                  description: 'La fecha de la cita en formato YYYY-MM-DD (ej. 2026-06-20).',
+            {
+              type: 'custom',
+              name: 'consultar_disponibilidad',
+              description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
+              url: `${webhookBaseUrl}/api/webhook/get-availability?tenant_id=${tenant.id}`,
+              parameters: {
+                type: 'object',
+                properties: {
+                  date: {
+                    type: 'string',
+                    description: 'La fecha para la cual se desea consultar la disponibilidad en formato YYYY-MM-DD.',
+                  },
                 },
-                time: {
-                  type: 'string',
-                  description: 'La hora seleccionada por el paciente en formato HH:MM (ej. 09:30).',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Nombre y apellidos completos del paciente.',
-                },
-                email: {
-                  type: 'string',
-                  description: 'Dirección de correo electrónico del paciente.',
-                },
-                phone: {
-                  type: 'string',
-                  description: 'Número de teléfono de contacto.',
-                },
-                specialty: {
-                  type: 'string',
-                  description: 'Servicio o especialidad solicitada.',
-                },
+                required: ['date'],
               },
-              required: ['date', 'time', 'name', 'phone', 'specialty'],
             },
-          },
-          {
-            type: 'custom',
-            name: 'cancelar_cita',
-            description: 'Cancela y elimina una cita existente en el calendario.',
-            url: `${webhookBaseUrl}/api/webhook/cancel-appointment?tenant_id=${tenant.id}`,
-            parameters: {
-              type: 'object',
-              properties: {
-                date: {
-                  type: 'string',
-                  description: 'La fecha de la cita que se desea cancelar en formato YYYY-MM-DD (ej. 2026-06-20).',
+            {
+              type: 'custom',
+              name: 'crear_reserva',
+              description: 'Crea una cita de reserva para una especialidad en una fecha (YYYY-MM-DD) y hora (HH:MM) específicas.',
+              url: `${webhookBaseUrl}/api/webhook/create-appointment?tenant_id=${tenant.id}`,
+              parameters: {
+                type: 'object',
+                properties: {
+                  name: {
+                    type: 'string',
+                    description: 'Nombre completo del paciente que reserva.',
+                  },
+                  phone: {
+                    type: 'string',
+                    description: 'Número de teléfono de contacto del paciente.',
+                  },
+                  email: {
+                    type: 'string',
+                    description: 'Correo electrónico del paciente para enviar confirmación.',
+                  },
+                  date: {
+                    type: 'string',
+                    description: 'Fecha elegida en formato YYYY-MM-DD.',
+                  },
+                  time: {
+                    type: 'string',
+                    description: 'Hora elegida en formato HH:MM.',
+                  },
+                  specialty: {
+                    type: 'string',
+                    description: 'Especialidad médica o servicio solicitado.',
+                  },
+                  professional_name: {
+                    type: 'string',
+                    description: 'Nombre del profesional médico con el que se reserva la cita (opcional).',
+                  }
                 },
-                email: {
-                  type: 'string',
-                  description: 'El correo electrónico del cliente.',
-                },
-                phone: {
-                  type: 'string',
-                  description: 'El número de teléfono de contacto del cliente.',
-                },
+                required: ['name', 'phone', 'date', 'time', 'specialty'],
               },
-              required: ['date', 'phone'],
             },
-          },
-          {
-            type: 'custom',
-            name: 'reprogramar_cita',
-            description: 'Reprograma o modifica la fecha y hora de una cita existente a una nueva fecha y hora.',
-            url: `${webhookBaseUrl}/api/webhook/reschedule-appointment?tenant_id=${tenant.id}`,
-            parameters: {
-              type: 'object',
-              properties: {
-                original_date: {
-                  type: 'string',
-                  description: 'La fecha actual original de la cita que se quiere cambiar en formato YYYY-MM-DD (ej. 2026-06-20).',
+            {
+              type: 'custom',
+              name: 'modificar_reserva',
+              description: 'Modifica o reprograma una cita existente de un paciente, identificándola por su número de teléfono.',
+              url: `${webhookBaseUrl}/api/webhook/update-appointment?tenant_id=${tenant.id}`,
+              parameters: {
+                type: 'object',
+                properties: {
+                  original_date: {
+                    type: 'string',
+                    description: 'La fecha original de la cita en formato YYYY-MM-DD.',
+                  },
+                  new_date: {
+                    type: 'string',
+                    description: 'La nueva fecha en formato YYYY-MM-DD.',
+                  },
+                  new_time: {
+                    type: 'string',
+                    description: 'La nueva hora en formato HH:MM.',
+                  },
+                  email: {
+                    type: 'string',
+                    description: 'El correo electrónico del cliente.',
+                  },
+                  phone: {
+                    type: 'string',
+                    description: 'El número de teléfono de contacto del cliente.',
+                  },
                 },
-                new_date: {
-                  type: 'string',
-                  description: 'La nueva fecha deseada para la cita en formato YYYY-MM-DD (ej. 2026-06-21).',
-                },
-                new_time: {
-                  type: 'string',
-                  description: 'La nueva hora deseada para la cita en formato HH:MM (ej. 10:30).',
-                },
-                email: {
-                  type: 'string',
-                  description: 'El correo electrónico del cliente.',
-                },
-                phone: {
-                  type: 'string',
-                  description: 'El número de teléfono de contacto del cliente.',
-                },
+                required: ['original_date', 'new_date', 'new_time', 'phone'],
               },
-              required: ['original_date', 'new_date', 'new_time', 'phone'],
             },
-          },
-        ]
-      });
-      console.log('✅ Prompt y herramientas del LLM de Retell AI actualizados.');
+          ]
+        });
+        console.log('✅ Prompt y herramientas del LLM de Retell AI actualizados.');
+      } catch (llmErr: any) {
+        const errStatus = llmErr.response?.status;
+        const errMsg = llmErr.response?.data?.message || llmErr.message || '';
+        if (errStatus === 422 || errMsg.includes('published agent') || errMsg.includes('Cannot update published agent')) {
+          console.warn(`⚠️ El LLM ${llmId} está asociado a un agente publicado y es inmutable. Omitiendo actualización del prompt.`);
+        } else {
+          throw llmErr;
+        }
+      }
     } else {
       console.log(`ℹ️ El agente ${agentId} es de tipo "${responseEngine?.type || 'desconocido'}" (no utiliza Retell LLM dinámico). Omitiendo actualización del prompt.`);
     }
@@ -335,7 +325,7 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
     };
 
     const requestedVoiceId = formatVoiceId(tenant.voice_id);
-    if (requestedVoiceId) {
+    if (requestedVoiceId && !requestedVoiceId.startsWith('custom_voice_')) {
       agentPayload.voice_id = requestedVoiceId;
     }
 
@@ -355,10 +345,15 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
     try {
       await retellClient.patch(`/update-agent/${agentId}`, agentPayload);
     } catch (patchErr: any) {
-      if (patchErr.response && patchErr.response.status === 404 && requestedVoiceId && requestedVoiceId !== 'cartesia-Sofia') {
+      const errStatus = patchErr.response?.status;
+      const errMsg = patchErr.response?.data?.message || patchErr.message || '';
+      
+      if (errStatus === 404 && requestedVoiceId && requestedVoiceId !== 'cartesia-Sofia') {
         console.warn(`⚠️ La voz "${requestedVoiceId}" no existe en Retell AI. Reintentando con voz por defecto (cartesia-Sofia)...`);
         agentPayload.voice_id = 'cartesia-Sofia';
         await retellClient.patch(`/update-agent/${agentId}`, agentPayload);
+      } else if (errStatus === 422 || errMsg.includes('published agent') || errMsg.includes('Cannot update published agent')) {
+        throw new Error('El agente está publicado en Retell AI y es inmutable. Para aplicar los cambios de voz, despublícalo o crea un borrador en el panel de Retell AI.');
       } else {
         throw patchErr;
       }

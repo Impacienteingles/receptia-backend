@@ -1151,7 +1151,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.9</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.6.0</span>
         </div>
       </header>
 
@@ -1241,11 +1241,11 @@
               <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; margin-top: 0.75rem; grid-column: span 2;">
                 <div>
                   <label for="voice-speed" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Velocidad de Habla: <span id="voice-speed-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
-                  <input type="range" id="voice-speed" min="0.8" max="1.2" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-speed-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof updateVoicePlaybackRate === 'function') updateVoicePlaybackRate(this.value);">
+                  <input type="range" id="voice-speed" min="0.8" max="1.2" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-speed-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof updateVoicePlaybackRate === 'function') updateVoicePlaybackRate(this.value); if (typeof onSpeedChange === 'function') onSpeedChange(this.value);">
                 </div>
                 <div>
                   <label for="voice-temperature" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Naturalidad / Variabilidad: <span id="voice-temperature-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
-                  <input type="range" id="voice-temperature" min="0.5" max="1.5" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-temperature-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage();">
+                  <input type="range" id="voice-temperature" min="0.5" max="1.5" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-temperature-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof onTemperatureChange === 'function') onTemperatureChange(this.value);">
                 </div>
                 <div>
                   <label for="voice-responsiveness" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Pausas de Respuesta: <span id="voice-responsiveness-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
@@ -5577,6 +5577,12 @@
 
       document.getElementById('business-sector').value = tenant.business_sector || 'general';
       
+      // Auto-check terms and privacy (RGPD) for existing client
+      const rgpdCheckbox = document.getElementById('accept-terms-privacy');
+      if (rgpdCheckbox) {
+        rgpdCheckbox.checked = true;
+      }
+      
       const agentIdVal = tenant.retell_agent_id || '';
       document.getElementById('retell-agent-id').value = agentIdVal;
       const btnTestCall = document.getElementById('btn-test-webrtc-call');
@@ -6561,30 +6567,63 @@
       // Si ya hay un agente real asignado en el input, sincronizar su voz en caliente en Retell AI por si acaso
       const currentAgentId = agentInput ? agentInput.value : '';
       const responsivenessInput = document.getElementById('voice-responsiveness');
+      const speedInput = document.getElementById('voice-speed');
+      const temperatureInput = document.getElementById('voice-temperature');
       const currentResponsiveness = responsivenessInput ? Number(responsivenessInput.value) : 1.0;
+      const currentSpeed = speedInput ? Number(speedInput.value) : 1.0;
+      const currentTemperature = temperatureInput ? Number(temperatureInput.value) : 1.0;
       if (currentAgentId && currentAgentId !== 'YOUR_RETELL_AGENT_ID' && !currentAgentId.includes('default_retell_id') && currentAgentId.trim() !== '') {
-        updateRetellAgentVoiceHot(currentAgentId, voiceId, currentResponsiveness);
+        updateRetellAgentVoiceHot(currentAgentId, voiceId, currentResponsiveness, currentSpeed, currentTemperature);
       }
 
       renderVoiceCatalog();
       saveDraftToLocalStorage();
     }
 
+    window.onSpeedChange = function(val) {
+      const agentInput = document.getElementById('retell-agent-id');
+      const agentId = agentInput ? agentInput.value : '';
+      const voiceId = document.getElementById('voice-id').value;
+      const speed = Number(val);
+      const temperature = Number(document.getElementById('voice-temperature').value);
+      const responsiveness = Number(document.getElementById('voice-responsiveness').value);
+      if (agentId && agentId !== 'YOUR_RETELL_AGENT_ID' && !agentId.includes('default_retell_id') && agentId.trim() !== '') {
+        updateRetellAgentVoiceHot(agentId, voiceId, responsiveness, speed, temperature);
+      }
+    };
+
+    window.onTemperatureChange = function(val) {
+      const agentInput = document.getElementById('retell-agent-id');
+      const agentId = agentInput ? agentInput.value : '';
+      const voiceId = document.getElementById('voice-id').value;
+      const speed = Number(document.getElementById('voice-speed').value);
+      const temperature = Number(val);
+      const responsiveness = Number(document.getElementById('voice-responsiveness').value);
+      if (agentId && agentId !== 'YOUR_RETELL_AGENT_ID' && !agentId.includes('default_retell_id') && agentId.trim() !== '') {
+        updateRetellAgentVoiceHot(agentId, voiceId, responsiveness, speed, temperature);
+      }
+    };
+
     window.onResponsivenessChange = function(val) {
       const agentInput = document.getElementById('retell-agent-id');
       const agentId = agentInput ? agentInput.value : '';
       const voiceId = document.getElementById('voice-id').value;
+      const speed = Number(document.getElementById('voice-speed').value);
+      const temperature = Number(document.getElementById('voice-temperature').value);
+      const responsiveness = Number(val);
       if (agentId && agentId !== 'YOUR_RETELL_AGENT_ID' && !agentId.includes('default_retell_id') && agentId.trim() !== '') {
-        updateRetellAgentVoiceHot(agentId, voiceId, val);
+        updateRetellAgentVoiceHot(agentId, voiceId, responsiveness, speed, temperature);
       }
     };
 
-    async function updateRetellAgentVoiceHot(agentId, voiceId, responsiveness) {
-      console.log(`[Hot Voice Sync] Solicitando actualización para el agente ${agentId} (Voz: ${voiceId || 'sin_cambios'}, Responsiveness: ${responsiveness !== undefined ? responsiveness : 'sin_cambios'})...`);
+    async function updateRetellAgentVoiceHot(agentId, voiceId, responsiveness, speed, temperature) {
+      console.log(`[Hot Voice Sync] Solicitando actualización para el agente ${agentId} (Voz: ${voiceId || 'sin_cambios'}, Responsiveness: ${responsiveness}, Speed: ${speed}, Temperature: ${temperature})...`);
       try {
         const body = { agent_id: agentId };
-        if (voiceId) body.voice_id = voiceId;
+        if (voiceId && !voiceId.startsWith('custom_voice_')) body.voice_id = voiceId;
         if (responsiveness !== undefined) body.responsiveness = Number(responsiveness);
+        if (speed !== undefined) body.voice_speed = Number(speed);
+        if (temperature !== undefined) body.voice_temperature = Number(temperature);
 
         const response = await fetch('/api/admin/update-agent-voice-temp', {
           method: 'POST',
@@ -6597,7 +6636,12 @@
           const errData = await response.json();
           console.warn('[Hot Voice Sync] Error al actualizar la configuración en Retell AI:', errData.error);
         } else {
-          console.log('✅ [Hot Voice Sync] Configuración del agente actualizada con éxito en caliente en Retell AI.');
+          const resData = await response.json();
+          if (resData.status === 'warning') {
+            console.warn('⚠️ [Hot Voice Sync] Advertencia:', resData.message);
+          } else {
+            console.log('✅ [Hot Voice Sync] Configuración del agente actualizada con éxito en caliente en Retell AI.');
+          }
         }
       } catch (err) {
         console.error('[Hot Voice Sync] Error de red:', err);
