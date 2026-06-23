@@ -1549,7 +1549,7 @@
 
               <!-- 1b. Email Notifications -->
               <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(59, 130, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
-                <input type="checkbox" id="email-notifications-enabled" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="saveDraftToLocalStorage()" checked>
+                <input type="checkbox" id="email-notifications-enabled" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="saveDraftToLocalStorage()">
                 <label for="email-notifications-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                   Habilitar Notificaciones por Correo Electrónico ✉️
                 </label>
@@ -5883,7 +5883,7 @@
       // Resetear propuestas de éxito SaaS
       document.getElementById('whatsapp-reminders-enabled').checked = false;
       document.getElementById('whatsapp-reminder-hours').value = 24;
-      document.getElementById('email-notifications-enabled').checked = true;
+      document.getElementById('email-notifications-enabled').checked = false;
       document.getElementById('enable-no-show-deposits').checked = false;
       document.getElementById('no-show-deposit-amount').value = 10.00;
       document.getElementById('no-show-deposit-limit-mins').value = 10;
