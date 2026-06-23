@@ -1151,7 +1151,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.2</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.3</span>
         </div>
       </header>
 
@@ -6578,6 +6578,31 @@
       selectedVoiceId = voiceId;
       document.getElementById('voice-id').value = voiceId;
       localStorage.setItem('receptia_last_voice_id', voiceId);
+
+      // Mapeo dinámico de agentes Retell AI asociados a las voces del catálogo
+      const agentMap = {
+        'cartesia-Sofia': 'agent_5978b1e3e6d4bbb6ffc928dc6a',
+        'retell-Alejandro': 'agent_5978b1e3e6d4bbb6ffc928dc6a', // Fallback común
+        'cartesia-Elena': 'agent_3bc19d57c787b2b9f1a00518da',   // Elena (SanaSalud)
+        'cartesia-Manuel': 'agent_manuel_default_retell_id',
+        'custom_voice_c3e5212df87e5341a06ad66e66': 'agent_gabriela_default_retell_id',
+        'cartesia-Sarah': 'agent_sarah_default_retell_id',
+        'minimax-Daniel': 'agent_daniel_default_retell_id'
+      };
+
+      const agentInput = document.getElementById('retell-agent-id');
+      if (agentInput && agentMap[voiceId]) {
+        agentInput.value = agentMap[voiceId];
+        
+        // Destello visual temporal para alertar del cambio de agente seleccionado
+        agentInput.style.borderColor = 'var(--primary)';
+        agentInput.style.boxShadow = '0 0 10px rgba(139, 92, 246, 0.4)';
+        setTimeout(() => {
+          agentInput.style.borderColor = '';
+          agentInput.style.boxShadow = '';
+        }, 1200);
+      }
+
       renderVoiceCatalog();
       saveDraftToLocalStorage();
     }
