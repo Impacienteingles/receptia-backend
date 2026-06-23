@@ -1746,7 +1746,7 @@ const DEFAULT_PREMIUM_VOICES = [
     provider: 'ElevenLabs',
     flag: '<img src="https://flagcdn.com/w20/es.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
     previewUrl: '/gabriela_spanish.mp3',
-    retell_agent_id: 'agent_gabriela_default_retell_id'
+    retell_agent_id: 'agent_5978b1e3e6d4bbb6ffc928dc6a'
   },
   {
     id: 'cartesia-Sarah',
@@ -1891,6 +1891,41 @@ app.get('/api/retell-agents', async (req, res): Promise<void> => {
     res.json(response.data || []);
   } catch (err: any) {
     console.error('Error al listar agentes de Retell:', err.response?.data || err.message);
+    res.status(500).json({ error: err.response?.data?.message || err.message });
+  }
+});
+
+// POST: Actualizar temporalmente la voz de un agente de Retell AI en caliente para pruebas
+app.post('/api/admin/update-agent-voice-temp', async (req, res): Promise<void> => {
+  const { agent_id, voice_id } = req.body;
+  if (!agent_id || !voice_id) {
+    res.status(400).json({ error: 'Faltan campos requeridos (agent_id, voice_id).' });
+    return;
+  }
+
+  try {
+    const apiKey = await getSettingVal('RETELL_API_KEY');
+    if (!apiKey || apiKey === 'YOUR_RETELL_API_KEY' || apiKey.trim() === '') {
+      res.status(400).json({ error: 'La clave RETELL_API_KEY no está configurada.' });
+      return;
+    }
+
+    console.log(`[Hot Voice Update] Actualizando agente ${agent_id} a voz ${voice_id} en Retell AI...`);
+    
+    const response = await axios.patch(
+      `https://api.retellai.com/update-agent/${agent_id}`,
+      { voice_id },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    res.json({ status: 'success', agent: response.data });
+  } catch (err: any) {
+    console.error('Error al actualizar voz del agente en Retell:', err.response?.data || err.message);
     res.status(500).json({ error: err.response?.data?.message || err.message });
   }
 });

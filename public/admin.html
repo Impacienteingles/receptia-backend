@@ -1151,7 +1151,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.5</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.6</span>
         </div>
       </header>
 
@@ -1233,7 +1233,7 @@
                 
                 <!-- Input oculto/personalizado -->
                 <div id="custom-voice-input-container" style="display: none; margin-top: 0.75rem;">
-                  <input type="text" id="voice-id" value="cartesia-Sofia" placeholder="Pega el ID de ElevenLabs o Cartesia" required>
+                  <input type="text" id="voice-id" value="cartesia-Sofia" placeholder="Pega el ID de ElevenLabs o Cartesia" required oninput="onCustomVoiceIdInput()">
                 </div>
               </div>
               
@@ -6501,7 +6501,7 @@
         const playBtn = card.querySelector('.play-btn');
         playBtn.onclick = (e) => {
           e.stopPropagation();
-          playVoicePreview(voice.id, voice.previewUrl, playBtn);
+          playVoicePreview(voice.id, voice.previewUrl || voice.preview_url, playBtn);
         };
         
         // Agregar a la columna correspondiente según el idioma
@@ -6521,25 +6521,66 @@
       document.getElementById('voice-id').value = voiceId;
       localStorage.setItem('receptia_last_voice_id', voiceId);
 
-      // Mapeo dinámico de agentes Retell AI asociados a las voces del catálogo
       const selectedVoice = PREMIUM_VOICES.find(v => v.id === voiceId);
       const agentInput = document.getElementById('retell-agent-id');
       
+      const isEditing = !!editingTenantId;
+      const hasRealAgent = agentInput && agentInput.value && !agentInput.value.includes('default_retell_id') && agentInput.value !== 'YOUR_RETELL_AGENT_ID' && agentInput.value.trim() !== '';
+
       if (agentInput && selectedVoice && selectedVoice.retell_agent_id) {
-        agentInput.value = selectedVoice.retell_agent_id;
-        
-        // Destello visual temporal para alertar del cambio de agente seleccionado
-        agentInput.style.borderColor = 'var(--primary)';
-        agentInput.style.boxShadow = '0 0 10px rgba(139, 92, 246, 0.4)';
-        setTimeout(() => {
-          agentInput.style.borderColor = '';
-          agentInput.style.boxShadow = '';
-        }, 1200);
+        // Solo prellenar el ID de agente del catálogo para nuevos clientes sin agente asignado
+        if (!isEditing && !hasRealAgent) {
+          agentInput.value = selectedVoice.retell_agent_id;
+          
+          // Destello visual temporal para alertar del cambio de agente seleccionado
+          agentInput.style.borderColor = 'var(--primary)';
+          agentInput.style.boxShadow = '0 0 10px rgba(139, 92, 246, 0.4)';
+          setTimeout(() => {
+            agentInput.style.borderColor = '';
+            agentInput.style.boxShadow = '';
+          }, 1200);
+        }
+      }
+
+      // Si ya hay un agente real asignado al cliente, sincronizar su voz en caliente en Retell AI
+      const currentAgentId = agentInput ? agentInput.value : '';
+      if (currentAgentId && currentAgentId !== 'YOUR_RETELL_AGENT_ID' && !currentAgentId.includes('default_retell_id') && currentAgentId.trim() !== '') {
+        updateRetellAgentVoiceHot(currentAgentId, voiceId);
       }
 
       renderVoiceCatalog();
       saveDraftToLocalStorage();
     }
+
+    async function updateRetellAgentVoiceHot(agentId, voiceId) {
+      console.log(`[Hot Voice Sync] Solicitando actualización de voz para el agente ${agentId} a la voz: ${voiceId}...`);
+      try {
+        const response = await fetch('/api/admin/update-agent-voice-temp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ agent_id: agentId, voice_id: voiceId })
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          console.warn('[Hot Voice Sync] Error al actualizar la voz en Retell AI:', errData.error);
+        } else {
+          console.log('✅ [Hot Voice Sync] Voz del agente actualizada con éxito en caliente en Retell AI.');
+        }
+      } catch (err) {
+        console.error('[Hot Voice Sync] Error de red:', err);
+      }
+    }
+
+    window.onCustomVoiceIdInput = function() {
+      const voiceId = document.getElementById('voice-id').value.trim();
+      const agentId = document.getElementById('retell-agent-id').value.trim();
+      if (agentId && agentId !== 'YOUR_RETELL_AGENT_ID' && !agentId.includes('default_retell_id') && agentId.trim() !== '') {
+        updateRetellAgentVoiceHot(agentId, voiceId);
+      }
+      saveDraftToLocalStorage();
+    };
 
     function playVoicePreview(voiceId, url, btn) {
       if (currentAudio) {
@@ -6804,7 +6845,7 @@
         gender,
         provider,
         flag,
-        preview_url: previewUrl,
+        previewUrl: previewUrl,
         retell_agent_id: retellAgentId
       };
 
