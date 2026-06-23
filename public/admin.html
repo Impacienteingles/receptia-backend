@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.1.0">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1.1">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.1.1">
   <script>
     // Polyfills preventivos para evitar bloqueos por fallos de CDN
     if (typeof window.lucide === 'undefined') {
@@ -3958,62 +3959,94 @@
       ];
     }
 
-    function getBibleGuideSections() {
+    function getAuditGuideSections() {
       return [
         {
           title: '1. Filosofía y Misión Comercial de Receptia',
           content: [
             'Receptia es una plataforma SaaS de marca blanca y asistente virtual de voz impulsado por Inteligencia Artificial conversacional de última generación.',
-            'Su objetivo es erradicar las llamadas perdidas en pequeñas y medianas empresas (como clínicas, peluquerías, despachos de abogados y centros de servicios), automatizando la atención telefónica y la gestión de reservas de forma indistinguible de un recepcionista humano, disponible las 24 horas del día, los 7 días de la semana.'
+            'Su misión comercial es erradicar por completo las llamadas perdidas en pequeñas y medianas empresas (como clínicas médicas, peluquerías, despachos de abogados y centros de servicios), automatizando la atención telefónica y la gestión de reservas de forma indistinguible de un recepcionista humano, disponible las 24 horas del día, los 7 días de la semana.'
           ]
         },
         {
-          title: '2. Funciones Detalladas del Portal de Cliente',
+          title: '2. Estructura y Esquema de Base de Datos (Supabase)',
           content: [
-            'El Portal de Cliente es la interfaz privada del comercio o negocio donde gestiona su asistente de voz e información diaria:',
+            'La base de datos relacional de Receptia utiliza PostgreSQL gestionado en la nube con Supabase, estructurada bajo el siguiente esquema relacional de producción:',
             [
-              'Pantalla de Inicio (Dashboard ROI): Muestra el número total de llamadas atendidas, citas agendadas y minutos consumidos. Incluye una calculadora inteligente de Retorno de Inversión (ROI) basada en el coste medio de contratación de un recepcionista y el valor de los servicios rescatados fuera de horario comercial.',
-              'Agenda Interactiva de Citas: Un calendario avanzado que muestra las reservas hechas por la IA y permite agendar, modificar o cancelar citas manualmente. Cuenta con conexión en un clic con Google Calendar, sincronizando la agenda directamente con el móvil del negocio.',
-              'Historial de Llamadas e IA: Registro de todas las conversaciones entrantes. Permite reproducir las grabaciones de audio en MP3, leer la transcripción textual generada en tiempo real y ver las notas y el análisis de intención de reserva determinado por la IA.',
-              'Panel de Ajustes Generales: Permite modificar el PIN de acceso del negocio, validar las notificaciones de WhatsApp Business enviando alertas de prueba y activar el "Modo Vacaciones" (que instruye a la IA para anunciar el cierre temporal y solo agendar citas para fechas posteriores al regreso).'
+              'Tabla tenants (Inquilinos/Comercios): Configuración principal y autenticación de cada negocio. Atributos: id (UUID, PK), business_name (TEXT), email (TEXT, UNIQUE), specialties (JSONB para servicios y precios), voice_id (TEXT), phone_number (TEXT), business_description (TEXT), pricing_details (TEXT), custom_instructions (TEXT), admin_pin (TEXT), is_archived (BOOLEAN), vacation_mode (BOOLEAN), vacation_message (TEXT), voice_speed (NUMERIC, velocidad de voz), voice_temperature (NUMERIC, naturalidad), stripe_customer_id (TEXT), stripe_subscription_id (TEXT), subscription_status (TEXT), plan_id (UUID, FK a plans), google_refresh_token (TEXT), google_calendar_id (TEXT).',
+              'Tabla appointments (Citas): Registro de citas reservadas por la IA o manualmente. Atributos: id (UUID, PK), tenant_id (UUID, FK a tenants), client_name (TEXT), client_phone (TEXT), appointment_time (TIMESTAMPTZ), specialty (TEXT), notes (TEXT), created_at (TIMESTAMPTZ), google_event_id (TEXT, ID de evento en Google Calendar).',
+              'Tabla plans (Planes de Precios): Definición de planes de suscripción. Atributos: id (UUID, PK), name (TEXT), price (NUMERIC), features (JSONB), billing_cycle (TEXT: monthly/yearly).',
+              'Tabla billing_records (Módulo Contable): Cobros automáticos e ingresos/gastos de auditoría manual. Atributos: id (UUID, PK), tenant_id (UUID, FK a tenants), amount (NUMERIC), type (TEXT: income/expense), status (TEXT), description (TEXT), payment_date (TIMESTAMPTZ).',
+              'Seguridad de Datos y RLS (Row Level Security): Se implementan políticas RLS de PostgreSQL para asegurar que los comercios solo lean y escriban en sus propios registros mediante tokens JWT de sesión. Las consultas administrativas globales (como MRR o aprovisionamiento) emplean la clave de rol de servicio (Service Role Key) de Supabase en el lado del servidor, puenteando el RLS únicamente bajo entornos seguros.'
             ]
           ]
         },
         {
-          title: '3. Funciones Detalladas del Panel de Administrador (SaaS Console)',
+          title: '3. Pipeline de Procesamiento de Voz e Inteligencia Artificial',
           content: [
-            'La Consola de Administración permite al superusuario gestionar la infraestructura SaaS y los clientes:',
+            'El flujo de llamadas entrantes e interacción por voz funciona de manera secuencial para garantizar latencias inferiores a 800ms:',
             [
-              'Aprovisionamiento Inteligente: Permite registrar un nuevo negocio en segundos, creando automáticamente el agente de voz en la API de Retell AI, seleccionando el número telefónico, asignando su voz premium favorita y configurando los sliders de velocidad de habla y naturalidad en tiempo real.',
-              'Gestión de Base de Clientes: Permite buscar y administrar clientes activos y archivados. Incluye la suspensión temporal o reactivación del servicio, el copiado de enlaces de acceso único y la generación y firma digital de contratos en PDF con variables dinámicas del cliente.',
-              'Catálogo y Edición de Planes: Control total sobre los planes de precios del negocio (Estándar y Premium, en ciclos de cobro mensual o anual). Permite modificar las descripciones, características y precios integrados con la pasarela de pagos.',
-              'Módulo de Contabilidad Avanzada: Cálculo dinámico de Ingresos Mensuales Recurrentes (MRR), total de ingresos SaaS, listado detallado de cobros activos y registro de cobros manuales (ingresos y gastos) para auditoría financiera completa.',
-              'Copias de Seguridad (Backup): Exportación en un clic de toda la base de datos de Supabase (inquilinos, citas y transacciones) en un archivo JSON local para prevenir cualquier pérdida de información.'
+              'Enrutamiento Telefónico (SIP / Twilio): La llamada recibida en la línea del cliente se desvía al SIP trunk de Zadarma o número Twilio y se redirige instantáneamente por Webhook a Retell AI.',
+              'Orquestador LLM: Retell AI inicia una sesión de agente conversacional. El servidor de Receptia provee el prompt del sistema compilado dinámicamente, inyectando las instrucciones específicas, catálogo del negocio, base de conocimiento y estado del Modo Vacaciones.',
+              'Parámetros de Voz (Cartesia): La síntesis de habla utiliza voces premium a través del motor Cartesia. Se puede configurar la velocidad de habla (voice_speed) entre 0.8x y 1.2x (mediante playbackRate) y la naturalidad/variabilidad (voice_temperature) en un rango de 0.5 a 1.5 para modelar la entonación.',
+              'Procesamiento Post-Llamada: Al finalizar, Retell envía un webhook call_analyzed con la grabación en MP3, la transcripción textual y la información estructurada extraída (nombre del cliente, número de teléfono, servicio deseado, fecha/hora y etiqueta de intención), que el servidor almacena e indexa automáticamente.'
             ]
           ]
         },
         {
-          title: '4. Arquitectura Tecnológica e Integraciones',
+          title: '4. Sincronización de Calendario (Google Calendar API)',
           content: [
-            'Receptia opera sobre una arquitectura distribuida y robusta:',
+            'Receptia cuenta con una integración bidireccional mediante la API de Google Calendar utilizando OAuth 2.0:',
             [
-              'Procesamiento de Voz (Retell AI & Cartesia): Motores de síntesis de voz y modelos LLM optimizados con latencia ultra-baja (menor a 800ms) para una interacción humana fluida.',
-              'Telefonía Integrada (SIP Zadarma / Twilio): Soporte nativo para configurar centralitas virtuales SIP de Zadarma o números de teléfono dedicados en Twilio para redirección de llamadas.',
-              'Mensajería Instantánea (WhatsApp Business): Conexión directa mediante APIs para enviar confirmaciones automáticas de citas y recordatorios preventivos a los clientes.',
-              'Google Calendar API: Sincronización bidireccional y autorización en la nube OAuth 2.0 segura.'
+              'Flujo OAuth 2.0: El comercio autoriza a la app de Receptia desde Ajustes. El código devuelto en el callback se intercambia por un refresh_token, almacenado permanentemente. Cada vez que se requiere consultar o escribir en la agenda, se obtiene un access_token dinámico.',
+              'Sincronización en Tiempo Real: Cuando la IA agenda una reserva, el servidor invoca insertEvent y guarda el google_event_id retornado. Si el administrador edita o cancela la cita en su panel, se ejecutan las llamadas updateEvent o deleteEvent respectivas.',
+              'Evitación de Conflictos (Doble Reserva): Antes de confirmar una reserva a un llamante, el agente conversacional o el backend realiza una consulta freebusy.query sobre la cuenta del tenant para verificar la disponibilidad exacta, bloqueando solapamientos.'
+            ]
+          ]
+        },
+        {
+          title: '5. Facturación, Suscripciones y Métricas Financieras (Stripe)',
+          content: [
+            'La administración financiera y cobros recurrentes de la plataforma SaaS están completamente automatizados:',
+            [
+              'Integración con Stripe Billing: Se gestionan las suscripciones Estándar (39€/mes o 390€/año) y Premium (99€/mes o 990€/año). Los webhooks de Stripe (invoice.paid, customer.subscription.deleted) actualizan el estado de la cuenta del inquilino al instante.',
+              'Fórmula de MRR (Monthly Recurring Revenue): Representa los ingresos recurrentes mensuales proyectados. Se calcula como: MRR = Suma(Precio de Suscripciones Mensuales Activas) + [Suma(Precio de Suscripciones Anuales Activas) / 12].',
+              'Fórmula de ROI y Ahorro Estimado: Muestra el retorno de inversión del cliente: Ahorro Est. = (Llamadas Fuera de Horario Rescatadas * Precio Promedio Servicio * Tasa de Reserva 30%) + (Horas de Llamada Atendidas * Tarifa de Recepción Manual 12€) - Coste del Plan de Receptia.',
+              'Cálculo de Margen y Margen Neto: Calculado dinámicamente sumando todos los registros de cobro con tipo "income" y restando los "expense" en el rango temporal seleccionado.'
+            ]
+          ]
+        },
+        {
+          title: '6. Módulo de Notificaciones y WhatsApp Cloud API',
+          content: [
+            'Confirmación inmediata de citas y recordatorios preventivos para reducir la incomparecencia de clientes:',
+            [
+              'Disparo del Mensaje: Tras confirmarse una reserva (vía llamada de la IA o creación manual), el backend de Receptia envía una petición asíncrona POST a la API oficial de WhatsApp Cloud.',
+              'Estructura de Plantillas Oficiales: Se utilizan plantillas validadas por Meta para asegurar la tasa de entrega. Variables de plantilla dinámicas: {{1}} = Nombre del cliente, {{2}} = Fecha y Hora formateada del turno, {{3}} = Nombre del Negocio / Comercio.',
+              'Recordatorio Automático: El sistema corre un cron job en segundo plano que busca citas programadas para las próximas 24 horas y envía un WhatsApp preventivo para recortar los no-shows hasta en un 45%.'
+            ]
+          ]
+        },
+        {
+          title: '7. Modos Especiales de Operación (Modo Vacaciones)',
+          content: [
+            'El Modo Vacaciones altera el comportamiento de atención del asistente de voz de manera temporal:',
+            [
+              'Inyección en el Prompt: Si el flag vacation_mode está activo en el tenant, compileSystemPrompt añade directivas especiales al prompt del agente telefónico, indicándole el cierre y el vacation_message redactado por el comercio.',
+              'Exclusión de Agendamiento: La IA tiene restringida la reserva de citas en fechas comprendidas dentro del rango vacacional. Sugiere fechas posteriores al regreso o simplemente responde preguntas de la base de conocimientos, informando con empatía del cierre temporal.'
             ]
           ]
         }
       ];
     }
 
-    function downloadBibleGuidePDF() {
-      const bibleSections = getBibleGuideSections();
+    function downloadAuditGuidePDF() {
+      const sections = getAuditGuideSections();
       generateGuidePDF(
-        'LA BIBLIA DE RECEPTIA - Auditoría de Funciones',
-        'Manual Técnico Integral y Auditoría Detallada del Funcionamiento de la Plataforma',
-        bibleSections,
-        'Biblia_Auditoria_Receptia.pdf'
+        'AUDITORÍA COMPLETA DE FUNCIONAMIENTO - RECEPTIA',
+        'Especificaciones Técnicas, Arquitectura, Esquemas y Fórmulas del SaaS',
+        sections,
+        'Auditoria_Completa_Receptia.pdf'
       );
     }
 
@@ -4038,10 +4071,10 @@
         title = 'Guía de Desvío Telefónico';
         sections = getForwardingGuideSections();
         downloadFn = downloadForwardingGuidePDF;
-      } else if (type === 'bible') {
-        title = 'La Biblia de Receptia (Auditoría Completa)';
-        sections = getBibleGuideSections();
-        downloadFn = downloadBibleGuidePDF;
+      } else if (type === 'audit') {
+        title = 'Auditoría Completa';
+        sections = getAuditGuideSections();
+        downloadFn = downloadAuditGuidePDF;
       }
       
       sections.forEach(sec => {
@@ -6882,15 +6915,15 @@
           </div>
         </div>
 
-        <!-- Card Guía 4: Biblia / Auditoría -->
+        <!-- Card Guía 4: Auditoría Completa -->
         <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
           <div style="text-align: left;">
-            <strong style="color: #fff; display: block; font-size: 0.95rem; margin-bottom: 0.25rem;">La Biblia de Receptia (Auditoría Completa)</strong>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Auditoría pormenorizada de todas las funciones de la app y del panel de cliente.</span>
+            <strong style="color: #fff; display: block; font-size: 0.95rem; margin-bottom: 0.25rem;">Auditoría Completa</strong>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Especificaciones técnicas y de arquitectura detalladas de toda la plataforma.</span>
           </div>
           <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
-            <button class="btn btn-secondary" onclick="openGuideViewerFromHelp('bible')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">Leer</button>
-            <button class="btn" onclick="downloadBibleGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
+            <button class="btn btn-secondary" onclick="openGuideViewerFromHelp('audit')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">Leer</button>
+            <button class="btn" onclick="downloadAuditGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
           </div>
         </div>
       </div>
