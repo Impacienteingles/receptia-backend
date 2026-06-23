@@ -83,7 +83,9 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     vacation_message,
     voice_speed,
     voice_temperature,
-    voice_responsiveness
+    voice_responsiveness,
+    whatsapp_reminder_hours,
+    no_show_deposit_limit_mins
   } = req.body;
 
   if (!business_name || !email) {
@@ -114,6 +116,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (voice_speed !== undefined) tenantData.voice_speed = Number(voice_speed);
     if (voice_temperature !== undefined) tenantData.voice_temperature = Number(voice_temperature);
     if (voice_responsiveness !== undefined) tenantData.voice_responsiveness = Number(voice_responsiveness);
+    if (whatsapp_reminder_hours !== undefined) tenantData.whatsapp_reminder_hours = Number(whatsapp_reminder_hours);
+    if (no_show_deposit_limit_mins !== undefined) tenantData.no_show_deposit_limit_mins = Number(no_show_deposit_limit_mins);
 
     let savedTenant: any;
 
@@ -613,7 +617,10 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     voice_speed,
     voice_temperature,
     vacation_mode,
-    vacation_message
+    vacation_message,
+    voice_responsiveness,
+    whatsapp_reminder_hours,
+    no_show_deposit_limit_mins
   } = req.body;
 
   if (!business_name || !email) {
@@ -719,8 +726,11 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       business_sector: business_sector || 'general',
       voice_speed: voice_speed !== undefined && voice_speed !== null ? Number(voice_speed) : 1.0,
       voice_temperature: voice_temperature !== undefined && voice_temperature !== null ? Number(voice_temperature) : 1.0,
+      voice_responsiveness: voice_responsiveness !== undefined && voice_responsiveness !== null ? Number(voice_responsiveness) : 1.0,
       vacation_mode: vacation_mode !== undefined ? !!vacation_mode : false,
-      vacation_message: vacation_message || ''
+      vacation_message: vacation_message || '',
+      whatsapp_reminder_hours: whatsapp_reminder_hours !== undefined ? Number(whatsapp_reminder_hours) : 24,
+      no_show_deposit_limit_mins: no_show_deposit_limit_mins !== undefined ? Number(no_show_deposit_limit_mins) : 10
     };
 
     if (existing) {
@@ -2200,54 +2210,60 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
 // Registrar rutas de webhook
 app.use('/api/webhook', webhookRouter);
 
-// Tarea en segundo plano para liberar citas con fianza no pagada después de 10 minutos (anti-no-show)
+// Tarea en segundo plano para liberar citas con fianza no pagada después del límite configurado (anti-no-show)
 setInterval(async () => {
   try {
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    
-    // Obtener citas pendientes de depósito creadas hace más de 10 minutos
-    const { data: expiredApps, error } = await supabase
+    // Obtener citas pendientes de depósito
+    const { data: pendingApps, error } = await supabase
       .from('appointments')
       .select('*, tenants(*)')
-      .eq('status', 'pending_deposit')
-      .lt('created_at', tenMinutesAgo);
+      .eq('status', 'pending_deposit');
 
     if (error) {
-      console.error('[Deposit Cleaner] Error al consultar citas expiradas:', error.message);
+      console.error('[Deposit Cleaner] Error al consultar citas pendientes:', error.message);
       return;
     }
 
-    if (expiredApps && expiredApps.length > 0) {
-      console.log(`[Deposit Cleaner] Se encontraron ${expiredApps.length} citas pendientes de fianza expiradas. Liberando...`);
-      for (const app of expiredApps) {
-        console.log(`[Deposit Cleaner] Procesando cita expirada ID: ${app.id} (${app.patient_name})`);
-        
-        // 1. Eliminar de Google Calendar si tiene evento y el tenant tiene credenciales
+    if (pendingApps && pendingApps.length > 0) {
+      const now = Date.now();
+      for (const app of pendingApps) {
         const tenant = app.tenants;
-        if (app.google_event_id && tenant && tenant.google_refresh_token) {
-          try {
-            console.log(`[Deposit Cleaner] Eliminando evento de Google Calendar: ${app.google_event_id}...`);
-            await deleteAppointment(
-              tenant.google_refresh_token,
-              app.google_event_id,
-              app.google_calendar_id || 'primary'
-            );
-            console.log('[Deposit Cleaner] Evento de Google Calendar eliminado con éxito.');
-          } catch (calErr: any) {
-            console.error(`[Deposit Cleaner] Error al borrar evento de Google Calendar para cita ${app.id}:`, calErr.message);
+        const limitMins = tenant && tenant.no_show_deposit_limit_mins !== undefined && tenant.no_show_deposit_limit_mins !== null 
+          ? Number(tenant.no_show_deposit_limit_mins) 
+          : 10;
+        
+        const createdAtTime = new Date(app.created_at).getTime();
+        const expirationTime = createdAtTime + limitMins * 60 * 1000;
+        
+        if (now > expirationTime) {
+          console.log(`[Deposit Cleaner] Cita ID: ${app.id} (${app.patient_name}) ha expirado (Límite: ${limitMins} mins). Liberando...`);
+          
+          // 1. Eliminar de Google Calendar si tiene evento y el tenant tiene credenciales
+          if (app.google_event_id && tenant && tenant.google_refresh_token) {
+            try {
+              console.log(`[Deposit Cleaner] Eliminando evento de Google Calendar: ${app.google_event_id}...`);
+              await deleteAppointment(
+                tenant.google_refresh_token,
+                app.google_event_id,
+                app.google_calendar_id || 'primary'
+              );
+              console.log('[Deposit Cleaner] Evento de Google Calendar eliminado con éxito.');
+            } catch (calErr: any) {
+              console.error(`[Deposit Cleaner] Error al borrar evento de Google Calendar para cita ${app.id}:`, calErr.message);
+            }
           }
-        }
 
-        // 2. Eliminar la cita de la base de datos de Supabase para liberar el hueco
-        const { error: deleteErr } = await supabase
-          .from('appointments')
-          .delete()
-          .eq('id', app.id);
+          // 2. Eliminar la cita de la base de datos de Supabase para liberar el hueco
+          const { error: deleteErr } = await supabase
+            .from('appointments')
+            .delete()
+            .eq('id', app.id);
 
-        if (deleteErr) {
-          console.error(`[Deposit Cleaner] Error al eliminar cita ${app.id} de Supabase:`, deleteErr.message);
-        } else {
-          console.log(`[Deposit Cleaner] Cita ${app.id} eliminada y liberada de Supabase correctamente.`);
+          if (deleteErr) {
+            console.error(`[Deposit Cleaner] Error al eliminar cita ${app.id} de Supabase:`, deleteErr.message);
+          } else {
+            console.log(`[Deposit Cleaner] Cita ${app.id} de ${app.patient_name} eliminada y liberada de Supabase correctamente.`);
+          }
         }
       }
     }
@@ -2255,6 +2271,67 @@ setInterval(async () => {
     console.error('[Deposit Cleaner] Error crítico en la tarea de limpieza:', err.message);
   }
 }, 60 * 1000); // Ejecutar cada 1 minuto
+
+// Tarea en segundo plano para enviar recordatorios automáticos de WhatsApp (Twilio)
+setInterval(async () => {
+  try {
+    const { data: appointments, error } = await supabase
+      .from('appointments')
+      .select('*, tenants(*)')
+      .eq('status', 'confirmed')
+      .eq('whatsapp_reminder_sent', false);
+
+    if (error) {
+      console.error('[WhatsApp Reminder] Error al consultar citas para recordatorios:', error.message);
+      return;
+    }
+
+    if (appointments && appointments.length > 0) {
+      const now = Date.now();
+      for (const app of appointments) {
+        const tenant = app.tenants;
+        if (!tenant || !tenant.whatsapp_reminders_enabled) continue;
+
+        const reminderHours = tenant.whatsapp_reminder_hours !== undefined && tenant.whatsapp_reminder_hours !== null 
+          ? Number(tenant.whatsapp_reminder_hours) 
+          : 24;
+        
+        const apptTime = new Date(app.date_time).getTime();
+        const triggerTime = apptTime - reminderHours * 60 * 60 * 1000;
+
+        // Si ya estamos dentro del ventana de envío (e.g. faltan menos de X horas para la cita)
+        if (now >= triggerTime) {
+          // Asegurarnos de que no sea una cita pasada (e.g. no enviar recordatorios para citas de hace días)
+          if (now < apptTime + 30 * 60 * 1000) {
+            console.log(`[WhatsApp Reminder] Enviando recordatorio para la cita ID: ${app.id} (${app.patient_name}) en ${tenant.business_name} (Anticipación: ${reminderHours} horas)...`);
+            
+            // Formatear fecha y hora humana
+            const dateObj = new Date(app.date_time);
+            const dateStr = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            
+            const msg = `Recordatorio de Cita 🔔\n\nHola ${app.patient_name}, le recordamos su cita programada en ${tenant.business_name}.\n\n🔹 Servicio: ${app.specialty}\n🔹 Fecha: ${dateStr}\n🔹 Hora: ${timeStr}\n\n¡Le esperamos!`;
+            
+            const success = await sendWhatsAppMessage(app.patient_phone, msg);
+            if (success) {
+              console.log(`[WhatsApp Reminder] Recordatorio enviado correctamente a ${app.patient_phone}.`);
+            } else {
+              console.warn(`[WhatsApp Reminder] Falló el envío del recordatorio a ${app.patient_phone}.`);
+            }
+          }
+
+          // Marcar como enviado de todas formas para no procesarlo repetidamente
+          await supabase
+            .from('appointments')
+            .update({ whatsapp_reminder_sent: true })
+            .eq('id', app.id);
+        }
+      }
+    }
+  } catch (err: any) {
+    console.error('[WhatsApp Reminder] Error crítico en la tarea de recordatorios:', err.message);
+  }
+}, 5 * 60 * 1000); // Ejecutar cada 5 minutos
 
 // Arrancar el servidor
 app.listen(PORT, () => {

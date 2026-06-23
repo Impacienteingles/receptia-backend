@@ -1516,24 +1516,59 @@
               </div>
 
               <!-- 1. WhatsApp Reminders -->
-              <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(16, 185, 129, 0.2); grid-column: span 2;">
-                <input type="checkbox" id="whatsapp-reminders-enabled" style="width: 18px; height: 18px; accent-color: var(--success);" onchange="saveDraftToLocalStorage()">
-                <label for="whatsapp-reminders-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                  Habilitar Recordatorios automáticos de WhatsApp 💬
-                </label>
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(16, 185, 129, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(16, 185, 129, 0.2); grid-column: span 2;">
+                <div style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem;">
+                  <input type="checkbox" id="whatsapp-reminders-enabled" style="width: 18px; height: 18px; accent-color: var(--success);" onchange="if (typeof toggleWhatsAppSettings === 'function') toggleWhatsAppSettings(); saveDraftToLocalStorage();">
+                  <label for="whatsapp-reminders-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    Habilitar Recordatorios automáticos de WhatsApp 💬
+                  </label>
+                </div>
+                
+                <!-- Sub-ajustes de WhatsApp -->
+                <div id="whatsapp-settings-container" style="display: none; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px dashed rgba(16, 185, 129, 0.2);">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label for="whatsapp-reminder-hours" style="color: var(--text-muted); font-size: 0.85rem; margin: 0; white-space: nowrap;">Recordatorio de cita (horas de anticipación):</label>
+                    <input type="number" id="whatsapp-reminder-hours" min="1" max="168" value="24" style="width: 80px; padding: 0.4rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: #fff; text-align: center;" oninput="saveDraftToLocalStorage()">
+                  </div>
+                  
+                  <!-- Verificador rápido de WhatsApp Twilio -->
+                  <div style="background: rgba(255, 255, 255, 0.02); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 0.25rem;">
+                    <div style="font-weight: 600; font-size: 0.8rem; color: #fff; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.25rem; font-family: 'Outfit', sans-serif;">
+                      <i data-lucide="send" style="width: 14px; height: 14px; color: var(--success); display: inline-block; vertical-align: middle;"></i> Probar Envío de WhatsApp (Twilio)
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                      <input type="text" id="admin-whatsapp-test-phone" placeholder="ej. +34600000000" style="flex: 1; padding: 0.4rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: #fff; font-size: 0.85rem;">
+                      <button type="button" class="btn" onclick="sendAdminTestWhatsApp()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: linear-gradient(135deg, var(--success) 0%, #065f46 100%);">Probar Envío</button>
+                    </div>
+                    <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.3;">
+                      ⚠️ <strong>Nota:</strong> Si usas el Sandbox de Twilio, el destinatario debe haber enviado primero <code>join &lt;keyword&gt;</code> al número de WhatsApp de Twilio.
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- 2. No-Show Deposits -->
-              <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(59, 130, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
-                <input type="checkbox" id="enable-no-show-deposits" style="width: 18px; height: 18px; accent-color: var(--accent);" onchange="toggleNoShowDepositInput()">
-                <label for="enable-no-show-deposits" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                  Cobro de Reserva Fianza (Anti-No-Show) 💰
-                </label>
-              </div>
-
-              <div class="form-group full-width" id="no-show-deposit-container" style="display: none; background: rgba(59, 130, 246, 0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                <label for="no-show-deposit-amount">Importe de la Fianza (€):</label>
-                <input type="number" id="no-show-deposit-amount" min="1" step="1" value="10.00" oninput="saveDraftToLocalStorage()">
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(59, 130, 246, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
+                <div style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem;">
+                  <input type="checkbox" id="enable-no-show-deposits" style="width: 18px; height: 18px; accent-color: var(--accent);" onchange="toggleNoShowDepositInput(); saveDraftToLocalStorage();">
+                  <label for="enable-no-show-deposits" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    Cobro de Reserva Fianza (Anti-No-Show) 💰
+                  </label>
+                </div>
+                
+                <!-- Sub-ajustes de Fianza -->
+                <div id="no-show-deposit-container" style="display: none; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px dashed rgba(59, 130, 246, 0.2);">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                      <label for="no-show-deposit-amount" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem; display: block;">Importe de la Fianza (€):</label>
+                      <input type="number" id="no-show-deposit-amount" min="1" step="1" value="10.00" style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: #fff;" oninput="saveDraftToLocalStorage()">
+                    </div>
+                    <div>
+                      <label for="no-show-deposit-limit-mins" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem; display: block;">Tiempo Límite para Pago (minutos):</label>
+                      <input type="number" id="no-show-deposit-limit-mins" min="1" step="1" value="10" style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: #fff;" oninput="saveDraftToLocalStorage()">
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- 3. Multi-Professional -->
@@ -3160,11 +3195,17 @@
         const checkWhatsapp = document.getElementById('whatsapp-reminders-enabled');
         if (checkWhatsapp) draft['whatsapp_reminders_enabled'] = checkWhatsapp.checked;
 
+        const inputWhatsappHours = document.getElementById('whatsapp-reminder-hours');
+        if (inputWhatsappHours) draft['whatsapp_reminder_hours'] = inputWhatsappHours.value;
+
         const checkNoShow = document.getElementById('enable-no-show-deposits');
         if (checkNoShow) draft['enable_no_show_deposits'] = checkNoShow.checked;
 
         const inputNoShowAmt = document.getElementById('no-show-deposit-amount');
         if (inputNoShowAmt) draft['no_show_deposit_amount'] = inputNoShowAmt.value;
+
+        const inputNoShowLimit = document.getElementById('no-show-deposit-limit-mins');
+        if (inputNoShowLimit) draft['no_show_deposit_limit_mins'] = inputNoShowLimit.value;
 
         const checkMultiProf = document.getElementById('enable-multi-professional');
         if (checkMultiProf) draft['enable_multi_professional'] = checkMultiProf.checked;
@@ -3320,6 +3361,12 @@
         const checkWhatsapp = document.getElementById('whatsapp-reminders-enabled');
         if (checkWhatsapp && draft['whatsapp_reminders_enabled'] !== undefined) {
           checkWhatsapp.checked = draft['whatsapp_reminders_enabled'];
+          if (typeof toggleWhatsAppSettings === 'function') toggleWhatsAppSettings();
+        }
+
+        const inputWhatsappHours = document.getElementById('whatsapp-reminder-hours');
+        if (inputWhatsappHours && draft['whatsapp_reminder_hours'] !== undefined) {
+          inputWhatsappHours.value = draft['whatsapp_reminder_hours'];
         }
 
         const checkNoShow = document.getElementById('enable-no-show-deposits');
@@ -3331,6 +3378,11 @@
         const inputNoShowAmt = document.getElementById('no-show-deposit-amount');
         if (inputNoShowAmt && draft['no_show_deposit_amount'] !== undefined) {
           inputNoShowAmt.value = draft['no_show_deposit_amount'];
+        }
+
+        const inputNoShowLimit = document.getElementById('no-show-deposit-limit-mins');
+        if (inputNoShowLimit && draft['no_show_deposit_limit_mins'] !== undefined) {
+          inputNoShowLimit.value = draft['no_show_deposit_limit_mins'];
         }
 
         const checkMultiProf = document.getElementById('enable-multi-professional');
@@ -5718,8 +5770,12 @@
 
       // Rellenar propuestas de éxito SaaS
       document.getElementById('whatsapp-reminders-enabled').checked = !!tenant.whatsapp_reminders_enabled;
+      document.getElementById('whatsapp-reminder-hours').value = tenant.whatsapp_reminder_hours || 24;
+      
       document.getElementById('enable-no-show-deposits').checked = !!tenant.enable_no_show_deposits;
       document.getElementById('no-show-deposit-amount').value = tenant.no_show_deposit_amount !== undefined ? tenant.no_show_deposit_amount : '10.00';
+      document.getElementById('no-show-deposit-limit-mins').value = tenant.no_show_deposit_limit_mins || 10;
+      
       document.getElementById('enable-multi-professional').checked = !!tenant.enable_multi_professional;
       document.getElementById('knowledge-base-url').value = tenant.knowledge_base_url || '';
       document.getElementById('knowledge-base-content').value = tenant.knowledge_base_content || '';
@@ -5729,6 +5785,7 @@
       document.getElementById('vacation-message-input').value = tenant.vacation_message || '';
 
       // Toggles displays
+      toggleWhatsAppSettings();
       toggleNoShowDepositInput();
       toggleMultiProfessionalInput();
       toggleVacationModeInput();
@@ -5805,6 +5862,21 @@
       document.getElementById('voice-temperature-val').innerText = '1.00';
       document.getElementById('voice-responsiveness').value = 1.0;
       document.getElementById('voice-responsiveness-val').innerText = '1.00';
+
+      // Resetear propuestas de éxito SaaS
+      document.getElementById('whatsapp-reminders-enabled').checked = false;
+      document.getElementById('whatsapp-reminder-hours').value = 24;
+      document.getElementById('enable-no-show-deposits').checked = false;
+      document.getElementById('no-show-deposit-amount').value = 10.00;
+      document.getElementById('no-show-deposit-limit-mins').value = 10;
+      document.getElementById('enable-multi-professional').checked = false;
+      document.getElementById('knowledge-base-url').value = '';
+      document.getElementById('knowledge-base-content').value = '';
+      document.getElementById('admin-whatsapp-test-phone').value = '';
+
+      toggleWhatsAppSettings();
+      toggleNoShowDepositInput();
+      toggleMultiProfessionalInput();
 
       // Resetear modo vacaciones
       document.getElementById('vacation-mode-enabled').checked = false;
@@ -6126,8 +6198,10 @@
         signing_city: document.getElementById('client-contract-signing-city').value || null,
         is_trial: document.getElementById('is-trial-checkbox').checked,
         whatsapp_reminders_enabled: document.getElementById('whatsapp-reminders-enabled').checked,
+        whatsapp_reminder_hours: Number(document.getElementById('whatsapp-reminder-hours').value) || 24,
         enable_no_show_deposits: document.getElementById('enable-no-show-deposits').checked,
         no_show_deposit_amount: Number(document.getElementById('no-show-deposit-amount').value) || 10.00,
+        no_show_deposit_limit_mins: Number(document.getElementById('no-show-deposit-limit-mins').value) || 10,
         enable_multi_professional: document.getElementById('enable-multi-professional').checked,
         professionals: getProfessionalsArray(),
         knowledge_base_url: document.getElementById('knowledge-base-url').value || null,
@@ -6373,9 +6447,46 @@
     }
 
     // Funciones Auxiliares para propuestas de éxito SaaS
+    function toggleWhatsAppSettings() {
+      const checked = document.getElementById('whatsapp-reminders-enabled').checked;
+      document.getElementById('whatsapp-settings-container').style.display = checked ? 'flex' : 'none';
+      saveDraftToLocalStorage();
+    }
+
+    async function sendAdminTestWhatsApp() {
+      const phoneInput = document.getElementById('admin-whatsapp-test-phone');
+      const phone = phoneInput ? phoneInput.value.trim() : '';
+      
+      if (!phone) {
+        showToast('Por favor, introduce un número de teléfono de destino válido.', 'error');
+        return;
+      }
+      
+      try {
+        showToast('Enviando mensaje de prueba de WhatsApp...');
+        const res = await fetch('/api/test-whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: phone,
+            message: 'Hola! Esta es una notificación de prueba de WhatsApp de Receptia desde el panel de administración. Si la recibes, significa que tu conexión de Twilio funciona perfectamente.'
+          })
+        });
+        
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'Fallo al enviar el mensaje de WhatsApp.');
+        }
+        
+        showToast('¡Mensaje de WhatsApp de prueba enviado con éxito!');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
     function toggleNoShowDepositInput() {
       const checked = document.getElementById('enable-no-show-deposits').checked;
-      document.getElementById('no-show-deposit-container').style.display = checked ? 'block' : 'none';
+      document.getElementById('no-show-deposit-container').style.display = checked ? 'flex' : 'none';
       saveDraftToLocalStorage();
     }
 
