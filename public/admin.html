@@ -1217,7 +1217,7 @@
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; margin-top: 0.75rem; grid-column: span 2;">
                 <div>
                   <label for="voice-speed" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Velocidad de Habla: <span id="voice-speed-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
-                  <input type="range" id="voice-speed" min="0.8" max="1.2" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-speed-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage();">
+                  <input type="range" id="voice-speed" min="0.8" max="1.2" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-speed-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof updateVoicePlaybackRate === 'function') updateVoicePlaybackRate(this.value);">
                 </div>
                 <div>
                   <label for="voice-temperature" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Naturalidad / Variabilidad: <span id="voice-temperature-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
@@ -6343,7 +6343,7 @@
         gender: 'Femenino',
         provider: 'ElevenLabs',
         flag: '<img src="https://flagcdn.com/w20/es.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
-        previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/custom_voice_c3e5212df87e5341a06ad66e66.mp3'
+        previewUrl: '/gabriela_spanish.mp3'
       },
       {
         id: 'cartesia-Sarah',
@@ -6479,7 +6479,15 @@
       }
 
       const audio = new Audio(url);
+      
+      // Aplicar la velocidad seleccionada en el slider
+      const speedInput = document.getElementById('voice-speed');
+      if (speedInput) {
+        audio.playbackRate = parseFloat(speedInput.value) || 1.0;
+      }
+      
       currentAudio = audio;
+      window.currentAudio = audio;
       currentPlayingButton = btn;
       
       btn.innerHTML = '<i data-lucide="square" style="width: 12px; height: 12px;"></i> Parar';
@@ -6496,8 +6504,13 @@
         lucide.createIcons();
         currentAudio = null;
         currentPlayingButton = null;
-      };
     }
+
+    window.updateVoicePlaybackRate = function(rate) {
+      if (window.currentAudio) {
+        window.currentAudio.playbackRate = parseFloat(rate) || 1.0;
+      }
+    };
 
     function toggleCustomVoiceInput(clearValue = true) {
       const isCustom = document.getElementById('custom-voice-toggle').checked;
