@@ -245,71 +245,91 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
             },
             {
               type: 'custom',
-              name: 'crear_reserva',
-              description: 'Crea una cita de reserva para una especialidad en una fecha (YYYY-MM-DD) y hora (HH:MM) específicas.',
-              url: `${webhookBaseUrl}/api/webhook/create-appointment?tenant_id=${tenant.id}`,
+              name: 'crear_cita',
+              description: 'Reserva una cita en el calendario tras confirmar los datos con el paciente/cliente.',
+              url: `${webhookBaseUrl}/api/webhook/book-appointment?tenant_id=${tenant.id}`,
               parameters: {
                 type: 'object',
                 properties: {
-                  name: {
-                    type: 'string',
-                    description: 'Nombre completo del paciente que reserva.',
-                  },
-                  phone: {
-                    type: 'string',
-                    description: 'Número de teléfono de contacto del paciente.',
-                  },
-                  email: {
-                    type: 'string',
-                    description: 'Correo electrónico del paciente para enviar confirmación.',
-                  },
                   date: {
                     type: 'string',
-                    description: 'Fecha elegida en formato YYYY-MM-DD.',
+                    description: 'La fecha de la cita en formato YYYY-MM-DD.',
                   },
-                  time: {
+                  name: {
                     type: 'string',
-                    description: 'Hora elegida en formato HH:MM.',
+                    description: 'Nombre y apellidos completos del paciente/cliente.',
                   },
                   specialty: {
                     type: 'string',
-                    description: 'Especialidad médica o servicio solicitado.',
+                    description: 'Servicio o especialidad solicitada.',
                   },
-                  professional_name: {
+                  time: {
                     type: 'string',
-                    description: 'Nombre del profesional médico con el que se reserva la cita (opcional).',
+                    description: 'La hora seleccionada por el paciente en formato HH:MM (ej. 09:30).',
+                  },
+                  phone: {
+                    type: 'string',
+                    description: 'Número de teléfono de contacto.',
+                  },
+                  email: {
+                    type: 'string',
+                    description: 'Dirección de correo electrónico del paciente/cliente.',
                   }
                 },
-                required: ['name', 'phone', 'date', 'time', 'specialty'],
+                required: ['date', 'time', 'name', 'phone', 'specialty'],
               },
             },
             {
               type: 'custom',
-              name: 'modificar_reserva',
-              description: 'Modifica o reprograma una cita existente de un paciente, identificándola por su número de teléfono.',
-              url: `${webhookBaseUrl}/api/webhook/update-appointment?tenant_id=${tenant.id}`,
+              name: 'cancelar_cita',
+              description: 'Cancela y elimina una cita existente en el calendario.',
+              url: `${webhookBaseUrl}/api/webhook/cancel-appointment?tenant_id=${tenant.id}`,
+              parameters: {
+                type: 'object',
+                properties: {
+                  date: {
+                    type: 'string',
+                    description: 'La fecha de la cita que se desea cancelar en formato YYYY-MM-DD.',
+                  },
+                  phone: {
+                    type: 'string',
+                    description: 'El número de teléfono de contacto del cliente.',
+                  },
+                  email: {
+                    type: 'string',
+                    description: 'El correo electrónico del cliente.',
+                  }
+                },
+                required: ['date', 'phone'],
+              },
+            },
+            {
+              type: 'custom',
+              name: 'reprogramar_cita',
+              description: 'Reprograma o modifica la fecha y hora de una cita existente a una nueva fecha y hora.',
+              url: `${webhookBaseUrl}/api/webhook/reschedule-appointment?tenant_id=${tenant.id}`,
               parameters: {
                 type: 'object',
                 properties: {
                   original_date: {
                     type: 'string',
-                    description: 'La fecha original de la cita en formato YYYY-MM-DD.',
+                    description: 'La fecha actual original de la cita que se quiere cambiar en formato YYYY-MM-DD.',
                   },
                   new_date: {
                     type: 'string',
-                    description: 'La nueva fecha en formato YYYY-MM-DD.',
+                    description: 'La nueva fecha deseada para la cita en formato YYYY-MM-DD.',
                   },
                   new_time: {
                     type: 'string',
-                    description: 'La nueva hora en formato HH:MM.',
-                  },
-                  email: {
-                    type: 'string',
-                    description: 'El correo electrónico del cliente.',
+                    description: 'La nueva hora deseada para la cita en formato HH:MM.',
                   },
                   phone: {
                     type: 'string',
                     description: 'El número de teléfono de contacto del cliente.',
+                  },
+                  email: {
+                    type: 'string',
+                    description: 'El correo electrónico del cliente.',
                   },
                 },
                 required: ['original_date', 'new_date', 'new_time', 'phone'],
