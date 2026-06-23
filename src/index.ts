@@ -1999,24 +1999,45 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
   console.log('[Migration Endpoint] Iniciando alter table en Supabase...');
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
-  const host = 'aws-0-eu-west-1.pooler.supabase.com';
-  
-  const passwords = [
-    '1S67.!3CFitNmj',
-    'Cortijo18-20Andar#',
-    'Cortijo18-20Andar',
-    '5MP)3i9P7wjBr[',
-    '1S67.!3CFitNomj',
-    '1Prueba+',
-    '1Esp@#ol'
-  ];
+  const password = '1S67.!3CFitNmj';
+  let directErrorMsg = '';
 
-  let success = false;
-  let lastError = '';
-
-  for (const password of passwords) {
+  // Opción 1: Conexión Directa (Puerto 5432) - Evita el circuit breaker de PgBouncer
+  try {
+    console.log('[Migration Endpoint] Intentando conexión DIRECTA (puerto 5432)...');
     const client = new Client({
-      host,
+      host: `db.${projectRef}.supabase.co`,
+      port: 5432,
+      database: 'postgres',
+      user: 'postgres',
+      password,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 5000
+    });
+
+    await client.connect();
+    console.log('[Migration Endpoint] ¡Conexión DIRECTA exitosa!');
+    await client.query(`
+      ALTER TABLE tenants 
+      ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE;
+      NOTIFY pgrst, 'reload schema';
+    `);
+    console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Directa).');
+    await client.end();
+    res.json({ success: true, message: 'Migración ejecutada con éxito mediante conexión DIRECTA.' });
+    return;
+  } catch (directErr: any) {
+    console.warn('[Migration Endpoint] Falló la conexión directa:', directErr.message);
+    directErrorMsg = directErr.message;
+  }
+
+  // Opción 2: Conexión por Pooler (Puerto 6543) - Fallback
+  try {
+    console.log('[Migration Endpoint] Intentando conexión vía POOLER (puerto 6543)...');
+    const client = new Client({
+      host: 'aws-0-eu-west-1.pooler.supabase.com',
       port: 6543,
       database: 'postgres',
       user: `postgres.${projectRef}`,
@@ -2025,35 +2046,24 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
       connectionTimeoutMillis: 5000
     });
 
-    try {
-      console.log(`[Migration Endpoint] Intentando con contraseña que empieza por: ${password.substring(0, 4)}...`);
-      await client.connect();
-      console.log('[Migration Endpoint] ¡Conexión con Supabase exitosa!');
-      
-      await client.query(`
-        ALTER TABLE tenants 
-        ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
-        ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
-        ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE;
-        NOTIFY pgrst, 'reload schema';
-      `);
-      console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito.');
-      await client.end();
-      success = true;
-      break;
-    } catch (err: any) {
-      console.warn(`[Migration Endpoint] Falló contraseña que empieza por ${password.substring(0, 4)}:`, err.message);
-      lastError = err.message;
-      try { await client.end(); } catch (e) {}
-      // Esperar 2 segundos para no saturar
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-  }
-
-  if (success) {
-    res.json({ success: true, message: 'Migración ejecutada con éxito desde Render.' });
-  } else {
-    res.status(500).json({ error: 'Todas las contraseñas fallaron. Último error: ' + lastError });
+    await client.connect();
+    console.log('[Migration Endpoint] ¡Conexión por POOLER exitosa!');
+    await client.query(`
+      ALTER TABLE tenants 
+      ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE;
+      NOTIFY pgrst, 'reload schema';
+    `);
+    console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Pooler).');
+    await client.end();
+    res.json({ success: true, message: 'Migración ejecutada con éxito mediante conexión por POOLER.' });
+    return;
+  } catch (poolErr: any) {
+    console.error('[Migration Endpoint] Falló también la conexión por pooler:', poolErr.message);
+    res.status(500).json({ 
+      error: `La migración falló. Error Directo: ${directErrorMsg}. Error Pooler: ${poolErr.message}` 
+    });
   }
 });
 
