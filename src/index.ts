@@ -1994,6 +1994,43 @@ app.get('/api/admin/settings', async (req, res): Promise<void> => {
   }
 });
 
+// Ruta temporal para ejecutar la migración DDL de Supabase desde el propio servidor de Render
+app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
+  console.log('[Migration Endpoint] Iniciando alter table en Supabase...');
+  const { Client } = require('pg');
+  const projectRef = 'vnlbxfhzfuamzyqylkvd';
+  const host = 'aws-0-eu-west-1.pooler.supabase.com';
+  const password = '1S67.!3CFitNmj';
+
+  const client = new Client({
+    host,
+    port: 6543,
+    database: 'postgres',
+    user: `postgres.${projectRef}`,
+    password,
+    ssl: { rejectUnauthorized: false }
+  });
+
+  try {
+    await client.connect();
+    console.log('[Migration Endpoint] ¡Conexión con Supabase exitosa!');
+    
+    await client.query(`
+      ALTER TABLE tenants 
+      ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE;
+    `);
+    console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito.');
+    await client.end();
+    res.json({ success: true, message: 'Migración ejecutada con éxito desde Render.' });
+  } catch (err: any) {
+    console.error('[Migration Endpoint] Error en migración:', err.message);
+    try { await client.end(); } catch (e) {}
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 7. Guardar ajustes dinámicos de API
 app.post('/api/admin/settings', async (req, res): Promise<void> => {
   const { settings } = req.body;
