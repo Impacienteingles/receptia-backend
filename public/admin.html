@@ -3958,6 +3958,65 @@
       ];
     }
 
+    function getBibleGuideSections() {
+      return [
+        {
+          title: '1. Filosofía y Misión Comercial de Receptia',
+          content: [
+            'Receptia es una plataforma SaaS de marca blanca y asistente virtual de voz impulsado por Inteligencia Artificial conversacional de última generación.',
+            'Su objetivo es erradicar las llamadas perdidas en pequeñas y medianas empresas (como clínicas, peluquerías, despachos de abogados y centros de servicios), automatizando la atención telefónica y la gestión de reservas de forma indistinguible de un recepcionista humano, disponible las 24 horas del día, los 7 días de la semana.'
+          ]
+        },
+        {
+          title: '2. Funciones Detalladas del Portal de Cliente',
+          content: [
+            'El Portal de Cliente es la interfaz privada del comercio o negocio donde gestiona su asistente de voz e información diaria:',
+            [
+              'Pantalla de Inicio (Dashboard ROI): Muestra el número total de llamadas atendidas, citas agendadas y minutos consumidos. Incluye una calculadora inteligente de Retorno de Inversión (ROI) basada en el coste medio de contratación de un recepcionista y el valor de los servicios rescatados fuera de horario comercial.',
+              'Agenda Interactiva de Citas: Un calendario avanzado que muestra las reservas hechas por la IA y permite agendar, modificar o cancelar citas manualmente. Cuenta con conexión en un clic con Google Calendar, sincronizando la agenda directamente con el móvil del negocio.',
+              'Historial de Llamadas e IA: Registro de todas las conversaciones entrantes. Permite reproducir las grabaciones de audio en MP3, leer la transcripción textual generada en tiempo real y ver las notas y el análisis de intención de reserva determinado por la IA.',
+              'Panel de Ajustes Generales: Permite modificar el PIN de acceso del negocio, validar las notificaciones de WhatsApp Business enviando alertas de prueba y activar el "Modo Vacaciones" (que instruye a la IA para anunciar el cierre temporal y solo agendar citas para fechas posteriores al regreso).'
+            ]
+          ]
+        },
+        {
+          title: '3. Funciones Detalladas del Panel de Administrador (SaaS Console)',
+          content: [
+            'La Consola de Administración permite al superusuario gestionar la infraestructura SaaS y los clientes:',
+            [
+              'Aprovisionamiento Inteligente: Permite registrar un nuevo negocio en segundos, creando automáticamente el agente de voz en la API de Retell AI, seleccionando el número telefónico, asignando su voz premium favorita y configurando los sliders de velocidad de habla y naturalidad en tiempo real.',
+              'Gestión de Base de Clientes: Permite buscar y administrar clientes activos y archivados. Incluye la suspensión temporal o reactivación del servicio, el copiado de enlaces de acceso único y la generación y firma digital de contratos en PDF con variables dinámicas del cliente.',
+              'Catálogo y Edición de Planes: Control total sobre los planes de precios del negocio (Estándar y Premium, en ciclos de cobro mensual o anual). Permite modificar las descripciones, características y precios integrados con la pasarela de pagos.',
+              'Módulo de Contabilidad Avanzada: Cálculo dinámico de Ingresos Mensuales Recurrentes (MRR), total de ingresos SaaS, listado detallado de cobros activos y registro de cobros manuales (ingresos y gastos) para auditoría financiera completa.',
+              'Copias de Seguridad (Backup): Exportación en un clic de toda la base de datos de Supabase (inquilinos, citas y transacciones) en un archivo JSON local para prevenir cualquier pérdida de información.'
+            ]
+          ]
+        },
+        {
+          title: '4. Arquitectura Tecnológica e Integraciones',
+          content: [
+            'Receptia opera sobre una arquitectura distribuida y robusta:',
+            [
+              'Procesamiento de Voz (Retell AI & Cartesia): Motores de síntesis de voz y modelos LLM optimizados con latencia ultra-baja (menor a 800ms) para una interacción humana fluida.',
+              'Telefonía Integrada (SIP Zadarma / Twilio): Soporte nativo para configurar centralitas virtuales SIP de Zadarma o números de teléfono dedicados en Twilio para redirección de llamadas.',
+              'Mensajería Instantánea (WhatsApp Business): Conexión directa mediante APIs para enviar confirmaciones automáticas de citas y recordatorios preventivos a los clientes.',
+              'Google Calendar API: Sincronización bidireccional y autorización en la nube OAuth 2.0 segura.'
+            ]
+          ]
+        }
+      ];
+    }
+
+    function downloadBibleGuidePDF() {
+      const bibleSections = getBibleGuideSections();
+      generateGuidePDF(
+        'LA BIBLIA DE RECEPTIA - Auditoría de Funciones',
+        'Manual Técnico Integral y Auditoría Detallada del Funcionamiento de la Plataforma',
+        bibleSections,
+        'Biblia_Auditoria_Receptia.pdf'
+      );
+    }
+
     function openGuideViewerFromHelp(type) {
       closeHelpCenterModal();
       const body = document.getElementById('guide-viewer-body');
@@ -3979,6 +4038,10 @@
         title = 'Guía de Desvío Telefónico';
         sections = getForwardingGuideSections();
         downloadFn = downloadForwardingGuidePDF;
+      } else if (type === 'bible') {
+        title = 'La Biblia de Receptia (Auditoría Completa)';
+        sections = getBibleGuideSections();
+        downloadFn = downloadBibleGuidePDF;
       }
       
       sections.forEach(sec => {
@@ -6763,6 +6826,8 @@
           Descargar PDF
         </button>
       </div>
+    </div>
+  </div>
   <!-- MODAL DEL CENTRO DE AYUDA -->
   <div class="modal" id="help-center-modal" style="display: none; z-index: 9999;">
     <div class="modal-content" style="max-width: 600px; width: 90%; gap: 1.5rem;">
@@ -6777,7 +6842,7 @@
       </h2>
       
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0; line-height: 1.4; text-align: left;">
-        Selecciona una de las guías oficiales para consultarla directamente en pantalla o descargarla en formato PDF:
+         Selecciona una de las guías oficiales para consultarla directamente en pantalla o descargarla en formato PDF:
       </p>
 
       <div style="display: flex; flex-direction: column; gap: 1rem;">
@@ -6816,13 +6881,24 @@
             <button class="btn" onclick="downloadForwardingGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
           </div>
         </div>
+
+        <!-- Card Guía 4: Biblia / Auditoría -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="text-align: left;">
+            <strong style="color: #fff; display: block; font-size: 0.95rem; margin-bottom: 0.25rem;">La Biblia de Receptia (Auditoría Completa)</strong>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Auditoría pormenorizada de todas las funciones de la app y del panel de cliente.</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+            <button class="btn btn-secondary" onclick="openGuideViewerFromHelp('bible')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">Leer</button>
+            <button class="btn" onclick="downloadBibleGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
+          </div>
+        </div>
       </div>
 
       <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
         <button class="btn btn-secondary" onclick="closeHelpCenterModal()" style="cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 8px;">Cerrar</button>
       </div>
     </div>
-  </div>
   </div>
 </body>
 </html>
