@@ -1735,7 +1735,7 @@ const DEFAULT_PREMIUM_VOICES = [
     provider: 'Cartesia',
     flag: '<img src="https://flagcdn.com/w20/es.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
     previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/cartesia-b5aa8098-49ef-475d-89b0-c9262ecf33fd.mp3',
-    retell_agent_id: 'agent_manuel_default_retell_id'
+    retell_agent_id: 'agent_d78fee2119096b895e0e851873'
   },
   {
     id: 'custom_voice_c3e5212df87e5341a06ad66e66',
