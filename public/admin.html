@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
+  <link rel="icon" type="image/png" href="/receptia_logo.png">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1107,9 +1108,9 @@
           <i data-lucide="settings"></i>
           <span>Ajustes</span>
         </button>
-        <button type="button" class="nav-item" id="btn-download-guide" onclick="downloadAdminGuidePDF()" style="color: var(--primary-light); background: rgba(139, 92, 246, 0.05); margin-top: 0.5rem; border: 1px dashed rgba(139, 92, 246, 0.2); cursor: pointer;">
+        <button type="button" class="nav-item" id="btn-download-guide" onclick="openAdminGuideViewer()" style="color: var(--primary-light); background: rgba(139, 92, 246, 0.05); margin-top: 0.5rem; border: 1px dashed rgba(139, 92, 246, 0.2); cursor: pointer;">
           <i data-lucide="book-open"></i>
-          <span>Guía Administrador (PDF)</span>
+          <span>Guía Administrador</span>
         </button>
       </nav>
       
@@ -3606,7 +3607,7 @@
                 } else {
                   doc.text(line, leftMargin + 2 + bulletWidth, y);
                 }
-                y += 5.5;
+                                y += 5.5;
               });
               y += 1.5;
             });
@@ -3625,8 +3626,8 @@
       doc.save(filename);
     }
 
-    function downloadAdminGuidePDF() {
-      const adminSections = [
+    function getAdminGuideSections() {
+      return [
         {
           title: 'Introducción a Receptia SaaS',
           content: [
@@ -3695,6 +3696,10 @@
           ]
         }
       ];
+    }
+
+    function downloadAdminGuidePDF() {
+      const adminSections = getAdminGuideSections();
 
       generateGuidePDF(
         'RECEPTIA - Guía de Uso del Administrador',
@@ -3702,6 +3707,53 @@
         adminSections,
         'Guia_Administrador_Receptia.pdf'
       );
+    }
+
+    function openAdminGuideViewer() {
+      const sections = getAdminGuideSections();
+      const body = document.getElementById('guide-viewer-body');
+      body.innerHTML = '';
+      
+      sections.forEach(sec => {
+        const secDiv = document.createElement('div');
+        secDiv.innerHTML = `<h3 style="color: #fff; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit', sans-serif; font-size: 1.15rem; border-left: 3px solid var(--primary); padding-left: 0.5rem;">${sec.title}</h3>`;
+        
+        sec.content.forEach(item => {
+          if (Array.isArray(item)) {
+            const ul = document.createElement('ul');
+            ul.style.paddingLeft = '1.25rem';
+            ul.style.margin = '0.5rem 0';
+            ul.style.listStyleType = 'disc';
+            item.forEach(liText => {
+              const li = document.createElement('li');
+              li.style.marginBottom = '0.35rem';
+              li.style.color = '#d1d5db';
+              li.innerText = liText;
+              ul.appendChild(li);
+            });
+            secDiv.appendChild(ul);
+          } else {
+            const p = document.createElement('p');
+            p.style.margin = '0.5rem 0';
+            p.style.color = '#9ca3af';
+            p.innerText = item;
+            secDiv.appendChild(p);
+          }
+        });
+        
+        body.appendChild(secDiv);
+      });
+      
+      document.getElementById('guide-viewer-title').innerText = 'Guía de Uso del Administrador';
+      const dlBtn = document.getElementById('btn-guide-viewer-download');
+      dlBtn.onclick = () => downloadAdminGuidePDF();
+      
+      document.getElementById('guide-viewer-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function closeGuideViewerModal() {
+      document.getElementById('guide-viewer-modal').style.display = 'none';
     }
 
     // Cargar configuraciones al cargar la página
@@ -6356,5 +6408,31 @@
       }
     };
   </script>
+  <!-- MODAL DE VISUALIZACIÓN DE GUÍA (ON-SCREEN VIEWER) -->
+  <div class="modal" id="guide-viewer-modal" style="display: none;">
+    <div class="modal-content" style="max-width: 800px; width: 90%; gap: 1.5rem; max-height: 85vh; overflow-y: auto;">
+      <h2 style="margin: 0; font-family: 'Outfit', sans-serif; color: #fff; display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+        <span style="display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="book-open" style="color: var(--primary);"></i>
+          <span id="guide-viewer-title">Guía de Receptia</span>
+        </span>
+        <button onclick="closeGuideViewerModal()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem;">
+          <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+      </h2>
+      
+      <div id="guide-viewer-body" style="color: #e5e7eb; line-height: 1.6; font-size: 0.95rem; text-align: left; display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Se inyectará el contenido dinámicamente -->
+      </div>
+      
+      <div style="display: flex; gap: 0.75rem; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem;">
+        <button class="btn btn-secondary" onclick="closeGuideViewerModal()">Cerrar</button>
+        <button class="btn" id="btn-guide-viewer-download" style="display: flex; align-items: center; gap: 0.35rem;">
+          <i data-lucide="download"></i>
+          Descargar PDF
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
