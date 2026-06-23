@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.1.0">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4022,7 +4022,7 @@
     }
 
     // Cargar configuraciones al cargar la página
-    window.addEventListener('load', async () => {
+    async function initAdminPanel() {
       try {
         await fetchPlans();
       } catch (e) { console.error('Error fetching plans:', e); }
@@ -4038,7 +4038,13 @@
       if (window.completeAppLoading) {
         window.completeAppLoading();
       }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', initAdminPanel);
+    } else {
+      initAdminPanel();
+    }
 
     // ========================================================
     // GESTIÓN DE AJUSTES DINÁMICOS DE API
