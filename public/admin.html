@@ -1108,9 +1108,9 @@
           <i data-lucide="settings"></i>
           <span>Ajustes</span>
         </button>
-        <button type="button" class="nav-item" id="btn-download-guide" onclick="openAdminGuideViewer()" style="color: var(--primary-light); background: rgba(139, 92, 246, 0.05); margin-top: 0.5rem; border: 1px dashed rgba(139, 92, 246, 0.2); cursor: pointer;">
-          <i data-lucide="book-open"></i>
-          <span>Guía Administrador</span>
+        <button type="button" class="nav-item" id="btn-download-guide" onclick="openHelpCenterModal()" style="color: var(--primary-light); background: rgba(139, 92, 246, 0.05); margin-top: 0.5rem; border: 1px dashed rgba(139, 92, 246, 0.2); cursor: pointer;">
+          <i data-lucide="help-circle"></i>
+          <span>Centro de Ayuda</span>
         </button>
       </nav>
       
@@ -1132,7 +1132,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.4.18</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.0</span>
         </div>
       </header>
 
@@ -1210,6 +1210,18 @@
                 <!-- Input oculto/personalizado -->
                 <div id="custom-voice-input-container" style="display: none; margin-top: 0.75rem;">
                   <input type="text" id="voice-id" value="cartesia-Sofia" placeholder="Pega el ID de ElevenLabs o Cartesia" required>
+                </div>
+              </div>
+              
+              <!-- Ajustes de Velocidad y Naturalidad (Sliders) -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; margin-top: 0.75rem; grid-column: span 2;">
+                <div>
+                  <label for="voice-speed" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Velocidad de Habla: <span id="voice-speed-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
+                  <input type="range" id="voice-speed" min="0.8" max="1.2" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-speed-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage();">
+                </div>
+                <div>
+                  <label for="voice-temperature" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Naturalidad / Variabilidad: <span id="voice-temperature-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
+                  <input type="range" id="voice-temperature" min="0.5" max="1.5" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-temperature-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage();">
                 </div>
               </div>
 
@@ -1512,6 +1524,19 @@
                 <button type="button" class="btn btn-secondary" onclick="addProfessionalRow()" style="padding: 0.5rem 1rem; font-size: 0.85rem; width: fit-content;">
                   <i data-lucide="plus"></i> Agregar Profesional
                 </button>
+              </div>
+
+              <!-- 4. Vacation Mode -->
+              <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(245, 158, 11, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(245, 158, 11, 0.2); grid-column: span 2;">
+                <input type="checkbox" id="vacation-mode-enabled" style="width: 18px; height: 18px; accent-color: #f59e0b;" onchange="toggleVacationModeInput()">
+                <label for="vacation-mode-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                  Activar Modo Vacaciones / Cierre Temporal 🌴
+                </label>
+              </div>
+
+              <div class="form-group full-width" id="vacation-mode-container" style="display: none; background: rgba(245, 158, 11, 0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                <label for="vacation-message-input">Mensaje Explicativo de Vacaciones:</label>
+                <textarea id="vacation-message-input" rows="2" placeholder="ej. Estaremos cerrados por vacaciones del 1 al 15 de agosto. Volvemos el lunes 16 de agosto." oninput="saveDraftToLocalStorage()"></textarea>
               </div>
 
               <!-- 4. Knowledge Base (Base de Conocimientos) -->
@@ -3080,7 +3105,8 @@
       'phone-number', 'sip-username', 'sip-password', 'sip-server', 'business-description', 
       'pricing-details', 'custom-instructions', 'admin-pin', 'subscription-status',
       'subscription-plan', 'billing-cycle', 'price-amount', 'contract-start-date', 'contract-end-date',
-      'contract-template-select', 'signed-contract-content-view', 'admin-signature-name-input'
+      'contract-template-select', 'signed-contract-content-view', 'admin-signature-name-input',
+      'voice-speed', 'voice-temperature', 'vacation-message-input'
     ];
 
     // Guardar borrador en localStorage
@@ -3120,6 +3146,9 @@
 
         const inputKbContent = document.getElementById('knowledge-base-content');
         if (inputKbContent) draft['knowledge_base_content'] = inputKbContent.value;
+
+        const checkVacation = document.getElementById('vacation-mode-enabled');
+        if (checkVacation) draft['vacation_mode_enabled'] = checkVacation.checked;
 
         draft['professionals'] = getProfessionalsArray();
 
@@ -3290,6 +3319,24 @@
         const inputKbContent = document.getElementById('knowledge-base-content');
         if (inputKbContent && draft['knowledge_base_content'] !== undefined) {
           inputKbContent.value = draft['knowledge_base_content'];
+        }
+
+        const checkVacation = document.getElementById('vacation-mode-enabled');
+        if (checkVacation && draft['vacation_mode_enabled'] !== undefined) {
+          checkVacation.checked = draft['vacation_mode_enabled'];
+          toggleVacationModeInput();
+        }
+
+        const speedVal = document.getElementById('voice-speed-val');
+        const speedInput = document.getElementById('voice-speed');
+        if (speedVal && speedInput && draft['voice-speed'] !== undefined) {
+          speedVal.innerText = Number(draft['voice-speed']).toFixed(2);
+        }
+
+        const tempVal = document.getElementById('voice-temperature-val');
+        const tempInput = document.getElementById('voice-temperature');
+        if (tempVal && tempInput && draft['voice-temperature'] !== undefined) {
+          tempVal.innerText = Number(draft['voice-temperature']).toFixed(2);
         }
         
         const builder = document.getElementById('professionals-list-builder');
@@ -3754,6 +3801,224 @@
 
     function closeGuideViewerModal() {
       document.getElementById('guide-viewer-modal').style.display = 'none';
+    }
+
+    // --- HELPMENU / CENTRO DE AYUDA Y SOPORTE ---
+    function openHelpCenterModal() {
+      document.getElementById('help-center-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function closeHelpCenterModal() {
+      document.getElementById('help-center-modal').style.display = 'none';
+    }
+
+    function toggleVacationModeInput() {
+      const chk = document.getElementById('vacation-mode-enabled');
+      const container = document.getElementById('vacation-mode-container');
+      if (chk && container) {
+        container.style.display = chk.checked ? 'block' : 'none';
+      }
+    }
+
+    function getClientGuideSections() {
+      return [
+        {
+          title: 'Bienvenido a Receptia',
+          content: [
+            '¡Enhorabuena! Tu asistente de recepción por Inteligencia Artificial de Receptia ya está configurado y respondiendo llamadas de tus clientes de forma ininterrumpida las 24 horas del día, los 7 días de la semana.',
+            'Este portal te permite gestionar todas las citas que agende tu agente de voz IA, escuchar las grabaciones de las llamadas con sus transcripciones, configurar la integración con tu Google Calendar y personalizar la información del negocio para entrenar a tu asistente.'
+          ]
+        },
+        {
+          title: 'Panel de Inicio y Métricas ROI',
+          content: [
+            'En la pantalla principal (Inicio) tendrás acceso a métricas clave en tiempo real:',
+            [
+              'Llamadas Atendidas: Total de clientes atendidos por la IA.',
+              'Citas Agendadas: Citas guardadas con éxito en tu agenda.',
+              'Minutos Consumidos: Consumo de tiempo telefónico acumulado en tu período actual.',
+              'Calculadora de ROI (Retorno de Inversión): Te muestra el ahorro estimado en personal de recepción y las citas rescatadas fuera de horario laboral gracias al asistente de voz 24/7.'
+            ]
+          ]
+        },
+        {
+          title: 'Agenda de Citas y Google Calendar',
+          content: [
+            'Desde la pestaña "Agenda de Citas" verás un calendario interactivo con todas tus reservas:',
+            [
+              'Ver Citas: Haz clic en cualquier cita para ver los detalles del cliente (nombre, teléfono, especialidad y notas de la IA).',
+              'Gestión Manual: Puedes agendar nuevas citas manualmente, editarlas o cancelarlas si el cliente te lo solicita.',
+              'Sincronización con Google Calendar: Haz clic en el botón "Reautorizar / Conectar Google Calendar". Esto vinculará la agenda con el calendario de tu teléfono. Cada vez que la IA reserve una cita, esta aparecerá automáticamente en tu calendario personal en segundos.'
+            ]
+          ]
+        },
+        {
+          title: 'Historial de Llamadas IA y Transcripciones',
+          content: [
+            'En la pestaña "Llamadas IA" verás el registro detallado de cada llamada:',
+            [
+              'Grabaciones: Escucha el audio completo de la conversación entre el cliente y la IA.',
+              'Etiqueta de Intención: La IA clasifica automáticamente si la llamada resultó en "Cita Agendada", una "Consulta General", o si el cliente colgó.',
+              'Transcripción y Resumen: Lee la conversación palabra por palabra y consulta un resumen estructurado con los puntos clave que identificó la IA (ej. "Llama para preguntar por corte de pelo, se le indica precio de 20€ pero prefiere pensarlo").'
+            ]
+          ]
+        },
+        {
+          title: 'Ajustes del Negocio y Base de Conocimientos',
+          content: [
+            'Para refinar el comportamiento de tu agente de voz IA, puedes rellenar las secciones en la pestaña de ajustes de tu negocio:',
+            [
+              'Especialidades y Catálogo: Indica tus servicios y precios actualizados.',
+              'Instrucciones Personalizadas: Puedes dar pautas específicas a la IA, por ejemplo: "Sé muy amable", "Si preguntan por el Dr. Pérez, di que solo atiende los jueves", o "Recomienda nuestro tratamiento estrella de hidratación".',
+              'Base de Conocimientos: Escribe respuestas a preguntas frecuentes sobre parking, formas de pago, cancelaciones, etc. La IA estudiará esta información y responderá con precisión.'
+            ]
+          ]
+        },
+        {
+          title: 'Seguridad y Copias de Seguridad',
+          content: [
+            'En tu panel puedes cambiar tu contraseña de acceso de forma segura en cualquier momento.',
+            'Además, puedes exportar una copia de seguridad local en formato JSON con todo tu historial de citas, configuración de negocio y registros de llamadas para resguardar tu información.'
+          ]
+        }
+      ];
+    }
+
+    function getForwardingGuideSections() {
+      return [
+        {
+          title: '1. Configuración de Redirección Telefónica',
+          content: [
+            'Para que tu asistente de voz IA de Receptia pueda atender tus llamadas, debes configurar un desvío en tu línea telefónica (móvil o fija) hacia el número asignado a tu agente.',
+            'Puedes elegir si deseas desviar todas las llamadas o solo aquellas en las que estés ocupado, no contestes o no tengas cobertura.'
+          ]
+        },
+        {
+          title: '2. Tipos de Desvíos de Llamadas',
+          content: [
+            'Selecciona el tipo de desvío según tus necesidades operativas:',
+            [
+              'Desvío si Ocupado (Recomendado): Redirige la llamada si estás atendiendo a otro cliente o rechazas la llamada entrante. Marca **67*DESTINO#',
+              'Desvío si no Contesta: Redirige si no descuelgas tras unos segundos (habitualmente 15-20s). Marca **61*DESTINO#',
+              'Desvío si Apagado / Sin Cobertura: Redirige si tu móvil está apagado o sin señal. Marca **62*DESTINO#',
+              'Desvío Incondicional (Total): Redirige todas las llamadas de manera inmediata sin que llegue a sonar tu teléfono. Marca **21*DESTINO#'
+            ]
+          ]
+        },
+        {
+          title: '3. Activar y Desactivar mediante Códigos Móviles',
+          content: [
+            'Introduce estos códigos en el marcador de tu móvil y pulsa el botón de llamar para configurarlo al instante (reemplaza DESTINO por tu número de desvío):',
+            [
+              'Desvío si ocupado: Activar con **67*DESTINO# | Desactivar con ##67#',
+              'Desvío si no contesta: Activar con **61*DESTINO# | Desactivar con ##61#',
+              'Desvío si apagado: Activar con **62*DESTINO# | Desactivar con ##62#',
+              'Desvío total (incondicional): Activar con **21*DESTINO# | Desactivar con ##21#',
+              'Desactivar absolutamente todos los desvíos activos: ##002#'
+            ]
+          ]
+        },
+        {
+          title: '4. Particularidades por Operadores en España',
+          content: [
+            'Movistar / O2: Admite todos los códigos estándar. Para cambiar el tiempo antes de desviar si no contestas a 25 segundos, marca: **61*DESTINO**25#',
+            'Vodafone / Lowi: Admite los códigos estándar. En algunas centralitas antiguas, puede requerir activar el desvío incondicional mediante *210*DESTINO# y cancelar con #210#.',
+            'Orange / Jazztel: Soporta los códigos estándar. También puedes configurarlo fácilmente desde tu área de cliente de Orange en la web.',
+            'Yoigo / MásMóvil: Si tienes habilitadas las llamadas VoLTE, algunos terminales Yoigo pueden bloquear estos códigos de red. Desactiva VoLTE temporalmente en los ajustes de red de tu móvil si recibes un error.',
+            'Digi Mobil: Admite los códigos estándar de red para desvíos. Recuerda tener saldo o línea activa.'
+          ]
+        },
+        {
+          title: '5. Configurar Desvíos en Teléfono Fijo o Centralita Virtual',
+          content: [
+            'Línea fija clásica: Para desvío total, marca *21*DESTINO# y para desactivar marca #21#.',
+            'Líneas de Fibra (VoIP): Los códigos estándar suelen funcionar. De lo contrario, puedes gestionarlo desde la configuración de tu router de telefonía o solicitando el desvío al soporte de tu operador.',
+            'Centralita Virtual: Si utilizas proveedores como Zadarma, Netelip o Zadarma SIP, accede a tu panel y configura el desvío por tiempo o cola de espera hacia tu número de Receptia.'
+          ]
+        }
+      ];
+    }
+
+    function openGuideViewerFromHelp(type) {
+      closeHelpCenterModal();
+      const body = document.getElementById('guide-viewer-body');
+      body.innerHTML = '';
+      
+      let title = '';
+      let sections = [];
+      let downloadFn = null;
+      
+      if (type === 'admin') {
+        title = 'Guía de Uso del Administrador';
+        sections = getAdminGuideSections();
+        downloadFn = downloadAdminGuidePDF;
+      } else if (type === 'user') {
+        title = 'Manual del Panel (Guía de Usuario)';
+        sections = getClientGuideSections();
+        downloadFn = downloadClientGuidePDF;
+      } else if (type === 'forwarding') {
+        title = 'Guía de Desvío Telefónico';
+        sections = getForwardingGuideSections();
+        downloadFn = downloadForwardingGuidePDF;
+      }
+      
+      sections.forEach(sec => {
+        const secDiv = document.createElement('div');
+        secDiv.innerHTML = `<h3 style="color: #fff; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit', sans-serif; font-size: 1.15rem; border-left: 3px solid var(--primary); padding-left: 0.5rem;">${sec.title}</h3>`;
+        
+        sec.content.forEach(item => {
+          if (Array.isArray(item)) {
+            const ul = document.createElement('ul');
+            ul.style.paddingLeft = '1.25rem';
+            ul.style.margin = '0.5rem 0';
+            ul.style.listStyleType = 'disc';
+            item.forEach(liText => {
+              const li = document.createElement('li');
+              li.style.marginBottom = '0.35rem';
+              li.style.color = '#d1d5db';
+              li.innerText = liText;
+              ul.appendChild(li);
+            });
+            secDiv.appendChild(ul);
+          } else {
+            const p = document.createElement('p');
+            p.style.margin = '0.5rem 0';
+            p.style.color = '#9ca3af';
+            p.innerText = item;
+            secDiv.appendChild(p);
+          }
+        });
+        
+        body.appendChild(secDiv);
+      });
+      
+      document.getElementById('guide-viewer-title').innerText = title;
+      const dlBtn = document.getElementById('btn-guide-viewer-download');
+      dlBtn.onclick = () => downloadFn();
+      
+      document.getElementById('guide-viewer-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function downloadClientGuidePDF() {
+      const clientSections = getClientGuideSections();
+      generateGuidePDF(
+        'RECEPTIA - Manual del Panel (Guía de Usuario)',
+        'Guía Práctica para el Control de Citas, Historial de Llamadas IA e Integraciones',
+        clientSections,
+        'Guia_Usuario_Receptia.pdf'
+      );
+    }
+
+    function downloadForwardingGuidePDF() {
+      const sections = getForwardingGuideSections();
+      generateGuidePDF(
+        'RECEPTIA - Guía de Desvío Telefónico',
+        'Manual Técnico de Configuración de Desvío y Códigos de Red en España',
+        sections,
+        'Guia_Desvio_Telefonico_Receptia.pdf'
+      );
     }
 
     // Cargar configuraciones al cargar la página
@@ -5164,6 +5429,14 @@
       document.getElementById('tenant-email').value = tenant.email || '';
       document.getElementById('specialties-input').value = (tenant.specialties || []).join(', ');
       document.getElementById('voice-id').value = tenant.voice_id || 'cartesia-Sofia';
+
+      const speed = tenant.voice_speed !== undefined && tenant.voice_speed !== null ? Number(tenant.voice_speed) : 1.0;
+      const temp = tenant.voice_temperature !== undefined && tenant.voice_temperature !== null ? Number(tenant.voice_temperature) : 1.0;
+      document.getElementById('voice-speed').value = speed;
+      document.getElementById('voice-speed-val').innerText = speed.toFixed(2);
+      document.getElementById('voice-temperature').value = temp;
+      document.getElementById('voice-temperature-val').innerText = temp.toFixed(2);
+
       document.getElementById('business-sector').value = tenant.business_sector || 'general';
       
       const agentIdVal = tenant.retell_agent_id || '';
@@ -5306,10 +5579,15 @@
       document.getElementById('enable-multi-professional').checked = !!tenant.enable_multi_professional;
       document.getElementById('knowledge-base-url').value = tenant.knowledge_base_url || '';
       document.getElementById('knowledge-base-content').value = tenant.knowledge_base_content || '';
+      
+      const vMode = !!tenant.vacation_mode;
+      document.getElementById('vacation-mode-enabled').checked = vMode;
+      document.getElementById('vacation-message-input').value = tenant.vacation_message || '';
 
       // Toggles displays
       toggleNoShowDepositInput();
       toggleMultiProfessionalInput();
+      toggleVacationModeInput();
 
       // Rellenar profesionales
       const builder = document.getElementById('professionals-list-builder');
@@ -5376,6 +5654,17 @@
       // Resetear constructores de horarios/profesionales
       document.getElementById('professionals-list-builder').innerHTML = '';
       
+      // Resetear velocidad y naturalidad
+      document.getElementById('voice-speed').value = 1.0;
+      document.getElementById('voice-speed-val').innerText = '1.00';
+      document.getElementById('voice-temperature').value = 1.0;
+      document.getElementById('voice-temperature-val').innerText = '1.00';
+
+      // Resetear modo vacaciones
+      document.getElementById('vacation-mode-enabled').checked = false;
+      document.getElementById('vacation-mode-container').style.display = 'none';
+      document.getElementById('vacation-message-input').value = '';
+
       // Actualizar vista previa
       updateContractPreview();
       lucide.createIcons();
@@ -5702,7 +5991,11 @@
         is_signed_by_admin: document.getElementById('admin-sign-checkbox').checked,
         admin_signature_name: document.getElementById('admin-signature-name-input').value,
         retell_agent_id: document.getElementById('retell-agent-id').value || null,
-        business_sector: document.getElementById('business-sector').value || 'general'
+        business_sector: document.getElementById('business-sector').value || 'general',
+        voice_speed: Number(document.getElementById('voice-speed').value),
+        voice_temperature: Number(document.getElementById('voice-temperature').value),
+        vacation_mode: document.getElementById('vacation-mode-enabled').checked,
+        vacation_message: document.getElementById('vacation-message-input').value
       };
 
       // Abrir modal de progreso
@@ -6432,7 +6725,66 @@
           Descargar PDF
         </button>
       </div>
+  <!-- MODAL DEL CENTRO DE AYUDA -->
+  <div class="modal" id="help-center-modal" style="display: none; z-index: 9999;">
+    <div class="modal-content" style="max-width: 600px; width: 90%; gap: 1.5rem;">
+      <h2 style="margin: 0; font-family: 'Outfit', sans-serif; color: #fff; display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+        <span style="display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="help-circle" style="color: var(--primary);"></i>
+          <span>Centro de Ayuda y Soporte</span>
+        </span>
+        <button onclick="closeHelpCenterModal()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem;">
+          <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+      </h2>
+      
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0; line-height: 1.4; text-align: left;">
+        Selecciona una de las guías oficiales para consultarla directamente en pantalla o descargarla en formato PDF:
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Card Guía 1: Admin -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="text-align: left;">
+            <strong style="color: #fff; display: block; font-size: 0.95rem; margin-bottom: 0.25rem;">Manual del Administrador (Soporte)</strong>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Pautas de aprovisionamiento, facturación, plantillas y copias de seguridad.</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+            <button class="btn btn-secondary" onclick="openGuideViewerFromHelp('admin')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">Leer</button>
+            <button class="btn" onclick="downloadAdminGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
+          </div>
+        </div>
+
+        <!-- Card Guía 2: Cliente -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="text-align: left;">
+            <strong style="color: #fff; display: block; font-size: 0.95rem; margin-bottom: 0.25rem;">Manual del Panel (Guía de Usuario)</strong>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">El manual que ven tus clientes para gestionar citas, integraciones y PIN.</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+            <button class="btn btn-secondary" onclick="openGuideViewerFromHelp('user')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">Leer</button>
+            <button class="btn" onclick="downloadClientGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
+          </div>
+        </div>
+
+        <!-- Card Guía 3: Desvío -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="text-align: left;">
+            <strong style="color: #fff; display: block; font-size: 0.95rem; margin-bottom: 0.25rem;">Guía de Desvío Telefónico</strong>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Pautas para redireccionar móviles (Movistar, Vodafone, Digi, Yoigo) y fijos.</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+            <button class="btn btn-secondary" onclick="openGuideViewerFromHelp('forwarding')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">Leer</button>
+            <button class="btn" onclick="downloadForwardingGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+        <button class="btn btn-secondary" onclick="closeHelpCenterModal()" style="cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 8px;">Cerrar</button>
+      </div>
     </div>
+  </div>
   </div>
 </body>
 </html>

@@ -805,6 +805,43 @@
         display: flex;
       }
     }
+
+    /* WebRTC Calling Pulse Keyframes */
+    .pulse-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(139, 92, 246, 0.2);
+      opacity: 0;
+      z-index: 1;
+      transform: scale(0.6);
+    }
+    .pulse-ring.active {
+      animation: webrtc-pulse 2s infinite ease-out;
+    }
+    #webrtc-pulse-ring-2.active {
+      animation-delay: 0.8s;
+    }
+    #webrtc-mic-icon-bg.active {
+      transform: scale(1.1);
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.8);
+      background: rgba(139, 92, 246, 0.25) !important;
+      border-color: rgba(139, 92, 246, 0.8) !important;
+    }
+    @keyframes webrtc-pulse {
+      0% {
+        transform: scale(0.6);
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(1.6);
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1518,9 +1555,9 @@
           <i data-lucide="settings"></i>
           <span>Ajustes</span>
         </button>
-        <button type="button" class="nav-item" id="btn-download-guide" onclick="openClientGuideViewer()" style="color: var(--primary-light); background: rgba(139, 92, 246, 0.05); margin-top: 0.5rem; border: 1px dashed rgba(139, 92, 246, 0.2); cursor: pointer;">
-          <i data-lucide="book-open"></i>
-          <span>Guía de Usuario</span>
+        <button type="button" class="nav-item" id="btn-download-guide" onclick="openHelpCenterModal()" style="color: var(--primary-light); background: rgba(139, 92, 246, 0.05); margin-top: 0.5rem; border: 1px dashed rgba(139, 92, 246, 0.2); cursor: pointer;">
+          <i data-lucide="help-circle"></i>
+          <span>Centro de Ayuda</span>
         </button>
       </nav>
       
@@ -1541,7 +1578,7 @@
           <div class="status-badge" id="client-business-badge">
             <span>Cargando Negocio...</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.7.22</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.8.0</span>
         </div>
       </header>
 
@@ -1974,6 +2011,66 @@
                   </div>
                   <button class="btn btn-outline" id="btn-auth-link" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px;">
                     Conectar
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sección Llamada de Prueba IA (Sandbox WebRTC) -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%); border-color: rgba(139, 92, 246, 0.2);">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="sparkles" style="color: var(--primary-hover); width: 20px; height: 20px;"></i>
+                  Llamada de Prueba WebRTC (Sandbox)
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Llama y conversa directamente con tu asistente de voz IA desde el navegador para probar su comportamiento y afinar sus respuestas en tiempo real antes del uso telefónico.
+                </p>
+                <button class="btn" onclick="startClientWebRTCCall()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; background: var(--primary); border: none; cursor: pointer; color: #fff;">
+                  <i data-lucide="phone"></i>
+                  Iniciar Llamada de Prueba
+                </button>
+              </div>
+
+              <!-- Sección Modo Vacaciones -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="palm-tree" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Modo Vacaciones y Cierres Temporales
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Activa el modo vacaciones para indicarle a la IA que el negocio está cerrado. La IA lo comunicará amablemente al teléfono pero permitirá agendar citas para después del cierre.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="setting-vacation-mode" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;">
+                    <label for="setting-vacation-mode" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0;">Activar Modo Vacaciones / Cierre</label>
+                  </div>
+                  <div>
+                    <label for="setting-vacation-message" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem; text-align: left;">Mensaje Explicativo de Vacaciones (Motivo de cierre, fecha de reapertura):</label>
+                    <textarea id="setting-vacation-message" rows="3" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; resize: vertical; box-sizing: border-box; font-family: inherit;" placeholder="ej. Estaremos cerrados por vacaciones del 1 al 15 de agosto. Volvemos el lunes 16 de agosto. Puedes programar tu cita a partir de esa fecha."></textarea>
+                  </div>
+                </div>
+                <button class="btn btn-secondary" onclick="saveVacationSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                  <i data-lucide="save"></i>
+                  Guardar Estado de Vacaciones
+                </button>
+              </div>
+
+              <!-- Sección Verificación de Notificaciones WhatsApp -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="message-square" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Verificador de WhatsApp
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Realiza un envío de prueba para validar que las notificaciones de WhatsApp de Twilio estén funcionando correctamente.
+                </p>
+                <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; align-items: center;">
+                  <div style="flex: 1;">
+                    <input type="text" id="setting-whatsapp-test-phone" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box;" placeholder="ej. +34600000000">
+                  </div>
+                  <button class="btn btn-outline" onclick="sendTestWhatsApp()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: transparent; color: #fff;">
+                    <i data-lucide="send"></i>
+                    Enviar Mensaje
                   </button>
                 </div>
               </div>
@@ -2590,6 +2687,347 @@
       document.getElementById('guide-viewer-modal').style.display = 'none';
     }
 
+    // --- HELPMENU / CENTRO DE AYUDA Y SOPORTE ---
+    function openHelpCenterModal() {
+      document.getElementById('help-center-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function closeHelpCenterModal() {
+      document.getElementById('help-center-modal').style.display = 'none';
+    }
+
+    function getForwardingGuideSections() {
+      const pNum = currentTenant && currentTenant.phone_number ? currentTenant.phone_number : 'No asignado';
+      const cleanPhone = pNum.replace(/\s+/g, '');
+      return [
+        {
+          title: '1. Configuración de Redirección Telefónica',
+          content: [
+            'Para que tu asistente de voz IA de Receptia pueda atender tus llamadas, debes configurar un desvío en tu línea telefónica (móvil o fija) hacia el número asignado a tu agente.',
+            'Tu número de desvío asignado en Receptia es: ' + pNum,
+            'Puedes elegir si deseas desviar todas las llamadas o solo aquellas en las que estés ocupado, no contestes o no tengas cobertura.'
+          ]
+        },
+        {
+          title: '2. Tipos de Desvíos de Llamadas',
+          content: [
+            'Selecciona el tipo de desvío según tus necesidades operativas:',
+            [
+              'Desvío si Ocupado (Recomendado): Redirige la llamada si estás atendiendo a otro cliente o rechazas la llamada entrante. Marca **67*DESTINO#',
+              'Desvío si no Contesta: Redirige si no descuelgas tras unos segundos (habitualmente 15-20s). Marca **61*DESTINO#',
+              'Desvío si Apagado / Sin Cobertura: Redirige si tu móvil está apagado o sin señal. Marca **62*DESTINO#',
+              'Desvío Incondicional (Total): Redirige todas las llamadas de manera inmediata sin que llegue a sonar tu teléfono. Marca **21*DESTINO#'
+            ]
+          ]
+        },
+        {
+          title: '3. Activar y Desactivar mediante Códigos Móviles',
+          content: [
+            'Introduce estos códigos en el marcador de tu móvil y pulsa el botón de llamar para configurarlo al instante (reemplaza DESTINO por tu número de desvío ' + cleanPhone + '):',
+            [
+              'Desvío si ocupado: Activar con **67*' + cleanPhone + '# | Desactivar con ##67#',
+              'Desvío si no contesta: Activar con **61*' + cleanPhone + '# | Desactivar con ##61#',
+              'Desvío si apagado: Activar con **62*' + cleanPhone + '# | Desactivar con ##62#',
+              'Desvío total (incondicional): Activar con **21*' + cleanPhone + '# | Desactivar con ##21#',
+              'Desactivar absolutamente todos los desvíos activos: ##002#'
+            ]
+          ]
+        },
+        {
+          title: '4. Particularidades por Operadores en España',
+          content: [
+            'Movistar / O2: Admite todos los códigos estándar. Para cambiar el tiempo antes de desviar si no contestas a 25 segundos, marca: **61*' + cleanPhone + '**25#',
+            'Vodafone / Lowi: Admite los códigos estándar. En algunas centralitas antiguas, puede requerir activar el desvío incondicional mediante *210*' + cleanPhone + '# y cancelar con #210#.',
+            'Orange / Jazztel: Soporta los códigos estándar. También puedes configurarlo fácilmente desde tu área de cliente de Orange en la web.',
+            'Yoigo / MásMóvil: Si tienes habilitadas las llamadas VoLTE, algunos terminales Yoigo pueden bloquear estos códigos de red. Desactiva VoLTE temporalmente en los ajustes de red de tu móvil si recibes un error.',
+            'Digi Mobil: Admite los códigos estándar de red para desvíos. Recuerda tener saldo o línea activa.'
+          ]
+        },
+        {
+          title: '5. Configurar Desvíos en Teléfono Fijo o Centralita Virtual',
+          content: [
+            'Línea fija clásica: Para desvío total, marca *21*' + cleanPhone + '# y para desactivar marca #21#.',
+            'Líneas de Fibra (VoIP): Los códigos estándar suelen funcionar. De lo contrario, puedes gestionarlo desde la configuración de tu router de telefonía o solicitando el desvío al soporte de tu operador.',
+            'Centralita Virtual: Si utilizas proveedores como Zadarma, Netelip o Zadarma SIP, accede a tu panel y configura el desvío por tiempo o cola de espera hacia tu número de Receptia.'
+          ]
+        }
+      ];
+    }
+
+    function openGuideViewerFromHelp(type) {
+      closeHelpCenterModal();
+      const body = document.getElementById('guide-viewer-body');
+      body.innerHTML = '';
+      
+      let title = '';
+      let sections = [];
+      let downloadFn = null;
+      
+      if (type === 'user') {
+        title = 'Manual del Panel (Guía de Usuario)';
+        sections = getClientGuideSections();
+        downloadFn = downloadClientGuidePDF;
+      } else if (type === 'forwarding') {
+        title = 'Guía de Desvío Telefónico';
+        sections = getForwardingGuideSections();
+        downloadFn = downloadForwardingGuidePDF;
+      }
+      
+      sections.forEach(sec => {
+        const secDiv = document.createElement('div');
+        secDiv.innerHTML = `<h3 style="color: #fff; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit', sans-serif; font-size: 1.15rem; border-left: 3px solid var(--primary); padding-left: 0.5rem;">${sec.title}</h3>`;
+        
+        sec.content.forEach(item => {
+          if (Array.isArray(item)) {
+            const ul = document.createElement('ul');
+            ul.style.paddingLeft = '1.25rem';
+            ul.style.margin = '0.5rem 0';
+            ul.style.listStyleType = 'disc';
+            item.forEach(liText => {
+              const li = document.createElement('li');
+              li.style.marginBottom = '0.35rem';
+              li.style.color = '#d1d5db';
+              li.innerText = liText;
+              ul.appendChild(li);
+            });
+            secDiv.appendChild(ul);
+          } else {
+            const p = document.createElement('p');
+            p.style.margin = '0.5rem 0';
+            p.style.color = '#9ca3af';
+            p.innerText = item;
+            secDiv.appendChild(p);
+          }
+        });
+        
+        body.appendChild(secDiv);
+      });
+      
+      document.getElementById('guide-viewer-title').innerText = title;
+      const dlBtn = document.getElementById('btn-guide-viewer-download');
+      dlBtn.onclick = () => downloadFn();
+      
+      document.getElementById('guide-viewer-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function downloadForwardingGuidePDF() {
+      const sections = getForwardingGuideSections();
+      generateGuidePDF(
+        'RECEPTIA - Guía de Desvío Telefónico',
+        'Manual Técnico de Configuración de Desvío y Códigos de Red en España',
+        sections,
+        'Guia_Desvio_Telefonico_Receptia.pdf'
+      );
+    }
+
+    // --- MODO VACACIONES Y AJUSTES CLIENTE ---
+    async function saveVacationSettings() {
+      if (!currentTenant) return;
+      
+      const vMode = document.getElementById('setting-vacation-mode').checked;
+      const vMessage = document.getElementById('setting-vacation-message').value.trim();
+      
+      try {
+        const res = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentTenant.email,
+            business_name: currentTenant.business_name,
+            vacation_mode: vMode,
+            vacation_message: vMessage
+          })
+        });
+        
+        if (!res.ok) throw new Error('No se pudo guardar la configuración de vacaciones.');
+        const updated = await res.json();
+        currentTenant = updated;
+        showToast('Configuración del Modo Vacaciones guardada correctamente.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function sendTestWhatsApp() {
+      const phoneInput = document.getElementById('setting-whatsapp-test-phone');
+      if (!phoneInput) return;
+      const phone = phoneInput.value.trim();
+      
+      if (!phone) {
+        showToast('Por favor, introduce un número de teléfono de destino.', 'error');
+        return;
+      }
+      
+      try {
+        showToast('Enviando mensaje de prueba...');
+        const res = await fetch('/api/test-whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: phone,
+            message: 'Hola! Esta es una notificación de prueba de WhatsApp de Receptia. Tus credenciales de Twilio funcionan correctamente.'
+          })
+        });
+        
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'Fallo al enviar el mensaje de WhatsApp.');
+        }
+        
+        showToast('Mensaje de prueba enviado con éxito.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- LLAMADA WEBRTC CLIENTE (SANDBOX) ---
+    let clientRetellInstance = null;
+    let clientCallTimer = null;
+    let clientCallSeconds = 0;
+
+    async function startClientWebRTCCall() {
+      if (!currentTenant || !currentTenant.retell_agent_id) {
+        showToast('No tienes un agente de voz configurado en tu cuenta.', 'error');
+        return;
+      }
+
+      console.log(`[WebRTC Client] Iniciando llamada para el agente: ${currentTenant.retell_agent_id}...`);
+      
+      const modal = document.getElementById('webrtc-call-modal');
+      const statusText = document.getElementById('webrtc-call-status');
+      const durationText = document.getElementById('webrtc-call-duration');
+      const clientInfo = document.getElementById('webrtc-modal-client-info');
+      const agentIdEl = document.getElementById('webrtc-modal-agent-id');
+      const pulseRing1 = document.getElementById('webrtc-pulse-ring-1');
+      const pulseRing2 = document.getElementById('webrtc-pulse-ring-2');
+      const micBg = document.getElementById('webrtc-mic-icon-bg');
+
+      clientInfo.innerText = currentTenant.business_name;
+      agentIdEl.innerText = `Agente: ${currentTenant.retell_agent_id}`;
+      statusText.innerText = 'Solicitando acceso al micrófono...';
+      statusText.style.color = '#fff';
+      durationText.innerText = '00:00';
+      modal.style.display = 'flex';
+      
+      if (pulseRing1) pulseRing1.classList.remove('active');
+      if (pulseRing2) pulseRing2.classList.remove('active');
+      if (micBg) micBg.classList.remove('active');
+
+      lucide.createIcons();
+
+      try {
+        // 1. Permiso micrófono
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        statusText.innerText = 'Iniciando conexión con Retell AI...';
+        
+        // 2. Obtener token efímero
+        const response = await fetch('/api/client/test-agent-call', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenant_id: currentTenant.id })
+        });
+
+        if (!response.ok) {
+          const errRes = await response.json();
+          throw new Error(errRes.error || 'No se pudo obtener el token de llamada.');
+        }
+
+        const data = await response.json();
+        const access_token = data.access_token;
+
+        // 3. Cargar dinámicamente el SDK de Retell e instanciarlo
+        const { RetellWebClient } = await import('https://cdn.jsdelivr.net/npm/retell-client-js-sdk@2.0.8/+esm');
+        clientRetellInstance = new RetellWebClient();
+        
+        clientRetellInstance.on('call_started', () => {
+          console.log('[WebRTC Client] Llamada activa');
+          statusText.innerText = 'Llamada Activa (Habla con la IA)';
+          statusText.style.color = 'var(--success)';
+          
+          if (pulseRing1) pulseRing1.classList.add('active');
+          if (pulseRing2) pulseRing2.classList.add('active');
+          if (micBg) micBg.classList.add('active');
+
+          clientCallSeconds = 0;
+          if (clientCallTimer) clearInterval(clientCallTimer);
+          clientCallTimer = setInterval(() => {
+            clientCallSeconds++;
+            const mins = String(Math.floor(clientCallSeconds / 60)).padStart(2, '0');
+            const secs = String(clientCallSeconds % 60).padStart(2, '0');
+            durationText.innerText = `${mins}:${secs}`;
+          }, 1000);
+        });
+
+        clientRetellInstance.on('call_ended', () => {
+          console.log('[WebRTC Client] Llamada terminada');
+          statusText.innerText = 'Llamada Finalizada';
+          statusText.style.color = 'var(--text-muted)';
+          stopClientWebRTCCall(true);
+        });
+
+        clientRetellInstance.on('error', (err) => {
+          console.error('[WebRTC Client] Error:', err);
+          statusText.innerText = 'Error en la llamada';
+          statusText.style.color = 'var(--error)';
+          stopClientWebRTCCall(true);
+        });
+
+        // 4. Iniciar
+        await clientRetellInstance.startCall({
+          accessToken: access_token,
+          sampleRate: 24000
+        });
+
+      } catch (err) {
+        console.error('[WebRTC Client] Error al conectar:', err);
+        statusText.innerText = 'Llamada Cancelada / Error';
+        statusText.style.color = 'var(--error)';
+        showToast(err.message || 'Error de micrófono o red.', 'error');
+        
+        if (pulseRing1) pulseRing1.classList.remove('active');
+        if (pulseRing2) pulseRing2.classList.remove('active');
+        if (micBg) micBg.classList.remove('active');
+        
+        if (clientCallTimer) {
+          clearInterval(clientCallTimer);
+          clientCallTimer = null;
+        }
+      }
+    }
+
+    function stopClientWebRTCCall(keepModalOpen = false) {
+      console.log('[WebRTC Client] Finalizando llamada...');
+      
+      if (clientCallTimer) {
+        clearInterval(clientCallTimer);
+        clientCallTimer = null;
+      }
+
+      if (clientRetellInstance) {
+        try {
+          clientRetellInstance.stopCall();
+        } catch (e) {
+          console.warn('[WebRTC Client] Error al parar llamada:', e);
+        }
+        clientRetellInstance = null;
+      }
+
+      const pulseRing1 = document.getElementById('webrtc-pulse-ring-1');
+      const pulseRing2 = document.getElementById('webrtc-pulse-ring-2');
+      const micBg = document.getElementById('webrtc-mic-icon-bg');
+      
+      if (pulseRing1) pulseRing1.classList.remove('active');
+      if (pulseRing2) pulseRing2.classList.remove('active');
+      if (micBg) micBg.classList.remove('active');
+
+      if (!keepModalOpen) {
+        document.getElementById('webrtc-call-modal').style.display = 'none';
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       if (!tenantId) {
         const appContainer = document.querySelector('.app-container');
@@ -3081,6 +3519,12 @@
       // Mostrar datos
       document.getElementById('business-name-display').innerText = currentTenant.business_name;
       document.getElementById('business-email-display').innerText = currentTenant.email;
+
+      // Cargar modo vacaciones en Ajustes
+      const chkVacation = document.getElementById('setting-vacation-mode');
+      const txtVacation = document.getElementById('setting-vacation-message');
+      if (chkVacation) chkVacation.checked = !!currentTenant.vacation_mode;
+      if (txtVacation) txtVacation.value = currentTenant.vacation_message || '';
 
       // Rellenar desvío telefónico
       const lblForwardPhone = document.getElementById('lbl-forward-phone');
@@ -5153,6 +5597,96 @@
     }
 
   </script>
+
+  <!-- MODAL DEL CENTRO DE AYUDA -->
+  <div class="modal" id="help-center-modal" style="display: none; z-index: 9999;">
+    <div class="modal-content" style="max-width: 600px; width: 90%; gap: 1.5rem;">
+      <h2 style="margin: 0; font-family: 'Outfit', sans-serif; color: #fff; display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+        <span style="display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="help-circle" style="color: var(--primary);"></i>
+          <span>Centro de Ayuda y Soporte</span>
+        </span>
+        <button onclick="closeHelpCenterModal()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem;">
+          <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+      </h2>
+      
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0; line-height: 1.4; text-align: left;">
+        Selecciona una de las guías oficiales para consultarla directamente en pantalla o descargarla en formato PDF:
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Card Guía 1 -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="text-align: left;">
+            <strong style="color: #fff; display: block; font-size: 0.95rem; margin-bottom: 0.25rem;">Manual del Panel (Guía de Usuario)</strong>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Aprende a operar tu agenda, escuchar grabaciones y cambiar tu PIN.</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+            <button class="btn btn-secondary" onclick="openGuideViewerFromHelp('user')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">Leer</button>
+            <button class="btn" onclick="downloadClientGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
+          </div>
+        </div>
+
+        <!-- Card Guía 2 -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="text-align: left;">
+            <strong style="color: #fff; display: block; font-size: 0.95rem; margin-bottom: 0.25rem;">Guía de Desvío Telefónico</strong>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Pautas para redirigir las llamadas de tu teléfono móvil o fijo hacia la IA.</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+            <button class="btn btn-secondary" onclick="openGuideViewerFromHelp('forwarding')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">Leer</button>
+            <button class="btn" onclick="downloadForwardingGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+        <button class="btn btn-secondary" onclick="closeHelpCenterModal()" style="cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 8px;">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE LLAMADA WEBRTC (SANDBOX) -->
+  <div class="modal" id="webrtc-call-modal" style="display: none; z-index: 99999;">
+    <div class="modal-content" style="max-width: 420px; text-align: center; gap: 1.5rem; padding: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; width: 100%;">
+        <h3 style="margin: 0; color: #fff; font-family: 'Outfit', sans-serif; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="sparkles" style="color: var(--primary);"></i>
+          Probador de Agente IA (Sandbox)
+        </h3>
+        <button onclick="stopClientWebRTCCall()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem;">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+
+      <!-- Avatar & Rings -->
+      <div style="position: relative; width: 140px; height: 140px; margin: 1rem auto; display: flex; align-items: center; justify-content: center;">
+        <div class="pulse-ring" id="webrtc-pulse-ring-1" style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: rgba(139, 92, 246, 0.15); pointer-events: none; transform: scale(0.85);"></div>
+        <div class="pulse-ring" id="webrtc-pulse-ring-2" style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: rgba(139, 92, 246, 0.1); pointer-events: none; transform: scale(0.85);"></div>
+        <div id="webrtc-mic-icon-bg" style="width: 90px; height: 90px; border-radius: 50%; background: rgba(139, 92, 246, 0.1); border: 2px solid rgba(139, 92, 246, 0.3); display: flex; align-items: center; justify-content: center; z-index: 1; transition: all 0.3s ease;">
+          <i data-lucide="mic" style="width: 40px; height: 40px; color: var(--primary-light);"></i>
+        </div>
+      </div>
+
+      <div>
+        <h4 style="margin: 0 0 0.25rem 0; color: #fff; font-size: 1rem; text-align: center;" id="webrtc-modal-client-info">Cargando Agente...</h4>
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace; display: block; text-align: center;" id="webrtc-modal-agent-id">-</span>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.4; text-align: center;">
+        <span style="display: block; color: var(--text-muted); margin-bottom: 0.15rem;">Estado:</span>
+        <strong id="webrtc-call-status" style="color: var(--primary-light);">Inicializando...</strong>
+        <span style="display: block; font-size: 1.1rem; font-weight: 700; color: #fff; margin-top: 0.5rem;" id="webrtc-call-duration">00:00</span>
+      </div>
+
+      <button class="btn" onclick="stopClientWebRTCCall()" style="background: #ef4444; color: white; border: none; font-weight: 600; width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border-radius: 8px; cursor: pointer;">
+        <i data-lucide="phone-off"></i>
+        Colgar Llamada
+      </button>
+    </div>
+  </div>
+
   <!-- MODAL DE VISUALIZACIÓN DE GUÍA (ON-SCREEN VIEWER) -->
   <div class="modal" id="guide-viewer-modal" style="display: none;">
     <div class="modal-content" style="max-width: 800px; width: 90%; gap: 1.5rem; max-height: 85vh; overflow-y: auto;">

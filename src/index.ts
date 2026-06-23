@@ -7,6 +7,7 @@ import { supabase, getSettingVal } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName } from './services/retell';
 import { createStripeCheckoutSession, createStripePortalSession, getStripeClient } from './services/stripe';
 import axios from 'axios';
+import { sendWhatsAppMessage } from './services/whatsapp';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -76,7 +77,12 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     phone_number,
     business_description,
     pricing_details,
-    custom_instructions
+    custom_instructions,
+    admin_pin,
+    vacation_mode,
+    vacation_message,
+    voice_speed,
+    voice_temperature
   } = req.body;
 
   if (!business_name || !email) {
@@ -93,15 +99,19 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
       .maybeSingle();
 
     const formattedVoiceIdVal = formatVoiceId(voice_id);
-    const tenantData: any = {
-      business_name,
-      specialties,
-      voice_id: formattedVoiceIdVal,
-      phone_number,
-      business_description,
-      pricing_details,
-      custom_instructions
-    };
+    const tenantData: any = {};
+    if (business_name !== undefined) tenantData.business_name = business_name;
+    if (specialties !== undefined) tenantData.specialties = specialties;
+    if (voice_id !== undefined) tenantData.voice_id = formattedVoiceIdVal;
+    if (phone_number !== undefined) tenantData.phone_number = phone_number;
+    if (business_description !== undefined) tenantData.business_description = business_description;
+    if (pricing_details !== undefined) tenantData.pricing_details = pricing_details;
+    if (custom_instructions !== undefined) tenantData.custom_instructions = custom_instructions;
+    if (admin_pin !== undefined) tenantData.admin_pin = admin_pin;
+    if (vacation_mode !== undefined) tenantData.vacation_mode = !!vacation_mode;
+    if (vacation_message !== undefined) tenantData.vacation_message = vacation_message;
+    if (voice_speed !== undefined) tenantData.voice_speed = Number(voice_speed);
+    if (voice_temperature !== undefined) tenantData.voice_temperature = Number(voice_temperature);
 
     let savedTenant: any;
 
@@ -597,7 +607,11 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     representative_role,
     signing_city,
     retell_agent_id,
-    business_sector
+    business_sector,
+    voice_speed,
+    voice_temperature,
+    vacation_mode,
+    vacation_message
   } = req.body;
 
   if (!business_name || !email) {
@@ -700,7 +714,11 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       representative_role: representative_role || null,
       signing_city: signing_city || null,
       retell_agent_id: computedAgentId,
-      business_sector: business_sector || 'general'
+      business_sector: business_sector || 'general',
+      voice_speed: voice_speed !== undefined && voice_speed !== null ? Number(voice_speed) : 1.0,
+      voice_temperature: voice_temperature !== undefined && voice_temperature !== null ? Number(voice_temperature) : 1.0,
+      vacation_mode: vacation_mode !== undefined ? !!vacation_mode : false,
+      vacation_message: vacation_message || ''
     };
 
     if (existing) {
@@ -1756,6 +1774,76 @@ app.post('/api/admin/test-agent-call', async (req, res): Promise<void> => {
   } catch (err: any) {
     console.error('Error al iniciar llamada de prueba:', err.response?.data || err.message);
     res.status(500).json({ error: 'Error al iniciar llamada de prueba: ' + (err.response?.data?.error?.message || err.message) });
+  }
+});
+
+// 8.1 Iniciar llamada de prueba por WebRTC para el cliente
+app.post('/api/client/test-agent-call', async (req, res): Promise<void> => {
+  const { tenant_id } = req.body;
+  if (!tenant_id) {
+    res.status(400).json({ error: 'El tenant_id es obligatorio.' });
+    return;
+  }
+  try {
+    const { data: tenant, error: tErr } = await supabase
+      .from('tenants')
+      .select('retell_agent_id')
+      .eq('id', tenant_id)
+      .single();
+
+    if (tErr || !tenant || !tenant.retell_agent_id) {
+      res.status(404).json({ error: 'No se encontró un Agente de Voz configurado para este negocio.' });
+      return;
+    }
+
+    const apiKey = await getSettingVal('RETELL_API_KEY');
+    if (!apiKey || apiKey === 'YOUR_RETELL_API_KEY' || apiKey.trim() === '') {
+      res.status(400).json({ error: 'La clave RETELL_API_KEY no está configurada.' });
+      return;
+    }
+
+    console.log(`[Client Test Call] Solicitando token de llamada web para el agente: ${tenant.retell_agent_id}...`);
+    const response = await axios.post(
+      'https://api.retellai.com/v2/create-web-call',
+      { agent_id: tenant.retell_agent_id },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (!response.data || !response.data.access_token) {
+      throw new Error('No se recibió el token de acceso de Retell.');
+    }
+
+    res.json({
+      access_token: response.data.access_token,
+      call_id: response.data.call_id
+    });
+  } catch (err: any) {
+    console.error('Error al iniciar llamada de prueba de cliente:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Error al iniciar llamada de prueba: ' + (err.response?.data?.error?.message || err.message) });
+  }
+});
+
+// 8.2 Probar envío de WhatsApp (Twilio)
+app.post('/api/test-whatsapp', async (req, res): Promise<void> => {
+  const { phone, message } = req.body;
+  if (!phone || !message) {
+    res.status(400).json({ error: 'El teléfono y el mensaje son obligatorios.' });
+    return;
+  }
+  try {
+    const success = await sendWhatsAppMessage(phone, message);
+    if (success) {
+      res.json({ status: 'success', message: 'Mensaje de WhatsApp de prueba enviado correctamente.' });
+    } else {
+      res.status(500).json({ error: 'Fallo al enviar el mensaje de WhatsApp. Revisa las credenciales de Twilio en los Ajustes.' });
+    }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 });
 

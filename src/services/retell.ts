@@ -106,10 +106,20 @@ Utilice la siguiente información adicional sobre el negocio para responder de f
 ${kbContent ? `- **Información del Negocio:** ${kbContent}\n` : ''}${kbUrl ? `- **Página Web o Enlace de Interés:** ${kbUrl}\n` : ''}`;
   }
 
+  let vacationSection = '';
+  if (tenant.vacation_mode) {
+    vacationSection = `
+# MODO VACACIONES / CIERRE TEMPORAL ACTIVO (CRÍTICO)
+El establecimiento se encuentra CERRADO por vacaciones o cese temporal de actividad.
+1. Debes comunicar amablemente en la conversación que el negocio está cerrado debido al siguiente motivo/mensaje: "${tenant.vacation_message || 'Cierre temporal o vacaciones'}".
+2. Todavía puedes agendar nuevas citas en Google Calendar si el usuario lo desea, pero debes indicarle explícitamente que la reserva debe programarse para después del periodo de vacaciones o reapertura del establecimiento, asegurando que sea una fecha y hora hábiles normales.
+`;
+  }
+
   return `
 # CONTEXTO TEMPORAL
 La fecha actual de hoy es: ${today}. Úsala como referencia para calcular fechas relativas como "mañana", "el próximo martes", "la semana que viene", etc.
-
+${vacationSection}
 # PERSONA Y ROL
 Eres ${agentName}, la recepcionista de la empresa "${businessName}". Tu tono es profesional, empático, calmado y muy natural. Hablas en español de España (castellano neutro). Tratas siempre al cliente/paciente de "usted". Evitas sonar robótica; utiliza expresiones de transición naturales como "entiendo", "un segundo, por favor", o "de acuerdo".
 
@@ -327,6 +337,13 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
     const requestedVoiceId = formatVoiceId(tenant.voice_id);
     if (requestedVoiceId) {
       agentPayload.voice_id = requestedVoiceId;
+    }
+
+    if (tenant.voice_speed !== undefined && tenant.voice_speed !== null) {
+      agentPayload.voice_speed = Number(tenant.voice_speed);
+    }
+    if (tenant.voice_temperature !== undefined && tenant.voice_temperature !== null) {
+      agentPayload.voice_temperature = Number(tenant.voice_temperature);
     }
 
     try {
