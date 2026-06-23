@@ -1151,7 +1151,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.4</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.5</span>
         </div>
       </header>
 
@@ -6640,7 +6640,208 @@
       renderVoiceCatalog();
     }
 
-    syncVoiceCatalogUI();
+    // --- LOGICA DEL GESTOR DE CATALOGO DE VOCES ---
+    let retellAgentsList = [];
+
+    window.openVoiceCatalogManager = function() {
+      document.getElementById('voice-catalog-manager-modal').style.display = 'flex';
+      renderManagerCatalogList();
+      fetchRetellAgentsForCatalog();
+    };
+
+    window.closeVoiceCatalogManager = function() {
+      document.getElementById('voice-catalog-manager-modal').style.display = 'none';
+    };
+
+    function renderManagerCatalogList() {
+      const listContainer = document.getElementById('catalog-manager-list');
+      if (!listContainer) return;
+      
+      if (PREMIUM_VOICES.length === 0) {
+        listContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem 0;">No hay voces registradas en el catálogo.</div>';
+        return;
+      }
+
+      listContainer.innerHTML = '';
+      PREMIUM_VOICES.forEach(voice => {
+        const item = document.createElement('div');
+        item.style.cssText = `
+          background: rgba(255,255,255,0.02);
+          border: 1px solid var(--border-color);
+          border-radius: 8px;
+          padding: 0.75rem 1rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+        `;
+        
+        item.innerHTML = `
+          <div style="text-align: left;">
+            <strong style="color: #fff; font-size: 0.9rem;">${voice.flag} ${voice.name}</strong>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">
+              ${voice.provider} | ${voice.gender} | ${voice.langName}
+            </div>
+            <div style="font-size: 0.7rem; font-family: monospace; color: var(--primary-light); margin-top: 0.15rem;">
+              ID: ${voice.id} ${voice.retell_agent_id ? `| Agente: ${voice.retell_agent_id}` : ''}
+            </div>
+          </div>
+          <button type="button" class="btn btn-secondary" onclick="deleteVoiceFromCatalog('${voice.id}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; padding: 0.35rem 0.5rem; height: auto; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Eliminar del catálogo">
+            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+          </button>
+        `;
+        listContainer.appendChild(item);
+      });
+      lucide.createIcons();
+    }
+
+    async function fetchRetellAgentsForCatalog() {
+      const select = document.getElementById('catalog-retell-agent-select');
+      if (!select) return;
+      select.innerHTML = '<option value="">Cargando agentes de Retell...</option>';
+      
+      try {
+        const res = await fetch('/api/retell-agents');
+        if (!res.ok) throw new Error('API Error');
+        const data = await res.json();
+        retellAgentsList = data || [];
+        
+        select.innerHTML = '<option value="">-- Selecciona un agente para importar --</option>';
+        retellAgentsList.forEach(agent => {
+          const opt = document.createElement('option');
+          opt.value = agent.agent_id;
+          opt.innerText = `${agent.agent_name || 'Sin nombre'} (${agent.agent_id})`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Error fetching retell agents for catalog:', err);
+        select.innerHTML = '<option value="">Error al cargar agentes de Retell</option>';
+      }
+    }
+
+    window.onCatalogAgentSelectChange = function() {
+      const agentId = document.getElementById('catalog-retell-agent-select').value;
+      if (!agentId) return;
+      
+      const agent = retellAgentsList.find(a => a.agent_id === agentId);
+      if (!agent) return;
+      
+      // Auto-rellenar campos en base al agente de Retell
+      let cleanName = agent.agent_name || '';
+      if (cleanName.includes('-')) {
+        cleanName = cleanName.split('-')[0].trim();
+      }
+      
+      document.getElementById('catalog-voice-name').value = cleanName;
+      document.getElementById('catalog-retell-id').value = agent.agent_id;
+      
+      // Intentar auto-rellenar proveedor y ID de voz
+      const voiceId = agent.voice_id || '';
+      document.getElementById('catalog-voice-id').value = voiceId;
+      
+      if (voiceId.startsWith('cartesia-') || voiceId.startsWith('cartesia:')) {
+        document.getElementById('catalog-voice-provider').value = 'Cartesia';
+      } else if (voiceId.startsWith('elevenlabs_') || voiceId.startsWith('elevenlabs:') || voiceId.startsWith('11labs_')) {
+        document.getElementById('catalog-voice-provider').value = 'ElevenLabs';
+      } else if (voiceId.startsWith('openai-') || voiceId.startsWith('openai:')) {
+        document.getElementById('catalog-voice-provider').value = 'OpenAI';
+      } else {
+        document.getElementById('catalog-voice-provider').value = 'Platform';
+      }
+    };
+
+    window.onCatalogLangChange = function() {};
+
+    window.deleteVoiceFromCatalog = async function(voiceId) {
+      if (!confirm('¿Estás seguro de que deseas eliminar esta voz del catálogo?')) return;
+      
+      try {
+        const res = await fetch(`/api/voices-catalog/${voiceId}`, {
+          method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('API Error');
+        
+        showCustomAlert('Voz eliminada con éxito del catálogo.', 'Éxito', 'success');
+        await loadVoicesCatalog();
+        renderManagerCatalogList();
+      } catch (err) {
+        console.error('Error deleting voice from catalog:', err);
+        showCustomAlert('Error al eliminar voz del catálogo.', 'Error', 'error');
+      }
+    };
+
+    window.saveVoiceToCatalog = async function() {
+      const id = document.getElementById('catalog-voice-id').value.trim();
+      const name = document.getElementById('catalog-voice-name').value.trim();
+      const lang = document.getElementById('catalog-voice-lang').value;
+      const gender = document.getElementById('catalog-voice-gender').value;
+      const provider = document.getElementById('catalog-voice-provider').value.trim();
+      const retellAgentId = document.getElementById('catalog-retell-id').value.trim() || null;
+      const previewUrl = document.getElementById('catalog-voice-preview').value.trim() || null;
+
+      if (!id || !name || !provider) {
+        showCustomAlert('Por favor rellena todos los campos requeridos (ID, Nombre, Proveedor).', 'Campos Incompletos', 'warning');
+        return;
+      }
+
+      // Determinar idioma visible y bandera HTML
+      let langName = 'Español España';
+      let flag = '<img src="https://flagcdn.com/w20/es.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">';
+      
+      if (lang === 'es-LA') {
+        langName = 'Español Latino';
+        flag = '<img src="https://flagcdn.com/w20/mx.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">';
+      } else if (lang === 'en-US') {
+        langName = 'Inglés EE.UU.';
+        flag = '<img src="https://flagcdn.com/w20/us.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">';
+      }
+
+      const voicePayload = {
+        id,
+        name,
+        lang,
+        langName,
+        gender,
+        provider,
+        flag,
+        preview_url: previewUrl,
+        retell_agent_id: retellAgentId
+      };
+
+      try {
+        const res = await fetch('/api/voices-catalog', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(voicePayload)
+        });
+
+        if (!res.ok) throw new Error('API Error');
+        
+        showCustomAlert('Voz añadida con éxito al catálogo.', 'Éxito', 'success');
+        
+        // Resetear formulario
+        document.getElementById('catalog-voice-id').value = '';
+        document.getElementById('catalog-voice-name').value = '';
+        document.getElementById('catalog-retell-id').value = '';
+        document.getElementById('catalog-voice-preview').value = '';
+        document.getElementById('catalog-retell-agent-select').value = '';
+
+        await loadVoicesCatalog();
+        renderManagerCatalogList();
+      } catch (err) {
+        console.error('Error adding voice to catalog:', err);
+        showCustomAlert('Error al guardar la voz en el catálogo.', 'Error', 'error');
+      }
+    };
+
+    // Inicializar catálogo al arrancar
+    const lastVoice = localStorage.getItem('receptia_last_voice_id');
+    if (lastVoice) {
+      document.getElementById('voice-id').value = lastVoice;
+    }
+    loadVoicesCatalog();
   </script>
 
   <!-- Carga del SDK de Retell y lógica de WebRTC -->
