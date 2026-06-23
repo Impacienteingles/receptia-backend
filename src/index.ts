@@ -127,62 +127,77 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
 
     if (existing) {
       // Actualizar datos de negocio y especialidades
-      let result = await supabase
-        .from('tenants')
-        .update(tenantData)
-        .eq('id', existing.id)
-        .select()
-        .single();
-      
-      if (result.error) {
-        const errMsg = result.error.message || '';
-        if (errMsg.includes('column') || errMsg.includes('client_whatsapp_enabled') || errMsg.includes('client_email_enabled')) {
-          console.warn('[Supabase Fallback] Error de columnas faltantes en client/settings (update), reintentando sin campos de notificación...');
-          const fallbackData = { ...tenantData };
-          delete fallbackData.client_whatsapp_enabled;
-          delete fallbackData.client_email_enabled;
-          result = await supabase
-            .from('tenants')
-            .update(fallbackData)
-            .eq('id', existing.id)
-            .select()
-            .single();
+      let attemptData: any = { ...tenantData };
+      let retries = 10;
+      let success = false;
+      let lastError: any = null;
+
+      while (retries > 0 && !success) {
+        const result = await supabase
+          .from('tenants')
+          .update(attemptData)
+          .eq('id', existing.id)
+          .select()
+          .single();
+        
+        if (result.error) {
+          lastError = result.error;
+          const errMsg = result.error.message || '';
+          if (errMsg.includes('column') && retries > 1) {
+            const match = errMsg.match(/['"]([^'"]+)['"]/);
+            if (match && match[1]) {
+              const colName = match[1];
+              console.warn(`[Supabase Fallback] Columna faltante detectada en client/settings (update): ${colName}. Eliminando y reintentando...`);
+              delete attemptData[colName];
+              retries--;
+              continue;
+            }
+          }
+          throw result.error;
         }
+        
+        savedTenant = result.data;
+        success = true;
       }
-      if (result.error) throw result.error;
-      savedTenant = result.data;
+      if (!success && lastError) throw lastError;
     } else {
       // Crear un nuevo registro
-      let result = await supabase
-        .from('tenants')
-        .insert({ 
-          ...tenantData,
-          email, 
-          retell_agent_id: process.env.RETELL_AGENT_ID // Vincular por defecto el agente de Retell activo
-        })
-        .select()
-        .single();
-      
-      if (result.error) {
-        const errMsg = result.error.message || '';
-        if (errMsg.includes('column') || errMsg.includes('client_whatsapp_enabled') || errMsg.includes('client_email_enabled')) {
-          console.warn('[Supabase Fallback] Error de columnas faltantes en client/settings (insert), reintentando sin campos de notificación...');
-          const fallbackData = { ...tenantData };
-          delete fallbackData.client_whatsapp_enabled;
-          delete fallbackData.client_email_enabled;
-          result = await supabase
-            .from('tenants')
-            .insert({ 
-              ...fallbackData,
-              email, 
-              retell_agent_id: process.env.RETELL_AGENT_ID
-            })
-            .select()
-            .single();
+      let attemptData: any = { ...tenantData };
+      let retries = 10;
+      let success = false;
+      let lastError: any = null;
+
+      while (retries > 0 && !success) {
+        const result = await supabase
+          .from('tenants')
+          .insert({ 
+            ...attemptData,
+            email, 
+            retell_agent_id: process.env.RETELL_AGENT_ID // Vincular por defecto el agente de Retell activo
+          })
+          .select()
+          .single();
+        
+        if (result.error) {
+          lastError = result.error;
+          const errMsg = result.error.message || '';
+          if (errMsg.includes('column') && retries > 1) {
+            const match = errMsg.match(/['"]([^'"]+)['"]/);
+            if (match && match[1]) {
+              const colName = match[1];
+              console.warn(`[Supabase Fallback] Columna faltante detectada en client/settings (insert): ${colName}. Eliminando y reintentando...`);
+              delete attemptData[colName];
+              retries--;
+              continue;
+            }
+          }
+          throw result.error;
         }
+        
+        savedTenant = result.data;
+        success = true;
       }
-      if (result.error) throw result.error;
-      savedTenant = result.data;
+      if (!success && lastError) throw lastError;
     }
 
     // Sincronizar en segundo plano con Retell AI para no bloquear la respuesta HTTP
@@ -773,51 +788,72 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     };
 
     if (existing) {
-      let result = await supabase
-        .from('tenants')
-        .update(tenantData)
-        .eq('id', existing.id)
-        .select()
-        .single();
-      
-      if (result.error) {
-        const errMsg = result.error.message || '';
-        if (errMsg.includes('column') || errMsg.includes('email_notifications_enabled')) {
-          console.warn('[Supabase Fallback] Error de columnas faltantes en admin/tenants (update), reintentando sin campos de notificación...');
-          const fallbackData = { ...tenantData };
-          delete fallbackData.email_notifications_enabled;
-          result = await supabase
-            .from('tenants')
-            .update(fallbackData)
-            .eq('id', existing.id)
-            .select()
-            .single();
+      let attemptData: any = { ...tenantData };
+      let retries = 10;
+      let success = false;
+      let lastError: any = null;
+
+      while (retries > 0 && !success) {
+        const result = await supabase
+          .from('tenants')
+          .update(attemptData)
+          .eq('id', existing.id)
+          .select()
+          .single();
+        
+        if (result.error) {
+          lastError = result.error;
+          const errMsg = result.error.message || '';
+          if (errMsg.includes('column') && retries > 1) {
+            const match = errMsg.match(/['"]([^'"]+)['"]/);
+            if (match && match[1]) {
+              const colName = match[1];
+              console.warn(`[Supabase Fallback] Columna faltante detectada en admin/tenants (update): ${colName}. Eliminando y reintentando...`);
+              delete attemptData[colName];
+              retries--;
+              continue;
+            }
+          }
+          throw result.error;
         }
+        
+        tenant = result.data;
+        success = true;
       }
-      if (result.error) throw result.error;
-      tenant = result.data;
+      if (!success && lastError) throw lastError;
     } else {
-      let result = await supabase
-        .from('tenants')
-        .insert({ ...tenantData, email })
-        .select()
-        .single();
-      
-      if (result.error) {
-        const errMsg = result.error.message || '';
-        if (errMsg.includes('column') || errMsg.includes('email_notifications_enabled')) {
-          console.warn('[Supabase Fallback] Error de columnas faltantes en admin/tenants (insert), reintentando sin campos de notificación...');
-          const fallbackData = { ...tenantData };
-          delete fallbackData.email_notifications_enabled;
-          result = await supabase
-            .from('tenants')
-            .insert({ ...fallbackData, email })
-            .select()
-            .single();
+      let attemptData: any = { ...tenantData };
+      let retries = 10;
+      let success = false;
+      let lastError: any = null;
+
+      while (retries > 0 && !success) {
+        const result = await supabase
+          .from('tenants')
+          .insert({ ...attemptData, email })
+          .select()
+          .single();
+        
+        if (result.error) {
+          lastError = result.error;
+          const errMsg = result.error.message || '';
+          if (errMsg.includes('column') && retries > 1) {
+            const match = errMsg.match(/['"]([^'"]+)['"]/);
+            if (match && match[1]) {
+              const colName = match[1];
+              console.warn(`[Supabase Fallback] Columna faltante detectada en admin/tenants (insert): ${colName}. Eliminando y reintentando...`);
+              delete attemptData[colName];
+              retries--;
+              continue;
+            }
+          }
+          throw result.error;
         }
+        
+        tenant = result.data;
+        success = true;
       }
-      if (result.error) throw result.error;
-      tenant = result.data;
+      if (!success && lastError) throw lastError;
     }
 
     addStep('2. Registro en Supabase completado con UUID: ' + tenant.id);
