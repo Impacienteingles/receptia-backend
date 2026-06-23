@@ -85,7 +85,9 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     voice_temperature,
     voice_responsiveness,
     whatsapp_reminder_hours,
-    no_show_deposit_limit_mins
+    no_show_deposit_limit_mins,
+    client_whatsapp_enabled,
+    client_email_enabled
   } = req.body;
 
   if (!business_name || !email) {
@@ -118,6 +120,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (voice_responsiveness !== undefined) tenantData.voice_responsiveness = Number(voice_responsiveness);
     if (whatsapp_reminder_hours !== undefined) tenantData.whatsapp_reminder_hours = Number(whatsapp_reminder_hours);
     if (no_show_deposit_limit_mins !== undefined) tenantData.no_show_deposit_limit_mins = Number(no_show_deposit_limit_mins);
+    if (client_whatsapp_enabled !== undefined) tenantData.client_whatsapp_enabled = !!client_whatsapp_enabled;
+    if (client_email_enabled !== undefined) tenantData.client_email_enabled = !!client_email_enabled;
 
     let savedTenant: any;
 
@@ -620,7 +624,8 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     vacation_message,
     voice_responsiveness,
     whatsapp_reminder_hours,
-    no_show_deposit_limit_mins
+    no_show_deposit_limit_mins,
+    email_notifications_enabled
   } = req.body;
 
   if (!business_name || !email) {
@@ -702,6 +707,7 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       is_trial: !!is_trial,
       trial_ends_at: computedTrialEndsAt,
       whatsapp_reminders_enabled: !!whatsapp_reminders_enabled,
+      email_notifications_enabled: email_notifications_enabled !== false,
       enable_no_show_deposits: !!enable_no_show_deposits,
       no_show_deposit_amount: Number(no_show_deposit_amount) || 10.00,
       enable_multi_professional: !!enable_multi_professional,

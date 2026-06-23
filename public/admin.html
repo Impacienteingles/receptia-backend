@@ -1547,6 +1547,14 @@
                 </div>
               </div>
 
+              <!-- 1b. Email Notifications -->
+              <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(59, 130, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
+                <input type="checkbox" id="email-notifications-enabled" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="saveDraftToLocalStorage()" checked>
+                <label for="email-notifications-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                  Habilitar Notificaciones por Correo Electrónico ✉️
+                </label>
+              </div>
+
               <!-- 2. No-Show Deposits -->
               <div class="form-group" style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(59, 130, 246, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
                 <div style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem;">
@@ -3198,6 +3206,9 @@
         const inputWhatsappHours = document.getElementById('whatsapp-reminder-hours');
         if (inputWhatsappHours) draft['whatsapp_reminder_hours'] = inputWhatsappHours.value;
 
+        const checkEmailNotif = document.getElementById('email-notifications-enabled');
+        if (checkEmailNotif) draft['email_notifications_enabled'] = checkEmailNotif.checked;
+
         const checkNoShow = document.getElementById('enable-no-show-deposits');
         if (checkNoShow) draft['enable_no_show_deposits'] = checkNoShow.checked;
 
@@ -3367,6 +3378,11 @@
         const inputWhatsappHours = document.getElementById('whatsapp-reminder-hours');
         if (inputWhatsappHours && draft['whatsapp_reminder_hours'] !== undefined) {
           inputWhatsappHours.value = draft['whatsapp_reminder_hours'];
+        }
+
+        const checkEmailNotif = document.getElementById('email-notifications-enabled');
+        if (checkEmailNotif && draft['email_notifications_enabled'] !== undefined) {
+          checkEmailNotif.checked = draft['email_notifications_enabled'];
         }
 
         const checkNoShow = document.getElementById('enable-no-show-deposits');
@@ -5771,6 +5787,7 @@
       // Rellenar propuestas de éxito SaaS
       document.getElementById('whatsapp-reminders-enabled').checked = !!tenant.whatsapp_reminders_enabled;
       document.getElementById('whatsapp-reminder-hours').value = tenant.whatsapp_reminder_hours || 24;
+      document.getElementById('email-notifications-enabled').checked = tenant.email_notifications_enabled !== false;
       
       document.getElementById('enable-no-show-deposits').checked = !!tenant.enable_no_show_deposits;
       document.getElementById('no-show-deposit-amount').value = tenant.no_show_deposit_amount !== undefined ? tenant.no_show_deposit_amount : '10.00';
@@ -5866,6 +5883,7 @@
       // Resetear propuestas de éxito SaaS
       document.getElementById('whatsapp-reminders-enabled').checked = false;
       document.getElementById('whatsapp-reminder-hours').value = 24;
+      document.getElementById('email-notifications-enabled').checked = true;
       document.getElementById('enable-no-show-deposits').checked = false;
       document.getElementById('no-show-deposit-amount').value = 10.00;
       document.getElementById('no-show-deposit-limit-mins').value = 10;
@@ -6199,6 +6217,7 @@
         is_trial: document.getElementById('is-trial-checkbox').checked,
         whatsapp_reminders_enabled: document.getElementById('whatsapp-reminders-enabled').checked,
         whatsapp_reminder_hours: Number(document.getElementById('whatsapp-reminder-hours').value) || 24,
+        email_notifications_enabled: document.getElementById('email-notifications-enabled').checked,
         enable_no_show_deposits: document.getElementById('enable-no-show-deposits').checked,
         no_show_deposit_amount: Number(document.getElementById('no-show-deposit-amount').value) || 10.00,
         no_show_deposit_limit_mins: Number(document.getElementById('no-show-deposit-limit-mins').value) || 10,

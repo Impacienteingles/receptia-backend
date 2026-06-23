@@ -2056,6 +2056,50 @@
                 </button>
               </div>
 
+              <!-- Sección Canales de Notificación -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="bell" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Canales de Notificación de Citas
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Decide qué canales utilizará la IA para recopilar datos de contacto y notificar a tus clientes. Nota: Algunos canales requieren que el módulo esté activo en tu plan.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem;">
+                  <!-- WhatsApp Toggle -->
+                  <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                    <input type="checkbox" id="setting-whatsapp-notif-toggle" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; margin-top: 0.2rem;">
+                    <div>
+                      <label for="setting-whatsapp-notif-toggle" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        Activar Recordatorios por WhatsApp 💬
+                        <span id="badge-whatsapp-module" style="display: none; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">Bloqueado en tu Plan</span>
+                      </label>
+                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+                        La IA informará a los clientes que recibirán un recordatorio automático por WhatsApp.
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Email Toggle -->
+                  <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                    <input type="checkbox" id="setting-email-notif-toggle" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; margin-top: 0.2rem;">
+                    <div>
+                      <label for="setting-email-notif-toggle" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        Activar Confirmación por Correo Electrónico ✉️
+                        <span id="badge-email-module" style="display: none; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">Bloqueado en tu Plan</span>
+                      </label>
+                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+                        La IA solicitará el correo electrónico a los clientes y les enviará una invitación / confirmación de Google Calendar.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <button class="btn btn-secondary" onclick="saveNotificationChannels()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                  <i data-lucide="save"></i>
+                  Guardar Canales
+                </button>
+              </div>
+
               <!-- Sección Verificación de Notificaciones WhatsApp -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
@@ -2851,6 +2895,49 @@
       }
     }
 
+    async function saveNotificationChannels() {
+      if (!currentTenant) return;
+      
+      const chkClientWhatsapp = document.getElementById('setting-whatsapp-notif-toggle');
+      const chkClientEmail = document.getElementById('setting-email-notif-toggle');
+      
+      const clientWhatsapp = chkClientWhatsapp ? chkClientWhatsapp.checked : true;
+      const clientEmail = chkClientEmail ? chkClientEmail.checked : true;
+      
+      try {
+        const res = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentTenant.email,
+            business_name: currentTenant.business_name,
+            client_whatsapp_enabled: clientWhatsapp,
+            client_email_enabled: clientEmail
+          })
+        });
+        
+        if (!res.ok) throw new Error('No se pudieron guardar los canales de notificación.');
+        const updated = await res.json();
+        currentTenant = updated;
+        showToast('Canales de notificación actualizados correctamente.');
+        
+        // Re-sincronizar el prompt del agente con Retell AI para reflejar el cambio al instante
+        showToast('Actualizando configuración del agente en Retell AI...');
+        const syncRes = await fetch('/api/admin/sync-retell', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenant_id: currentTenant.id })
+        });
+        if (syncRes.ok) {
+          showToast('¡Agente de Retell AI sincronizado con éxito!');
+        } else {
+          console.warn('No se pudo re-sincronizar el agente en Retell AI.');
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
     async function sendTestWhatsApp() {
       const phoneInput = document.getElementById('setting-whatsapp-test-phone');
       if (!phoneInput) return;
@@ -3526,6 +3613,30 @@
       const txtVacation = document.getElementById('setting-vacation-message');
       if (chkVacation) chkVacation.checked = !!currentTenant.vacation_mode;
       if (txtVacation) txtVacation.value = currentTenant.vacation_message || '';
+
+      // Cargar canales de notificación
+      const chkClientWhatsapp = document.getElementById('setting-whatsapp-notif-toggle');
+      const chkClientEmail = document.getElementById('setting-email-notif-toggle');
+      const badgeWhatsapp = document.getElementById('badge-whatsapp-module');
+      const badgeEmail = document.getElementById('badge-email-module');
+      
+      const isWhatsappAllowed = !!currentTenant.whatsapp_reminders_enabled;
+      if (chkClientWhatsapp) {
+        chkClientWhatsapp.checked = isWhatsappAllowed && currentTenant.client_whatsapp_enabled !== false;
+        chkClientWhatsapp.disabled = !isWhatsappAllowed;
+      }
+      if (badgeWhatsapp) {
+        badgeWhatsapp.style.display = isWhatsappAllowed ? 'none' : 'inline-block';
+      }
+
+      const isEmailAllowed = currentTenant.email_notifications_enabled !== false;
+      if (chkClientEmail) {
+        chkClientEmail.checked = isEmailAllowed && currentTenant.client_email_enabled !== false;
+        chkClientEmail.disabled = !isEmailAllowed;
+      }
+      if (badgeEmail) {
+        badgeEmail.style.display = isEmailAllowed ? 'none' : 'inline-block';
+      }
 
       // Rellenar desvío telefónico
       const lblForwardPhone = document.getElementById('lbl-forward-phone');

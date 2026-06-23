@@ -116,6 +116,23 @@ El establecimiento se encuentra CERRADO por vacaciones o cese temporal de activi
 `;
   }
 
+  const whatsappActive = !!tenant.whatsapp_reminders_enabled && tenant.client_whatsapp_enabled !== false;
+  const emailActive = tenant.email_notifications_enabled !== false && tenant.client_email_enabled !== false;
+
+  let whatsappInstruction = '';
+  if (whatsappActive) {
+    whatsappInstruction = 'Informa brevemente al cliente de que recibirá un recordatorio automático por WhatsApp antes de su cita.';
+  } else {
+    whatsappInstruction = 'No menciones nada sobre recordatorios por WhatsApp.';
+  }
+
+  let emailInstruction = '';
+  if (emailActive) {
+    emailInstruction = '- Correo electrónico: Solicita de forma clara y educada el correo electrónico del cliente para enviarle la confirmación y la invitación de Google Calendar. Deletrea o confirma el correo si es necesario para evitar errores.';
+  } else {
+    emailInstruction = '- Correo electrónico: NO solicites el correo electrónico bajo ningún concepto, ya que las confirmaciones por email están desactivadas para este negocio.';
+  }
+
   return `
 # CONTEXTO TEMPORAL
 La fecha actual de hoy es: ${today}. Úsala como referencia para calcular fechas relativas como "mañana", "el próximo martes", "la semana que viene", etc.
@@ -149,12 +166,12 @@ ${kbSection}
 4. **Recogida de Datos (Paso a paso, no los pidas todos a la vez):**
    - Nombre y apellidos del cliente.
    - Teléfono de contacto: Solicita directamente al cliente que te facilite su número de teléfono. No le preguntes si es el mismo número desde el que llama, pídelo siempre de forma directa (por ejemplo: "¿Me podría indicar un número de teléfono de contacto?").
-   - Correo electrónico: NO solicites el correo electrónico bajo ningún concepto.
+   ${emailInstruction}
 5. **Confirmación:**
    - Para reservas, llama a la herramienta 'crear_cita'.
    - Para cancelaciones, llama a la herramienta 'cancelar_cita'.
    - Para modificaciones, llama a la herramienta 'reprogramar_cita'.
-   - Confirma la acción de forma clara y pregunta si requiere alguna otra gestión.
+   - Confirma la acción de forma clara y pregunta si requiere alguna otra gestión. ${whatsappInstruction}
 
 # INSTRUCCIONES ADICIONALES ESPECÍFICAS DEL NEGOCIO (SÍGUELAS AL PIE DE LA LETRA)
 ${customInst}
@@ -304,7 +321,7 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
       } catch (llmErr: any) {
         const errStatus = llmErr.response?.status;
         const errMsg = llmErr.response?.data?.message || llmErr.message || '';
-        if (errStatus === 422 || errMsg.includes('published agent') || errMsg.includes('Cannot update published agent')) {
+        if (errStatus === 422 || errStatus === 400 || errMsg.includes('published') || errMsg.includes('Cannot update published')) {
           console.warn(`⚠️ El LLM ${llmId} está asociado a un agente publicado y es inmutable. Omitiendo actualización del prompt.`);
         } else {
           throw llmErr;
@@ -352,7 +369,7 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
         console.warn(`⚠️ La voz "${requestedVoiceId}" no existe en Retell AI. Reintentando con voz por defecto (cartesia-Sofia)...`);
         agentPayload.voice_id = 'cartesia-Sofia';
         await retellClient.patch(`/update-agent/${agentId}`, agentPayload);
-      } else if (errStatus === 422 || errMsg.includes('published agent') || errMsg.includes('Cannot update published agent')) {
+      } else if (errStatus === 422 || errStatus === 400 || errMsg.includes('published') || errMsg.includes('Cannot update published')) {
         throw new Error('El agente está publicado en Retell AI y es inmutable. Para aplicar los cambios de voz, despublícalo o crea un borrador en el panel de Retell AI.');
       } else {
         throw patchErr;
