@@ -345,6 +345,12 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
     if (tenant.voice_temperature !== undefined && tenant.voice_temperature !== null) {
       agentPayload.voice_temperature = Number(tenant.voice_temperature);
     }
+    if (tenant.voice_responsiveness !== undefined && tenant.voice_responsiveness !== null) {
+      agentPayload.responsiveness = Number(tenant.voice_responsiveness);
+    } else {
+      agentPayload.responsiveness = 1.0;
+    }
+    agentPayload.interruption_sensitivity = 0.8;
 
     try {
       await retellClient.patch(`/update-agent/${agentId}`, agentPayload);

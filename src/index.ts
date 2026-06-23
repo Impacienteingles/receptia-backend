@@ -82,7 +82,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     vacation_mode,
     vacation_message,
     voice_speed,
-    voice_temperature
+    voice_temperature,
+    voice_responsiveness
   } = req.body;
 
   if (!business_name || !email) {
@@ -112,6 +113,7 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (vacation_message !== undefined) tenantData.vacation_message = vacation_message;
     if (voice_speed !== undefined) tenantData.voice_speed = Number(voice_speed);
     if (voice_temperature !== undefined) tenantData.voice_temperature = Number(voice_temperature);
+    if (voice_responsiveness !== undefined) tenantData.voice_responsiveness = Number(voice_responsiveness);
 
     let savedTenant: any;
 
@@ -1897,9 +1899,9 @@ app.get('/api/retell-agents', async (req, res): Promise<void> => {
 
 // POST: Actualizar temporalmente la voz de un agente de Retell AI en caliente para pruebas
 app.post('/api/admin/update-agent-voice-temp', async (req, res): Promise<void> => {
-  const { agent_id, voice_id } = req.body;
-  if (!agent_id || !voice_id) {
-    res.status(400).json({ error: 'Faltan campos requeridos (agent_id, voice_id).' });
+  const { agent_id, voice_id, responsiveness } = req.body;
+  if (!agent_id) {
+    res.status(400).json({ error: 'Faltan campos requeridos (agent_id).' });
     return;
   }
 
@@ -1910,11 +1912,20 @@ app.post('/api/admin/update-agent-voice-temp', async (req, res): Promise<void> =
       return;
     }
 
-    console.log(`[Hot Voice Update] Actualizando agente ${agent_id} a voz ${voice_id} en Retell AI...`);
+    console.log(`[Hot Voice Update] Actualizando agente ${agent_id} (Voz: ${voice_id || 'no_change'}, Responsiveness: ${responsiveness !== undefined ? responsiveness : 'default'}) en Retell AI...`);
     
+    const patchPayload: any = {};
+    if (voice_id) patchPayload.voice_id = voice_id;
+    if (responsiveness !== undefined) {
+      patchPayload.responsiveness = Number(responsiveness);
+    } else {
+      patchPayload.responsiveness = 1.0;
+    }
+    patchPayload.interruption_sensitivity = 0.8;
+
     const response = await axios.patch(
       `https://api.retellai.com/update-agent/${agent_id}`,
-      { voice_id },
+      patchPayload,
       {
         headers: {
           Authorization: `Bearer ${apiKey}`,
