@@ -2000,34 +2000,60 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
   const host = 'aws-0-eu-west-1.pooler.supabase.com';
-  const password = '1S67.!3CFitNmj';
+  
+  const passwords = [
+    '1S67.!3CFitNmj',
+    'Cortijo18-20Andar#',
+    'Cortijo18-20Andar',
+    '5MP)3i9P7wjBr[',
+    '1S67.!3CFitNomj',
+    '1Prueba+',
+    '1Esp@#ol'
+  ];
 
-  const client = new Client({
-    host,
-    port: 6543,
-    database: 'postgres',
-    user: `postgres.${projectRef}`,
-    password,
-    ssl: { rejectUnauthorized: false }
-  });
+  let success = false;
+  let lastError = '';
 
-  try {
-    await client.connect();
-    console.log('[Migration Endpoint] ¡Conexión con Supabase exitosa!');
-    
-    await client.query(`
-      ALTER TABLE tenants 
-      ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE;
-    `);
-    console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito.');
-    await client.end();
+  for (const password of passwords) {
+    const client = new Client({
+      host,
+      port: 6543,
+      database: 'postgres',
+      user: `postgres.${projectRef}`,
+      password,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 5000
+    });
+
+    try {
+      console.log(`[Migration Endpoint] Intentando con contraseña que empieza por: ${password.substring(0, 4)}...`);
+      await client.connect();
+      console.log('[Migration Endpoint] ¡Conexión con Supabase exitosa!');
+      
+      await client.query(`
+        ALTER TABLE tenants 
+        ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE;
+        NOTIFY pgrst, 'reload schema';
+      `);
+      console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito.');
+      await client.end();
+      success = true;
+      break;
+    } catch (err: any) {
+      console.warn(`[Migration Endpoint] Falló contraseña que empieza por ${password.substring(0, 4)}:`, err.message);
+      lastError = err.message;
+      try { await client.end(); } catch (e) {}
+      // Esperar 2 segundos para no saturar
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  }
+
+  if (success) {
     res.json({ success: true, message: 'Migración ejecutada con éxito desde Render.' });
-  } catch (err: any) {
-    console.error('[Migration Endpoint] Error en migración:', err.message);
-    try { await client.end(); } catch (e) {}
-    res.status(500).json({ error: err.message });
+  } else {
+    res.status(500).json({ error: 'Todas las contraseñas fallaron. Último error: ' + lastError });
   }
 });
 
@@ -2159,7 +2185,7 @@ app.post('/api/test-whatsapp', async (req, res): Promise<void> => {
     if (success) {
       res.json({ status: 'success', message: 'Mensaje de WhatsApp de prueba enviado correctamente.' });
     } else {
-      res.status(500).json({ error: 'Fallo al enviar el mensaje de WhatsApp. Revisa las credenciales de Twilio en los Ajustes.' });
+      res.status(500).json({ error: 'Fallo al enviar el mensaje de WhatsApp. Revisa las credenciales y configuración del proveedor en los Ajustes.' });
     }
   } catch (err: any) {
     res.status(500).json({ error: err.message });

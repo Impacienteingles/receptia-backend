@@ -1151,7 +1151,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.14</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.15</span>
         </div>
       </header>
 
@@ -2245,21 +2245,45 @@
                     </div>
                   </div>
                   <div class="form-group">
-                    <label for="setting-twilio-sid">Twilio Account SID:</label>
-                    <input type="text" id="setting-twilio-sid" placeholder="AC..." class="setting-input">
+                    <label for="setting-whatsapp-provider">Proveedor de WhatsApp:</label>
+                    <select id="setting-whatsapp-provider" class="setting-input" onchange="toggleWhatsAppSettingsFields()" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; width: 100%;">
+                      <option value="twilio">Twilio (Requiere plantillas / opt-in sandbox)</option>
+                      <option value="wassenger">Wassenger (Conexión QR directa sin restricciones)</option>
+                    </select>
                   </div>
-                  <div class="form-group">
-                    <label for="setting-twilio-token">Twilio Auth Token:</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-twilio-token" placeholder="Tu token de Twilio" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-twilio-token')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
+                  
+                  <!-- Contenedor campos Twilio -->
+                  <div id="twilio-fields-container" style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+                    <div class="form-group">
+                      <label for="setting-twilio-sid">Twilio Account SID:</label>
+                      <input type="text" id="setting-twilio-sid" placeholder="AC..." class="setting-input">
+                    </div>
+                    <div class="form-group">
+                      <label for="setting-twilio-token">Twilio Auth Token:</label>
+                      <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                        <input type="password" id="setting-twilio-token" placeholder="Tu token de Twilio" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                        <button type="button" onclick="togglePasswordVisibility('setting-twilio-token')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                          <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="setting-twilio-whatsapp">Número de WhatsApp Twilio:</label>
+                      <input type="text" id="setting-twilio-whatsapp" placeholder="whatsapp:+14155238886" class="setting-input">
                     </div>
                   </div>
-                  <div class="form-group">
-                    <label for="setting-twilio-whatsapp">Número de WhatsApp Twilio:</label>
-                    <input type="text" id="setting-twilio-whatsapp" placeholder="whatsapp:+14155238886" class="setting-input">
+
+                  <!-- Contenedor campos Wassenger -->
+                  <div id="wassenger-fields-container" style="display: none; flex-direction: column; gap: 1rem; width: 100%;">
+                    <div class="form-group">
+                      <label for="setting-wassenger-token">Wassenger API Token:</label>
+                      <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                        <input type="password" id="setting-wassenger-token" placeholder="Introduce tu Token de Wassenger" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                        <button type="button" onclick="togglePasswordVisibility('setting-wassenger-token')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                          <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -4271,6 +4295,8 @@
           'TWILIO_ACCOUNT_SID': 'setting-twilio-sid',
           'TWILIO_AUTH_TOKEN': 'setting-twilio-token',
           'TWILIO_WHATSAPP_NUMBER': 'setting-twilio-whatsapp',
+          'WHATSAPP_PROVIDER': 'setting-whatsapp-provider',
+          'WASSENGER_API_TOKEN': 'setting-wassenger-token',
           'STRIPE_SECRET_KEY': 'setting-stripe-secret',
           'STRIPE_PUBLISHABLE_KEY': 'setting-stripe-publishable',
           'STRIPE_PRICE_ESTANDAR_MENSUAL': 'setting-stripe-price-estandar-mensual',
@@ -4306,6 +4332,7 @@
             }
           });
         }
+        toggleWhatsAppSettingsFields();
       } catch (err) {
         console.error('Error al obtener ajustes:', err);
         showCustomAlert('Error al cargar los ajustes: ' + err.message, 'Error', 'error');
@@ -4326,6 +4353,8 @@
         'TWILIO_ACCOUNT_SID': 'setting-twilio-sid',
         'TWILIO_AUTH_TOKEN': 'setting-twilio-token',
         'TWILIO_WHATSAPP_NUMBER': 'setting-twilio-whatsapp',
+        'WHATSAPP_PROVIDER': 'setting-whatsapp-provider',
+        'WASSENGER_API_TOKEN': 'setting-wassenger-token',
         'STRIPE_SECRET_KEY': 'setting-stripe-secret',
         'STRIPE_PUBLISHABLE_KEY': 'setting-stripe-publishable',
         'STRIPE_PRICE_ESTANDAR_MENSUAL': 'setting-stripe-price-estandar-mensual',
@@ -4383,6 +4412,21 @@
         return;
       }
       window.startWebRTCCall(agentId, businessName || 'Borrador');
+    }
+
+    function toggleWhatsAppSettingsFields() {
+      const provider = document.getElementById('setting-whatsapp-provider').value;
+      const twilioContainer = document.getElementById('twilio-fields-container');
+      const wassengerContainer = document.getElementById('wassenger-fields-container');
+      if (!twilioContainer || !wassengerContainer) return;
+      
+      if (provider === 'wassenger') {
+        twilioContainer.style.display = 'none';
+        wassengerContainer.style.display = 'flex';
+      } else {
+        twilioContainer.style.display = 'flex';
+        wassengerContainer.style.display = 'none';
+      }
     }
 
     function togglePasswordVisibility(inputId) {
