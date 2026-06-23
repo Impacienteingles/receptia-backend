@@ -1513,6 +1513,10 @@
           <i data-lucide="credit-card"></i>
           <span>Mi Suscripción</span>
         </button>
+        <button class="nav-item" id="btn-tab-settings" onclick="switchTab('settings')">
+          <i data-lucide="settings"></i>
+          <span>Ajustes</span>
+        </button>
         <button type="button" class="nav-item" id="btn-download-guide" onclick="downloadClientGuidePDF()" style="color: var(--primary-light); background: rgba(139, 92, 246, 0.05); margin-top: 0.5rem; border: 1px dashed rgba(139, 92, 246, 0.2); cursor: pointer;">
           <i data-lucide="book-open"></i>
           <span>Guía de Usuario (PDF)</span>
@@ -1536,7 +1540,7 @@
           <div class="status-badge" id="client-business-badge">
             <span>Cargando Negocio...</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.7.18</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.7.19</span>
         </div>
       </header>
 
@@ -1650,23 +1654,7 @@
                 </div>
               </div>
 
-              <!-- Conexión Google Calendar -->
-              <div id="calendar-status" class="status-box disconnected" style="display: none; margin-top: 1rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                  <i data-lucide="calendar"></i>
-                  <span>Google Calendar: Desconectado</span>
-                </div>
-                <button class="btn btn-outline" id="btn-auth-link" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
-                  Conectar
-                </button>
-              </div>
-              
-              <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-                <button class="btn btn-outline" onclick="openChangePinModal()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.5rem 0.8rem; font-size: 0.85rem; height: 38px;">
-                  <i data-lucide="key-round" style="width: 16px; height: 16px;"></i>
-                  Cambiar PIN del Panel
-                </button>
-              </div>
+
             </div>
 
             <!-- Card: Guía de Desvío Telefónico -->
@@ -1955,6 +1943,56 @@
             <button id="btn-stripe-portal" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem; display: none; border-color: #8b5cf6; color: #a78bfa;" onclick="openStripePortal()">
               <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> Gestionar Facturación (Stripe)
             </button>
+          </div>
+        </div>
+
+        <!-- VISTA: AJUSTES -->
+        <div id="client-view-settings" class="client-view">
+          <div class="card" style="flex: 1;">
+            <h2 class="card-title" style="margin-bottom: 1.5rem;">
+              <i data-lucide="settings"></i>
+              Ajustes del Panel
+            </h2>
+            
+            <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
+              
+              <!-- Sección Google Calendar -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="calendar" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Sincronización con Google Calendar
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Vincula el agente de voz de inteligencia artificial con tu cuenta de Google Calendar para que pueda leer los huecos libres y registrar las citas al instante en tu agenda personal.
+                </p>
+                
+                <div id="calendar-status" class="status-box disconnected" style="display: none; justify-content: space-between; align-items: center; padding: 1rem; border-radius: 8px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color);">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+                    <span style="font-size: 0.9rem; font-weight: 500;">Google Calendar: Desconectado</span>
+                  </div>
+                  <button class="btn btn-outline" id="btn-auth-link" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px;">
+                    Conectar
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sección Cambio de PIN / Contraseña -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="key-round" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Seguridad y Acceso
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Modifica el código PIN de 4 dígitos que protege el acceso a la configuración del panel de administración del cliente.
+                </p>
+                <button class="btn btn-outline" onclick="openChangePinModal()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px;">
+                  <i data-lucide="key-round" style="width: 16px; height: 16px;"></i>
+                  Cambiar PIN del Panel
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
 
