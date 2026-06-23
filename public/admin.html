@@ -1524,6 +1524,14 @@
                 <textarea id="knowledge-base-content" rows="4" placeholder="ej. ¿Ofrecen parking gratuito? Sí, en el parking de la plaza de Gracia. ¿Hacen implantes? Sí, el Dr. Romero realiza implantes los martes por la mañana..." oninput="saveDraftToLocalStorage()"></textarea>
               </div>
 
+              <!-- Aceptación de Términos y Privacidad (RGPD) -->
+              <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 0.5rem; background: rgba(239, 68, 68, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(239, 68, 68, 0.2); margin-top: 1rem; box-sizing: border-box;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; color: #fff; margin: 0;">
+                  <input type="checkbox" id="accept-terms-privacy" required style="width: 16px; height: 16px; accent-color: var(--primary);">
+                  Acepto los <a href="/aviso-legal" target="_blank" style="color: var(--primary); text-decoration: underline;">Términos de Servicio</a> y la <a href="/politica-de-privacidad" target="_blank" style="color: var(--primary); text-decoration: underline;">Política de Privacidad</a> (RGPD)
+                </label>
+              </div>
+
               <!-- ACCIONES -->
               <div class="form-actions">
                 <button type="submit" class="btn" id="btn-generate" style="flex: 1;">
@@ -5417,6 +5425,13 @@
 
     adminForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // Validar aceptación de términos y privacidad (RGPD)
+      const acceptCheckbox = document.getElementById('accept-terms-privacy');
+      if (acceptCheckbox && !acceptCheckbox.checked) {
+        showCustomAlert('Debes aceptar los Términos de Servicio y la Política de Privacidad (RGPD) para continuar.', 'Aceptación Requerida', 'warning');
+        return;
+      }
 
       // Recopilar horarios
       const working_hours = {};

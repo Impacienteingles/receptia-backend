@@ -1846,6 +1846,62 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
 // Registrar rutas de webhook
 app.use('/api/webhook', webhookRouter);
 
+// Tarea en segundo plano para liberar citas con fianza no pagada después de 10 minutos (anti-no-show)
+setInterval(async () => {
+  try {
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    
+    // Obtener citas pendientes de depósito creadas hace más de 10 minutos
+    const { data: expiredApps, error } = await supabase
+      .from('appointments')
+      .select('*, tenants(*)')
+      .eq('status', 'pending_deposit')
+      .lt('created_at', tenMinutesAgo);
+
+    if (error) {
+      console.error('[Deposit Cleaner] Error al consultar citas expiradas:', error.message);
+      return;
+    }
+
+    if (expiredApps && expiredApps.length > 0) {
+      console.log(`[Deposit Cleaner] Se encontraron ${expiredApps.length} citas pendientes de fianza expiradas. Liberando...`);
+      for (const app of expiredApps) {
+        console.log(`[Deposit Cleaner] Procesando cita expirada ID: ${app.id} (${app.patient_name})`);
+        
+        // 1. Eliminar de Google Calendar si tiene evento y el tenant tiene credenciales
+        const tenant = app.tenants;
+        if (app.google_event_id && tenant && tenant.google_refresh_token) {
+          try {
+            console.log(`[Deposit Cleaner] Eliminando evento de Google Calendar: ${app.google_event_id}...`);
+            await deleteAppointment(
+              tenant.google_refresh_token,
+              app.google_event_id,
+              app.google_calendar_id || 'primary'
+            );
+            console.log('[Deposit Cleaner] Evento de Google Calendar eliminado con éxito.');
+          } catch (calErr: any) {
+            console.error(`[Deposit Cleaner] Error al borrar evento de Google Calendar para cita ${app.id}:`, calErr.message);
+          }
+        }
+
+        // 2. Eliminar la cita de la base de datos de Supabase para liberar el hueco
+        const { error: deleteErr } = await supabase
+          .from('appointments')
+          .delete()
+          .eq('id', app.id);
+
+        if (deleteErr) {
+          console.error(`[Deposit Cleaner] Error al eliminar cita ${app.id} de Supabase:`, deleteErr.message);
+        } else {
+          console.log(`[Deposit Cleaner] Cita ${app.id} eliminada y liberada de Supabase correctamente.`);
+        }
+      }
+    }
+  } catch (err: any) {
+    console.error('[Deposit Cleaner] Error crítico en la tarea de limpieza:', err.message);
+  }
+}, 60 * 1000); // Ejecutar cada 1 minuto
+
 // Arrancar el servidor
 app.listen(PORT, () => {
   console.log(`\n========================================`);

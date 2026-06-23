@@ -96,6 +96,16 @@ No intentes dar citas ni responder preguntas sobre precios o servicios. Limítat
   const customInst = tenant.custom_instructions || 'Tratar siempre al paciente de usted, con empatía y profesionalidad.';
   const agentName = resolveAgentName(tenant.voice_id);
 
+  const kbUrl = tenant.knowledge_base_url || '';
+  const kbContent = tenant.knowledge_base_content || '';
+  let kbSection = '';
+  if (kbContent || kbUrl) {
+    kbSection = `
+# BASE DE CONOCIMIENTOS (PREGUNTAS FRECUENTES)
+Utilice la siguiente información adicional sobre el negocio para responder de forma precisa a las dudas de los clientes (tales como localización, accesibilidad, políticas de cancelación, etc.):
+${kbContent ? `- **Información del Negocio:** ${kbContent}\n` : ''}${kbUrl ? `- **Página Web o Enlace de Interés:** ${kbUrl}\n` : ''}`;
+  }
+
   return `
 # CONTEXTO TEMPORAL
 La fecha actual de hoy es: ${today}. Úsala como referencia para calcular fechas relativas como "mañana", "el próximo martes", "la semana que viene", etc.
@@ -108,6 +118,7 @@ Eres ${agentName}, la recepcionista de la empresa "${businessName}". Tu tono es 
 - **Actividad y Descripción:** ${description}
 - **Servicios / Especialidades que se ofrecen:** ${specialtiesList}
 - **Tarifas y Precios:** ${pricing}
+${kbSection}
 
 # OBJETIVOS PRINCIPALES
 1. Identificar el motivo de la llamada (nueva cita, reprogramar/modificar cita existente o cancelar cita existente).

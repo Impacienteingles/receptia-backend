@@ -1540,7 +1540,7 @@
           <div class="status-badge" id="client-business-badge">
             <span>Cargando Negocio...</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.7.20</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.7.21</span>
         </div>
       </header>
 
@@ -2129,6 +2129,14 @@
       <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
         <label for="client-signature-name-input" style="font-size: 0.85rem; color: #fff; font-weight: 500;">Nombre completo del firmante (Representante Legal):</label>
         <input type="text" id="client-signature-name-input" placeholder="ej. María López García" style="padding: 0.75rem; border-radius: 6px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; font-size: 0.95rem;">
+      </div>
+      
+      <!-- Aceptación de Términos y Privacidad (RGPD) -->
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; padding: 0.75rem; border-radius: 6px; background: rgba(239, 68, 68, 0.03); border: 1px dashed rgba(239, 68, 68, 0.2); box-sizing: border-box;">
+        <input type="checkbox" id="client-signature-accept-terms-privacy" style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+        <label for="client-signature-accept-terms-privacy" style="font-size: 0.8rem; color: #fff; cursor: pointer; margin: 0;">
+          Acepto los <a href="/aviso-legal" target="_blank" style="color: var(--primary); text-decoration: underline;">Términos de Servicio</a> y la <a href="/politica-de-privacidad" target="_blank" style="color: var(--primary); text-decoration: underline;">Política de Privacidad</a> (RGPD)
+        </label>
       </div>
       
       <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem;">
@@ -3618,6 +3626,8 @@
       view.style.whiteSpace = 'normal';
       view.innerHTML = renderMarkdownToHtml(currentTenant.signed_contract_content);
       document.getElementById('client-signature-name-input').value = '';
+      const acceptCheckbox = document.getElementById('client-signature-accept-terms-privacy');
+      if (acceptCheckbox) acceptCheckbox.checked = false;
       document.getElementById('contract-signature-modal').style.display = 'flex';
       lucide.createIcons();
     }
@@ -3749,6 +3759,12 @@
       const signatureName = document.getElementById('client-signature-name-input').value.trim();
       if (!signatureName) {
         showToast('Debes ingresar tu nombre completo para firmar.', 'error');
+        return;
+      }
+
+      const acceptCheckbox = document.getElementById('client-signature-accept-terms-privacy');
+      if (acceptCheckbox && !acceptCheckbox.checked) {
+        showToast('Debes aceptar los Términos de Servicio y la Política de Privacidad.', 'error');
         return;
       }
 
