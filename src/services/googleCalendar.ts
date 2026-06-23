@@ -1,0 +1,385 @@
+import { google } from 'googleapis';
+import fs from 'fs';
+import path from 'path';
+import { getSettingVal } from './supabase';
+
+
+// Rutas a las credenciales
+const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
+
+// Alcances requeridos para Google Calendar
+const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+
+/**
+ * Obtiene una instancia configurada de OAuth2Client.
+ */
+export async function getOAuth2Client() {
+  const clientId = await getSettingVal('GOOGLE_CLIENT_ID');
+  const clientSecret = await getSettingVal('GOOGLE_CLIENT_SECRET');
+  const redirectUri = await getSettingVal('GOOGLE_REDIRECT_URI') || 'http://localhost:3000/oauth2callback';
+
+  if (clientId && clientSecret) {
+    return new google.auth.OAuth2(
+      clientId,
+      clientSecret,
+      redirectUri
+    );
+  }
+
+  if (!fs.existsSync(CREDENTIALS_PATH)) {
+    throw new Error(
+      `El archivo credentials.json no existe en la raíz del proyecto y tampoco se configuraron las variables de entorno GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET.`
+    );
+  }
+
+  const credentialsContent = fs.readFileSync(CREDENTIALS_PATH, 'utf-8');
+  const credentials = JSON.parse(credentialsContent);
+  
+  // Soporta tanto el formato de credenciales "web" como "installed" (escritorio) de Google
+  const creds = credentials.web || credentials.installed;
+  if (!creds) {
+    throw new Error('El archivo credentials.json no tiene una estructura válida ("web" o "installed").');
+  }
+
+  const { client_secret, client_id, redirect_uris } = creds;
+  
+  return new google.auth.OAuth2(
+    client_id,
+    client_secret,
+    redirect_uris[0] || 'http://localhost:3000/oauth2callback'
+  );
+}
+
+/**
+ * Inicializa el cliente de Google Calendar para un inquilino específico a partir de su refresh_token.
+ */
+export async function getCalendarClient(refreshToken: string) {
+  const oAuth2Client = await getOAuth2Client();
+  oAuth2Client.setCredentials({
+    refresh_token: refreshToken
+  });
+  return google.calendar({ version: 'v3', auth: oAuth2Client });
+}
+
+/**
+ * Genera la URL de autorización de Google.
+ * Recibe un state opcional para asociar el callback al tenant correspondiente.
+ */
+export async function getAuthUrl(state?: string) {
+  const oAuth2Client = await getOAuth2Client();
+  return oAuth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES,
+    prompt: 'consent',
+    state: state
+  });
+}
+
+/**
+ * Intercambia el código de autorización por un token de Google.
+ */
+export async function getTokensFromCode(code: string) {
+  const oAuth2Client = await getOAuth2Client();
+  const { tokens } = await oAuth2Client.getToken(code);
+  return tokens;
+}
+
+/**
+ * Define los slots laborables disponibles en la clínica para una fecha dada.
+ * Horario: 09:00 a 14:00 y 16:00 a 20:00 (Español)
+ * Duración: 30 minutos por slot.
+ */
+function getWorkingSlots(dateStr: string): Date[] {
+  const slots: Date[] = [];
+  
+  // Turno mañana: 09:00 a 14:00 (último slot empieza a las 13:30)
+  for (let hour = 9; hour < 14; hour++) {
+    slots.push(new Date(`${dateStr}T${String(hour).padStart(2, '0')}:00:00`));
+    slots.push(new Date(`${dateStr}T${String(hour).padStart(2, '0')}:30:00`));
+  }
+  
+  // Turno tarde: 16:00 a 20:00 (último slot empieza a las 19:30)
+  for (let hour = 16; hour < 20; hour++) {
+    slots.push(new Date(`${dateStr}T${String(hour).padStart(2, '0')}:00:00`));
+    slots.push(new Date(`${dateStr}T${String(hour).padStart(2, '0')}:30:00`));
+  }
+
+  return slots;
+}
+
+/**
+ * Genera slots laborables dinámicamente según el horario semanal guardado en formato JSONB.
+ */
+function getWorkingSlotsDynamic(dateStr: string, workingHours: any): Date[] {
+  const slots: Date[] = [];
+  
+  // Obtener el día de la semana de la fecha dada (0 = Domingo, 1 = Lunes, etc.)
+  const dateObj = new Date(`${dateStr}T12:00:00`); // Evita desajustes de zona horaria
+  const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const dayName = daysOfWeek[dateObj.getDay()];
+
+  // Obtener intervalos del día
+  const dayShifts = workingHours?.[dayName] || [];
+  if (dayShifts.length === 0) {
+    return []; // Cerrado
+  }
+
+  for (const shift of dayShifts) {
+    const { start, end } = shift; // ej: "09:00", "14:00"
+    if (!start || !end) continue;
+
+    const [startHour, startMin] = start.split(':').map(Number);
+    const [endHour, endMin] = end.split(':').map(Number);
+
+    let current = new Date(`${dateStr}T${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}:00`);
+    const limit = new Date(`${dateStr}T${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}:00`);
+
+    // Crear slots de 30 minutos
+    while (current.getTime() + 30 * 60 * 1000 <= limit.getTime()) {
+      slots.push(new Date(current.getTime()));
+      current.setTime(current.getTime() + 30 * 60 * 1000);
+    }
+  }
+
+  return slots;
+}
+
+/**
+ * Obtiene los huecos libres para una fecha específica.
+ */
+export async function listFreeSlots(refreshToken: string, dateStr: string, workingHours?: any, calendarId?: string) {
+  const calendar = await getCalendarClient(refreshToken);
+  const targetCalendarId = calendarId || 'primary';
+  
+  // Definir rango del día completo
+  const timeMin = new Date(`${dateStr}T00:00:00Z`).toISOString();
+  const timeMax = new Date(`${dateStr}T23:59:59Z`).toISOString();
+
+  // Obtener los eventos del día
+  const response = await calendar.events.list({
+    calendarId: targetCalendarId,
+    timeMin,
+    timeMax,
+    singleEvents: true,
+    orderBy: 'startTime',
+  });
+
+  const events = response.data.items || [];
+  const workingSlots = workingHours 
+    ? getWorkingSlotsDynamic(dateStr, workingHours)
+    : getWorkingSlots(dateStr);
+  const freeSlots: string[] = [];
+
+  // Filtrar los slots de trabajo que no colisionan con eventos del calendario
+  for (const slot of workingSlots) {
+    const slotStart = slot.getTime();
+    const slotEnd = slotStart + 30 * 60 * 1000; // 30 minutos
+
+    const isBusy = events.some((event: any) => {
+      if (!event.start?.dateTime || !event.end?.dateTime) return false;
+      const eventStart = new Date(event.start.dateTime).getTime();
+      const eventEnd = new Date(event.end.dateTime).getTime();
+
+      // Comprobar solapamiento
+      return (slotStart < eventEnd && slotEnd > eventStart);
+    });
+
+    if (!isBusy) {
+      // Formatear hora legible en español (ej: "09:30", "16:00")
+      const timeString = slot.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      freeSlots.push(timeString);
+    }
+  }
+
+  return freeSlots;
+}
+
+/**
+ * Reserva una cita médica en el calendario.
+ */
+export async function bookAppointment(
+  refreshToken: string,
+  dateStr: string,
+  timeStr: string,
+  name: string,
+  email: string,
+  phone: string,
+  specialty: string,
+  calendarId?: string,
+  agentName?: string,
+  businessName?: string,
+  businessSector?: string
+) {
+  const calendar = await getCalendarClient(refreshToken);
+  const targetCalendarId = calendarId || 'primary';
+  
+  // Calcular hora de inicio y fin tratando la entrada como UTC para evitar desajustes de zona horaria local del servidor
+  const startParsed = new Date(`${dateStr}T${timeStr}:00Z`);
+  const endParsed = new Date(startParsed.getTime() + 30 * 60 * 1000); // 30 minutos
+
+  const startLocalStr = `${dateStr}T${timeStr}:00`;
+  const endLocalStr = `${endParsed.getUTCFullYear()}-${String(endParsed.getUTCMonth() + 1).padStart(2, '0')}-${String(endParsed.getUTCDate()).padStart(2, '0')}T${String(endParsed.getUTCHours()).padStart(2, '0')}:${String(endParsed.getUTCMinutes()).padStart(2, '0')}:00`;
+
+  // Determinar etiquetas según el sector del negocio
+  const nameLower = (businessName || '').toLowerCase();
+  const isClinic = businessSector === 'clinica' || 
+                   nameLower.includes('médica') || 
+                   nameLower.includes('medica') || 
+                   nameLower.includes('sanasalud') || 
+                   nameLower.includes('salud') || 
+                   nameLower.includes('clinic') || 
+                   nameLower.includes('doctor') || 
+                   nameLower.includes('dent');
+                   
+  const isPeluqueria = businessSector === 'peluqueria' || 
+                       nameLower.includes('peluquería') || 
+                       nameLower.includes('peluqueria') || 
+                       nameLower.includes('barber') || 
+                       nameLower.includes('corte');
+
+  let labelSummary = `Reserva Cita - ${specialty}`;
+  if (isClinic) {
+    labelSummary = `Cita Médica - ${specialty}`;
+  } else if (isPeluqueria) {
+    labelSummary = `Cita Peluquería - ${specialty}`;
+  }
+
+  const labelPerson = isClinic ? 'Paciente' : 'Cliente';
+  const labelSpecialty = isClinic ? 'Especialidad' : 'Servicio';
+  const description = `${labelPerson}: ${name}\nTeléfono: ${phone}\nEmail: ${email || 'No proporcionado'}\n${labelSpecialty}: ${specialty}\nReserva gestionada por ${businessName || 'el asistente virtual'}.`;
+
+  const event: any = {
+    summary: labelSummary,
+    description: description,
+    start: {
+      dateTime: startLocalStr,
+      timeZone: 'Europe/Madrid',
+    },
+    end: {
+      dateTime: endLocalStr,
+      timeZone: 'Europe/Madrid',
+    },
+    reminders: {
+      useDefault: false,
+      overrides: [
+        { method: 'email', minutes: 24 * 60 },
+        { method: 'popup', minutes: 30 },
+      ],
+    },
+  };
+
+  if (email && email.trim() !== '' && email.includes('@')) {
+    event.attendees = [{ email: email }];
+  }
+
+  const response = await calendar.events.insert({
+    calendarId: targetCalendarId,
+    requestBody: event,
+    sendUpdates: 'all', // Envía invitación por email al paciente
+  });
+
+  return response.data;
+}
+
+/**
+ * Actualiza una cita existente en el calendario de Google.
+ */
+export async function updateAppointment(
+  refreshToken: string,
+  eventId: string,
+  dateStr: string,
+  timeStr: string,
+  name: string,
+  email: string,
+  phone: string,
+  specialty: string,
+  calendarId?: string,
+  businessName?: string,
+  businessSector?: string
+) {
+  const calendar = await getCalendarClient(refreshToken);
+  const targetCalendarId = calendarId || 'primary';
+  
+  // Calcular hora de inicio y fin tratando la entrada como UTC para evitar desajustes de zona horaria local del servidor
+  const startParsed = new Date(`${dateStr}T${timeStr}:00Z`);
+  const endParsed = new Date(startParsed.getTime() + 30 * 60 * 1000); // 30 minutos
+
+  const startLocalStr = `${dateStr}T${timeStr}:00`;
+  const endLocalStr = `${endParsed.getUTCFullYear()}-${String(endParsed.getUTCMonth() + 1).padStart(2, '0')}-${String(endParsed.getUTCDate()).padStart(2, '0')}T${String(endParsed.getUTCHours()).padStart(2, '0')}:${String(endParsed.getUTCMinutes()).padStart(2, '0')}:00`;
+
+  // Determinar etiquetas según el sector del negocio
+  const nameLower = (businessName || '').toLowerCase();
+  const isClinic = businessSector === 'clinica' || 
+                   nameLower.includes('médica') || 
+                   nameLower.includes('medica') || 
+                   nameLower.includes('sanasalud') || 
+                   nameLower.includes('salud') || 
+                   nameLower.includes('clinic') || 
+                   nameLower.includes('doctor') || 
+                   nameLower.includes('dent');
+                   
+  const isPeluqueria = businessSector === 'peluqueria' || 
+                       nameLower.includes('peluquería') || 
+                       nameLower.includes('peluqueria') || 
+                       nameLower.includes('barber') || 
+                       nameLower.includes('corte');
+
+  let labelSummary = `Reserva Cita - ${specialty}`;
+  if (isClinic) {
+    labelSummary = `Cita Médica - ${specialty}`;
+  } else if (isPeluqueria) {
+    labelSummary = `Cita Peluquería - ${specialty}`;
+  }
+
+  const labelPerson = isClinic ? 'Paciente' : 'Cliente';
+  const labelSpecialty = isClinic ? 'Especialidad' : 'Servicio';
+  const description = `${labelPerson}: ${name}\nTeléfono: ${phone}\nEmail: ${email || 'No proporcionado'}\n${labelSpecialty}: ${specialty}\nReserva gestionada por ${businessName || 'el asistente virtual'}.`;
+
+  const event: any = {
+    summary: labelSummary,
+    description: description,
+    start: {
+      dateTime: startLocalStr,
+      timeZone: 'Europe/Madrid',
+    },
+    end: {
+      dateTime: endLocalStr,
+      timeZone: 'Europe/Madrid',
+    },
+  };
+
+  if (email && email.trim() !== '' && email.includes('@')) {
+    event.attendees = [{ email: email }];
+  }
+
+  const response = await calendar.events.patch({
+    calendarId: targetCalendarId,
+    eventId: eventId,
+    requestBody: event,
+    sendUpdates: 'all', // Envía correo de actualización al paciente
+  });
+
+  return response.data;
+}
+
+/**
+ * Elimina una cita médica del calendario de Google.
+ */
+export async function deleteAppointment(
+  refreshToken: string,
+  eventId: string,
+  calendarId?: string
+) {
+  const calendar = await getCalendarClient(refreshToken);
+  const targetCalendarId = calendarId || 'primary';
+  
+  await calendar.events.delete({
+    calendarId: targetCalendarId,
+    eventId: eventId,
+    sendUpdates: 'all', // Envía correo de cancelación al paciente
+  });
+}

@@ -1,0 +1,39 @@
+{
+  "name": "receptia",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "setup-agent": "ts-node scripts/setup-agent.ts",
+    "bootstrap": "ts-node scripts/bootstrap.ts",
+    "deploy": "ts-node scripts/deploy.ts",
+    "build-exe": "ts-node scripts/build-exe.ts",
+    "sync-all-agents": "ts-node scripts/sync-all-agents.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.3",
+    "axios": "^1.18.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "googleapis": "^173.0.0",
+    "pg": "^8.22.0",
+    "stripe": "^22.2.3",
+    "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2"
+  }
+}
