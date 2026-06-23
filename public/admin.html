@@ -1151,7 +1151,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.3</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.4</span>
         </div>
       </header>
 
@@ -1213,7 +1213,12 @@
 
               <!-- Catálogo de Voces Premium -->
               <div class="form-group" style="grid-column: span 2;">
-                <label style="margin-bottom: 0.5rem; display: block;">Catálogo de Voces Premium:</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <label style="margin: 0; display: block;">Catálogo de Voces Premium:</label>
+                  <button type="button" class="btn btn-secondary" onclick="openVoiceCatalogManager()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; height: 30px; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">
+                    <i data-lucide="settings" style="width: 14px; height: 14px;"></i> Gestionar Catálogo
+                  </button>
+                </div>
                 
                 <!-- Grid de selección de voces -->
                 <div id="voice-catalog-grid">
@@ -6411,85 +6416,22 @@
       return arr;
     }
 
-    // =====================================================================
-    // CATÁLOGO DE VOCES PREMIUM CON PREESCUCHA
-    // =====================================================================
-    const PREMIUM_VOICES = [
-      {
-        id: 'cartesia-Sofia',
-        name: 'Sofía',
-        lang: 'es-LA',
-        langName: 'Español Latino',
-        gender: 'Femenino',
-        provider: 'Cartesia',
-        flag: '<img src="https://flagcdn.com/w20/mx.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
-        previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/cartesia-5c5ad5e7-1020-476b-8b91-fdcbe9cc313c.mp3'
-      },
-      {
-        id: 'retell-Alejandro',
-        name: 'Alejandro',
-        lang: 'es-MX',
-        langName: 'Español Latino',
-        gender: 'Masculino',
-        provider: 'Platform',
-        flag: '<img src="https://flagcdn.com/w20/mx.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
-        previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/minimax-Alejandro.mp3'
-      },
-      {
-        id: 'cartesia-Elena',
-        name: 'Elena',
-        lang: 'es-ES',
-        langName: 'Español España',
-        gender: 'Femenino',
-        provider: 'Cartesia',
-        flag: '<img src="https://flagcdn.com/w20/es.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
-        previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/cartesia-cefcb124-080b-4655-b31f-932f3ee743de.mp3'
-      },
-      {
-        id: 'cartesia-Manuel',
-        name: 'Manuel',
-        lang: 'es-ES',
-        langName: 'Español España',
-        gender: 'Masculino',
-        provider: 'Cartesia',
-        flag: '<img src="https://flagcdn.com/w20/es.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
-        previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/cartesia-b5aa8098-49ef-475d-89b0-c9262ecf33fd.mp3'
-      },
-      {
-        id: 'custom_voice_c3e5212df87e5341a06ad66e66',
-        name: 'Gabriela',
-        lang: 'es-ES',
-        langName: 'Español España',
-        gender: 'Femenino',
-        provider: 'ElevenLabs',
-        flag: '<img src="https://flagcdn.com/w20/es.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
-        previewUrl: '/gabriela_spanish.mp3'
-      },
-      {
-        id: 'cartesia-Sarah',
-        name: 'Sarah',
-        lang: 'en-US',
-        langName: 'Inglés EE.UU.',
-        gender: 'Femenino',
-        provider: 'Cartesia',
-        flag: '<img src="https://flagcdn.com/w20/us.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
-        previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/cartesia-156fb8d2-335b-4950-9cb3-a2d33befec77.mp3'
-      },
-      {
-        id: 'minimax-Daniel',
-        name: 'Daniel',
-        lang: 'en-US',
-        langName: 'Inglés EE.UU.',
-        gender: 'Masculino',
-        provider: 'Minimax',
-        flag: '<img src="https://flagcdn.com/w20/us.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
-        previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/daniel.mp3'
-      }
-    ];
+    let PREMIUM_VOICES = [];
 
     let selectedVoiceId = 'cartesia-Sofia';
     let currentAudio = null;
     let currentPlayingButton = null;
+
+    async function loadVoicesCatalog() {
+      try {
+        const res = await fetch('/api/voices-catalog');
+        const data = await res.json();
+        PREMIUM_VOICES = data || [];
+        syncVoiceCatalogUI();
+      } catch (err) {
+        console.error('Error al cargar catálogo de voces:', err);
+      }
+    }
 
     function renderVoiceCatalog() {
       const grid = document.getElementById('voice-catalog-grid');
@@ -6580,19 +6522,11 @@
       localStorage.setItem('receptia_last_voice_id', voiceId);
 
       // Mapeo dinámico de agentes Retell AI asociados a las voces del catálogo
-      const agentMap = {
-        'cartesia-Sofia': 'agent_5978b1e3e6d4bbb6ffc928dc6a',
-        'retell-Alejandro': 'agent_5978b1e3e6d4bbb6ffc928dc6a', // Fallback común
-        'cartesia-Elena': 'agent_3bc19d57c787b2b9f1a00518da',   // Elena (SanaSalud)
-        'cartesia-Manuel': 'agent_manuel_default_retell_id',
-        'custom_voice_c3e5212df87e5341a06ad66e66': 'agent_gabriela_default_retell_id',
-        'cartesia-Sarah': 'agent_sarah_default_retell_id',
-        'minimax-Daniel': 'agent_daniel_default_retell_id'
-      };
-
+      const selectedVoice = PREMIUM_VOICES.find(v => v.id === voiceId);
       const agentInput = document.getElementById('retell-agent-id');
-      if (agentInput && agentMap[voiceId]) {
-        agentInput.value = agentMap[voiceId];
+      
+      if (agentInput && selectedVoice && selectedVoice.retell_agent_id) {
+        agentInput.value = selectedVoice.retell_agent_id;
         
         // Destello visual temporal para alertar del cambio de agente seleccionado
         agentInput.style.borderColor = 'var(--primary)';
@@ -6623,6 +6557,11 @@
         if (wasPlayingThis) return;
       }
 
+      if (!url) {
+        showCustomAlert('Esta voz no dispone de audio de preescucha configurado.', 'Preescucha no disponible', 'info');
+        return;
+      }
+
       const audio = new Audio(url);
       
       // Aplicar la velocidad seleccionada en el slider
@@ -6630,25 +6569,35 @@
       if (speedInput) {
         audio.playbackRate = parseFloat(speedInput.value) || 1.0;
       }
-      
-      currentAudio = audio;
-      window.currentAudio = audio;
-      currentPlayingButton = btn;
-      
-      btn.innerHTML = '<i data-lucide="square" style="width: 12px; height: 12px;"></i> Parar';
-      lucide.createIcons();
 
-      audio.play().catch(err => {
-        console.error('Audio playback failed:', err);
-        btn.innerHTML = '<i data-lucide="alert-circle" style="width: 12px; height: 12px;"></i> Error';
+      currentAudio = audio;
+      currentPlayingButton = btn;
+
+      btn.innerHTML = '<span class="loading-spinner" style="width: 12px; height: 12px; border-width: 2px;"></span> Cargando...';
+
+      audio.oncanplaythrough = () => {
+        btn.innerHTML = '<i data-lucide="square" style="width: 12px; height: 12px;"></i> Detener';
         lucide.createIcons();
-      });
+        audio.play().catch(err => {
+          console.error('Audio play failed:', err);
+          btn.innerHTML = '<i data-lucide="play" style="width: 12px; height: 12px;"></i> Escuchar';
+          lucide.createIcons();
+        });
+      };
 
       audio.onended = () => {
         btn.innerHTML = '<i data-lucide="play" style="width: 12px; height: 12px;"></i> Escuchar';
-        lucide.createIcons();
         currentAudio = null;
         currentPlayingButton = null;
+        lucide.createIcons();
+      };
+
+      audio.onerror = () => {
+        btn.innerHTML = '<i data-lucide="play" style="width: 12px; height: 12px;"></i> Escuchar';
+        currentAudio = null;
+        currentPlayingButton = null;
+        lucide.createIcons();
+        showCustomAlert('No se pudo reproducir el audio de preescucha.', 'Error de reproducción', 'error');
       };
     }
 
@@ -6691,11 +6640,6 @@
       renderVoiceCatalog();
     }
 
-    // Inicializar catálogo al arrancar
-    const lastVoice = localStorage.getItem('receptia_last_voice_id');
-    if (lastVoice) {
-      document.getElementById('voice-id').value = lastVoice;
-    }
     syncVoiceCatalogUI();
   </script>
 
@@ -6955,6 +6899,98 @@
 
       <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
         <button class="btn btn-secondary" onclick="closeHelpCenterModal()" style="cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 8px;">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Gestión de Catálogo de Voces Premium -->
+  <div class="modal" id="voice-catalog-manager-modal" style="display: none; z-index: 9999;">
+    <div class="modal-content" style="max-width: 850px; width: 95%; gap: 1.5rem; display: flex; flex-direction: column;">
+      <h2 style="margin: 0; font-family: 'Outfit', sans-serif; color: #fff; display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+        <span style="display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="mic" style="color: var(--primary);"></i>
+          <span>Gestión de Catálogo de Voces Premium</span>
+        </span>
+        <button onclick="closeVoiceCatalogManager()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem;">
+          <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+      </h2>
+      
+      <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; text-align: left;">
+        
+        <!-- COLUMNA IZQUIERDA: LISTA Y ELIMINACIÓN -->
+        <div style="border-right: 1px solid var(--border-color); padding-right: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+          <h3 style="color: #fff; font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit';">Voces en el Catálogo</h3>
+          <div id="catalog-manager-list" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 0.5rem;">
+            <!-- Renderizado dinámico de voces con botón de borrar -->
+          </div>
+        </div>
+        
+        <!-- COLUMNA DERECHA: AÑADIR AGENTE DE RETELL -->
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <h3 style="color: #fff; font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit';">Añadir Voz al Catálogo</h3>
+          
+          <div class="form-group">
+            <label for="catalog-retell-agent-select" style="font-size: 0.8rem; color: var(--text-muted);">Vincular con Agente de Retell AI:</label>
+            <select id="catalog-retell-agent-select" onchange="onCatalogAgentSelectChange()" style="width: 100%; padding: 0.6rem; border-radius: 6px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); color: #fff;">
+              <option value="">Cargando agentes de Retell...</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="catalog-voice-id" style="font-size: 0.8rem; color: var(--text-muted);">ID de la Voz/Agente:</label>
+              <input type="text" id="catalog-voice-id" placeholder="ej. cartesia-Elena" style="padding: 0.6rem; width: 100%;" required>
+            </div>
+            <div class="form-group">
+              <label for="catalog-voice-name" style="font-size: 0.8rem; color: var(--text-muted);">Nombre para Mostrar:</label>
+              <input type="text" id="catalog-voice-name" placeholder="ej. Elena" style="padding: 0.6rem; width: 100%;" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="catalog-voice-lang" style="font-size: 0.8rem; color: var(--text-muted);">Idioma (Columna):</label>
+              <select id="catalog-voice-lang" onchange="onCatalogLangChange()" style="width: 100%; padding: 0.6rem; color: #fff; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color);">
+                <option value="es-ES">Español España</option>
+                <option value="es-LA">Español Latino</option>
+                <option value="en-US">Inglés EE.UU.</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="catalog-voice-gender" style="font-size: 0.8rem; color: var(--text-muted);">Género:</label>
+              <select id="catalog-voice-gender" style="width: 100%; padding: 0.6rem; color: #fff; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color);">
+                <option value="Femenino">Femenino</option>
+                <option value="Masculino">Masculino</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="catalog-voice-provider" style="font-size: 0.8rem; color: var(--text-muted);">Proveedor:</label>
+              <input type="text" id="catalog-voice-provider" placeholder="ej. Cartesia" style="padding: 0.6rem; width: 100%;" required>
+            </div>
+            <div class="form-group">
+              <label for="catalog-retell-id" style="font-size: 0.8rem; color: var(--text-muted);">ID de Agente Retell:</label>
+              <input type="text" id="catalog-retell-id" placeholder="ej. agent_XXXX" style="padding: 0.6rem; width: 100%;">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="catalog-voice-preview" style="font-size: 0.8rem; color: var(--text-muted);">URL de Audio Preview (MP3):</label>
+            <input type="text" id="catalog-voice-preview" placeholder="https://..." style="padding: 0.6rem; width: 100%;">
+          </div>
+
+          <button type="button" class="btn" onclick="saveVoiceToCatalog()" style="width: 100%; padding: 0.8rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 0.5rem;">
+            <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Añadir al Catálogo
+          </button>
+        </div>
+
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+        <button class="btn btn-secondary" onclick="closeVoiceCatalogManager()" style="cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 8px;">Cerrar</button>
       </div>
     </div>
   </div>

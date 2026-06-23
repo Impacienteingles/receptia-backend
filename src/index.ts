@@ -1691,6 +1691,210 @@ app.delete('/api/tenants/:tenant_id/call-logs', async (req, res): Promise<void> 
   }
 });
 
+// --- DYNAMIC VOICES CATALOG ENDPOINTS ---
+const DEFAULT_PREMIUM_VOICES = [
+  {
+    id: 'cartesia-Sofia',
+    name: 'Sofía',
+    lang: 'es-LA',
+    langName: 'Español Latino',
+    gender: 'Femenino',
+    provider: 'Cartesia',
+    flag: '<img src="https://flagcdn.com/w20/mx.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/cartesia-5c5ad5e7-1020-476b-8b91-fdcbe9cc313c.mp3',
+    retell_agent_id: 'agent_5978b1e3e6d4bbb6ffc928dc6a'
+  },
+  {
+    id: 'retell-Alejandro',
+    name: 'Alejandro',
+    lang: 'es-MX',
+    langName: 'Español Latino',
+    gender: 'Masculino',
+    provider: 'Platform',
+    flag: '<img src="https://flagcdn.com/w20/mx.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/minimax-Alejandro.mp3',
+    retell_agent_id: 'agent_5978b1e3e6d4bbb6ffc928dc6a'
+  },
+  {
+    id: 'cartesia-Elena',
+    name: 'Elena',
+    lang: 'es-ES',
+    langName: 'Español España',
+    gender: 'Femenino',
+    provider: 'Cartesia',
+    flag: '<img src="https://flagcdn.com/w20/es.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/cartesia-cefcb124-080b-4655-b31f-932f3ee743de.mp3',
+    retell_agent_id: 'agent_3bc19d57c787b2b9f1a00518da'
+  },
+  {
+    id: 'cartesia-Manuel',
+    name: 'Manuel',
+    lang: 'es-ES',
+    langName: 'Español España',
+    gender: 'Masculino',
+    provider: 'Cartesia',
+    flag: '<img src="https://flagcdn.com/w20/es.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/cartesia-b5aa8098-49ef-475d-89b0-c9262ecf33fd.mp3',
+    retell_agent_id: 'agent_manuel_default_retell_id'
+  },
+  {
+    id: 'custom_voice_c3e5212df87e5341a06ad66e66',
+    name: 'Gabriela',
+    lang: 'es-ES',
+    langName: 'Español España',
+    gender: 'Femenino',
+    provider: 'ElevenLabs',
+    flag: '<img src="https://flagcdn.com/w20/es.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: '/gabriela_spanish.mp3',
+    retell_agent_id: 'agent_gabriela_default_retell_id'
+  },
+  {
+    id: 'cartesia-Sarah',
+    name: 'Sarah',
+    lang: 'en-US',
+    langName: 'Inglés EE.UU.',
+    gender: 'Femenino',
+    provider: 'Cartesia',
+    flag: '<img src="https://flagcdn.com/w20/us.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/cartesia-156fb8d2-335b-4950-9cb3-a2d33befec77.mp3',
+    retell_agent_id: 'agent_sarah_default_retell_id'
+  },
+  {
+    id: 'minimax-Daniel',
+    name: 'Daniel',
+    lang: 'en-US',
+    langName: 'Inglés EE.UU.',
+    gender: 'Masculino',
+    provider: 'Minimax',
+    flag: '<img src="https://flagcdn.com/w20/us.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/daniel.mp3',
+    retell_agent_id: 'agent_daniel_default_retell_id'
+  }
+];
+
+// GET: Obtener catálogo de voces
+app.get('/api/voices-catalog', async (req, res): Promise<void> => {
+  try {
+    const { data, error } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'PREMIUM_VOICES_CATALOG')
+      .maybeSingle();
+
+    if (error && error.code !== '42P01') throw error;
+
+    if (!data || !data.value) {
+      // Si la clave no existe, inicializar con las voces por defecto
+      const { error: insErr } = await supabase
+        .from('settings')
+        .upsert({
+          key: 'PREMIUM_VOICES_CATALOG',
+          value: JSON.stringify(DEFAULT_PREMIUM_VOICES)
+        });
+
+      if (insErr) throw insErr;
+      res.json(DEFAULT_PREMIUM_VOICES);
+    } else {
+      res.json(JSON.parse(data.value));
+    }
+  } catch (err: any) {
+    console.error('Error al obtener voces del catálogo:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST: Añadir o actualizar una voz del catálogo
+app.post('/api/voices-catalog', async (req, res): Promise<void> => {
+  try {
+    const newVoice = req.body;
+    if (!newVoice.id || !newVoice.name || !newVoice.lang) {
+      res.status(400).json({ error: 'Faltan campos requeridos (id, name, lang)' });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'PREMIUM_VOICES_CATALOG')
+      .maybeSingle();
+
+    if (error) throw error;
+
+    let catalog = data && data.value ? JSON.parse(data.value) : [...DEFAULT_PREMIUM_VOICES];
+    
+    // Eliminar si ya existe con ese ID para evitar duplicados
+    catalog = catalog.filter((v: any) => v.id !== newVoice.id);
+    catalog.push(newVoice);
+
+    const { error: updErr } = await supabase
+      .from('settings')
+      .upsert({
+        key: 'PREMIUM_VOICES_CATALOG',
+        value: JSON.stringify(catalog)
+      });
+
+    if (updErr) throw updErr;
+    res.json({ status: 'success', catalog });
+  } catch (err: any) {
+    console.error('Error al añadir voz al catálogo:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE: Eliminar una voz del catálogo
+app.delete('/api/voices-catalog/:id', async (req, res): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'PREMIUM_VOICES_CATALOG')
+      .maybeSingle();
+
+    if (error) throw error;
+
+    let catalog = data && data.value ? JSON.parse(data.value) : [...DEFAULT_PREMIUM_VOICES];
+    catalog = catalog.filter((v: any) => v.id !== id);
+
+    const { error: updErr } = await supabase
+      .from('settings')
+      .upsert({
+        key: 'PREMIUM_VOICES_CATALOG',
+        value: JSON.stringify(catalog)
+      });
+
+    if (updErr) throw updErr;
+    res.json({ status: 'success', catalog });
+  } catch (err: any) {
+    console.error('Error al eliminar voz del catálogo:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET: Obtener lista de agentes reales desde Retell AI
+app.get('/api/retell-agents', async (req, res): Promise<void> => {
+  try {
+    const apiKey = await getSettingVal('RETELL_API_KEY');
+    if (!apiKey || apiKey === 'YOUR_RETELL_API_KEY') {
+      res.status(400).json({ error: 'La API Key de Retell no está configurada.' });
+      return;
+    }
+
+    console.log('[Catalog API] Listando agentes de Retell AI...');
+    const response = await axios.get('https://api.retellai.com/list-agents', {
+      headers: {
+        Authorization: `Bearer ${apiKey}`
+      }
+    });
+
+    res.json(response.data || []);
+  } catch (err: any) {
+    console.error('Error al listar agentes de Retell:', err.response?.data || err.message);
+    res.status(500).json({ error: err.response?.data?.message || err.message });
+  }
+});
+
 // 6. Obtener ajustes dinámicos de API
 app.get('/api/admin/settings', async (req, res): Promise<void> => {
   try {
