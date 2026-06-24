@@ -51,6 +51,7 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
         try { workingHoursObj = JSON.parse(workingHoursObj); } catch (e) {}
       }
       t.client_enable_multi_professional = workingHoursObj?.client_enable_multi_professional !== false;
+      t.client_enable_no_show_deposits = workingHoursObj?.client_enable_no_show_deposits !== false;
       return t;
     };
 
@@ -109,6 +110,7 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     twilio_auth_token,
     twilio_whatsapp_number,
     client_enable_multi_professional,
+    client_enable_no_show_deposits,
     whatsapp_immediate_notification_enabled
   } = req.body;
 
@@ -147,15 +149,25 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (twilio_account_sid !== undefined) tenantData.twilio_account_sid = twilio_account_sid;
     if (twilio_auth_token !== undefined) tenantData.twilio_auth_token = twilio_auth_token;
     if (twilio_whatsapp_number !== undefined) tenantData.twilio_whatsapp_number = twilio_whatsapp_number;
-    if (whatsapp_immediate_notification_enabled !== undefined) tenantData.whatsapp_immediate_notification_enabled = !!whatsapp_immediate_notification_enabled;
-    if (client_enable_multi_professional !== undefined) {
+    
+    // Safely check if database contains the column to prevent query crashes
+    const hasImmediateCol = existing ? ('whatsapp_immediate_notification_enabled' in existing) : false;
+    if (whatsapp_immediate_notification_enabled !== undefined && hasImmediateCol) {
+      tenantData.whatsapp_immediate_notification_enabled = !!whatsapp_immediate_notification_enabled;
+    }
+    if (client_enable_multi_professional !== undefined || client_enable_no_show_deposits !== undefined) {
       let workingHoursObj: any = {};
       if (existing && existing.working_hours) {
         workingHoursObj = typeof existing.working_hours === 'string' 
           ? JSON.parse(existing.working_hours) 
           : existing.working_hours;
       }
-      workingHoursObj.client_enable_multi_professional = !!client_enable_multi_professional;
+      if (client_enable_multi_professional !== undefined) {
+        workingHoursObj.client_enable_multi_professional = !!client_enable_multi_professional;
+      }
+      if (client_enable_no_show_deposits !== undefined) {
+        workingHoursObj.client_enable_no_show_deposits = !!client_enable_no_show_deposits;
+      }
       tenantData.working_hours = workingHoursObj;
     }
 
@@ -854,9 +866,13 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       client_whatsapp_provider: client_whatsapp_provider !== undefined ? client_whatsapp_provider : (existing ? existing.client_whatsapp_provider : 'qr'),
       twilio_account_sid: twilio_account_sid !== undefined ? twilio_account_sid : (existing ? existing.twilio_account_sid : null),
       twilio_auth_token: twilio_auth_token !== undefined ? twilio_auth_token : (existing ? existing.twilio_auth_token : null),
-      twilio_whatsapp_number: twilio_whatsapp_number !== undefined ? twilio_whatsapp_number : (existing ? existing.twilio_whatsapp_number : null),
-      whatsapp_immediate_notification_enabled: whatsapp_immediate_notification_enabled !== undefined ? !!whatsapp_immediate_notification_enabled : (existing ? existing.whatsapp_immediate_notification_enabled : true)
+      twilio_whatsapp_number: twilio_whatsapp_number !== undefined ? twilio_whatsapp_number : (existing ? existing.twilio_whatsapp_number : null)
     };
+
+    const hasImmediateCol = existing ? ('whatsapp_immediate_notification_enabled' in existing) : false;
+    if (hasImmediateCol) {
+      tenantData.whatsapp_immediate_notification_enabled = whatsapp_immediate_notification_enabled !== undefined ? !!whatsapp_immediate_notification_enabled : (existing ? existing.whatsapp_immediate_notification_enabled : true);
+    }
 
     if (existing) {
       let attemptData: any = { ...tenantData };

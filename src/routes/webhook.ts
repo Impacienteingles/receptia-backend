@@ -11,7 +11,7 @@ const router = Router();
 async function getTenantDetailsForWebhook(tenantId: string) {
   const { data, error } = await supabase
     .from('tenants')
-    .select('business_name, business_sector, google_refresh_token, working_hours, enable_multi_professional, professionals, whatsapp_reminders_enabled, whatsapp_immediate_notification_enabled, voice_id')
+    .select('*')
     .eq('id', tenantId)
     .single();
 
@@ -23,7 +23,10 @@ async function getTenantDetailsForWebhook(tenantId: string) {
     throw new Error(`El inquilino con ID ${tenantId} no ha vinculado su Google Calendar todavía.`);
   }
 
-  return data;
+  return {
+    ...data,
+    whatsapp_immediate_notification_enabled: data.whatsapp_immediate_notification_enabled !== false
+  };
 }
 
 /**
