@@ -167,14 +167,43 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
       slotDurationMin,
       applyBreakRule
     );
+    // Filtrar huecos libres según la duración requerida de la especialidad
+    let filteredSlots = freeSlots;
+    const specialty = args.specialty || '';
+    const durationMinutes = calculateDuration(specialty, tenantId);
+    const numBlocksNeeded = Math.ceil(durationMinutes / slotDurationMin);
+
+    if (numBlocksNeeded > 1 && freeSlots.length > 0) {
+      const resultSlots: string[] = [];
+      for (let i = 0; i < freeSlots.length; i++) {
+        const currentSlot = freeSlots[i];
+        let consecutiveFound = true;
+        const [hour, min] = currentSlot.split(':').map(Number);
+        const nextTime = new Date(`1970-01-01T${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}:00Z`);
+
+        for (let b = 1; b < numBlocksNeeded; b++) {
+          nextTime.setUTCMinutes(nextTime.getUTCMinutes() + slotDurationMin);
+          const nextTimeStr = nextTime.toISOString().substring(11, 16);
+          if (!freeSlots.includes(nextTimeStr)) {
+            consecutiveFound = false;
+            break;
+          }
+        }
+
+        if (consecutiveFound) {
+          resultSlots.push(currentSlot);
+        }
+      }
+      filteredSlots = resultSlots;
+    }
     
-    console.log(`Huecos libres encontrados: ${freeSlots.join(', ')}`);
+    console.log(`Huecos libres filtrados para duración ${durationMinutes} min: ${filteredSlots.join(', ')}`);
     res.json({
       status: 'success',
-      available_slots: freeSlots,
-      message: freeSlots.length > 0 
-        ? `Los siguientes huecos están libres: ${freeSlots.join(', ')}`
-        : 'No hay huecos disponibles para esta fecha. Sugiere al paciente otra fecha.'
+      available_slots: filteredSlots,
+      message: filteredSlots.length > 0 
+        ? `Los siguientes huecos están libres: ${filteredSlots.join(', ')}`
+        : 'No hay huecos disponibles suficientes para esa duración en esta fecha. Sugiere al paciente otra fecha.'
     });
   } catch (error: any) {
     console.error('Error en /get-availability:', error);

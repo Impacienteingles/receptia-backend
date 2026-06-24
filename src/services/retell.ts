@@ -243,6 +243,10 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
                     type: 'string',
                     description: 'La fecha para la cual se desea consultar la disponibilidad en formato YYYY-MM-DD.',
                   },
+                  specialty: {
+                    type: 'string',
+                    description: 'El servicio, especialidad o descripción de las personas que asistirán a la cita (ej. corte de caballero y dos niños) para calcular correctamente la duración.',
+                  }
                 },
                 required: ['date'],
               },
