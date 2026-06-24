@@ -57,6 +57,11 @@
       --success: #10b981;
       --error: #ef4444;
       --modal-bg: rgba(8, 12, 20, 0.95);
+      --voice-card-bg: rgba(255, 255, 255, 0.02);
+      --voice-card-border: var(--border-color);
+      --voice-name-color: #ffffff;
+      --voice-play-btn-bg: rgba(255, 255, 255, 0.05);
+      --voice-play-btn-color: #ffffff;
     }
 
     :root[data-theme="light"] {
@@ -71,6 +76,11 @@
       --success: #059669;
       --error: #dc2626;
       --modal-bg: rgba(255, 255, 255, 0.98);
+      --voice-card-bg: #ffffff;
+      --voice-card-border: rgba(0, 0, 0, 0.08);
+      --voice-name-color: #0f172a;
+      --voice-play-btn-bg: rgba(0, 0, 0, 0.04);
+      --voice-play-btn-color: #0f172a;
     }
 
     /* Estilos específicos para modo claro */
@@ -1740,12 +1750,24 @@
                 <table>
                   <thead>
                     <tr>
-                      <th>Negocio</th>
-                      <th>Email</th>
-                      <th>Teléfono / SIP</th>
-                      <th>Plan</th>
-                      <th>Alta</th>
-                      <th>Estado</th>
+                      <th onclick="sortClients('business_name')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                        Negocio <span id="sort-icon-business_name" style="color: rgba(255,255,255,0.2);">↕</span>
+                      </th>
+                      <th onclick="sortClients('email')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                        Email <span id="sort-icon-email" style="color: rgba(255,255,255,0.2);">↕</span>
+                      </th>
+                      <th onclick="sortClients('phone_number')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                        Teléfono / SIP <span id="sort-icon-phone_number" style="color: rgba(255,255,255,0.2);">↕</span>
+                      </th>
+                      <th onclick="sortClients('subscription_plan')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                        Plan <span id="sort-icon-subscription_plan" style="color: rgba(255,255,255,0.2);">↕</span>
+                      </th>
+                      <th onclick="sortClients('contract_start_date')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                        Alta <span id="sort-icon-contract_start_date" style="color: rgba(255,255,255,0.2);">↕</span>
+                      </th>
+                      <th onclick="sortClients('subscription_status')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                        Estado <span id="sort-icon-subscription_status" style="color: rgba(255,255,255,0.2);">↕</span>
+                      </th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -5347,6 +5369,44 @@
     // GESTIÓN DE CLIENTES DESDE SUPABASE
     // ========================================================
 
+    let currentSortColumn = 'business_name';
+    let currentSortOrder = 'asc';
+
+    function sortClients(columnName) {
+      if (currentSortColumn === columnName) {
+        currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSortColumn = columnName;
+        currentSortOrder = 'asc';
+      }
+      
+      // Update UI headers
+      updateSortHeaderUI();
+      
+      // Filter or render according to search query
+      const query = document.getElementById('client-search').value.trim().toLowerCase();
+      if (query) {
+        filterClientsTable();
+      } else {
+        renderClientsTable();
+      }
+    }
+
+    function updateSortHeaderUI() {
+      const cols = ['business_name', 'email', 'phone_number', 'subscription_plan', 'contract_start_date', 'subscription_status'];
+      cols.forEach(col => {
+        const iconSpan = document.getElementById(`sort-icon-${col}`);
+        if (!iconSpan) return;
+        if (currentSortColumn === col) {
+          iconSpan.innerHTML = currentSortOrder === 'asc' ? ' ▲' : ' ▼';
+          iconSpan.style.color = 'var(--primary)';
+        } else {
+          iconSpan.innerHTML = ' ↕';
+          iconSpan.style.color = 'rgba(255,255,255,0.2)';
+        }
+      });
+    }
+
     async function fetchTenants() {
       try {
         const response = await fetch('/api/tenants');
@@ -5364,7 +5424,28 @@
       const tbody = document.getElementById('clients-tbody');
       tbody.innerHTML = '';
       
-      const tenantsList = filteredData || allTenants;
+      let tenantsList = [...(filteredData || allTenants)];
+
+      // Aplicar ordenación
+      tenantsList.sort((a, b) => {
+        let valA = a[currentSortColumn];
+        let valB = b[currentSortColumn];
+
+        if (currentSortColumn === 'contract_start_date') {
+          valA = valA ? new Date(valA).getTime() : 0;
+          valB = valB ? new Date(valB).getTime() : 0;
+        } else {
+          valA = valA ? String(valA).toLowerCase() : '';
+          valB = valB ? String(valB).toLowerCase() : '';
+        }
+
+        if (valA < valB) return currentSortOrder === 'asc' ? -1 : 1;
+        if (valA > valB) return currentSortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      // Asegurar que los iconos de ordenación se muestran correctamente
+      updateSortHeaderUI();
 
       if (tenantsList.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No se encontraron clientes registrados.</td></tr>`;
@@ -6571,8 +6652,8 @@
       PREMIUM_VOICES.forEach(voice => {
         const card = document.createElement('div');
         card.style.cssText = `
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid ${selectedVoiceId === voice.id ? 'var(--primary)' : 'var(--border-color)'};
+          background: var(--voice-card-bg);
+          border: 1px solid ${selectedVoiceId === voice.id ? 'var(--primary)' : 'var(--voice-card-border)'};
           box-shadow: ${selectedVoiceId === voice.id ? '0 0 10px rgba(139, 92, 246, 0.15)' : 'none'};
           border-radius: 10px;
           padding: 1rem;
@@ -6591,14 +6672,14 @@
 
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <strong style="color: #fff; font-size: 0.95rem;">${voice.flag} ${voice.name}</strong>
+            <strong style="color: var(--voice-name-color); font-size: 0.95rem;">${voice.flag} ${voice.name}</strong>
             <span style="font-size: 0.75rem; background: rgba(139,92,246,0.15); color: var(--primary-hover); padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 500;">${voice.provider}</span>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-muted);">
             ${voice.langName} (${voice.gender})
           </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
-            <button type="button" class="btn play-btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; height: auto; display: flex; align-items: center; gap: 0.25rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
+            <button type="button" class="btn play-btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; height: auto; display: flex; align-items: center; gap: 0.25rem; background: var(--voice-play-btn-bg); color: var(--voice-play-btn-color); border: 1px solid var(--border-color);">
               <i data-lucide="play" style="width: 12px; height: 12px;"></i>
               Escuchar
             </button>
