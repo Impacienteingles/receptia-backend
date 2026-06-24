@@ -1592,43 +1592,79 @@
       <!-- PRECIOS -->
       <section id="pricing" class="landing-section">
         <h2 class="landing-section-title">Nuestras Tarifas</h2>
-        <div class="plans-grid">
+        
+        <div style="display: flex; justify-content: center; margin: 1.5rem 0 2.5rem 0;">
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 0.25rem; border-radius: 9999px; border: 1px solid var(--border-color); display: inline-flex; gap: 0.25rem;">
+            <button type="button" id="landing-cycle-monthly" class="btn" onclick="setLandingCycle('monthly')" style="background: var(--primary); border: none; border-radius: 9999px; color: #fff; padding: 0.5rem 1.5rem; font-size: 0.9rem; cursor: pointer; font-weight: 600; transition: all 0.3s;">Mensual</button>
+            <button type="button" id="landing-cycle-annually" class="btn" onclick="setLandingCycle('annually')" style="background: transparent; border: none; border-radius: 9999px; color: var(--text-muted); padding: 0.5rem 1.5rem; font-size: 0.9rem; cursor: pointer; font-weight: 600; transition: all 0.3s;">Anual</button>
+          </div>
+        </div>
+
+        <!-- PLANES MENSUALES (visibles por defecto) -->
+        <div class="plans-grid" id="plans-grid-monthly" style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
           <!-- PLAN ESTÁNDAR MENSUAL -->
-          <div class="plan-card" style="display: flex; flex-direction: column;">
-            <div class="plan-name">Plan Estándar Mensual</div>
+          <div class="plan-card" style="display: flex; flex-direction: column; width: 100%; max-width: 380px; position: relative;">
+            <span class="plan-badge" style="background: var(--accent); position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 9999px; color: #fff; font-weight: 600; white-space: nowrap; border: 1px solid rgba(255,255,255,0.1);">Plan estándar para medianos y pequeños comercios.</span>
+            <div class="plan-name" style="margin-top: 1rem;">Plan Estándar Mensual</div>
             <div class="plan-price">
               <span class="plan-price-num">149€</span>
               <span class="plan-price-period">/ mes</span>
             </div>
             <ul class="plan-features" style="flex-grow: 1;">
               <li><i data-lucide="check"></i> 1 Agente de Voz IA activo</li>
-              <li><i data-lucide="check"></i> 1 Número telefónico en Retell</li>
+              <li><i data-lucide="check"></i> 1 Número telefónico en Retell AI</li>
               <li><i data-lucide="check"></i> Integración con Google Calendar</li>
-              <li><i data-lucide="check"></i> Panel de control del cliente</li>
-              <li><i data-lucide="check"></i> 200 minutos incluidos / mes</li>
+              <li><i data-lucide="check"></i> Panel de control de cliente</li>
+              <li><i data-lucide="check"></i> Hasta 200 minutos incluidos / mes</li>
+              <li><i data-lucide="check"></i> Minuto adicional a 0.20€/min</li>
             </ul>
             <button class="btn" onclick="openSubscribeModal('estandar_mensual', 'Plan Estándar Mensual', 149, 'mes')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
           </div>
           <!-- PLAN PREMIUM MENSUAL -->
-          <div class="plan-card popular" style="display: flex; flex-direction: column;">
-            <div class="plan-badge">Más Popular</div>
-            <div class="plan-name">Plan Premium Mensual</div>
+          <div class="plan-card popular" style="display: flex; flex-direction: column; width: 100%; max-width: 380px; position: relative;">
+            <span class="plan-badge" style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 9999px; color: #fff; font-weight: 600; white-space: nowrap; border: 1px solid rgba(255,255,255,0.1);">Más Popular</span>
+            <div class="plan-name" style="margin-top: 1rem;">Plan Premium Mensual</div>
             <div class="plan-price">
               <span class="plan-price-num">249€</span>
               <span class="plan-price-period">/ mes</span>
             </div>
             <ul class="plan-features" style="flex-grow: 1;">
               <li><i data-lucide="check"></i> Todo lo del Plan Estándar</li>
-              <li><i data-lucide="check"></i> Conexión SIP Zadarma</li>
-              <li><i data-lucide="check"></i> Voces de alta calidad (ElevenLabs)</li>
-              <li><i data-lucide="check"></i> 500 minutos incluidos / mes</li>
-              <li><i data-lucide="check"></i> Soporte optimizado de Prompt</li>
+              <li><i data-lucide="check"></i> Conexión SIP Zadarma avanzada</li>
+              <li><i data-lucide="check"></i> Soporte de Voz ElevenLabs de alta calidad</li>
+              <li><i data-lucide="check"></i> Prompt e instrucciones optimizadas</li>
+              <li><i data-lucide="check"></i> Hasta 500 minutos incluidos / mes</li>
+              <li><i data-lucide="check"></i> Minuto adicional a 0.20€/min</li>
             </ul>
             <button class="btn" onclick="openSubscribeModal('premium_mensual', 'Plan Premium Mensual', 249, 'mes')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
           </div>
+        </div>
+
+        <!-- PLANES ANUALES (ocultos por defecto) -->
+        <div class="plans-grid" id="plans-grid-annually" style="display: none; gap: 2rem; justify-content: center; flex-wrap: wrap;">
+          <!-- PLAN ESTÁNDAR ANUAL -->
+          <div class="plan-card" style="display: flex; flex-direction: column; width: 100%; max-width: 380px; position: relative;">
+            <span class="plan-badge" style="background: var(--accent); position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 9999px; color: #fff; font-weight: 600; white-space: nowrap; border: 1px solid rgba(255,255,255,0.1);">Ahorro de casi 3 meses de suscripción</span>
+            <div class="plan-name" style="margin-top: 1rem;">Plan Estándar Anual</div>
+            <div class="plan-price">
+              <span class="plan-price-num">1290€</span>
+              <span class="plan-price-period">/ año</span>
+            </div>
+            <ul class="plan-features" style="flex-grow: 1;">
+              <li><i data-lucide="check"></i> 1 Agente de Voz IA activo</li>
+              <li><i data-lucide="check"></i> 1 Número telefónico en Retell AI</li>
+              <li><i data-lucide="check"></i> Integración con Google Calendar</li>
+              <li><i data-lucide="check"></i> Panel de control de cliente</li>
+              <li><i data-lucide="check"></i> Hasta 200 minutos incluidos / mes</li>
+              <li><i data-lucide="check"></i> Minuto adicional a 0.20€/min</li>
+              <li><i data-lucide="check"></i> Ahorro de casi 3 meses de suscripción</li>
+            </ul>
+            <button class="btn" onclick="openSubscribeModal('estandar_anual', 'Plan Estándar Anual', 1290, 'año')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
+          </div>
           <!-- PLAN PREMIUM ANUAL -->
-          <div class="plan-card" style="display: flex; flex-direction: column;">
-            <div class="plan-name">Plan Premium Anual</div>
+          <div class="plan-card popular" style="display: flex; flex-direction: column; width: 100%; max-width: 380px; position: relative;">
+            <span class="plan-badge" style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 9999px; color: #fff; font-weight: 600; white-space: nowrap; border: 1px solid rgba(255,255,255,0.1);">Ahorro de 2 meses de suscripción</span>
+            <div class="plan-name" style="margin-top: 1rem;">Plan Premium Anual</div>
             <div class="plan-price">
               <span class="plan-price-num">2290€</span>
               <span class="plan-price-period">/ año</span>
@@ -1636,8 +1672,8 @@
             <ul class="plan-features" style="flex-grow: 1;">
               <li><i data-lucide="check"></i> Todo lo del Plan Premium</li>
               <li><i data-lucide="check"></i> Soporte VIP priorizado 24/7</li>
-              <li><i data-lucide="check"></i> Minutos ilimitados controlados</li>
               <li><i data-lucide="check"></i> Ahorro de 2 meses de suscripción</li>
+              <li><i data-lucide="check"></i> Minutos ilimitados controlados</li>
             </ul>
             <button class="btn" onclick="openSubscribeModal('premium_anual', 'Plan Premium Anual', 2290, 'año')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
           </div>
@@ -1818,6 +1854,30 @@
         submitBtn.disabled = false;
         submitBtn.innerText = 'Entrar al Panel';
       });
+    }
+
+    function setLandingCycle(cycle) {
+      const btnMonthly = document.getElementById('landing-cycle-monthly');
+      const btnAnnually = document.getElementById('landing-cycle-annually');
+      const gridMonthly = document.getElementById('plans-grid-monthly');
+      const gridAnnually = document.getElementById('plans-grid-annually');
+      
+      if (cycle === 'monthly') {
+        btnMonthly.style.background = 'var(--primary)';
+        btnMonthly.style.color = '#fff';
+        btnAnnually.style.background = 'transparent';
+        btnAnnually.style.color = 'var(--text-muted)';
+        gridMonthly.style.display = 'flex';
+        gridAnnually.style.display = 'none';
+      } else {
+        btnAnnually.style.background = 'var(--primary)';
+        btnAnnually.style.color = '#fff';
+        btnMonthly.style.background = 'transparent';
+        btnMonthly.style.color = 'var(--text-muted)';
+        gridMonthly.style.display = 'none';
+        gridAnnually.style.display = 'flex';
+      }
+      lucide.createIcons();
     }
 
     let selectedSubscribePlanId = '';
