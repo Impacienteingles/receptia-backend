@@ -1285,7 +1285,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.5</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.6</span>
         </div>
       </header>
 
@@ -2472,9 +2472,10 @@
           <!-- Listado de Leads Extraídos -->
           <div class="card">
             <h2 class="card-title" style="flex-wrap: wrap; gap: 0.5rem;">
-              <span>
+              <span style="display: flex; align-items: center; gap: 0.5rem;">
                 <i data-lucide="list"></i>
                 Leads de Negocios Encontrados
+                <span id="prospects-count-badge" style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--border-color);">0</span>
               </span>
               <div style="margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <button class="btn btn-secondary" id="btn-prospects-bulk-outreach" onclick="triggerSelectedDemos()" style="font-size: 0.85rem; padding: 0.4rem 1rem; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(52, 211, 153, 0.1); color: var(--success); border-color: rgba(52, 211, 153, 0.2);">
@@ -6456,6 +6457,10 @@
     }
 
     function renderProspectsTable() {
+      const countBadge = document.getElementById('prospects-count-badge');
+      if (countBadge) {
+        countBadge.innerText = allProspects.length;
+      }
       const tbody = document.getElementById('prospects-tbody');
       tbody.innerHTML = '';
 
