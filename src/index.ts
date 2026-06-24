@@ -2764,8 +2764,8 @@ setInterval(async () => {
             
             // Formatear fecha y hora humana
             const dateObj = new Date(app.date_time);
-            const dateStr = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const timeStr = dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = dateObj.toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid', day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = dateObj.toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' });
             
             const msg = `Recordatorio de Cita 🔔\n\nHola ${app.patient_name}, le recordamos su cita programada en ${tenant.business_name}.\n\n🔹 Servicio: ${app.specialty}\n🔹 Fecha: ${dateStr}\n🔹 Hora: ${timeStr}\n\n¡Le esperamos!`;
             

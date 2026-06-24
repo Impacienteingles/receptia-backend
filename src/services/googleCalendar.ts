@@ -85,6 +85,50 @@ export async function getTokensFromCode(code: string) {
 }
 
 /**
+ * Convierte una fecha y hora local de Madrid a un objeto Date absoluto (en UTC).
+ * Esto evita desajustes horariios cuando el servidor corre en otra zona horaria (e.g. UTC/Oregon).
+ */
+export function getMadridDate(dateStr: string, timeStr: string): Date {
+  const date = new Date(`${dateStr}T${timeStr}:00Z`);
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false
+  });
+  
+  const getMadridParts = (d: Date) => {
+    const parts = formatter.formatToParts(d);
+    const p: any = {};
+    parts.forEach(pt => p[pt.type] = pt.value);
+    return new Date(Date.UTC(
+      Number(p.year),
+      Number(p.month) - 1,
+      Number(p.day),
+      Number(p.hour) === 24 ? 0 : Number(p.hour),
+      Number(p.minute),
+      Number(p.second)
+    ));
+  };
+
+  const targetUTC = new Date(Date.UTC(
+    Number(dateStr.split('-')[0]),
+    Number(dateStr.split('-')[1]) - 1,
+    Number(dateStr.split('-')[2]),
+    Number(timeStr.split(':')[0]),
+    Number(timeStr.split(':')[1])
+  ));
+
+  const localTimeComponent = getMadridParts(date);
+  const diff = targetUTC.getTime() - localTimeComponent.getTime();
+  return new Date(date.getTime() + diff);
+}
+
+/**
  * Define los slots laborables disponibles en la clínica para una fecha dada.
  * Horario: 09:00 a 14:00 y 16:00 a 20:00 (Español)
  * Duración: 30 minutos por slot.
@@ -94,16 +138,16 @@ function getWorkingSlots(dateStr: string, slotDurationMin: number = 30): Date[] 
   const stepMs = slotDurationMin * 60 * 1000;
   
   // Turno mañana: 09:00 a 14:00 (último slot termina a las 14:00)
-  let current = new Date(`${dateStr}T09:00:00`);
-  const limitManana = new Date(`${dateStr}T14:00:00`);
+  let current = getMadridDate(dateStr, '09:00');
+  const limitManana = getMadridDate(dateStr, '14:00');
   while (current.getTime() + stepMs <= limitManana.getTime()) {
     slots.push(new Date(current.getTime()));
     current.setTime(current.getTime() + stepMs);
   }
   
   // Turno tarde: 16:00 a 20:00 (último slot termina a las 20:00)
-  current = new Date(`${dateStr}T16:00:00`);
-  const limitTarde = new Date(`${dateStr}T20:00:00`);
+  current = getMadridDate(dateStr, '16:00');
+  const limitTarde = getMadridDate(dateStr, '20:00');
   while (current.getTime() + stepMs <= limitTarde.getTime()) {
     slots.push(new Date(current.getTime()));
     current.setTime(current.getTime() + stepMs);
@@ -119,10 +163,9 @@ function getWorkingSlotsDynamic(dateStr: string, workingHours: any, slotDuration
   const slots: Date[] = [];
   const stepMs = slotDurationMin * 60 * 1000;
   
-  // Obtener el día de la semana de la fecha dada (0 = Domingo, 1 = Lunes, etc.)
-  const dateObj = new Date(`${dateStr}T12:00:00`); // Evita desajustes de zona horaria
-  const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const dayName = daysOfWeek[dateObj.getDay()];
+  // Obtener el día de la semana de la fecha dada en la zona horaria de Madrid
+  const madridDate = getMadridDate(dateStr, '12:00');
+  const dayName = madridDate.toLocaleDateString('en-US', { timeZone: 'Europe/Madrid', weekday: 'long' }).toLowerCase();
 
   // Obtener intervalos del día
   const dayShifts = workingHours?.[dayName] || [];
@@ -134,11 +177,8 @@ function getWorkingSlotsDynamic(dateStr: string, workingHours: any, slotDuration
     const { start, end } = shift; // ej: "09:00", "14:00"
     if (!start || !end) continue;
 
-    const [startHour, startMin] = start.split(':').map(Number);
-    const [endHour, endMin] = end.split(':').map(Number);
-
-    let current = new Date(`${dateStr}T${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}:00`);
-    const limit = new Date(`${dateStr}T${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}:00`);
+    let current = getMadridDate(dateStr, start);
+    const limit = getMadridDate(dateStr, end);
 
     while (current.getTime() + stepMs <= limit.getTime()) {
       slots.push(new Date(current.getTime()));
@@ -270,6 +310,7 @@ export async function listFreeSlots(
 
       // Formatear hora legible en español (ej: "09:30", "16:00")
       const timeString = slot.toLocaleTimeString('es-ES', {
+        timeZone: 'Europe/Madrid',
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
