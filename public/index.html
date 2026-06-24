@@ -3276,7 +3276,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 21 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.4.1 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.4.2 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -5828,8 +5828,8 @@
         
         allCallLogs = data.logs || [];
         renderCallLogsTable(allCallLogs.filter(log => !log.hidden));
-        updateUsageProgressBar(allCallLogs.filter(log => !log.hidden));
-        calculateAndDisplayROI(currentTenant, allCallLogs.filter(log => !log.hidden));
+        updateUsageProgressBar(allCallLogs);
+        calculateAndDisplayROI(currentTenant, allCallLogs);
         renderCharts();
       } catch (err) {
         console.error('Error al cargar call logs:', err);
@@ -6747,17 +6747,15 @@
 
         logs.forEach(log => {
           if (log.intent_tag !== 'Llamada Perdida' && log.call_duration > 0) {
-            // Si el log está oculto (soft-deleted), solo cuenta si pertenece al mes actual
-            if (log.hidden) {
-              if (log.created_at) {
-                const logDate = new Date(log.created_at);
-                const isCurrentMonth = logDate.getFullYear() === currentYear && logDate.getMonth() === currentMonth;
-                if (!isCurrentMonth) {
-                  return;
-                }
-              } else {
+            // Solo contabilizar registros que pertenezcan al mes actual
+            if (log.created_at) {
+              const logDate = new Date(log.created_at);
+              const isCurrentMonth = logDate.getFullYear() === currentYear && logDate.getMonth() === currentMonth;
+              if (!isCurrentMonth) {
                 return;
               }
+            } else {
+              return;
             }
             realSavings += 1.50 + (log.call_duration / 60) * 0.20;
             handledCallsCount++;
