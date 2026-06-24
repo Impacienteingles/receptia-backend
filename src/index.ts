@@ -52,6 +52,9 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
       }
       t.client_enable_multi_professional = workingHoursObj?.client_enable_multi_professional !== false;
       t.client_enable_no_show_deposits = workingHoursObj?.client_enable_no_show_deposits !== false;
+      t.whatsapp_immediate_notification_enabled = t.whatsapp_immediate_notification_enabled !== undefined && t.whatsapp_immediate_notification_enabled !== null
+        ? t.whatsapp_immediate_notification_enabled
+        : (workingHoursObj?.whatsapp_immediate_notification_enabled !== false);
       return t;
     };
 
@@ -201,7 +204,7 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (whatsapp_immediate_notification_enabled !== undefined && hasImmediateCol) {
       tenantData.whatsapp_immediate_notification_enabled = !!whatsapp_immediate_notification_enabled;
     }
-    if (client_enable_multi_professional !== undefined || client_enable_no_show_deposits !== undefined) {
+    if (client_enable_multi_professional !== undefined || client_enable_no_show_deposits !== undefined || whatsapp_immediate_notification_enabled !== undefined) {
       let workingHoursObj: any = {};
       if (existing && existing.working_hours) {
         workingHoursObj = typeof existing.working_hours === 'string' 
@@ -213,6 +216,9 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
       }
       if (client_enable_no_show_deposits !== undefined) {
         workingHoursObj.client_enable_no_show_deposits = !!client_enable_no_show_deposits;
+      }
+      if (whatsapp_immediate_notification_enabled !== undefined) {
+        workingHoursObj.whatsapp_immediate_notification_enabled = !!whatsapp_immediate_notification_enabled;
       }
       tenantData.working_hours = workingHoursObj;
     }
@@ -918,6 +924,27 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     const hasImmediateCol = existing ? ('whatsapp_immediate_notification_enabled' in existing) : false;
     if (hasImmediateCol) {
       tenantData.whatsapp_immediate_notification_enabled = whatsapp_immediate_notification_enabled !== undefined ? !!whatsapp_immediate_notification_enabled : (existing ? existing.whatsapp_immediate_notification_enabled : true);
+    }
+
+    if (whatsapp_immediate_notification_enabled !== undefined) {
+      let whObj: any = tenantData.working_hours || {};
+      if (typeof whObj === 'string') {
+        try { whObj = JSON.parse(whObj); } catch (e) { whObj = {}; }
+      }
+      whObj.whatsapp_immediate_notification_enabled = !!whatsapp_immediate_notification_enabled;
+      tenantData.working_hours = whObj;
+    } else if (existing) {
+      const prevWorkingHours = typeof existing.working_hours === 'string' 
+        ? JSON.parse(existing.working_hours) 
+        : existing.working_hours;
+      if (prevWorkingHours && prevWorkingHours.whatsapp_immediate_notification_enabled !== undefined) {
+        let whObj: any = tenantData.working_hours || {};
+        if (typeof whObj === 'string') {
+          try { whObj = JSON.parse(whObj); } catch (e) { whObj = {}; }
+        }
+        whObj.whatsapp_immediate_notification_enabled = prevWorkingHours.whatsapp_immediate_notification_enabled;
+        tenantData.working_hours = whObj;
+      }
     }
 
     if (existing) {

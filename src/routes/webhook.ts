@@ -23,9 +23,21 @@ async function getTenantDetailsForWebhook(tenantId: string) {
     throw new Error(`El inquilino con ID ${tenantId} no ha vinculado su Google Calendar todavía.`);
   }
 
+  let workingHoursObj = data.working_hours;
+  if (typeof workingHoursObj === 'string') {
+    try { workingHoursObj = JSON.parse(workingHoursObj); } catch (e) {}
+  }
+
+  let isImmediateEnabled = true;
+  if (data.whatsapp_immediate_notification_enabled !== undefined && data.whatsapp_immediate_notification_enabled !== null) {
+    isImmediateEnabled = data.whatsapp_immediate_notification_enabled !== false;
+  } else if (workingHoursObj && workingHoursObj.whatsapp_immediate_notification_enabled !== undefined) {
+    isImmediateEnabled = workingHoursObj.whatsapp_immediate_notification_enabled !== false;
+  }
+
   return {
     ...data,
-    whatsapp_immediate_notification_enabled: data.whatsapp_immediate_notification_enabled !== false
+    whatsapp_immediate_notification_enabled: isImmediateEnabled
   };
 }
 
@@ -412,7 +424,7 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
       console.log(`✅ Cita registrada en Supabase exitosamente con estado: ${status}`);
 
       // Envío de confirmación por WhatsApp (si está habilitado)
-      if (tenantDetails.whatsapp_immediate_notification_enabled !== false) {
+      if (tenantDetails.client_whatsapp_enabled !== false && tenantDetails.whatsapp_immediate_notification_enabled !== false) {
         const msg = `Confirmación de Cita 📅\n\nHola ${name}, le confirmamos su cita en ${tenantDetails.business_name}.\n\n🔹 Servicio: ${specialty}\n🔹 Fecha: ${date}\n🔹 Hora: ${time}\n\n¡Le esperamos!`;
         sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de confirmación:', err));
       }
@@ -539,7 +551,7 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
     console.log(`✅ Cita del ${date} para ${appToCancel.patient_name} cancelada correctamente.`);
 
     // Enviar confirmación por WhatsApp (si está habilitado)
-    if (tenantDetails.whatsapp_immediate_notification_enabled !== false) {
+    if (tenantDetails.client_whatsapp_enabled !== false && tenantDetails.whatsapp_immediate_notification_enabled !== false) {
       const msg = `Cancelación de Cita ❌\n\nHola ${appToCancel.patient_name}, le confirmamos que su cita en ${tenantDetails.business_name} para el día ${date} ha sido cancelada correctamente.\n\nSentimos las molestias y esperamos verle en otra ocasión.`;
       sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de cancelación:', err));
     }
@@ -714,7 +726,7 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
     console.log(`✅ Cita reprogramada con éxito al ${new_date} a las ${new_time}.`);
 
     // Enviar confirmación por WhatsApp (si está habilitado)
-    if (tenantDetails.whatsapp_immediate_notification_enabled !== false) {
+    if (tenantDetails.client_whatsapp_enabled !== false && tenantDetails.whatsapp_immediate_notification_enabled !== false) {
       const msg = `Modificación de Cita 🔄\n\nHola ${appToReschedule.patient_name}, le confirmamos que su cita en ${tenantDetails.business_name} ha sido modificada con éxito.\n\n🔹 Servicio: ${appToReschedule.specialty}\n🔹 Nueva Fecha: ${new_date}\n🔹 Nueva Hora: ${new_time}\n\n¡Le esperamos!`;
       sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de reprogramación:', err));
     }
