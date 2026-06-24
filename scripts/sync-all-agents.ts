@@ -24,7 +24,7 @@ async function main() {
 
   console.log(`🔍 Se encontraron ${tenants.length} inquilinos.`);
 
-  let webhookBaseUrl = process.env.WEBHOOK_BASE_URL || 'https://corandar.onrender.com';
+  let webhookBaseUrl = 'https://corandar.onrender.com';
 
   for (const tenant of tenants) {
     if (!tenant.retell_agent_id) {
