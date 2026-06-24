@@ -1228,11 +1228,11 @@
       <nav class="sidebar-nav">
         <button class="nav-item active" id="btn-tab-provision" onclick="switchTab('provision')">
           <i data-lucide="plus-circle"></i>
-          <span>Aprovisionar Agente</span>
+          <span>Crear Cliente</span>
         </button>
         <button class="nav-item" id="btn-tab-clients" onclick="switchTab('clients')">
           <i data-lucide="users"></i>
-          <span>Base de Clientes</span>
+          <span>Clientes</span>
         </button>
         <button class="nav-item" id="btn-tab-billing" onclick="switchTab('billing')">
           <i data-lucide="credit-card"></i>
@@ -1281,7 +1281,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.4.4</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.4.5</span>
         </div>
       </header>
 
@@ -1294,7 +1294,7 @@
             <h2 class="card-title">
               <span id="form-card-title-text">
                 <i data-lucide="plus-circle"></i>
-                Aprovisionar Nuevo Agente de Voz IA
+                Nuevo Cliente
               </span>
               <button class="btn btn-secondary" onclick="clearDraftAndResetForm()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
                 <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Limpiar
@@ -1724,7 +1724,7 @@
             <h2 class="card-title">
               <span>
                 <i data-lucide="users"></i>
-                Base de Datos de Clientes y Agentes
+                Datos de Clientes
               </span>
               <!-- Toggle Activos / Historial -->
               <div style="display:flex; gap:0.5rem; margin-left:auto;">
@@ -3381,7 +3381,7 @@
             if (formCardTitleText) formCardTitleText.innerHTML = `<i data-lucide="edit-3"></i> Editar Cliente (Borrador): ${bName}`;
             if (btnGenerateText) btnGenerateText.innerText = 'Guardar Cambios del Cliente';
           } else {
-            if (formCardTitleText) formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Aprovisionar Nuevo Agente de Voz IA`;
+            if (formCardTitleText) formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Nuevo Cliente`;
             if (btnGenerateText) btnGenerateText.innerText = 'Generar Agente IA y Registrar';
           }
         }
@@ -3552,7 +3552,7 @@
         adminForm.reset();
         editingTenantId = null;
         isContractManuallyEdited = false;
-        formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Aprovisionar Nuevo Agente de Voz IA`;
+        formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Nuevo Cliente`;
         
         // Reset voice-id to the last used/selected voice
         const lastVoice = localStorage.getItem('receptia_last_voice_id') || 'cartesia-Sofia';
@@ -3703,7 +3703,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 21 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.4.4 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.4.5 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -3820,7 +3820,7 @@
         {
           title: 'Aprovisionamiento de Clientes y Agentes IA',
           content: [
-            'El proceso de aprovisionamiento de un nuevo comercio consiste en rellenar el formulario de registro en la pestaña principal "Aprovisionar Agente":',
+            'El proceso de aprovisionamiento de un nuevo comercio consiste en rellenar el formulario de registro en la pestaña principal "Crear Cliente":',
             [
               'Datos del Comercio: Introduce la razón social, correo de acceso del cliente, y una descripción detallada de su negocio para entrenar a la IA.',
               'Especialidades y Catálogo de Precios: Define los servicios y tarifas del comercio para que la IA pueda informar con precisión a los clientes.',
@@ -3834,7 +3834,7 @@
         {
           title: 'Control del Ciclo de Vida del Cliente',
           content: [
-            'Desde la pestaña "Base de Clientes", puedes administrar los accesos y el estado de facturación de cada negocio registrado. Los estados disponibles son:',
+            'Desde la pestaña "Clientes", puedes administrar los accesos y el estado de facturación de cada negocio registrado. Los estados disponibles son:',
             [
               'Activo: El agente está contestando llamadas y el cliente tiene acceso total a su portal.',
               'Trial (Prueba): Estado inicial sin coste. Puedes definir una fecha de vencimiento del trial.',
@@ -5369,8 +5369,8 @@
     // GESTIÓN DE CLIENTES DESDE SUPABASE
     // ========================================================
 
-    let currentSortColumn = 'business_name';
-    let currentSortOrder = 'asc';
+    let currentSortColumn = localStorage.getItem('receptia_admin_sort_col') || 'business_name';
+    let currentSortOrder = localStorage.getItem('receptia_admin_sort_order') || 'asc';
 
     function sortClients(columnName) {
       if (currentSortColumn === columnName) {
@@ -5379,6 +5379,10 @@
         currentSortColumn = columnName;
         currentSortOrder = 'asc';
       }
+      
+      // Persistir en localStorage
+      localStorage.setItem('receptia_admin_sort_col', currentSortColumn);
+      localStorage.setItem('receptia_admin_sort_order', currentSortOrder);
       
       // Update UI headers
       updateSortHeaderUI();
@@ -5946,7 +5950,7 @@
       adminForm.reset();
       editingTenantId = null;
       isContractManuallyEdited = false;
-      formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Aprovisionar Nuevo Agente de Voz IA`;
+      formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Nuevo Cliente`;
       btnGenerateText.innerText = 'Generar Agente IA y Registrar';
       
       // Fechas por defecto
@@ -6392,7 +6396,7 @@
 
         // Reiniciar variables de edición
         editingTenantId = null;
-        formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Aprovisionar Nuevo Agente de Voz IA`;
+        formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Nuevo Cliente`;
         btnGenerateText.innerText = 'Generar Agente IA y Registrar';
 
         lucide.createIcons();
