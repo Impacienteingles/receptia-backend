@@ -145,12 +145,26 @@ async function useSupabaseAuthState(tenantId: string): Promise<{ state: Authenti
  * Inicializa y conecta una sesión de WhatsApp Web por cliente (tenant)
  */
 export async function initWhatsAppWebSession(tenantId: string): Promise<WASocket> {
-  // Si ya existe y está conectada, retornarla directamente
+  // Si ya existe y está en memoria:
   if (activeSockets.has(tenantId)) {
     const status = connectionStatus.get(tenantId);
     if (status === 'connected') {
       return activeSockets.get(tenantId)!;
     }
+    
+    // Si está conectando o en QR y se re-inicializa, cerramos el socket anterior para evitar fugas
+    try {
+      const oldSock = activeSockets.get(tenantId);
+      if (oldSock) {
+        logDebug(`[WhatsApp Web] Cerrando socket previo incompleto (estado: ${status}) para tenant ${tenantId}...`);
+        oldSock.ev.removeAllListeners('connection.update');
+        oldSock.ev.removeAllListeners('creds.update');
+        oldSock.end(undefined);
+      }
+    } catch (err: any) {
+      logDebug(`[WhatsApp Web WARNING] Error al cerrar socket previo para tenant ${tenantId}: ${err.message}`);
+    }
+    activeSockets.delete(tenantId);
   }
 
   logDebug(`[WhatsApp Web] Iniciando sesión para el tenant: ${tenantId}...`);

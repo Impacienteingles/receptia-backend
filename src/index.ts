@@ -179,6 +179,14 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
         success = true;
       }
       if (!success && lastError) throw lastError;
+
+      // BUG-03: Si el proveedor de WhatsApp cambia de QR a cualquier otro (e.g. twilio), cerrar la sesión de WhatsApp Web activa en memoria
+      if (existing.client_whatsapp_provider === 'qr' && savedTenant.client_whatsapp_provider !== 'qr') {
+        console.log(`[WhatsApp Cleanup] El proveedor de WhatsApp cambió de QR a ${savedTenant.client_whatsapp_provider} para ${existing.id}. Cerrando sesión QR...`);
+        disconnectWhatsAppWebSession(existing.id).catch(err => {
+          console.error(`Error al desconectar sesión QR tras cambio de proveedor:`, err.message);
+        });
+      }
     } else {
       // Crear un nuevo registro
       let attemptData: any = { ...tenantData };
