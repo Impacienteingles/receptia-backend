@@ -1271,7 +1271,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.30</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.31</span>
         </div>
       </header>
 
@@ -4229,17 +4229,16 @@
     }
 
     function updateThemeIcon() {
+      const btn = document.getElementById('theme-toggle-btn');
+      if (!btn) return;
       const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-      const icon = document.getElementById('theme-toggle-icon');
-      if (icon) {
-        if (theme === 'light') {
-          icon.setAttribute('data-lucide', 'moon');
-        } else {
-          icon.setAttribute('data-lucide', 'sun');
-        }
-        if (window.lucide && typeof window.lucide.createIcons === 'function') {
-          window.lucide.createIcons();
-        }
+      if (theme === 'light') {
+        btn.innerHTML = `<i data-lucide="moon" id="theme-toggle-icon" style="width: 16px; height: 16px; color: #475569;"></i>`;
+      } else {
+        btn.innerHTML = `<i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px; color: #e5e7eb;"></i>`;
+      }
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
       }
     }
 

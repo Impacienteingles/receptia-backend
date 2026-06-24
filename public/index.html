@@ -1716,7 +1716,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.9</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.10</span>
         </div>
       </header>
 
@@ -2589,17 +2589,15 @@
     })();
 
     function updateThemeIcon() {
-      const icon = document.getElementById('theme-toggle-icon');
-      if (!icon) return;
+      const btn = document.getElementById('theme-toggle-btn');
+      if (!btn) return;
       const activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
       if (activeTheme === 'light') {
-        icon.setAttribute('data-lucide', 'moon');
-        icon.style.color = '#475569';
+        btn.innerHTML = `<i data-lucide="moon" id="theme-toggle-icon" style="width: 16px; height: 16px; color: #475569;"></i>`;
       } else {
-        icon.setAttribute('data-lucide', 'sun');
-        icon.style.color = '#e5e7eb';
+        btn.innerHTML = `<i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px; color: #e5e7eb;"></i>`;
       }
-      if (window.lucide) {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
     }

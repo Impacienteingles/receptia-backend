@@ -59,6 +59,37 @@ async function resolveTenantId(req: Request): Promise<string> {
 }
 
 /**
+ * Calcula la duración estimada de la cita en base a la especialidad/servicio solicitado y el inquilino.
+ * Para Peluquería Carlos Romero (tenant_id = '62d1ed82-287c-4329-941b-50b578c15b14'):
+ * - Corte de caballero y tres niños: 4 bloques = 60 minutos
+ * - Corte de caballero y dos niños: 3 bloques = 45 minutos
+ * - Corte de caballero y un niño: 2 bloques = 30 minutos
+ * - Corte de caballero / Corte de niño: 1 bloque = 15 minutos
+ */
+function calculateDuration(specialty: string, tenantId: string): number {
+  if (tenantId !== '62d1ed82-287c-4329-941b-50b578c15b14') {
+    return 30; // 30 minutos por defecto para otros clientes
+  }
+
+  const text = (specialty || '').toLowerCase();
+  
+  if ((text.includes('tres') || text.includes('3')) && text.includes('niño') && text.includes('caballero')) {
+    return 60;
+  }
+  if ((text.includes('dos') || text.includes('2')) && text.includes('niño') && text.includes('caballero')) {
+    return 45;
+  }
+  if ((text.includes('un') || text.includes('1')) && text.includes('niño') && text.includes('caballero')) {
+    return 30;
+  }
+  if (text.includes('corte') || text.includes('pelo') || text.includes('caballero') || text.includes('niño')) {
+    return 15;
+  }
+  
+  return 15; // Por defecto para esta peluquería (1 bloque = 15 min)
+}
+
+/**
  * Endpoint para que Retell AI consulte los huecos libres.
  * Se espera que el LLM llame a esta función pasando la fecha (YYYY-MM-DD).
  */
@@ -115,8 +146,24 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
       }
     }
 
-    console.log(`Buscando disponibilidad para la fecha: ${date} (Tenant: ${tenantId}) (Calendario: ${calendarId})`);
-    const freeSlots = await listFreeSlots(tenantDetails.google_refresh_token, date, tenantDetails.working_hours, calendarId);
+    const isPeluqueria = tenantDetails.business_sector === 'peluqueria' || 
+                         (tenantDetails.business_name && (
+                           tenantDetails.business_name.toLowerCase().includes('peluquería') || 
+                           tenantDetails.business_name.toLowerCase().includes('peluqueria') || 
+                           tenantDetails.business_name.toLowerCase().includes('barber')
+                         ));
+    const slotDurationMin = isPeluqueria ? 15 : 30;
+    const applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14';
+
+    console.log(`Buscando disponibilidad para la fecha: ${date} (Tenant: ${tenantId}) (Calendario: ${calendarId}) (Slot: ${slotDurationMin}m) (BreakRule: ${applyBreakRule})`);
+    const freeSlots = await listFreeSlots(
+      tenantDetails.google_refresh_token,
+      date,
+      tenantDetails.working_hours,
+      calendarId,
+      slotDurationMin,
+      applyBreakRule
+    );
     
     console.log(`Huecos libres encontrados: ${freeSlots.join(', ')}`);
     res.json({
@@ -246,6 +293,54 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
     }
 
     const agentName = resolveAgentName(tenantDetails.voice_id);
+
+    const isPeluqueria = tenantDetails.business_sector === 'peluqueria' || 
+                         (tenantDetails.business_name && (
+                           tenantDetails.business_name.toLowerCase().includes('peluquería') || 
+                           tenantDetails.business_name.toLowerCase().includes('peluqueria') || 
+                           tenantDetails.business_name.toLowerCase().includes('barber')
+                         ));
+    const slotDurationMin = isPeluqueria ? 15 : 30;
+    const applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14';
+
+    // 1. Obtener la disponibilidad en tiempo real
+    const freeSlots = await listFreeSlots(
+      tenantDetails.google_refresh_token,
+      date,
+      tenantDetails.working_hours,
+      calendarId,
+      slotDurationMin,
+      applyBreakRule
+    );
+
+    // 2. Calcular cuántos bloques consume este servicio
+    const durationMinutes = calculateDuration(specialty, tenantId);
+    const numBlocksNeeded = Math.ceil(durationMinutes / slotDurationMin);
+
+    // 3. Generar la secuencia de horas que deben estar libres
+    const neededSlots: string[] = [];
+    const [startHour, startMin] = time.split(':').map(Number);
+    let currentSlotTime = new Date(`1970-01-01T${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}:00Z`);
+
+    for (let i = 0; i < numBlocksNeeded; i++) {
+      const timeStr = currentSlotTime.toISOString().substring(11, 16);
+      neededSlots.push(timeStr);
+      currentSlotTime.setUTCMinutes(currentSlotTime.getUTCMinutes() + slotDurationMin);
+    }
+
+    console.log(`[book-appointment] Cita requiere ${durationMinutes} minutos (${numBlocksNeeded} bloques). Ranuras requeridas: ${neededSlots.join(', ')}`);
+
+    // 4. Verificar que TODAS las ranuras requeridas estén libres
+    const allSlotsFree = neededSlots.every(slot => freeSlots.includes(slot));
+    if (!allSlotsFree) {
+      console.warn(`[book-appointment] Uno o más bloques requeridos no están libres: ${neededSlots.join(', ')}. Ocupados o infringiendo descansos.`);
+      res.json({
+        status: 'error',
+        message: `Lo siento, el horario de las ${time} para el ${date} ya no está disponible o no tiene suficiente espacio continuo (${durationMinutes} minutos). Por favor, consulta los huecos libres disponibles con la herramienta correspondiente y ofrece otro horario al paciente.`
+      });
+      return;
+    }
+
     const event = await bookAppointment(
       tenantDetails.google_refresh_token,
       date,
@@ -257,7 +352,8 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
       calendarId,
       agentName,
       tenantDetails.business_name,
-      tenantDetails.business_sector
+      tenantDetails.business_sector,
+      durationMinutes
     );
 
     console.log('Cita agendada correctamente:', event.htmlLink);
@@ -506,18 +602,43 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
 
     const appToReschedule = appointments[0];
 
+    const isPeluqueria = tenantDetails.business_sector === 'peluqueria' || 
+                         (tenantDetails.business_name && (
+                           tenantDetails.business_name.toLowerCase().includes('peluquería') || 
+                           tenantDetails.business_name.toLowerCase().includes('peluqueria') || 
+                           tenantDetails.business_name.toLowerCase().includes('barber')
+                         ));
+    const slotDurationMin = isPeluqueria ? 15 : 30;
+    const applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14';
+
     // 2. Comprobar disponibilidad para el nuevo hueco
     const freeSlots = await listFreeSlots(
       tenantDetails.google_refresh_token,
       new_date,
       tenantDetails.working_hours,
-      appToReschedule.google_calendar_id || 'primary'
+      appToReschedule.google_calendar_id || 'primary',
+      slotDurationMin,
+      applyBreakRule
     );
 
-    if (!freeSlots.includes(new_time)) {
+    const durationMinutes = calculateDuration(appToReschedule.specialty, tenantId);
+    const numBlocksNeeded = Math.ceil(durationMinutes / slotDurationMin);
+
+    const neededSlots: string[] = [];
+    const [startHour, startMin] = new_time.split(':').map(Number);
+    let currentSlotTime = new Date(`1970-01-01T${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}:00Z`);
+
+    for (let i = 0; i < numBlocksNeeded; i++) {
+      const timeStr = currentSlotTime.toISOString().substring(11, 16);
+      neededSlots.push(timeStr);
+      currentSlotTime.setUTCMinutes(currentSlotTime.getUTCMinutes() + slotDurationMin);
+    }
+
+    const allSlotsFree = neededSlots.every(slot => freeSlots.includes(slot));
+    if (!allSlotsFree) {
       res.json({
         status: 'success',
-        message: `Lo siento, el horario de las ${new_time} para el ${new_date} no se encuentra disponible. Los horarios libres para ese día son: ${freeSlots.join(', ')}.`
+        message: `Lo siento, el horario de las ${new_time} para el ${new_date} no tiene suficiente espacio disponible de forma continua (${durationMinutes} minutos). Los horarios libres para ese día son: ${freeSlots.join(', ')}.`
       });
       return;
     }
@@ -536,7 +657,8 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
         appToReschedule.specialty,
         appToReschedule.google_calendar_id || 'primary',
         tenantDetails.business_name,
-        tenantDetails.business_sector
+        tenantDetails.business_sector,
+        durationMinutes
       );
       if (updatedEvent && updatedEvent.start?.dateTime) {
         newDateTime = updatedEvent.start.dateTime;

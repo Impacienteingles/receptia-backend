@@ -89,19 +89,24 @@ export async function getTokensFromCode(code: string) {
  * Horario: 09:00 a 14:00 y 16:00 a 20:00 (Español)
  * Duración: 30 minutos por slot.
  */
-function getWorkingSlots(dateStr: string): Date[] {
+function getWorkingSlots(dateStr: string, slotDurationMin: number = 30): Date[] {
   const slots: Date[] = [];
+  const stepMs = slotDurationMin * 60 * 1000;
   
-  // Turno mañana: 09:00 a 14:00 (último slot empieza a las 13:30)
-  for (let hour = 9; hour < 14; hour++) {
-    slots.push(new Date(`${dateStr}T${String(hour).padStart(2, '0')}:00:00`));
-    slots.push(new Date(`${dateStr}T${String(hour).padStart(2, '0')}:30:00`));
+  // Turno mañana: 09:00 a 14:00 (último slot termina a las 14:00)
+  let current = new Date(`${dateStr}T09:00:00`);
+  const limitManana = new Date(`${dateStr}T14:00:00`);
+  while (current.getTime() + stepMs <= limitManana.getTime()) {
+    slots.push(new Date(current.getTime()));
+    current.setTime(current.getTime() + stepMs);
   }
   
-  // Turno tarde: 16:00 a 20:00 (último slot empieza a las 19:30)
-  for (let hour = 16; hour < 20; hour++) {
-    slots.push(new Date(`${dateStr}T${String(hour).padStart(2, '0')}:00:00`));
-    slots.push(new Date(`${dateStr}T${String(hour).padStart(2, '0')}:30:00`));
+  // Turno tarde: 16:00 a 20:00 (último slot termina a las 20:00)
+  current = new Date(`${dateStr}T16:00:00`);
+  const limitTarde = new Date(`${dateStr}T20:00:00`);
+  while (current.getTime() + stepMs <= limitTarde.getTime()) {
+    slots.push(new Date(current.getTime()));
+    current.setTime(current.getTime() + stepMs);
   }
 
   return slots;
@@ -110,8 +115,9 @@ function getWorkingSlots(dateStr: string): Date[] {
 /**
  * Genera slots laborables dinámicamente según el horario semanal guardado en formato JSONB.
  */
-function getWorkingSlotsDynamic(dateStr: string, workingHours: any): Date[] {
+function getWorkingSlotsDynamic(dateStr: string, workingHours: any, slotDurationMin: number = 30): Date[] {
   const slots: Date[] = [];
+  const stepMs = slotDurationMin * 60 * 1000;
   
   // Obtener el día de la semana de la fecha dada (0 = Domingo, 1 = Lunes, etc.)
   const dateObj = new Date(`${dateStr}T12:00:00`); // Evita desajustes de zona horaria
@@ -134,10 +140,9 @@ function getWorkingSlotsDynamic(dateStr: string, workingHours: any): Date[] {
     let current = new Date(`${dateStr}T${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}:00`);
     const limit = new Date(`${dateStr}T${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}:00`);
 
-    // Crear slots de 30 minutos
-    while (current.getTime() + 30 * 60 * 1000 <= limit.getTime()) {
+    while (current.getTime() + stepMs <= limit.getTime()) {
       slots.push(new Date(current.getTime()));
-      current.setTime(current.getTime() + 30 * 60 * 1000);
+      current.setTime(current.getTime() + stepMs);
     }
   }
 
@@ -145,9 +150,81 @@ function getWorkingSlotsDynamic(dateStr: string, workingHours: any): Date[] {
 }
 
 /**
+ * Verifica si agendar una cita en el rango [slotStart, slotEnd] infringe la regla de descansos consecutivos de Peluquería Carlos Romero:
+ * "Cada dos bloques de trabajo (30 min total), debe quedar 1 bloque libre (15 min) de descanso,
+ * excepto cuando sea una sola cita de 3 o 4 bloques."
+ */
+function checkConsecutiveBlockRule(
+  slotStart: number,
+  slotEnd: number,
+  events: any[]
+): boolean {
+  let backwardDuration = 0;
+  let backwardCount = 0;
+  let currentStart = slotStart;
+  let found = true;
+
+  while (found) {
+    found = false;
+    for (const event of events) {
+      if (!event.start?.dateTime || !event.end?.dateTime) continue;
+      const eventStart = new Date(event.start.dateTime).getTime();
+      const eventEnd = new Date(event.end.dateTime).getTime();
+      // Si el evento termina justo donde empieza nuestro bloque actual
+      if (Math.abs(eventEnd - currentStart) < 1000) {
+        backwardDuration += (eventEnd - eventStart);
+        backwardCount++;
+        currentStart = eventStart;
+        found = true;
+        break;
+      }
+    }
+  }
+
+  let forwardDuration = 0;
+  let forwardCount = 0;
+  let currentEnd = slotEnd;
+  found = true;
+
+  while (found) {
+    found = false;
+    for (const event of events) {
+      if (!event.start?.dateTime || !event.end?.dateTime) continue;
+      const eventStart = new Date(event.start.dateTime).getTime();
+      const eventEnd = new Date(event.end.dateTime).getTime();
+      // Si el evento empieza justo donde termina nuestro bloque actual
+      if (Math.abs(eventStart - currentEnd) < 1000) {
+        forwardDuration += (eventEnd - eventStart);
+        forwardCount++;
+        currentEnd = eventEnd;
+        found = true;
+        break;
+      }
+    }
+  }
+
+  const totalDurationMin = ((slotEnd - slotStart) + backwardDuration + forwardDuration) / (60 * 1000);
+  const totalSeparateApps = 1 + backwardCount + forwardCount;
+
+  // Si hay más de una cita distinta encadenada y la duración total combinada supera los 30 minutos (2 bloques)
+  if (totalSeparateApps > 1 && totalDurationMin > 30) {
+    return true; // Bloqueado
+  }
+
+  return false;
+}
+
+/**
  * Obtiene los huecos libres para una fecha específica.
  */
-export async function listFreeSlots(refreshToken: string, dateStr: string, workingHours?: any, calendarId?: string) {
+export async function listFreeSlots(
+  refreshToken: string, 
+  dateStr: string, 
+  workingHours?: any, 
+  calendarId?: string,
+  slotDurationMin: number = 30,
+  applyPeluqueriaBreakRule: boolean = false
+) {
   const calendar = await getCalendarClient(refreshToken);
   const targetCalendarId = calendarId || 'primary';
   
@@ -166,14 +243,15 @@ export async function listFreeSlots(refreshToken: string, dateStr: string, worki
 
   const events = response.data.items || [];
   const workingSlots = workingHours 
-    ? getWorkingSlotsDynamic(dateStr, workingHours)
-    : getWorkingSlots(dateStr);
+    ? getWorkingSlotsDynamic(dateStr, workingHours, slotDurationMin)
+    : getWorkingSlots(dateStr, slotDurationMin);
   const freeSlots: string[] = [];
+  const stepMs = slotDurationMin * 60 * 1000;
 
   // Filtrar los slots de trabajo que no colisionan con eventos del calendario
   for (const slot of workingSlots) {
     const slotStart = slot.getTime();
-    const slotEnd = slotStart + 30 * 60 * 1000; // 30 minutos
+    const slotEnd = slotStart + stepMs;
 
     const isBusy = events.some((event: any) => {
       if (!event.start?.dateTime || !event.end?.dateTime) return false;
@@ -185,6 +263,11 @@ export async function listFreeSlots(refreshToken: string, dateStr: string, worki
     });
 
     if (!isBusy) {
+      // Si aplica la regla de descansos de Peluquería Carlos Romero, comprobarla
+      if (applyPeluqueriaBreakRule && checkConsecutiveBlockRule(slotStart, slotEnd, events)) {
+        continue; // Omitir esta ranura
+      }
+
       // Formatear hora legible en español (ej: "09:30", "16:00")
       const timeString = slot.toLocaleTimeString('es-ES', {
         hour: '2-digit',
@@ -212,14 +295,15 @@ export async function bookAppointment(
   calendarId?: string,
   agentName?: string,
   businessName?: string,
-  businessSector?: string
+  businessSector?: string,
+  durationMinutes: number = 30
 ) {
   const calendar = await getCalendarClient(refreshToken);
   const targetCalendarId = calendarId || 'primary';
   
   // Calcular hora de inicio y fin tratando la entrada como UTC para evitar desajustes de zona horaria local del servidor
   const startParsed = new Date(`${dateStr}T${timeStr}:00Z`);
-  const endParsed = new Date(startParsed.getTime() + 30 * 60 * 1000); // 30 minutos
+  const endParsed = new Date(startParsed.getTime() + durationMinutes * 60 * 1000);
 
   const startLocalStr = `${dateStr}T${timeStr}:00`;
   const endLocalStr = `${endParsed.getUTCFullYear()}-${String(endParsed.getUTCMonth() + 1).padStart(2, '0')}-${String(endParsed.getUTCDate()).padStart(2, '0')}T${String(endParsed.getUTCHours()).padStart(2, '0')}:${String(endParsed.getUTCMinutes()).padStart(2, '0')}:00`;
@@ -299,14 +383,15 @@ export async function updateAppointment(
   specialty: string,
   calendarId?: string,
   businessName?: string,
-  businessSector?: string
+  businessSector?: string,
+  durationMinutes: number = 30
 ) {
   const calendar = await getCalendarClient(refreshToken);
   const targetCalendarId = calendarId || 'primary';
   
   // Calcular hora de inicio y fin tratando la entrada como UTC para evitar desajustes de zona horaria local del servidor
   const startParsed = new Date(`${dateStr}T${timeStr}:00Z`);
-  const endParsed = new Date(startParsed.getTime() + 30 * 60 * 1000); // 30 minutos
+  const endParsed = new Date(startParsed.getTime() + durationMinutes * 60 * 1000);
 
   const startLocalStr = `${dateStr}T${timeStr}:00`;
   const endLocalStr = `${endParsed.getUTCFullYear()}-${String(endParsed.getUTCMonth() + 1).padStart(2, '0')}-${String(endParsed.getUTCDate()).padStart(2, '0')}T${String(endParsed.getUTCHours()).padStart(2, '0')}:${String(endParsed.getUTCMinutes()).padStart(2, '0')}:00`;
