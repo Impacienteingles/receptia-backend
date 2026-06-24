@@ -1246,6 +1246,10 @@
           <i data-lucide="file-text"></i>
           <span>Contratos</span>
         </button>
+        <button class="nav-item" id="btn-tab-prospecting" onclick="switchTab('prospecting')">
+          <i data-lucide="target"></i>
+          <span>Prospección B2B</span>
+        </button>
         <button class="nav-item" id="btn-tab-backup" onclick="switchTab('backup')">
           <i data-lucide="database"></i>
           <span>Copia de Seguridad</span>
@@ -2421,6 +2425,80 @@
           </div>
         </div>
 
+        <!-- TAB PROSPECTING: PROSPECCIÓN AUTOMATIZADA B2B -->
+        <div id="tab-prospecting" class="tab-content">
+          <!-- Formulario de búsqueda -->
+          <div class="card" style="margin-bottom: 2rem;">
+            <h2 class="card-title" style="color: var(--primary-light);">
+              <i data-lucide="target"></i>
+              Prospección Automatizada B2B
+            </h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4;">
+              Busque clientes potenciales B2B en Google Maps según la ciudad y sector, extraiga sus datos de contacto del sitio web y active el pipeline automático para crearles un panel demo y un audio personalizado con Cartesia.
+            </p>
+            <form id="prospect-search-form" onsubmit="searchProspectLeads(event)" class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) 150px; gap: 1rem; align-items: flex-end;">
+              <div class="form-group">
+                <label for="prospect-city">Ciudad / Región</label>
+                <input type="text" id="prospect-city" placeholder="Ej: Madrid, Barcelona" required style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="prospect-country">País</label>
+                <input type="text" id="prospect-country" value="España" required style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="prospect-sector">Sector del Negocio</label>
+                <select id="prospect-sector" required style="width: 100%;">
+                  <option value="peluqueria">Peluquería / Estética</option>
+                  <option value="dental">Clínica Dental</option>
+                  <option value="medica">Clínica Médica</option>
+                  <option value="fisioterapia">Fisioterapia</option>
+                  <option value="abogados">Bufete de Abogados</option>
+                </select>
+              </div>
+              <button type="submit" class="btn" id="btn-prospect-search" style="height: 42px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border: none;">
+                <i data-lucide="search" style="width: 16px; height: 16px;"></i>
+                <span>Buscar Leads</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Listado de Leads Extraídos -->
+          <div class="card">
+            <h2 class="card-title">
+              <span>
+                <i data-lucide="list"></i>
+                Leads de Negocios Encontrados
+              </span>
+              <button class="btn btn-secondary" onclick="exportProspectsCSV()" style="margin-left: auto; font-size: 0.85rem; padding: 0.4rem 1rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="download" style="width: 14px; height: 14px;"></i> Exportar CSV
+              </button>
+            </h2>
+
+            <div style="overflow-x: auto; margin-top: 1rem;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left;" class="table">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.85rem;">
+                    <th style="padding: 1rem 0.5rem;">Nombre del Negocio</th>
+                    <th style="padding: 1rem 0.5rem;">Email</th>
+                    <th style="padding: 1rem 0.5rem;">Teléfono</th>
+                    <th style="padding: 1rem 0.5rem;">Sitio Web</th>
+                    <th style="padding: 1rem 0.5rem;">Especialidades</th>
+                    <th style="padding: 1rem 0.5rem; text-align: center;">Estado Demo</th>
+                    <th style="padding: 1rem 0.5rem; text-align: right;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="prospects-tbody">
+                  <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                      Realice una búsqueda para extraer clientes potenciales.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </main>
     </div>
 
@@ -3180,6 +3258,8 @@
         fetchContracts();
       } else if (tabName === 'billing') {
         fetchPlans();
+      } else if (tabName === 'prospecting') {
+        fetchProspects();
       } else if (tabName === 'settings') {
         fetchSettings();
       }
@@ -6109,6 +6189,205 @@
 
       showCustomAlert('Los datos del cliente se han cargado como plantilla. Introduce un nuevo email y un nombre de negocio, y haz clic en "Generar Agente IA y Registrar Duplicado" para crear el nuevo cliente.', 'Ficha cargada para duplicar', 'info');
       lucide.createIcons();
+    }
+
+    // ========================================================
+    // SECCIÓN DE PROSPECCIÓN B2B Y DEMOS
+    // ========================================================
+    let allProspects = [];
+    let refreshProspectsInterval = null;
+
+    async function fetchProspects() {
+      try {
+        const response = await fetch('/api/admin/prospects');
+        if (!response.ok) throw new Error('Error al conectar con la base de datos de prospectos.');
+        const data = await response.json();
+        allProspects = data.prospects || [];
+        renderProspectsTable();
+
+        // Controlar si hay algún prospecto en estado de procesamiento (para auto-refrescar)
+        const hasProcessing = allProspects.some(p => p.status === 'demo_created' || p.status === 'audio_generated');
+        if (hasProcessing) {
+          if (!refreshProspectsInterval) {
+            console.log('[Prospecting] Iniciando intervalo de auto-refresco...');
+            refreshProspectsInterval = setInterval(fetchProspects, 5000);
+          }
+        } else {
+          if (refreshProspectsInterval) {
+            console.log('[Prospecting] Deteniendo intervalo de auto-refresco.');
+            clearInterval(refreshProspectsInterval);
+            refreshProspectsInterval = null;
+          }
+        }
+      } catch (err) {
+        console.error('Error al listar prospectos:', err);
+      }
+    }
+
+    function renderProspectsTable() {
+      const tbody = document.getElementById('prospects-tbody');
+      tbody.innerHTML = '';
+
+      if (allProspects.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No se encontraron prospectos extraídos. Realiza una búsqueda arriba.</td></tr>`;
+        return;
+      }
+
+      allProspects.forEach(p => {
+        const row = document.createElement('tr');
+        row.style.borderBottom = '1px solid var(--border-color)';
+
+        // Estado Badge
+        let statusBadge = `<span class="badge badge-success" style="background: rgba(156,163,175,0.1); color: var(--text-muted); border-color: rgba(156,163,175,0.2);">Extraído</span>`;
+        if (p.status === 'demo_created') {
+          statusBadge = `<span class="badge badge-info" style="color: #60a5fa; background: rgba(96,165,250,0.1); border-color: rgba(96,165,250,0.2);"><i class="spinner-small" style="display:inline-block; width:10px; height:10px; border:2px solid #60a5fa; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Demo Creada</span>`;
+        } else if (p.status === 'audio_generated') {
+          statusBadge = `<span class="badge badge-info" style="color: #c084fc; background: rgba(192,132,252,0.1); border-color: rgba(192,132,252,0.2);"><i class="spinner-small" style="display:inline-block; width:10px; height:10px; border:2px solid #c084fc; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Audio Generado</span>`;
+        } else if (p.status === 'email_sent') {
+          statusBadge = `<span class="badge badge-success" style="color: #34d399; background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.2);">✓ Email Enviado</span>`;
+        } else if (p.status === 'failed') {
+          const tooltip = p.error_details ? `title="${p.error_details.replace(/"/g, '&quot;')}"` : '';
+          statusBadge = `<span class="badge badge-danger" ${tooltip} style="cursor:help;">✗ Fallido ℹ️</span>`;
+        }
+
+        // Specialties HTML
+        const specialtiesStr = (p.specialties || []).slice(0, 3).join(', ') || '-';
+
+        // Botón de acción según el estado
+        let actionBtn = '';
+        if (p.status === 'demo_created' || p.status === 'audio_generated') {
+          actionBtn = `<button class="btn btn-secondary" disabled style="opacity: 0.6; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
+                         <i data-lucide="loader" class="spin" style="width: 13px; height: 13px;"></i> Procesando...
+                       </button>`;
+        } else if (p.status === 'email_sent') {
+          actionBtn = `<button class="btn btn-secondary" onclick="triggerOutreachPipeline('${p.id}')" style="color: #60a5fa; border-color: rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Reenviar correo de demo">
+                         <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Reenviar
+                       </button>`;
+        } else {
+          actionBtn = `<button class="btn" onclick="triggerOutreachPipeline('${p.id}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #fff; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Crear demo, generar audio y enviar email">
+                         <i data-lucide="rocket" style="width: 13px; height: 13px;"></i> Activar Demo
+                       </button>`;
+        }
+
+        // Links
+        const websiteLink = p.website && p.website !== 'No disponible'
+          ? `<a href="${p.website}" target="_blank" style="color: var(--primary-light); text-decoration: none;">Visitar web ↗</a>`
+          : '<span style="color: var(--text-muted);">No disponible</span>';
+
+        row.innerHTML = `
+          <td style="font-weight: 600; color: #fff; padding: 0.85rem 0.5rem;">${p.business_name}</td>
+          <td style="padding: 0.85rem 0.5rem;">${p.email || 'No disponible'}</td>
+          <td style="padding: 0.85rem 0.5rem; font-family: monospace;">${p.phone || 'No disponible'}</td>
+          <td style="padding: 0.85rem 0.5rem;">${websiteLink}</td>
+          <td style="padding: 0.85rem 0.5rem; font-size:0.8rem; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${p.specialties?.join(', ') || ''}">${specialtiesStr}</td>
+          <td style="padding: 0.85rem 0.5rem; text-align: center;">${statusBadge}</td>
+          <td style="padding: 0.85rem 0.5rem; text-align: right; display: flex; gap: 0.3rem; justify-content: flex-end; align-items: center;">
+            ${actionBtn}
+            ${p.demo_url ? `
+              <a href="${p.demo_url}" target="_blank" class="btn btn-secondary" style="color: var(--success); border-color: rgba(52, 211, 153, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Abrir panel demo">
+                <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
+              </a>
+            ` : ''}
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+      lucide.createIcons();
+    }
+
+    async function searchProspectLeads(event) {
+      event.preventDefault();
+      const city = document.getElementById('prospect-city').value.trim();
+      const country = document.getElementById('prospect-country').value.trim();
+      const sector = document.getElementById('prospect-sector').value;
+
+      const btn = document.getElementById('btn-prospect-search');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="spinner-small" style="display:inline-block; width:16px; height:16px; border:2px solid #fff; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite;"></i> <span>Buscando leads...</span>`;
+
+      try {
+        const response = await fetch('/api/admin/prospects/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ city, country, sector })
+        });
+        
+        const data = await response.json();
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al buscar leads en el servidor.');
+        }
+
+        showCustomAlert(data.message, 'Extracción Exitosa', 'success');
+        await fetchProspects();
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        showCustomAlert(err.message, 'Error de búsqueda', 'error');
+      }
+    }
+
+    async function triggerOutreachPipeline(prospectId) {
+      try {
+        const response = await fetch('/api/admin/prospects/trigger-pipeline', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ prospect_id: prospectId })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Fallo en la petición del pipeline.');
+
+        showCustomAlert(data.message, 'Pipeline Iniciado', 'info');
+        
+        // Actualizar tabla y arrancar auto-refresco
+        await fetchProspects();
+      } catch (err) {
+        showCustomAlert(err.message, 'Error en Pipeline', 'error');
+      }
+    }
+
+    function exportProspectsCSV() {
+      if (allProspects.length === 0) {
+        showCustomAlert('No hay prospectos para exportar.', 'Sin Datos', 'warning');
+        return;
+      }
+
+      // Definir cabecera y filas
+      const headers = ['Nombre', 'Email', 'Telefono', 'Sitio Web', 'Direccion', 'Sector', 'Especialidades', 'Estado', 'Demo URL', 'Audio URL'];
+      const rows = allProspects.map(p => [
+        p.business_name,
+        p.email || '',
+        p.phone || '',
+        p.website || '',
+        `"${(p.address || '').replace(/"/g, '""')}"`,
+        p.sector,
+        `"${(p.specialties || []).join(', ')}"`,
+        p.status,
+        p.demo_url || '',
+        p.audio_url || ''
+      ]);
+
+      // Componer contenido CSV
+      const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      
+      // Descargar archivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `prospects_receptia_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     // Resetear el formulario de aprovisionamiento a su estado original

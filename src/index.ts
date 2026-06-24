@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import webhookRouter from './routes/webhook';
+import prospectingRouter from './routes/prospecting';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
 import { supabase, getSettingVal } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName } from './services/retell';
@@ -2753,6 +2754,7 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
 
 // Registrar rutas de webhook
 app.use('/api/webhook', webhookRouter);
+app.use('/api/admin/prospects', prospectingRouter);
 
 
 
@@ -2817,12 +2819,76 @@ setInterval(async () => {
   }
 }, 5 * 60 * 1000); // Ejecutar cada 5 minutos
 
+// Migraciones de Base de Datos para Prospección B2B
+async function runDatabaseMigrations() {
+  const { Client } = require('pg');
+  const projectRef = 'vnlbxfhzfuamzyqylkvd';
+  const password = '1S67.!3CFitNmj';
+
+  const client = new Client({
+    host: `db.${projectRef}.supabase.co`,
+    port: 5432,
+    database: 'postgres',
+    user: 'postgres',
+    password,
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 10000
+  });
+
+  try {
+    console.log('[Bootstrap Migration] Conectando a Supabase para verificar tablas de prospección...');
+    await client.connect();
+    
+    // 1. Crear ENUM de estados de prospección si no existe
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'prospect_status') THEN
+          CREATE TYPE prospect_status AS ENUM ('extracted', 'demo_created', 'audio_generated', 'email_sent', 'failed');
+        END IF;
+      END
+      $$;
+    `);
+
+    // 2. Crear tabla prospects
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS prospects (
+        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+        business_name VARCHAR NOT NULL,
+        email VARCHAR,
+        phone VARCHAR,
+        website VARCHAR,
+        address TEXT,
+        sector VARCHAR,
+        specialties TEXT[],
+        demo_tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
+        demo_url VARCHAR,
+        audio_url VARCHAR,
+        status prospect_status DEFAULT 'extracted',
+        error_details TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
+    `);
+    
+    console.log('[Bootstrap Migration] ✅ Tabla prospects y tipo prospect_status asegurados.');
+    await client.end();
+  } catch (err: any) {
+    console.warn('[Bootstrap Migration WARNING] Error al ejecutar migración en arranque:', err.message);
+  }
+}
+
 // Arrancar el servidor
 app.listen(PORT, () => {
   console.log(`\n========================================`);
   console.log(` Servidor SanaSalud escuchando en: http://localhost:${PORT}`);
   console.log(`========================================\n`);
   
+  // Ejecutar migraciones
+  runDatabaseMigrations().catch(err => {
+    console.error('[Bootstrap Migration] Error en migración inicial:', err.message);
+  });
+
   // Arrancar automáticamente las sesiones activas de WhatsApp Web en segundo plano
   autoStartActiveSessions().catch(err => {
     console.error('[WhatsApp Web Boot] Error al arrancar sesiones de WhatsApp:', err.message);
