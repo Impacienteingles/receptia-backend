@@ -1396,14 +1396,20 @@
       }
       .plan-badge {
         position: absolute;
-        top: 1rem;
-        right: 1rem;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
         background: #8b5cf6;
         color: #fff;
         font-size: 0.75rem;
         font-weight: 600;
         padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
+        border-radius: 12px;
+        white-space: normal;
+        text-align: center;
+        width: max-content;
+        max-width: 90%;
+        border: 1px solid rgba(255,255,255,0.1);
       }
       .plan-name {
         font-size: 1.25rem;
@@ -1878,6 +1884,90 @@
         gridAnnually.style.display = 'flex';
       }
       lucide.createIcons();
+    }
+
+    async function loadLandingPlans() {
+      try {
+        const res = await fetch('/api/plans');
+        if (!res.ok) throw new Error('Error al obtener planes');
+        const data = await res.json();
+        const plans = data.plans || [];
+        
+        const gridMonthly = document.getElementById('plans-grid-monthly');
+        const gridAnnually = document.getElementById('plans-grid-annually');
+        
+        if (!gridMonthly || !gridAnnually) return;
+        
+        // Limpiar grids
+        gridMonthly.innerHTML = '';
+        gridAnnually.innerHTML = '';
+        
+        // Filtrar y renderizar planes mensuales
+        const monthlyPlans = plans.filter(p => p.cycle === 'monthly');
+        monthlyPlans.forEach(plan => {
+          const isPremium = plan.id.startsWith('premium');
+          const card = document.createElement('div');
+          card.className = `plan-card${isPremium ? ' popular' : ''}`;
+          card.style.cssText = "display: flex; flex-direction: column; width: 100%; max-width: 380px; position: relative;";
+          
+          let badgeHtml = '';
+          if (plan.description) {
+            const badgeBg = isPremium ? '' : 'background: var(--accent);';
+            badgeHtml = `<span class="plan-badge" style="${badgeBg}">${plan.description}</span>`;
+          }
+          
+          const featuresHtml = (plan.features || []).map(f => `<li><i data-lucide="check"></i> ${f}</li>`).join('');
+          
+          card.innerHTML = `
+            ${badgeHtml}
+            <div class="plan-name" style="margin-top: 1rem;">${plan.name}</div>
+            <div class="plan-price">
+              <span class="plan-price-num">${Math.round(plan.price)}€</span>
+              <span class="plan-price-period">/ mes</span>
+            </div>
+            <ul class="plan-features" style="flex-grow: 1;">
+              ${featuresHtml}
+            </ul>
+            <button class="btn" onclick="openSubscribeModal('${plan.id}', '${plan.name}', ${plan.price}, 'mes')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
+          `;
+          gridMonthly.appendChild(card);
+        });
+        
+        // Filtrar y renderizar planes anuales
+        const annuallyPlans = plans.filter(p => p.cycle === 'annually');
+        annuallyPlans.forEach(plan => {
+          const isPremium = plan.id.startsWith('premium');
+          const card = document.createElement('div');
+          card.className = `plan-card${isPremium ? ' popular' : ''}`;
+          card.style.cssText = "display: flex; flex-direction: column; width: 100%; max-width: 380px; position: relative;";
+          
+          let badgeHtml = '';
+          if (plan.description) {
+            const badgeBg = isPremium ? '' : 'background: var(--accent);';
+            badgeHtml = `<span class="plan-badge" style="${badgeBg}">${plan.description}</span>`;
+          }
+          
+          const featuresHtml = (plan.features || []).map(f => `<li><i data-lucide="check"></i> ${f}</li>`).join('');
+          
+          card.innerHTML = `
+            ${badgeHtml}
+            <div class="plan-name" style="margin-top: 1rem;">${plan.name}</div>
+            <div class="plan-price">
+              <span class="plan-price-num">${Math.round(plan.price)}€</span>
+              <span class="plan-price-period">/ año</span>
+            </div>
+            <ul class="plan-features" style="flex-grow: 1;">
+              ${featuresHtml}
+            </ul>
+            <button class="btn" onclick="openSubscribeModal('${plan.id}', '${plan.name}', ${plan.price}, 'año')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
+          `;
+          gridAnnually.appendChild(card);
+        });
+        
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Error al cargar planes dinámicos:', err);
+      }
     }
 
     let selectedSubscribePlanId = '';
@@ -4033,6 +4123,7 @@
         if (window.completeAppLoading) {
           window.completeAppLoading();
         }
+        loadLandingPlans();
         lucide.createIcons();
         return;
       }

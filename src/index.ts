@@ -1606,6 +1606,58 @@ app.post('/api/payments/checkout-success', async (req, res): Promise<void> => {
   }
 });
 
+// Ruta pública para listar planes en la landing page
+app.get('/api/plans', async (req, res): Promise<void> => {
+  try {
+    const { data: plans, error } = await supabase.from('plans').select('*').order('price', { ascending: true });
+    if (error) {
+      if (error.code === '42P01') {
+        const defaultPlans = [
+          {
+            id: 'estandar_mensual',
+            name: 'Plan Estándar Mensual',
+            price: 149.00,
+            cycle: 'monthly',
+            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.20€/min'],
+            description: 'Plan estándar para medianos y pequeños comercios.'
+          },
+          {
+            id: 'premium_mensual',
+            name: 'Plan Premium Mensual',
+            price: 249.00,
+            cycle: 'monthly',
+            features: ['Todo lo del Plan Estándar', 'Conexión SIP Zadarma avanzada', 'Soporte de Voz ElevenLabs de alta calidad', 'Prompt e instrucciones optimizadas', 'Hasta 500 minutos incluidos / mes', 'Minuto adicional a 0.20€/min'],
+            description: 'Más Popular'
+          },
+          {
+            id: 'estandar_anual',
+            name: 'Plan Estándar Anual',
+            price: 1290.00,
+            cycle: 'annually',
+            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.20€/min', 'Ahorro de casi 3 meses de suscripción'],
+            description: 'Ahorro de casi 3 meses de suscripción'
+          },
+          {
+            id: 'premium_anual',
+            name: 'Plan Premium Anual',
+            price: 2290.00,
+            cycle: 'annually',
+            features: ['Todo lo del Plan Premium', 'Soporte VIP priorizado 24/7', 'Ahorro de 2 meses de suscripción', 'Minutos ilimitados controlados'],
+            description: 'Ahorro de 2 meses de suscripción'
+          }
+        ];
+        res.json({ plans: defaultPlans });
+        return;
+      }
+      throw error;
+    }
+    res.json({ plans });
+  } catch (err: any) {
+    console.error('Error al listar planes públicos:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 1. Gestión de Planes de Precios
 app.get('/api/admin/plans', async (req, res): Promise<void> => {
   try {
