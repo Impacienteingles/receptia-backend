@@ -85,6 +85,50 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
   }
 });
 
+// Nuevo endpoint para autenticación de inquilinos con Email y PIN
+app.post('/api/auth/login', async (req, res): Promise<void> => {
+  const { email, pin } = req.body;
+  if (!email || !pin) {
+    res.status(400).json({ error: 'El email y el PIN son obligatorios.' });
+    return;
+  }
+
+  try {
+    const { data: tenant, error } = await supabase
+      .from('tenants')
+      .select('id, admin_pin, business_name')
+      .eq('email', email.trim().toLowerCase())
+      .eq('is_archived', false)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!tenant) {
+      res.status(404).json({ error: 'El correo electrónico no está registrado o el cliente está archivado.' });
+      return;
+    }
+
+    if (!tenant.admin_pin) {
+      // El inquilino se ha registrado pero aún no ha configurado su PIN
+      res.status(400).json({ 
+        error: 'Tu cuenta aún no tiene un PIN configurado. Por favor, accede usando el enlace directo enviado a tu correo o contacta con el soporte para establecer tu primer PIN.',
+        needs_initial_setup: true,
+        tenant_id: tenant.id
+      });
+      return;
+    }
+
+    if (tenant.admin_pin !== pin.trim()) {
+      res.status(401).json({ error: 'El PIN de acceso introducido es incorrecto.' });
+      return;
+    }
+
+    res.json({ success: true, tenant_id: tenant.id });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 2. Registrar o actualizar un inquilino
 app.post('/api/tenants', async (req, res): Promise<void> => {
   const { 
@@ -111,7 +155,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     twilio_whatsapp_number,
     client_enable_multi_professional,
     client_enable_no_show_deposits,
-    whatsapp_immediate_notification_enabled
+    whatsapp_immediate_notification_enabled,
+    business_sector
   } = req.body;
 
   if (!business_name || !email) {
@@ -149,6 +194,7 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (twilio_account_sid !== undefined) tenantData.twilio_account_sid = twilio_account_sid;
     if (twilio_auth_token !== undefined) tenantData.twilio_auth_token = twilio_auth_token;
     if (twilio_whatsapp_number !== undefined) tenantData.twilio_whatsapp_number = twilio_whatsapp_number;
+    if (business_sector !== undefined) tenantData.business_sector = business_sector;
     
     // Safely check if database contains the column to prevent query crashes
     const hasImmediateCol = existing ? ('whatsapp_immediate_notification_enabled' in existing) : false;

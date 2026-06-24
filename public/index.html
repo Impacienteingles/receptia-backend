@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia - Panel de Control del Cliente</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1.1">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.1.1">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1.41">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.1.41">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1586,49 +1586,52 @@
         <h2 class="landing-section-title">Nuestras Tarifas</h2>
         <div class="plans-grid">
           <!-- PLAN ESTÁNDAR MENSUAL -->
-          <div class="plan-card">
+          <div class="plan-card" style="display: flex; flex-direction: column;">
             <div class="plan-name">Plan Estándar Mensual</div>
             <div class="plan-price">
               <span class="plan-price-num">149€</span>
               <span class="plan-price-period">/ mes</span>
             </div>
-            <ul class="plan-features">
+            <ul class="plan-features" style="flex-grow: 1;">
               <li><i data-lucide="check"></i> 1 Agente de Voz IA activo</li>
               <li><i data-lucide="check"></i> 1 Número telefónico en Retell</li>
               <li><i data-lucide="check"></i> Integración con Google Calendar</li>
               <li><i data-lucide="check"></i> Panel de control del cliente</li>
               <li><i data-lucide="check"></i> 200 minutos incluidos / mes</li>
             </ul>
+            <button class="btn" onclick="openSubscribeModal('estandar_mensual', 'Plan Estándar Mensual', 149, 'mes')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
           </div>
           <!-- PLAN PREMIUM MENSUAL -->
-          <div class="plan-card popular">
+          <div class="plan-card popular" style="display: flex; flex-direction: column;">
             <div class="plan-badge">Más Popular</div>
             <div class="plan-name">Plan Premium Mensual</div>
             <div class="plan-price">
               <span class="plan-price-num">249€</span>
               <span class="plan-price-period">/ mes</span>
             </div>
-            <ul class="plan-features">
+            <ul class="plan-features" style="flex-grow: 1;">
               <li><i data-lucide="check"></i> Todo lo del Plan Estándar</li>
               <li><i data-lucide="check"></i> Conexión SIP Zadarma</li>
               <li><i data-lucide="check"></i> Voces de alta calidad (ElevenLabs)</li>
               <li><i data-lucide="check"></i> 500 minutos incluidos / mes</li>
               <li><i data-lucide="check"></i> Soporte optimizado de Prompt</li>
             </ul>
+            <button class="btn" onclick="openSubscribeModal('premium_mensual', 'Plan Premium Mensual', 249, 'mes')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
           </div>
           <!-- PLAN PREMIUM ANUAL -->
-          <div class="plan-card">
+          <div class="plan-card" style="display: flex; flex-direction: column;">
             <div class="plan-name">Plan Premium Anual</div>
             <div class="plan-price">
               <span class="plan-price-num">2290€</span>
               <span class="plan-price-period">/ año</span>
             </div>
-            <ul class="plan-features">
+            <ul class="plan-features" style="flex-grow: 1;">
               <li><i data-lucide="check"></i> Todo lo del Plan Premium</li>
               <li><i data-lucide="check"></i> Soporte VIP priorizado 24/7</li>
               <li><i data-lucide="check"></i> Minutos ilimitados controlados</li>
               <li><i data-lucide="check"></i> Ahorro de 2 meses de suscripción</li>
             </ul>
+            <button class="btn" onclick="openSubscribeModal('premium_anual', 'Plan Premium Anual', 2290, 'año')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
           </div>
         </div>
       </section>
@@ -1645,6 +1648,23 @@
     </div>
   </div>
 
+  <!-- CSS adicional para spinner de carga -->
+  <style>
+    .loading-spinner {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      width: 14px;
+      height: 14px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
   <!-- MODAL DE ACCESO / LOGIN DE CLIENTE -->
   <div id="landing-login-modal" class="login-modal-overlay" style="display: none;">
     <div class="login-modal-content">
@@ -1656,19 +1676,74 @@
       </div>
       
       <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; text-align: left;">
-        Introduce tu Identificador de Cliente privado (UUID) provisto por tu administrador de Receptia:
+        Introduce tus credenciales provistas por tu administrador para acceder a tu panel de Receptia:
       </p>
 
-      <div style="text-align: left; display: flex; flex-direction: column; gap: 0.5rem; margin: 0.5rem 0;">
-        <label for="landing-tenant-id-input" style="font-size: 0.85rem; font-weight: 500;">ID de Cliente:</label>
-        <input type="text" id="landing-tenant-id-input" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.75rem; font-size: 0.9rem; width: 100%; box-sizing: border-box; font-family: monospace;">
+      <form id="landing-login-form" onsubmit="event.preventDefault(); submitLandingLogin();" style="text-align: left; display: flex; flex-direction: column; gap: 1rem; margin: 0.5rem 0;">
+        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+          <label for="landing-login-email" style="font-size: 0.85rem; font-weight: 500;">Email de tu Negocio:</label>
+          <input type="email" id="landing-login-email" placeholder="correo@ejemplo.com" required style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.75rem; font-size: 0.9rem; width: 100%; box-sizing: border-box;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+          <label for="landing-login-pin" style="font-size: 0.85rem; font-weight: 500;">PIN de Acceso (4 dígitos):</label>
+          <input type="password" id="landing-login-pin" maxlength="4" placeholder="••••" required style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.75rem; font-size: 0.9rem; width: 100%; box-sizing: border-box; text-align: center; letter-spacing: 0.5rem;">
+        </div>
+
+        <p id="landing-login-error" style="color: var(--error); font-size: 0.8rem; text-align: left; display: none; margin: 0;"></p>
+
+        <button type="submit" id="btn-login-submit" class="btn" style="width: 100%; padding: 0.75rem; margin-top: 0.5rem;">
+          Entrar al Panel
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE REGISTRO / SUSCRIPCIÓN -->
+  <div id="landing-subscribe-modal" class="login-modal-overlay" style="display: none;">
+    <div class="login-modal-content" style="max-width: 480px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
+        <h3 style="color: #fff; margin: 0; font-family: 'Outfit', sans-serif;">Suscribirse a Receptia</h3>
+        <button onclick="closeLandingSubscribeModal()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem;">
+          <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
       </div>
 
-      <p id="landing-login-error" style="color: var(--error); font-size: 0.8rem; text-align: left; display: none; margin: 0;">ID de cliente no válido. Asegúrate de copiarlo completo.</p>
+      <div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.2); padding: 0.75rem 1rem; border-radius: 8px; text-align: left;">
+        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--primary-light); font-weight: 600; display: block; margin-bottom: 0.25rem;">Tarifa Seleccionada</span>
+        <strong id="subscribe-plan-title" style="color: #fff; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">Plan Estándar Mensual</strong>
+        <span id="subscribe-plan-price" style="float: right; color: #fff; font-weight: bold; font-size: 1.1rem;">149€ / mes</span>
+      </div>
 
-      <button class="btn" onclick="submitLandingLogin()" style="width: 100%; padding: 0.75rem;">
-        Entrar al Panel
-      </button>
+      <form id="subscribe-form" onsubmit="submitLandingSubscribe(event)" style="text-align: left; display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+          <label for="subscribe-business-name" style="font-size: 0.85rem; font-weight: 500;">Nombre del Negocio:</label>
+          <input type="text" id="subscribe-business-name" placeholder="Ej. Peluquería Carlos" required style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.6rem 0.75rem; font-size: 0.9rem; width: 100%; box-sizing: border-box;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+          <label for="subscribe-email" style="font-size: 0.85rem; font-weight: 500;">Correo Electrónico:</label>
+          <input type="email" id="subscribe-email" placeholder="Ej. contacto@peluqueriacarlos.com" required style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.6rem 0.75rem; font-size: 0.9rem; width: 100%; box-sizing: border-box;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+          <label for="subscribe-sector" style="font-size: 0.85rem; font-weight: 500;">Sector del Negocio:</label>
+          <select id="subscribe-sector" style="background: #1f2937; border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.6rem 0.75rem; font-size: 0.9rem; width: 100%; box-sizing: border-box; cursor: pointer;">
+            <option value="general">General / Otro</option>
+            <option value="peluqueria">Peluquería / Estética / Barbería</option>
+            <option value="dental">Dental / Odontología</option>
+            <option value="medica">Clínica Médica / Fisioterapia</option>
+            <option value="oficina">Oficina / Despacho / Asesoría</option>
+          </select>
+        </div>
+
+        <p id="landing-subscribe-error" style="color: var(--error); font-size: 0.8rem; display: none; margin: 0;"></p>
+
+        <button type="submit" id="btn-subscribe-submit" class="btn" style="width: 100%; padding: 0.75rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <i data-lucide="credit-card" style="width: 18px; height: 18px;"></i>
+          <span>Proceder al Pago con Stripe</span>
+        </button>
+      </form>
     </div>
   </div>
 
@@ -1676,8 +1751,9 @@
     function openLandingLoginModal() {
       document.getElementById('landing-login-modal').style.display = 'flex';
       document.getElementById('landing-login-error').style.display = 'none';
-      document.getElementById('landing-tenant-id-input').value = '';
-      document.getElementById('landing-tenant-id-input').focus();
+      document.getElementById('landing-login-email').value = '';
+      document.getElementById('landing-login-pin').value = '';
+      document.getElementById('landing-login-email').focus();
       lucide.createIcons();
     }
 
@@ -1686,16 +1762,143 @@
     }
 
     function submitLandingLogin() {
-      const tenantIdInput = document.getElementById('landing-tenant-id-input').value.trim();
-      // Validar formato UUID básico
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(tenantIdInput)) {
-        document.getElementById('landing-login-error').style.display = 'block';
+      const email = document.getElementById('landing-login-email').value.trim();
+      const pin = document.getElementById('landing-login-pin').value.trim();
+      const errorEl = document.getElementById('landing-login-error');
+      const submitBtn = document.getElementById('btn-login-submit');
+      
+      if (!email || !pin) {
+        errorEl.innerText = 'El correo electrónico y el PIN son obligatorios.';
+        errorEl.style.display = 'block';
+        return;
+      }
+      
+      if (pin.length !== 4 || isNaN(pin)) {
+        errorEl.innerText = 'El PIN debe ser un código de 4 números.';
+        errorEl.style.display = 'block';
         return;
       }
 
-      closeLandingLoginModal();
-      window.location.href = `/?tenant_id=${tenantIdInput}`;
+      errorEl.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="loading-spinner"></span> Iniciando sesión...';
+
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, pin })
+      })
+      .then(res => {
+        if (!res.ok) {
+          return res.json().then(errData => { throw new Error(errData.error || 'Credenciales inválidas') });
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data.success && data.tenant_id) {
+          // Guardar PIN en sessionStorage para que checkPinSecurity no lo vuelva a pedir
+          sessionStorage.setItem('current_tenant_pin', pin);
+          closeLandingLoginModal();
+          window.location.href = `/?tenant_id=${data.tenant_id}`;
+        } else {
+          throw new Error('Respuesta inválida del servidor.');
+        }
+      })
+      .catch(err => {
+        errorEl.innerText = err.message;
+        errorEl.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Entrar al Panel';
+      });
+    }
+
+    let selectedSubscribePlanId = '';
+
+    function openSubscribeModal(planId, planName, price, period) {
+      selectedSubscribePlanId = planId;
+      document.getElementById('subscribe-plan-title').innerText = planName;
+      document.getElementById('subscribe-plan-price').innerText = `${price}€ / ${period}`;
+      document.getElementById('landing-subscribe-error').style.display = 'none';
+      document.getElementById('subscribe-business-name').value = '';
+      document.getElementById('subscribe-email').value = '';
+      document.getElementById('subscribe-sector').value = 'general';
+      
+      document.getElementById('landing-subscribe-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function closeLandingSubscribeModal() {
+      document.getElementById('landing-subscribe-modal').style.display = 'none';
+    }
+
+    async function submitLandingSubscribe(event) {
+      event.preventDefault();
+      
+      const businessName = document.getElementById('subscribe-business-name').value.trim();
+      const email = document.getElementById('subscribe-email').value.trim();
+      const sector = document.getElementById('subscribe-sector').value;
+      const errorEl = document.getElementById('landing-subscribe-error');
+      const submitBtn = document.getElementById('btn-subscribe-submit');
+
+      if (!businessName || !email) {
+        errorEl.innerText = 'El nombre de negocio y el correo son obligatorios.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      errorEl.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="loading-spinner"></span> Procesando...';
+
+      try {
+        // 1. Crear el nuevo inquilino (tenant) en Supabase
+        const registerRes = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            business_name: businessName,
+            email: email,
+            business_sector: sector
+          })
+        });
+
+        if (!registerRes.ok) {
+          const errData = await registerRes.json();
+          throw new Error(errData.error || 'Error al registrar el negocio.');
+        }
+
+        const tenant = await registerRes.json();
+        const tenantId = tenant.id;
+
+        // 2. Crear sesión de Stripe Checkout para ese inquilino y plan
+        const checkoutRes = await fetch('/api/payments/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: tenantId,
+            plan_id: selectedSubscribePlanId
+          })
+        });
+
+        if (!checkoutRes.ok) {
+          const errData = await checkoutRes.json();
+          throw new Error(errData.error || 'Error al generar pasarela de pago.');
+        }
+
+        const checkoutData = await checkoutRes.json();
+        if (checkoutData.url) {
+          // Redirigir a Stripe
+          window.location.href = checkoutData.url;
+        } else {
+          throw new Error('No se recibió la URL de Stripe.');
+        }
+      } catch (err) {
+        errorEl.innerText = err.message;
+        errorEl.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="credit-card" style="width: 18px; height: 18px;"></i> <span>Proceder al Pago con Stripe</span>';
+        lucide.createIcons();
+      }
     }
   </script>
 
@@ -3853,6 +4056,12 @@
 
     // Comprobar la seguridad del PIN
     function checkPinSecurity(tenant) {
+      const savedPin = sessionStorage.getItem('current_tenant_pin');
+      if (savedPin && tenant.admin_pin && savedPin === tenant.admin_pin) {
+        dismissPinModal();
+        return;
+      }
+      
       pinModal.style.display = 'flex';
       setTimeout(() => {
         if (pinInput) pinInput.focus();
