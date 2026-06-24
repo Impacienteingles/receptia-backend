@@ -165,6 +165,13 @@ function getSectorKeywords(sector: string): string[] {
     medica: ['Consulta médica', 'Pediatría', 'Ginecología', 'Dermatología', 'Ecografía', 'Análisis clínico', 'Nutrición', 'Fisioterapia', 'Electrocardiograma'],
     fisioterapia: ['Masaje terapéutico', 'Rehabilitación', 'Punción seca', 'Osteopatía', 'Fisioterapia deportiva', 'Pilates clínico', 'Drenaje linfático', 'Terapia manual'],
     abogados: ['Asesoramiento civil', 'Defensa penal', 'Derecho laboral', 'Divorcios', 'Herencias', 'Reclamaciones', 'Derecho mercantil', 'Contratos', 'Despidos'],
+    psicologia: ['Terapia individual', 'Terapia de pareja', 'Ansiedad', 'Depresión', 'Psicología infantil', 'Autoestima', 'Duelo', 'Estrés', 'Terapia online'],
+    taller: ['Cambio de aceite', 'Frenos', 'Revisión pre-ITV', 'Pintura', 'Neumáticos', 'Diagnóstico de motor', 'Amortiguadores', 'Batería', 'Aire acondicionado'],
+    veterinaria: ['Vacunación', 'Desparasitación', 'Consulta veterinaria', 'Cirugía animal', 'Radiografía veterinaria', 'Peluquería canina', 'Urgencias 24h', 'Analítica'],
+    spa: ['Masaje relajante', 'Circuito de aguas', 'Tratamiento facial', 'Exfoliación', 'Jacuzzi', 'Sauna', 'Envoltura corporal', 'Aromaterapia'],
+    gimnasio: ['Entrenamiento personal', 'Crossfit', 'Pilates', 'Yoga', 'Nutrición deportiva', 'Musculación', 'Spinning', 'Zumba'],
+    academia: ['Apoyo escolar', 'Clases de inglés', 'Preparación de exámenes', 'Matemáticas', 'Idiomas', 'Cursos intensivos', 'Clases particulares'],
+    inmobiliaria: ['Compra de pisos', 'Alquiler de viviendas', 'Valoración gratuita', 'Gestión de hipotecas', 'Venta de locales', 'Asesoramiento inmobiliario'],
     general: ['Consulta básica', 'Presupuesto', 'Atención al cliente', 'Información', 'Reserva de cita']
   };
 
@@ -206,7 +213,14 @@ function getSimulatedLeads(city: string, country: string, sector: string): Prosp
     dental: ['Clínica Dental Sana Dent', 'Odontología Avanzada Smile', 'Centro Dental Oria', 'Clínica Dental Doctora Martínez', 'VitalDent Centro'],
     medica: ['Policlínica Medica Centro', 'Centro Médico Familiar', 'Clínica Ginecológica Albor', 'Dermatología Avanzada Nova', 'Centro Pediátrico Central'],
     fisioterapia: ['FisioSport Centro', 'Clínica de Fisioterapia Kinesia', 'Fisioterapia y Pilates Vital', 'Osteopatía Integral', 'Centro de Rehabilitación Activa'],
-    abogados: ['Bufete de Abogados Alcaraz', 'LegalAsesores Abogados', 'Despacho Penal y Laboral Vega', 'Consultoría Jurídica Integral', 'Abogados de Familia y Divorcios']
+    abogados: ['Bufete de Abogados Alcaraz', 'LegalAsesores Abogados', 'Despacho Penal y Laboral Vega', 'Consultoría Jurídica Integral', 'Abogados de Familia y Divorcios'],
+    psicologia: ['Mente Sana Psicología', 'Centro de Psicología Integra', 'PsicoApoyo Familiar', 'Clínica de Psicología Emociona', 'Espacio Psicoterapéutico'],
+    taller: ['Taller Mecánico Rápido', 'Autocentro Garaje Central', 'Mecánica y Electricidad Motor', 'Taller Multimarca Express', 'Car Service Integral'],
+    veterinaria: ['Clínica Veterinaria Mascotas', 'Centro Veterinario San Antón', 'Hospital Veterinario Huellas', 'Veterinaria Fauna Sana', 'Consultorio Canino y Felino'],
+    spa: ['Zenith Spa & Wellness', 'Balneario Urbano Oasis', 'Termas de Relajación Aqua', 'Spa & Beauty Sentidos', 'Templo del Masaje y Bienestar'],
+    gimnasio: ['Gimnasio Iron Fit', 'Studio Entrenamiento Activo', 'Centro de Fitness & Power', 'Gimnasio Vitality', 'Gimnasio Olimpo Body'],
+    academia: ['Academia Saber Más', 'Centro de Estudios Cum Laude', 'School Idiomas y Apoyo', 'Academia Prepara Plus', 'Espacio de Aprendizaje'],
+    inmobiliaria: ['Inmobiliaria Piso Rápido', 'Hogar Dulce Hogar Real Estate', 'Gestión Inmobiliaria Global', 'Inmobiliaria Premium House', 'Soluciones Habitacionales']
   };
 
   const selectedNames = namesBySector[normalizedSector] || ['Negocio Local y Servicios', 'Centro Profesional Activo', 'Servicios Profesionales B2B'];

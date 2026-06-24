@@ -2383,7 +2383,7 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
   console.log('[Migration Endpoint] Iniciando alter table en Supabase...');
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
-  const password = '1S67.!3CFitNmj';
+  const password = process.env.SUPABASE_DB_PASSWORD || '1S67.!3CFitNmj';
   let directErrorMsg = '';
 
   // Opción 1: Conexión Directa (Puerto 5432) - Evita el circuit breaker de PgBouncer
@@ -2823,24 +2823,11 @@ setInterval(async () => {
 async function runDatabaseMigrations() {
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
-  const password = '1S67.!3CFitNmj';
+  const password = process.env.SUPABASE_DB_PASSWORD || '1S67.!3CFitNmj';
 
-  const client = new Client({
-    host: `db.${projectRef}.supabase.co`,
-    port: 5432,
-    database: 'postgres',
-    user: 'postgres',
-    password,
-    ssl: { rejectUnauthorized: false },
-    connectionTimeoutMillis: 10000
-  });
-
-  try {
-    console.log('[Bootstrap Migration] Conectando a Supabase para verificar tablas de prospección...');
-    await client.connect();
-    
+  const query = async (clientInstance: any) => {
     // 1. Crear ENUM de estados de prospección si no existe
-    await client.query(`
+    await clientInstance.query(`
       DO $$
       BEGIN
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'prospect_status') THEN
@@ -2851,7 +2838,7 @@ async function runDatabaseMigrations() {
     `);
 
     // 2. Crear tabla prospects
-    await client.query(`
+    await clientInstance.query(`
       CREATE TABLE IF NOT EXISTS prospects (
         id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
         business_name VARCHAR NOT NULL,
@@ -2870,11 +2857,53 @@ async function runDatabaseMigrations() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
       );
     `);
-    
-    console.log('[Bootstrap Migration] ✅ Tabla prospects y tipo prospect_status asegurados.');
+
+    // 3. Notificar a PostgREST
+    await clientInstance.query("NOTIFY pgrst, 'reload schema';");
+  };
+
+  // Opción 1: Conexión Directa (Puerto 5432)
+  try {
+    console.log('[Bootstrap Migration] Intentando conexión DIRECTA (puerto 5432)...');
+    const client = new Client({
+      host: `db.${projectRef}.supabase.co`,
+      port: 5432,
+      database: 'postgres',
+      user: 'postgres',
+      password,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 10000
+    });
+    await client.connect();
+    console.log('[Bootstrap Migration] ¡Conexión DIRECTA exitosa!');
+    await query(client);
+    console.log('[Bootstrap Migration] ✅ Tabla prospects y tipo prospect_status asegurados (Conexión Directa).');
     await client.end();
-  } catch (err: any) {
-    console.warn('[Bootstrap Migration WARNING] Error al ejecutar migración en arranque:', err.message);
+    return;
+  } catch (directErr: any) {
+    console.warn('[Bootstrap Migration WARNING] Falló la conexión directa:', directErr.message);
+  }
+
+  // Opción 2: Conexión Pooler (Puerto 6543)
+  try {
+    console.log('[Bootstrap Migration] Intentando conexión vía POOLER (puerto 6543)...');
+    const client = new Client({
+      host: 'aws-0-eu-west-1.pooler.supabase.com',
+      port: 6543,
+      database: 'postgres',
+      user: `postgres.${projectRef}`,
+      password,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 10000
+    });
+    await client.connect();
+    console.log('[Bootstrap Migration] ¡Conexión por POOLER exitosa!');
+    await query(client);
+    console.log('[Bootstrap Migration] ✅ Tabla prospects y tipo prospect_status asegurados (Conexión Pooler).');
+    await client.end();
+  } catch (poolErr: any) {
+    console.error('[Bootstrap Migration ERROR] Falló también la conexión por pooler:', poolErr.message);
+    console.error('[Bootstrap Migration INSTRUCCIÓN] Si la base de datos ha cambiado de contraseña, defina SUPABASE_DB_PASSWORD en las variables de entorno o ejecute el script SQL de migración directamente en la consola de Supabase.');
   }
 }
 
