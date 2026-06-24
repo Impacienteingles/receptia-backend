@@ -1151,7 +1151,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.23</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.24</span>
         </div>
       </header>
 
@@ -2203,7 +2203,7 @@
                 <!-- CARD: TELEFONÍA Y SMS -->
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
                   <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="phone" style="color: var(--primary);"></i> Telefonía & WhatsApp
+                    <i data-lucide="phone" style="color: var(--primary);"></i> Telefonía (Zadarma)
                   </h3>
                   <div class="form-group">
                     <label for="setting-zadarma-user">Zadarma Email/Usuario:</label>
@@ -2217,23 +2217,6 @@
                         <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
                       </button>
                     </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="setting-twilio-sid">Twilio Account SID:</label>
-                    <input type="text" id="setting-twilio-sid" placeholder="AC..." class="setting-input">
-                  </div>
-                  <div class="form-group">
-                    <label for="setting-twilio-token">Twilio Auth Token:</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-twilio-token" placeholder="Tu token de Twilio" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-twilio-token')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="setting-twilio-whatsapp">Número de WhatsApp Twilio:</label>
-                    <input type="text" id="setting-twilio-whatsapp" placeholder="whatsapp:+14155238886" class="setting-input">
                   </div>
                 </div>
 
@@ -4235,9 +4218,6 @@
           'GOOGLE_REDIRECT_URI': 'setting-google-redirect-uri',
           'ZADARMA_API_USER': 'setting-zadarma-user',
           'ZADARMA_API_KEY': 'setting-zadarma-key',
-          'TWILIO_ACCOUNT_SID': 'setting-twilio-sid',
-          'TWILIO_AUTH_TOKEN': 'setting-twilio-token',
-          'TWILIO_WHATSAPP_NUMBER': 'setting-twilio-whatsapp',
           'STRIPE_SECRET_KEY': 'setting-stripe-secret',
           'STRIPE_PUBLISHABLE_KEY': 'setting-stripe-publishable',
           'STRIPE_PRICE_ESTANDAR_MENSUAL': 'setting-stripe-price-estandar-mensual',
@@ -4290,9 +4270,6 @@
         'GOOGLE_REDIRECT_URI': 'setting-google-redirect-uri',
         'ZADARMA_API_USER': 'setting-zadarma-user',
         'ZADARMA_API_KEY': 'setting-zadarma-key',
-        'TWILIO_ACCOUNT_SID': 'setting-twilio-sid',
-        'TWILIO_AUTH_TOKEN': 'setting-twilio-token',
-        'TWILIO_WHATSAPP_NUMBER': 'setting-twilio-whatsapp',
         'STRIPE_SECRET_KEY': 'setting-stripe-secret',
         'STRIPE_PUBLISHABLE_KEY': 'setting-stripe-publishable',
         'STRIPE_PRICE_ESTANDAR_MENSUAL': 'setting-stripe-price-estandar-mensual',
