@@ -49,60 +49,91 @@ router.post('/search', async (req: Request, res: Response): Promise<void> => {
 
     const insertedProspects: any[] = [];
 
+    // Normalization helper functions
+    const normalizeString = (str: string): string => {
+      if (!str) return '';
+      return str
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // remove accents/diacritics
+        .replace(/[^a-z0-9]/g, '') // remove non-alphanumeric characters
+        .trim();
+    };
+
+    const normalizePhone = (phone: string): string => {
+      if (!phone || phone === 'No disponible') return '';
+      return phone.replace(/[^0-9]/g, ''); // keep only digits
+    };
+
+    const normalizeWebsite = (url: string): string => {
+      if (!url || url === 'No disponible' || url.includes('google.com')) return '';
+      return url
+        .toLowerCase()
+        .replace(/^(https?:\/\/)?(www\.)?/, '') // remove http/https/www
+        .replace(/\/$/, '') // remove trailing slash
+        .trim();
+    };
+
+    // Fetch all existing prospects to check duplicates in-memory (highly robust)
+    const { data: dbProspects, error: fetchErr } = await supabase
+      .from('prospects')
+      .select('id, business_name, address, email, phone, website');
+    
+    if (fetchErr) {
+      console.error('[Prospecting API] Error al cargar prospectos existentes para deduplicación:', fetchErr.message);
+    }
+    
+    const existingProspects = dbProspects || [];
+
     // Guardar leads en Supabase
     for (const lead of leads) {
-      let existing = null;
+      let isDuplicate = false;
 
-      // 1. Buscar por nombre exacto y dirección
-      const { data: byName } = await supabase
-        .from('prospects')
-        .select('id')
-        .eq('business_name', lead.business_name)
-        .eq('address', lead.address)
-        .maybeSingle();
+      const normLeadName = normalizeString(lead.business_name);
+      const normLeadAddress = normalizeString(lead.address);
+      const normLeadEmail = lead.email && lead.email.trim() !== '' && lead.email !== 'No disponible' && !lead.email.includes('example.com')
+        ? lead.email.trim().toLowerCase()
+        : '';
+      const normLeadPhone = normalizePhone(lead.phone);
+      const normLeadWebsite = normalizeWebsite(lead.website);
 
-      if (byName) {
-        existing = byName;
-      }
+      for (const existing of existingProspects) {
+        // 1. Check normalized business name AND address
+        if (normLeadName && normLeadAddress && 
+            normLeadName === normalizeString(existing.business_name) && 
+            normLeadAddress === normalizeString(existing.address)) {
+          isDuplicate = true;
+          break;
+        }
 
-      // 2. Buscar por email (si es válido y no es genérico)
-      if (!existing && lead.email && lead.email.trim() !== '' && lead.email !== 'No disponible' && !lead.email.includes('example.com')) {
-        const { data: byEmail } = await supabase
-          .from('prospects')
-          .select('id')
-          .eq('email', lead.email.trim())
-          .maybeSingle();
-        if (byEmail) {
-          existing = byEmail;
+        // 2. Check normalized email
+        if (normLeadEmail && existing.email && 
+            normLeadEmail === existing.email.trim().toLowerCase()) {
+          isDuplicate = true;
+          break;
+        }
+
+        // 3. Check normalized phone
+        if (normLeadPhone) {
+          const existingPhoneNorm = normalizePhone(existing.phone);
+          if (existingPhoneNorm && normLeadPhone === existingPhoneNorm) {
+            isDuplicate = true;
+            break;
+          }
+        }
+
+        // 4. Check normalized website
+        if (normLeadWebsite) {
+          const existingWebsiteNorm = normalizeWebsite(existing.website);
+          if (existingWebsiteNorm && normLeadWebsite === existingWebsiteNorm) {
+            isDuplicate = true;
+            break;
+          }
         }
       }
 
-      // 3. Buscar por teléfono (si es válido)
-      if (!existing && lead.phone && lead.phone.trim() !== '' && lead.phone !== 'No disponible') {
-        const { data: byPhone } = await supabase
-          .from('prospects')
-          .select('id')
-          .eq('phone', lead.phone.trim())
-          .maybeSingle();
-        if (byPhone) {
-          existing = byPhone;
-        }
-      }
-
-      // 4. Buscar por sitio web (si es válido y no es genérico)
-      if (!existing && lead.website && lead.website.trim() !== '' && lead.website !== 'No disponible' && !lead.website.includes('google.com')) {
-        const { data: byWebsite } = await supabase
-          .from('prospects')
-          .select('id')
-          .eq('website', lead.website.trim())
-          .maybeSingle();
-        if (byWebsite) {
-          existing = byWebsite;
-        }
-      }
-
-      if (existing) {
-        console.log(`[Prospecting API] Lead duplicado omitido: ${lead.business_name} (${lead.email || lead.phone || lead.website || lead.address})`);
+      if (isDuplicate) {
+        console.log(`[Prospecting API] Lead duplicado omitido (Normalizado): ${lead.business_name} (${lead.email || lead.phone || lead.website || lead.address})`);
         continue;
       }
 
