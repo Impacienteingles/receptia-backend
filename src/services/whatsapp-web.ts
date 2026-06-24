@@ -34,6 +34,10 @@ function formatJid(phone: string): string {
   if (clean.startsWith('whatsapp:')) {
     clean = clean.substring(9);
   }
+  // Normalizar prefijo de país para España si el número tiene 9 dígitos
+  if (clean.length === 9 && (clean.startsWith('6') || clean.startsWith('7') || clean.startsWith('9'))) {
+    clean = `34${clean}`;
+  }
   if (!clean.endsWith('@s.whatsapp.net')) {
     clean = `${clean}@s.whatsapp.net`;
   }
