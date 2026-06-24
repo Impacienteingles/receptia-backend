@@ -96,7 +96,7 @@
       background-color: #fff !important;
     }
 
-    [data-theme="light"] .card,
+    [data-theme="light"] .card:not(#roi-savings-card),
     [data-theme="light"] .stat-card,
     [data-theme="light"] .metric-card,
     [data-theme="light"] .integration-card,
@@ -977,6 +977,33 @@
     @keyframes scaleUpModal {
       to { transform: scale(1); }
     }
+
+    /* Mantener calculadora de ahorro ROI en tono oscuro premium en modo claro */
+    [data-theme="light"] #roi-savings-card {
+      background: linear-gradient(135deg, rgba(6,78,59,0.4) 0%, rgba(5,46,22,0.6) 100%) !important;
+      border-color: rgba(52,211,153,0.3) !important;
+      box-shadow: none !important;
+    }
+    [data-theme="light"] #roi-savings-card h2 {
+      color: #34d399 !important;
+    }
+    [data-theme="light"] #roi-savings-card #roi-real-accumulated {
+      color: #6ee7b7 !important;
+    }
+    [data-theme="light"] #roi-savings-card #roi-real-calls-count {
+      color: rgba(167,243,208,0.6) !important;
+    }
+    [data-theme="light"] #roi-savings-card #roi-monthly-savings {
+      color: #34d399 !important;
+    }
+    [data-theme="light"] #roi-savings-card #roi-annual-savings {
+      color: #6ee7b7 !important;
+    }
+    [data-theme="light"] #roi-savings-card #roi-coverage-badge {
+      color: #34d399 !important;
+      background: rgba(52,211,153,0.15) !important;
+      border-color: rgba(52,211,153,0.3) !important;
+    }
   </style>
 </head>
 <body>
@@ -1716,7 +1743,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.10</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.11</span>
         </div>
       </header>
 
@@ -2272,6 +2299,12 @@
                 <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: 8px;">
                   <label for="setting-whatsapp-reminder-hours" style="color: var(--text-muted); font-size: 0.85rem; margin: 0; white-space: nowrap;">Recordatorio de cita (horas de anticipación):</label>
                   <input type="number" id="setting-whatsapp-reminder-hours" min="1" max="168" value="24" style="width: 80px; padding: 0.4rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; text-align: center; font-family: inherit;">
+                </div>
+
+                <!-- Envío inmediato de WhatsApp al reservar/cancelar/modificar -->
+                <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: 8px;">
+                  <input type="checkbox" id="setting-whatsapp-immediate-notification" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);">
+                  <label for="setting-whatsapp-immediate-notification" style="color: var(--text-muted); font-size: 0.85rem; margin: 0; cursor: pointer; user-select: none;">Enviar confirmación inmediata por WhatsApp al reservar/cancelar/modificar cita</label>
                 </div>
 
                 <!-- Selector de Proveedor -->
@@ -3513,6 +3546,8 @@
       
       const hoursInput = document.getElementById('setting-whatsapp-reminder-hours');
       const reminderHours = hoursInput ? (parseInt(hoursInput.value, 10) || 24) : 24;
+      const chkImmediate = document.getElementById('setting-whatsapp-immediate-notification');
+      const immediateNotification = chkImmediate ? chkImmediate.checked : true;
       
       try {
         showToast('Guardando configuración de WhatsApp...');
@@ -3524,6 +3559,7 @@
             business_name: currentTenant.business_name,
             client_whatsapp_provider: provider,
             whatsapp_reminder_hours: reminderHours,
+            whatsapp_immediate_notification_enabled: immediateNotification,
             twilio_account_sid: provider === 'twilio' ? sid : currentTenant.twilio_account_sid,
             twilio_auth_token: provider === 'twilio' ? token : currentTenant.twilio_auth_token,
             twilio_whatsapp_number: provider === 'twilio' ? number : currentTenant.twilio_whatsapp_number
@@ -4230,6 +4266,11 @@
       const txtWhatsappHours = document.getElementById('setting-whatsapp-reminder-hours');
       if (txtWhatsappHours) {
         txtWhatsappHours.value = currentTenant.whatsapp_reminder_hours || 24;
+      }
+
+      const chkImmediate = document.getElementById('setting-whatsapp-immediate-notification');
+      if (chkImmediate) {
+        chkImmediate.checked = currentTenant.whatsapp_immediate_notification_enabled !== false;
       }
       
       const txtTwilioSid = document.getElementById('setting-twilio-sid');

@@ -11,7 +11,7 @@ const router = Router();
 async function getTenantDetailsForWebhook(tenantId: string) {
   const { data, error } = await supabase
     .from('tenants')
-    .select('business_name, business_sector, google_refresh_token, working_hours, enable_multi_professional, professionals, whatsapp_reminders_enabled, voice_id')
+    .select('business_name, business_sector, google_refresh_token, working_hours, enable_multi_professional, professionals, whatsapp_reminders_enabled, whatsapp_immediate_notification_enabled, voice_id')
     .eq('id', tenantId)
     .single();
 
@@ -379,9 +379,11 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
         });
       console.log(`✅ Cita registrada en Supabase exitosamente con estado: ${status}`);
 
-      // Envío de confirmación por WhatsApp (se envía siempre ya que no se pide correo electrónico)
-      const msg = `Confirmación de Cita 📅\n\nHola ${name}, le confirmamos su cita en ${tenantDetails.business_name}.\n\n🔹 Servicio: ${specialty}\n🔹 Fecha: ${date}\n🔹 Hora: ${time}\n\n¡Le esperamos!`;
-      sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de confirmación:', err));
+      // Envío de confirmación por WhatsApp (si está habilitado)
+      if (tenantDetails.whatsapp_immediate_notification_enabled !== false) {
+        const msg = `Confirmación de Cita 📅\n\nHola ${name}, le confirmamos su cita en ${tenantDetails.business_name}.\n\n🔹 Servicio: ${specialty}\n🔹 Fecha: ${date}\n🔹 Hora: ${time}\n\n¡Le esperamos!`;
+        sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de confirmación:', err));
+      }
     } catch (dbErr: any) {
       console.warn('⚠️ No se pudo registrar la cita en la tabla appointments de Supabase:', dbErr.message);
     }
@@ -504,9 +506,11 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
 
     console.log(`✅ Cita del ${date} para ${appToCancel.patient_name} cancelada correctamente.`);
 
-    // Enviar confirmación por WhatsApp (se envía siempre ya que no se pide correo electrónico)
-    const msg = `Cancelación de Cita ❌\n\nHola ${appToCancel.patient_name}, le confirmamos que su cita en ${tenantDetails.business_name} para el día ${date} ha sido cancelada correctamente.\n\nSentimos las molestias y esperamos verle en otra ocasión.`;
-    sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de cancelación:', err));
+    // Enviar confirmación por WhatsApp (si está habilitado)
+    if (tenantDetails.whatsapp_immediate_notification_enabled !== false) {
+      const msg = `Cancelación de Cita ❌\n\nHola ${appToCancel.patient_name}, le confirmamos que su cita en ${tenantDetails.business_name} para el día ${date} ha sido cancelada correctamente.\n\nSentimos las molestias y esperamos verle en otra ocasión.`;
+      sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de cancelación:', err));
+    }
 
     res.json({
       status: 'success',
@@ -677,9 +681,11 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
 
     console.log(`✅ Cita reprogramada con éxito al ${new_date} a las ${new_time}.`);
 
-    // Enviar confirmación por WhatsApp (se envía siempre ya que no se pide correo electrónico)
-    const msg = `Modificación de Cita 🔄\n\nHola ${appToReschedule.patient_name}, le confirmamos que su cita en ${tenantDetails.business_name} ha sido modificada con éxito.\n\n🔹 Servicio: ${appToReschedule.specialty}\n🔹 Nueva Fecha: ${new_date}\n🔹 Nueva Hora: ${new_time}\n\n¡Le esperamos!`;
-    sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de reprogramación:', err));
+    // Enviar confirmación por WhatsApp (si está habilitado)
+    if (tenantDetails.whatsapp_immediate_notification_enabled !== false) {
+      const msg = `Modificación de Cita 🔄\n\nHola ${appToReschedule.patient_name}, le confirmamos que su cita en ${tenantDetails.business_name} ha sido modificada con éxito.\n\n🔹 Servicio: ${appToReschedule.specialty}\n🔹 Nueva Fecha: ${new_date}\n🔹 Nueva Hora: ${new_time}\n\n¡Le esperamos!`;
+      sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de reprogramación:', err));
+    }
 
     res.json({
       status: 'success',

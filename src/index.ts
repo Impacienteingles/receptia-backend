@@ -108,7 +108,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     twilio_account_sid,
     twilio_auth_token,
     twilio_whatsapp_number,
-    client_enable_multi_professional
+    client_enable_multi_professional,
+    whatsapp_immediate_notification_enabled
   } = req.body;
 
   if (!business_name || !email) {
@@ -146,6 +147,7 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (twilio_account_sid !== undefined) tenantData.twilio_account_sid = twilio_account_sid;
     if (twilio_auth_token !== undefined) tenantData.twilio_auth_token = twilio_auth_token;
     if (twilio_whatsapp_number !== undefined) tenantData.twilio_whatsapp_number = twilio_whatsapp_number;
+    if (whatsapp_immediate_notification_enabled !== undefined) tenantData.whatsapp_immediate_notification_enabled = !!whatsapp_immediate_notification_enabled;
     if (client_enable_multi_professional !== undefined) {
       let workingHoursObj: any = {};
       if (existing && existing.working_hours) {
@@ -716,7 +718,8 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     client_whatsapp_provider,
     twilio_account_sid,
     twilio_auth_token,
-    twilio_whatsapp_number
+    twilio_whatsapp_number,
+    whatsapp_immediate_notification_enabled
   } = req.body;
 
   if (!business_name || !email) {
@@ -846,7 +849,8 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       client_whatsapp_provider: client_whatsapp_provider !== undefined ? client_whatsapp_provider : (existing ? existing.client_whatsapp_provider : 'qr'),
       twilio_account_sid: twilio_account_sid !== undefined ? twilio_account_sid : (existing ? existing.twilio_account_sid : null),
       twilio_auth_token: twilio_auth_token !== undefined ? twilio_auth_token : (existing ? existing.twilio_auth_token : null),
-      twilio_whatsapp_number: twilio_whatsapp_number !== undefined ? twilio_whatsapp_number : (existing ? existing.twilio_whatsapp_number : null)
+      twilio_whatsapp_number: twilio_whatsapp_number !== undefined ? twilio_whatsapp_number : (existing ? existing.twilio_whatsapp_number : null),
+      whatsapp_immediate_notification_enabled: whatsapp_immediate_notification_enabled !== undefined ? !!whatsapp_immediate_notification_enabled : (existing ? existing.whatsapp_immediate_notification_enabled : true)
     };
 
     if (existing) {
@@ -2218,7 +2222,8 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
       ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
       ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE,
       ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE;
+      ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE;
       NOTIFY pgrst, 'reload schema';
     `);
     console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Directa).');
@@ -2251,7 +2256,8 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
       ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
       ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE,
       ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE;
+      ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE;
       NOTIFY pgrst, 'reload schema';
     `);
     console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Pooler).');
