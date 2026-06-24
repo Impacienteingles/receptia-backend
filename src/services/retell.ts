@@ -412,18 +412,227 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
 }
 
 /**
- * Elimina el agente de voz de Retell AI.
+ * Crea un agente y un LLM dedicados en Retell AI para un inquilino.
+ */
+export async function createRetellAgentForTenant(tenant: any, webhookBaseUrl: string): Promise<string> {
+  const apiKey = await getSettingVal('RETELL_API_KEY');
+  if (!apiKey || apiKey === 'YOUR_RETELL_API_KEY' || apiKey.trim() === '') {
+    throw new Error('La clave RETELL_API_KEY no está configurada.');
+  }
+
+  const systemPrompt = compileSystemPrompt(tenant);
+  const voiceId = formatVoiceId(tenant.voice_id) || 'cartesia-Hailey-Spanish-latin-america';
+  const agentName = resolveAgentName(voiceId);
+
+  console.log(`🤖 [Retell Service] Creando LLM personalizado para el inquilino: ${tenant.business_name}...`);
+  const llmRes = await retellClient.post('/create-retell-llm', {
+    general_prompt: systemPrompt,
+    model: 'gpt-4o',
+    general_tools: [
+      {
+        type: 'end_call',
+        name: 'end_call',
+        description: 'Finaliza y cuelga la llamada telefónica con el usuario. Ejecútalo únicamente después de despedirte formalmente del cliente.'
+      },
+      {
+        type: 'custom',
+        name: 'consultar_disponibilidad',
+        description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
+        url: `${webhookBaseUrl}/api/webhook/get-availability?tenant_id=${tenant.id}`,
+        parameters: {
+          type: 'object',
+          properties: {
+            date: {
+              type: 'string',
+              description: 'La fecha para la cual se desea consultar la disponibilidad en formato YYYY-MM-DD.',
+            },
+            specialty: {
+              type: 'string',
+              description: 'El servicio, especialidad o descripción de las personas que asistirán a la cita (ej. corte de caballero y dos niños) para calcular correctamente la duración.',
+            }
+          },
+          required: ['date'],
+        },
+      },
+      {
+        type: 'custom',
+        name: 'crear_cita',
+        description: 'Reserva una cita en el calendario tras confirmar los datos con el paciente/cliente.',
+        url: `${webhookBaseUrl}/api/webhook/book-appointment?tenant_id=${tenant.id}`,
+        parameters: {
+          type: 'object',
+          properties: {
+            date: {
+              type: 'string',
+              description: 'La fecha de la cita en formato YYYY-MM-DD.',
+            },
+            name: {
+              type: 'string',
+              description: 'Nombre y apellidos completos del paciente/cliente.',
+            },
+            specialty: {
+              type: 'string',
+              description: 'Servicio o especialidad solicitada.',
+            },
+            time: {
+              type: 'string',
+              description: 'La hora seleccionada por el paciente en formato HH:MM (ej. 09:30).',
+            },
+            phone: {
+              type: 'string',
+              description: 'Número de teléfono de contacto.',
+            },
+            email: {
+              type: 'string',
+              description: 'Dirección de correo electrónico del paciente/cliente.',
+            }
+          },
+          required: ['date', 'time', 'name', 'phone', 'specialty'],
+        },
+      },
+      {
+        type: 'custom',
+        name: 'cancelar_cita',
+        description: 'Cancela y elimina una cita existente en el calendario.',
+        url: `${webhookBaseUrl}/api/webhook/cancel-appointment?tenant_id=${tenant.id}`,
+        parameters: {
+          type: 'object',
+          properties: {
+            date: {
+              type: 'string',
+              description: 'La fecha de la cita que se desea cancelar en formato YYYY-MM-DD.',
+            },
+            phone: {
+              type: 'string',
+              description: 'El número de teléfono de contacto del cliente.',
+            },
+            email: {
+              type: 'string',
+              description: 'El correo electrónico del cliente.',
+            }
+          },
+          required: ['date', 'phone'],
+        },
+      },
+      {
+        type: 'custom',
+        name: 'reprogramar_cita',
+        description: 'Reprograma o modifica la fecha y hora de una cita existente a una nueva fecha y hora.',
+        url: `${webhookBaseUrl}/api/webhook/reschedule-appointment?tenant_id=${tenant.id}`,
+        parameters: {
+          type: 'object',
+          properties: {
+            original_date: {
+              type: 'string',
+              description: 'La fecha actual original de la cita que se quiere cambiar en formato YYYY-MM-DD.',
+            },
+            new_date: {
+              type: 'string',
+              description: 'La nueva fecha deseada para la cita en formato YYYY-MM-DD.',
+            },
+            new_time: {
+              type: 'string',
+              description: 'La nueva hora deseada para la cita en formato HH:MM.',
+            },
+            phone: {
+              type: 'string',
+              description: 'El número de teléfono de contacto del cliente.',
+            },
+            email: {
+              type: 'string',
+              description: 'El correo electrónico del cliente.',
+            },
+          },
+          required: ['original_date', 'new_date', 'new_time', 'phone'],
+        },
+      },
+    ]
+  });
+
+  const llmId = llmRes.data.llm_id;
+  console.log(`✅ [Retell Service] LLM personalizado creado con ID: ${llmId}`);
+
+  // 2. Crear Agent
+  console.log(`🤖 [Retell Service] Creando Agente en Retell AI (${agentName} - ${tenant.business_name})...`);
+  let agentRes;
+  
+  const requestedVoiceId = voiceId;
+  const speed = tenant.voice_speed !== undefined && tenant.voice_speed !== null ? Number(tenant.voice_speed) : 1.0;
+  const temp = tenant.voice_temperature !== undefined && tenant.voice_temperature !== null ? Number(tenant.voice_temperature) : 1.0;
+  const resp = tenant.voice_responsiveness !== undefined && tenant.voice_responsiveness !== null ? Number(tenant.voice_responsiveness) : 1.0;
+
+  try {
+    agentRes = await retellClient.post('/create-agent', {
+      agent_name: `${agentName} - ${tenant.business_name}`,
+      response_engine: {
+        type: 'retell-llm',
+        llm_id: llmId,
+      },
+      voice_id: requestedVoiceId,
+      language: 'es-ES',
+      webhook_url: `${webhookBaseUrl.replace(/\/$/, '')}/api/webhook/agent-events`,
+      reminder_max_count: 0,
+      voice_speed: speed,
+      voice_temperature: temp,
+      responsiveness: resp,
+      interruption_sensitivity: 0.8
+    });
+  } catch (agentErr: any) {
+    if (agentErr.response && agentErr.response.status === 404 && requestedVoiceId !== 'cartesia-Sofia') {
+      console.warn(`⚠️ Voz "${requestedVoiceId}" no existe. Usando voz por defecto (cartesia-Sofia)...`);
+      agentRes = await retellClient.post('/create-agent', {
+        agent_name: `Sofía - ${tenant.business_name}`,
+        response_engine: {
+          type: 'retell-llm',
+          llm_id: llmId,
+        },
+        voice_id: 'cartesia-Sofia',
+        language: 'es-ES',
+        webhook_url: `${webhookBaseUrl.replace(/\/$/, '')}/api/webhook/agent-events`,
+        reminder_max_count: 0,
+        voice_speed: speed,
+        voice_temperature: temp,
+        responsiveness: resp,
+        interruption_sensitivity: 0.8
+      });
+    } else {
+      throw agentErr;
+    }
+  }
+
+  const agentId = agentRes.data.agent_id;
+  console.log(`✅ [Retell Service] Agente creado con ID: ${agentId}`);
+  return agentId;
+}
+
+/**
+ * Elimina el agente de voz y su LLM correspondiente de Retell AI.
  */
 export async function deleteRetellAgent(agentId: string) {
   if (!agentId || agentId === 'YOUR_RETELL_AGENT_ID' || agentId.trim() === '') {
     return;
   }
   try {
+    console.log(`🗑️ Recuperando datos del agente de Retell AI para extraer su LLM: ${agentId}...`);
+    let llmId: string | null = null;
+    try {
+      const agentRes = await retellClient.get(`/get-agent/${agentId}`);
+      llmId = agentRes.data.response_engine?.llm_id || null;
+    } catch (getErr: any) {
+      console.warn(`⚠️ No se pudo obtener el agente para extraer su LLM: ${getErr.message}`);
+    }
+
     console.log(`🗑️ Eliminando agente de Retell AI: ${agentId}...`);
     await retellClient.delete(`/delete-agent/${agentId}`);
     console.log('✅ Agente de Retell AI eliminado con éxito.');
+
+    if (llmId) {
+      console.log(`🗑️ Eliminando LLM asociado de Retell AI: ${llmId}...`);
+      await retellClient.delete(`/delete-retell-llm/${llmId}`);
+      console.log('✅ LLM asociado eliminado con éxito.');
+    }
   } catch (error: any) {
-    console.warn('⚠️ Error al eliminar agente en Retell AI (quizás ya no existe):', error.response?.data || error.message);
+    console.warn('⚠️ Error al eliminar recursos en Retell AI (quizás ya no existen):', error.response?.data || error.message);
   }
 }
 

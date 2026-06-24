@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { supabase, getSettingVal } from '../services/supabase';
 import { scrapeProspects } from '../services/scraper';
 import { sendOutreachEmail } from '../services/outreach';
+import { createRetellAgentForTenant, deleteRetellAgent } from '../services/retell';
 import axios from 'axios';
 
 const router = Router();
@@ -99,7 +100,7 @@ router.post('/search', async (req: Request, res: Response): Promise<void> => {
  * 3. Lanzar pipeline de Demo asíncrono para un prospecto
  */
 router.post('/trigger-pipeline', async (req: Request, res: Response): Promise<void> => {
-  const { prospect_id } = req.body;
+  const { prospect_id, base_tenant_id, override_data } = req.body;
 
   if (!prospect_id) {
     res.status(400).json({ error: 'El prospect_id es obligatorio.' });
@@ -110,7 +111,12 @@ router.post('/trigger-pipeline', async (req: Request, res: Response): Promise<vo
   res.json({ status: 'processing', message: 'El pipeline de demostración se ha iniciado en segundo plano.' });
 
   // Ejecutar el pipeline de forma asíncrona
-  runOutreachPipeline(prospect_id, req.headers.origin || 'https://receptia.corandar.com').catch(err => {
+  runOutreachPipeline(
+    prospect_id,
+    req.headers.origin || 'https://receptia.corandar.com',
+    base_tenant_id,
+    override_data
+  ).catch(err => {
     console.error(`[Pipeline Error Critical] Error general en el pipeline del prospecto ${prospect_id}:`, err.message);
   });
 });
@@ -118,7 +124,7 @@ router.post('/trigger-pipeline', async (req: Request, res: Response): Promise<vo
 /**
  * Función que orquesta todo el flujo asíncrono del pipeline
  */
-async function runOutreachPipeline(prospectId: string, origin: string) {
+async function runOutreachPipeline(prospectId: string, origin: string, baseTenantId?: string, overrideData?: any) {
   console.log(`[Pipeline] 🏁 Iniciando pipeline para prospecto: ${prospectId}...`);
 
   try {
@@ -133,38 +139,106 @@ async function runOutreachPipeline(prospectId: string, origin: string) {
       throw new Error(`No se pudo cargar el prospecto: ${fetchErr?.message || 'No encontrado'}`);
     }
 
-    // 2. Crear Tenant Demo en la base de datos
-    console.log(`[Pipeline] [Paso 1] Creando Tenant Demo para: ${prospect.business_name}...`);
+    // Unificar datos usando posibles overrides ingresados por el usuario
+    const businessName = overrideData?.business_name || prospect.business_name;
+    const email = overrideData?.email || prospect.email || `contacto@${businessName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
+    const phone = overrideData?.phone || prospect.phone;
+    const website = overrideData?.website || prospect.website;
+    const address = overrideData?.address || prospect.address;
+    const sector = overrideData?.sector || prospect.sector;
+    let specialties = overrideData?.specialties || prospect.specialties || [];
+    if (typeof specialties === 'string') {
+      specialties = (specialties as string).split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    // 2. Cargar tenant base (si se provee) para la clonación inteligente
+    let baseTenant: any = null;
+    if (baseTenantId) {
+      console.log(`[Pipeline] Buscando tenant base para clonación inteligente con ID: ${baseTenantId}...`);
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('id', baseTenantId)
+        .maybeSingle();
+      if (!error && data) {
+        baseTenant = data;
+        console.log(`[Pipeline] Tenant base encontrado: ${baseTenant.business_name}`);
+      }
+    }
+
+    // 3. Crear Tenant Demo en la base de datos
+    console.log(`[Pipeline] [Paso 1] Creando Tenant Demo para: ${businessName}...`);
     
     // Si ya tiene un tenant demo creado de antes, lo reutilizamos
     let tenantId = prospect.demo_tenant_id;
     let demoUrl = prospect.demo_url;
 
     if (!tenantId) {
+      // Definir parámetros a heredar del baseTenant o fallbacks por defecto
+      const voiceId = baseTenant?.voice_id || 'cartesia-Hailey-Spanish-latin-america';
+      const voiceSpeed = baseTenant?.voice_speed !== undefined && baseTenant?.voice_speed !== null ? Number(baseTenant.voice_speed) : 1.0;
+      const voiceTemperature = baseTenant?.voice_temperature !== undefined && baseTenant?.voice_temperature !== null ? Number(baseTenant.voice_temperature) : 1.0;
+      const voiceResponsiveness = baseTenant?.voice_responsiveness !== undefined && baseTenant?.voice_responsiveness !== null ? Number(baseTenant.voice_responsiveness) : 1.0;
+      
+      const workingHours = baseTenant?.working_hours || {
+        lunes: [{ start: '09:00', end: '19:00' }],
+        martes: [{ start: '09:00', end: '19:00' }],
+        miercoles: [{ start: '09:00', end: '19:00' }],
+        jueves: [{ start: '09:00', end: '19:00' }],
+        viernes: [{ start: '09:00', end: '19:00' }]
+      };
+
+      // Si hay custom_instructions en el baseTenant, las adaptamos sustituyendo el nombre del comercio antiguo por el nuevo
+      let customInstructions = baseTenant?.custom_instructions || `Eres Elena, la asistente virtual de ${businessName}. Saluda amablemente, responde preguntas basadas en el negocio, y ofrece al interlocutor registrar una cita de prueba de forma natural y educada.`;
+      if (baseTenant?.custom_instructions && baseTenant?.business_name) {
+        const regex = new RegExp(baseTenant.business_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'gi');
+        customInstructions = customInstructions.replace(regex, businessName);
+      }
+
+      // Generar base de conocimientos y descripciones ricas
+      const businessDescription = `Demostración de asistente de voz inteligente configurada para el negocio "${businessName}" (Sector: ${sector || 'Servicios'}).`;
+      const pricingDetails = `Nuestras tarifas para los servicios de ${specialties.length > 0 ? specialties.join(', ') : 'nuestras especialidades'} se adaptan de forma personalizada. Póngase en contacto con recepción para recibir un presupuesto detallado.`;
+      const kbContent = `Información general del establecimiento:
+- Nombre Comercial: ${businessName}
+- Dirección Legal: ${address || 'No especificada'}
+- Sector del Negocio: ${sector || 'Servicios'}
+- Teléfono de Contacto: ${phone || 'No especificado'}
+- Especialidades / Servicios Ofrecidos: ${specialties.length > 0 ? specialties.join(', ') : 'Servicios Generales'}
+- Página Web del Negocio: ${website || 'No especificada'}`;
+
       const { data: newTenant, error: tenantErr } = await supabase
         .from('tenants')
         .insert({
-          business_name: prospect.business_name,
-          email: prospect.email || `contacto@${prospect.business_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
-          phone_number: null, // Sin número asignado al inicio
-          specialties: prospect.specialties || [],
+          business_name: businessName,
+          email: email,
+          phone_number: phone || null,
+          specialties: specialties,
+          business_sector: sector || 'general',
           subscription_status: 'trial',
-          subscription_plan: 'Plan Demo Autogenerado',
+          subscription_plan: baseTenant 
+            ? `Demo Autogenerada (Clon de ${baseTenant.business_name})`
+            : 'Plan Demo Autogenerado',
           price_amount: 0,
           billing_cycle: 'monthly',
-          business_description: `Demostración de asistente de voz autogenerada para ${prospect.business_name}.`,
-          custom_instructions: `Eres Elena, la asistente virtual de ${prospect.business_name}. Saluda amablemente, responde preguntas basadas en el negocio, y ofrece al interlocutor registrar una cita de prueba de forma natural y educada.`,
-          working_hours: {
-            lunes: [{ start: '09:00', end: '19:00' }],
-            martes: [{ start: '09:00', end: '19:00' }],
-            miercoles: [{ start: '09:00', end: '19:00' }],
-            jueves: [{ start: '09:00', end: '19:00' }],
-            viernes: [{ start: '09:00', end: '19:00' }]
-          },
-          voice_id: 'cartesia-Sofia',
-          voice_speed: 1.0,
-          voice_temperature: 1.0,
-          voice_responsiveness: 1.0
+          business_description: businessDescription,
+          pricing_details: pricingDetails,
+          custom_instructions: customInstructions,
+          working_hours: workingHours,
+          voice_id: voiceId,
+          voice_speed: voiceSpeed,
+          voice_temperature: voiceTemperature,
+          voice_responsiveness: voiceResponsiveness,
+          legal_address: address || null,
+          knowledge_base_url: website || null,
+          knowledge_base_content: kbContent,
+          whatsapp_reminders_enabled: baseTenant ? !!baseTenant.whatsapp_reminders_enabled : false,
+          email_notifications_enabled: baseTenant ? !!baseTenant.email_notifications_enabled : false,
+          client_whatsapp_provider: baseTenant ? baseTenant.client_whatsapp_provider : null,
+          twilio_account_sid: baseTenant ? baseTenant.twilio_account_sid : null,
+          twilio_auth_token: baseTenant ? baseTenant.twilio_auth_token : null,
+          twilio_whatsapp_number: baseTenant ? baseTenant.twilio_whatsapp_number : null,
+          whatsapp_immediate_notification_enabled: baseTenant ? !!baseTenant.whatsapp_immediate_notification_enabled : false,
+          whatsapp_reminder_hours: baseTenant ? baseTenant.whatsapp_reminder_hours : 24
         })
         .select('*')
         .single();
@@ -176,6 +250,21 @@ async function runOutreachPipeline(prospectId: string, origin: string) {
       tenantId = newTenant.id;
       demoUrl = `${origin}/?tenant_id=${newTenant.id}`;
 
+      // Aprovisionar LLM y Agente dedicados en Retell AI de forma asíncrona pero bloqueando este paso del pipeline
+      let webhookBaseUrl = process.env.WEBHOOK_BASE_URL;
+      if (!webhookBaseUrl) {
+        webhookBaseUrl = origin;
+      }
+      
+      console.log(`[Pipeline] [Retell AI] Aprovisionando agente dedicado para ${businessName} (Webhook Base: ${webhookBaseUrl})...`);
+      const retellAgentId = await createRetellAgentForTenant(newTenant, webhookBaseUrl);
+
+      // Guardar el retell_agent_id en el tenant
+      await supabase
+        .from('tenants')
+        .update({ retell_agent_id: retellAgentId })
+        .eq('id', newTenant.id);
+
       // Actualizar prospecto en base de datos
       await supabase
         .from('prospects')
@@ -186,15 +275,16 @@ async function runOutreachPipeline(prospectId: string, origin: string) {
         })
         .eq('id', prospectId);
         
-      console.log(`[Pipeline] [Paso 1 Completado] Tenant Demo Creado con ID: ${tenantId}`);
+      console.log(`[Pipeline] [Paso 1 Completado] Tenant Demo Creado e Integrado en Retell AI con ID: ${tenantId}`);
     }
 
-    // 3. Generar Audio TTS Personalizado con Cartesia
+    // 4. Generar Audio TTS Personalizado con Cartesia
     console.log(`[Pipeline] [Paso 2] Generando Audio de Presentación en Cartesia...`);
     let audioUrl = prospect.audio_url;
 
-    if (!audioUrl) {
-      audioUrl = await generateCartesiaAudio(prospect.business_name, demoUrl || '');
+    // Si hay un override, forzamos la regeneración del audio para que coincida el nuevo nombre comercial
+    if (!audioUrl || overrideData) {
+      audioUrl = await generateCartesiaAudio(businessName, demoUrl || '');
       
       // Actualizar prospecto
       await supabase
@@ -208,19 +298,19 @@ async function runOutreachPipeline(prospectId: string, origin: string) {
       console.log(`[Pipeline] [Paso 2 Completado] Audio generado y guardado en: ${audioUrl}`);
     }
 
-    // 4. Enviar Correo de Outreach con Resend
+    // 5. Enviar Correo de Outreach con Resend
     console.log(`[Pipeline] [Paso 3] Enviando correo electrónico de captación...`);
     
-    if (!prospect.email || prospect.email.includes('example.com')) {
-      throw new Error(`Email del prospecto inválido o no suministrado: ${prospect.email}`);
+    if (!email || email.includes('example.com')) {
+      throw new Error(`Email del prospecto inválido o no suministrado: ${email}`);
     }
 
     const emailSent = await sendOutreachEmail({
-      businessName: prospect.business_name,
-      toEmail: prospect.email,
+      businessName: businessName,
+      toEmail: email,
       demoUrl: demoUrl || '',
       audioUrl: audioUrl || '',
-      sector: prospect.sector
+      sector: sector
     });
 
     if (!emailSent) {
@@ -236,7 +326,7 @@ async function runOutreachPipeline(prospectId: string, origin: string) {
       })
       .eq('id', prospectId);
 
-    console.log(`[Pipeline] 🎉 ¡Pipeline completado con éxito para ${prospect.business_name}!`);
+    console.log(`[Pipeline] 🎉 ¡Pipeline completado con éxito para ${businessName}!`);
   } catch (err: any) {
     console.error(`[Pipeline ERROR] Fallo en el flujo del prospecto ${prospectId}:`, err.message);
     
@@ -360,8 +450,18 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
 
     if (fetchErr) throw fetchErr;
 
-    // 2. Si tiene tenant de demo, eliminarlo de la tabla tenants
+    // 2. Si tiene tenant de demo, eliminarlo de la tabla tenants y borrar de Retell AI
     if (prospect && prospect.demo_tenant_id) {
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('retell_agent_id')
+        .eq('id', prospect.demo_tenant_id)
+        .maybeSingle();
+
+      if (tenant && tenant.retell_agent_id) {
+        await deleteRetellAgent(tenant.retell_agent_id);
+      }
+
       await supabase
         .from('tenants')
         .delete()
@@ -376,7 +476,7 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
 
     if (deleteErr) throw deleteErr;
 
-    res.json({ status: 'success', message: 'Prospecto eliminado correctamente.' });
+    res.json({ status: 'success', message: 'Prospecto y recursos asociados eliminados correctamente.' });
   } catch (error: any) {
     console.error('[Prospecting API] Error al eliminar prospecto:', error.message);
     res.status(500).json({ error: error.message });
@@ -407,8 +507,21 @@ router.post('/delete-bulk', async (req: Request, res: Response): Promise<void> =
       ? prospects.map((p: any) => p.demo_tenant_id).filter((id: any) => !!id)
       : [];
 
-    // 2. Borrar los tenants demo
+    // 2. Borrar los tenants demo y sus agentes en Retell AI
     if (tenantIds.length > 0) {
+      const { data: tenants } = await supabase
+        .from('tenants')
+        .select('retell_agent_id')
+        .in('id', tenantIds);
+
+      if (tenants) {
+        for (const tenant of tenants) {
+          if (tenant.retell_agent_id) {
+            await deleteRetellAgent(tenant.retell_agent_id);
+          }
+        }
+      }
+
       await supabase
         .from('tenants')
         .delete()
@@ -423,7 +536,7 @@ router.post('/delete-bulk', async (req: Request, res: Response): Promise<void> =
 
     if (deleteErr) throw deleteErr;
 
-    res.json({ status: 'success', message: `Se han eliminado ${ids.length} prospectos.` });
+    res.json({ status: 'success', message: `Se han eliminado ${ids.length} prospectos y sus recursos asociados.` });
   } catch (error: any) {
     console.error('[Prospecting API] Error en eliminación masiva:', error.message);
     res.status(500).json({ error: error.message });

@@ -1285,7 +1285,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.0</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.1</span>
         </div>
       </header>
 
@@ -2678,6 +2678,90 @@
       <div id="edit-client-modal-body">
         <!-- Aquí se moverá temporalmente el provision-card -->
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE GENERACIÓN DE DEMOS B2B -->
+  <div class="modal" id="prospect-demo-modal" style="display: none; align-items: center; justify-content: center; z-index: 1000; background: rgba(0, 0, 0, 0.75);">
+    <div class="modal-content" style="max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+        <h3 style="margin: 0; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem; color: #fff; font-size: 1.25rem;">
+          <i data-lucide="sparkles" style="color: var(--primary); width: 22px; height: 22px;"></i> Configuración de Demo B2B
+        </h3>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('prospect-demo-modal').style.display = 'none'" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-muted); cursor: pointer;">
+          <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+        </button>
+      </div>
+      <form id="prospect-demo-form" onsubmit="submitDemoGeneration(event)">
+        <input type="hidden" id="demo-prospect-id" value="">
+        
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+          
+          <!-- CAMPOS INDIVIDUALES -->
+          <div id="single-prospect-fields" style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <label style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">Nombre Comercial:</label>
+              <input type="text" id="demo-business-name" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: #fff;">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">Email de Contacto:</label>
+                <input type="email" id="demo-email" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: #fff;">
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">Teléfono de Contacto:</label>
+                <input type="text" id="demo-phone" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: #fff;">
+              </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <label style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">Dirección Legal:</label>
+              <input type="text" id="demo-address" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: #fff;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">Sector del Negocio:</label>
+                <input type="text" id="demo-sector" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: #fff;">
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">Página Web:</label>
+                <input type="text" id="demo-website" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: #fff;">
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <label style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">Servicios / Especialidades (separados por comas):</label>
+              <input type="text" id="demo-specialties" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: #fff;">
+            </div>
+          </div>
+
+          <!-- CAMPOS MULTIPLE / LOTE -->
+          <div id="bulk-prospect-fields" style="display: none; flex-direction: column; gap: 0.5rem;">
+            <p style="color: #fff; font-size: 0.95rem;" id="bulk-prospect-summary">Generando demos para 0 negocios seleccionados.</p>
+            <ul id="bulk-prospect-list" style="font-size: 0.8rem; color: var(--text-muted); max-height: 150px; overflow-y: auto; padding-left: 1.25rem;">
+              <!-- Se rellena por JS -->
+            </ul>
+          </div>
+
+          <!-- SECTOR COMÚN: PLANTILLA A CLONAR -->
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+            <label style="color: #fff; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+              <i data-lucide="copy" style="width: 16px; height: 16px; color: var(--primary);"></i> Clonar Configuración de (Plantilla):
+            </label>
+            <select id="demo-base-tenant-select" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: #fff;">
+              <option value="">-- Usar Plantilla Predeterminada (Elena) --</option>
+            </select>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Esto heredará los horarios, la voz, la velocidad y la estructura de prompts del cliente seleccionado, adaptándose automáticamente al negocio de esta demo.</p>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem;">
+          <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('prospect-demo-modal').style.display='none'">Cancelar</button>
+          <button type="submit" class="btn" style="flex: 1; background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%); border: none; color: #fff;">Generar Demo</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -6330,34 +6414,45 @@
       }
 
       const ids = Array.from(selectedCheckboxes).map(cb => cb.value);
-      const confirmTrigger = confirm(`¿Deseas iniciar el pipeline de demos y audios personalizados para los ${ids.length} prospectos seleccionados?`);
-      if (!confirmTrigger) return;
-
-      let successCount = 0;
-      let failCount = 0;
-
-      for (const prospectId of ids) {
-        try {
-          const response = await fetch('/api/admin/prospects/trigger-pipeline', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ prospect_id: prospectId })
-          });
-          if (response.ok) {
-            successCount++;
-          } else {
-            failCount++;
-          }
-        } catch (err) {
-          failCount++;
+      
+      // Rellenar campos del formulario para lote
+      document.getElementById('demo-prospect-id').value = 'BULK';
+      
+      // Mostrar info de lote y ocultar individuales
+      document.getElementById('single-prospect-fields').style.display = 'none';
+      document.getElementById('bulk-prospect-fields').style.display = 'flex';
+      
+      document.getElementById('bulk-prospect-summary').innerText = `Generando demos en lote para ${ids.length} negocios seleccionados.`;
+      
+      const listEl = document.getElementById('bulk-prospect-list');
+      listEl.innerHTML = '';
+      ids.forEach(id => {
+        const p = allProspects.find(item => item.id === id);
+        if (p) {
+          listEl.innerHTML += `<li>${p.business_name} (${p.sector || 'Sin sector'})</li>`;
         }
+      });
+
+      // Cargar lista de plantillas (tenants)
+      const select = document.getElementById('demo-base-tenant-select');
+      select.innerHTML = '<option value="">-- Usar Plantilla Predeterminada (Elena) --</option>';
+
+      try {
+        const response = await fetch('/api/tenants');
+        if (response.ok) {
+          const tenants = await response.json();
+          const activeTenants = tenants.filter(t => !t.is_archived).sort((a,b) => a.business_name.localeCompare(b.business_name));
+          activeTenants.forEach(t => {
+            select.innerHTML += `<option value="${t.id}">${t.business_name}</option>`;
+          });
+        }
+      } catch (err) {
+        console.error('Error al cargar clientes plantilla:', err);
       }
 
-      showCustomAlert(`Pipeline iniciado para ${successCount} prospectos.${failCount > 0 ? ` Fallaron ${failCount}.` : ''}`, 'Pipeline Masivo', 'info');
-      document.getElementById('prospects-select-all').checked = false;
-      await fetchProspects();
+      // Mostrar modal
+      document.getElementById('prospect-demo-modal').style.display = 'flex';
+      lucide.createIcons();
     }
 
     function renderProspectsTable() {
@@ -6455,11 +6550,11 @@
                          <i data-lucide="loader" class="spin" style="width: 13px; height: 13px;"></i> Procesando...
                        </button>`;
         } else if (p.status === 'email_sent') {
-          actionBtn = `<button class="btn btn-secondary" onclick="triggerOutreachPipeline('${p.id}')" style="color: #60a5fa; border-color: rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Reenviar correo de demo">
+          actionBtn = `<button class="btn btn-secondary" onclick="openDemoGenerationModal('${p.id}')" style="color: #60a5fa; border-color: rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Reenviar correo de demo">
                          <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Reenviar
                        </button>`;
         } else {
-          actionBtn = `<button class="btn" onclick="triggerOutreachPipeline('${p.id}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #fff; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Crear demo, generar audio y enviar email">
+          actionBtn = `<button class="btn" onclick="openDemoGenerationModal('${p.id}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #fff; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Crear demo, generar audio y enviar email">
                          <i data-lucide="rocket" style="width: 13px; height: 13px;"></i> Activar Demo
                        </button>`;
         }
@@ -6558,25 +6653,135 @@
       }
     }
 
-    async function triggerOutreachPipeline(prospectId) {
+    async function openDemoGenerationModal(prospectId) {
+      const prospect = allProspects.find(p => p.id === prospectId);
+      if (!prospect) {
+        showCustomAlert('Prospecto no encontrado.', 'Error', 'error');
+        return;
+      }
+
+      // Rellenar campos del formulario
+      document.getElementById('demo-prospect-id').value = prospectId;
+      document.getElementById('demo-business-name').value = prospect.business_name || '';
+      document.getElementById('demo-email').value = prospect.email || '';
+      document.getElementById('demo-phone').value = prospect.phone || '';
+      document.getElementById('demo-address').value = prospect.address || '';
+      document.getElementById('demo-sector').value = prospect.sector || '';
+      document.getElementById('demo-website').value = prospect.website || '';
+      document.getElementById('demo-specialties').value = (prospect.specialties || []).join(', ');
+
+      // Mostrar campos individuales y ocultar bulk
+      document.getElementById('single-prospect-fields').style.display = 'flex';
+      document.getElementById('bulk-prospect-fields').style.display = 'none';
+
+      // Cargar lista de plantillas (tenants)
+      const select = document.getElementById('demo-base-tenant-select');
+      select.innerHTML = '<option value="">-- Usar Plantilla Predeterminada (Elena) --</option>';
+
       try {
-        const response = await fetch('/api/admin/prospects/trigger-pipeline', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ prospect_id: prospectId })
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Fallo en la petición del pipeline.');
-
-        showCustomAlert(data.message, 'Pipeline Iniciado', 'info');
-        
-        // Actualizar tabla y arrancar auto-refresco
-        await fetchProspects();
+        const response = await fetch('/api/tenants');
+        if (response.ok) {
+          const tenants = await response.json();
+          // Filtrar tenants no archivados y ordenarlos por nombre
+          const activeTenants = tenants.filter(t => !t.is_archived).sort((a,b) => a.business_name.localeCompare(b.business_name));
+          activeTenants.forEach(t => {
+            select.innerHTML += `<option value="${t.id}">${t.business_name}</option>`;
+          });
+        }
       } catch (err) {
-        showCustomAlert(err.message, 'Error en Pipeline', 'error');
+        console.error('Error al cargar clientes plantilla:', err);
+      }
+
+      // Mostrar modal
+      document.getElementById('prospect-demo-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    async function submitDemoGeneration(event) {
+      event.preventDefault();
+      
+      const modal = document.getElementById('prospect-demo-modal');
+      const prospectId = document.getElementById('demo-prospect-id').value;
+      const baseTenantId = document.getElementById('demo-base-tenant-select').value;
+      
+      modal.style.display = 'none';
+
+      if (prospectId === 'BULK') {
+        // Generación en lote
+        const selectedCheckboxes = document.querySelectorAll('.prospect-select:checked');
+        const ids = Array.from(selectedCheckboxes).map(cb => cb.value);
+        
+        showCustomAlert(`Generando demos en lote para ${ids.length} prospectos en segundo plano...`, 'Pipeline Lote Iniciado', 'info');
+        
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const id of ids) {
+          try {
+            const response = await fetch('/api/admin/prospects/trigger-pipeline', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ 
+                prospect_id: id,
+                base_tenant_id: baseTenantId
+              })
+            });
+            if (response.ok) {
+              successCount++;
+            } else {
+              failCount++;
+            }
+          } catch (err) {
+            failCount++;
+          }
+        }
+
+        showCustomAlert(`Pipeline de lote finalizado. Creadas: ${successCount}. Falladas: ${failCount}`, 'Pipeline Finalizado', 'success');
+        document.getElementById('prospects-select-all').checked = false;
+        await fetchProspects();
+      } else {
+        // Generación individual
+        const businessName = document.getElementById('demo-business-name').value.trim();
+        const email = document.getElementById('demo-email').value.trim();
+        const phone = document.getElementById('demo-phone').value.trim();
+        const address = document.getElementById('demo-address').value.trim();
+        const sector = document.getElementById('demo-sector').value.trim();
+        const website = document.getElementById('demo-website').value.trim();
+        const specialties = document.getElementById('demo-specialties').value.trim();
+
+        showCustomAlert('Iniciando la generación de la demo inteligente en segundo plano...', 'Pipeline Iniciado', 'info');
+
+        try {
+          const response = await fetch('/api/admin/prospects/trigger-pipeline', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              prospect_id: prospectId,
+              base_tenant_id: baseTenantId,
+              override_data: {
+                business_name: businessName,
+                email: email,
+                phone: phone,
+                address: address,
+                sector: sector,
+                website: website,
+                specialties: specialties
+              }
+            })
+          });
+
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Fallo en la petición del pipeline.');
+
+          showCustomAlert(data.message, 'Pipeline Iniciado', 'info');
+          await fetchProspects();
+        } catch (err) {
+          showCustomAlert(err.message, 'Error en Pipeline', 'error');
+        }
       }
     }
 
