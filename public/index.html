@@ -1763,7 +1763,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.12</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.13</span>
         </div>
       </header>
 
@@ -5444,9 +5444,9 @@
         }
         
         allCallLogs = data.logs || [];
-        renderCallLogsTable(allCallLogs);
-        updateUsageProgressBar(allCallLogs);
-        calculateAndDisplayROI(currentTenant, allCallLogs);
+        renderCallLogsTable(allCallLogs.filter(log => !log.hidden));
+        updateUsageProgressBar(allCallLogs.filter(log => !log.hidden));
+        calculateAndDisplayROI(currentTenant, allCallLogs.filter(log => !log.hidden));
         renderCharts();
       } catch (err) {
         console.error('Error al cargar call logs:', err);
@@ -5549,6 +5549,8 @@
       const canvasIntent = document.getElementById('chart-calls-intent');
       if (!canvasVol || !canvasIntent) return;
 
+      const activeCallLogs = allCallLogs.filter(log => !log.hidden);
+
       const dates14 = [];
       const callsCounts = [];
       
@@ -5559,7 +5561,7 @@
         const labelStr = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }).replace('.', '');
         dates14.push(labelStr);
         
-        const count = allCallLogs.filter(log => {
+        const count = activeCallLogs.filter(log => {
           if (!log.created_at) return false;
           const logDate = new Date(log.created_at).toISOString().split('T')[0];
           return logDate === dateStr;
@@ -5574,7 +5576,7 @@
         'Queja': 0
       };
 
-      allCallLogs.forEach(log => {
+      activeCallLogs.forEach(log => {
         const tag = log.intent_tag || 'Consulta General';
         if (tag.includes('Cita') || tag.includes('Agendad')) {
           intentCounts['Cita Agendada']++;
@@ -6356,8 +6358,24 @@
       let realSavings = 0;
       let handledCallsCount = 0;
       if (logs && logs.length > 0) {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
         logs.forEach(log => {
           if (log.intent_tag !== 'Llamada Perdida' && log.call_duration > 0) {
+            // Si el log está oculto (soft-deleted), solo cuenta si pertenece al mes actual
+            if (log.hidden) {
+              if (log.created_at) {
+                const logDate = new Date(log.created_at);
+                const isCurrentMonth = logDate.getFullYear() === currentYear && logDate.getMonth() === currentMonth;
+                if (!isCurrentMonth) {
+                  return;
+                }
+              } else {
+                return;
+              }
+            }
             realSavings += 1.50 + (log.call_duration / 60) * 0.20;
             handledCallsCount++;
           }

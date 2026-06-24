@@ -335,8 +335,8 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
     if (!allSlotsFree) {
       console.warn(`[book-appointment] Uno o más bloques requeridos no están libres: ${neededSlots.join(', ')}. Ocupados o infringiendo descansos.`);
       res.json({
-        status: 'error',
-        message: `Lo siento, el horario de las ${time} para el ${date} ya no está disponible o no tiene suficiente espacio continuo (${durationMinutes} minutos). Por favor, consulta los huecos libres disponibles con la herramienta correspondiente y ofrece otro horario al paciente.`
+        status: 'success',
+        message: `El horario seleccionado de las ${time} para el ${date} ya no está disponible (está ocupado por otra cita). Por favor, infórmale amablemente al paciente que ese hueco ya está reservado por otra persona y ofrécele consultar la disponibilidad con tu herramienta correspondiente para sugerirle otra hora de forma natural.`
       });
       return;
     }

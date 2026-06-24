@@ -1836,7 +1836,18 @@ app.get('/api/tenants/:tenant_id/call-logs', async (req, res): Promise<void> => 
       }
       throw error;
     }
-    res.json({ logs, migration_required: false });
+
+    // Map logs to identify hidden ones and clean up their intent_tag
+    const mappedLogs = (logs || []).map(log => {
+      const isHidden = log.intent_tag && log.intent_tag.endsWith('_hidden');
+      return {
+        ...log,
+        intent_tag: isHidden ? log.intent_tag.replace('_hidden', '') : log.intent_tag,
+        hidden: !!isHidden
+      };
+    });
+
+    res.json({ logs: mappedLogs, migration_required: false });
   } catch (err: any) {
     console.error('Error al obtener call logs:', err);
     res.status(500).json({ error: err.message });
@@ -1847,13 +1858,26 @@ app.get('/api/tenants/:tenant_id/call-logs', async (req, res): Promise<void> => 
 app.delete('/api/tenants/:tenant_id/call-logs/:log_id', async (req, res): Promise<void> => {
   const { tenant_id, log_id } = req.params;
   try {
-    const { error } = await supabase
+    // Obtener el log actual para saber su intent_tag
+    const { data: log, error: fetchErr } = await supabase
       .from('call_logs')
-      .delete()
+      .select('intent_tag')
       .eq('id', log_id)
-      .eq('tenant_id', tenant_id);
+      .eq('tenant_id', tenant_id)
+      .maybeSingle();
 
-    if (error) throw error;
+    if (fetchErr) throw fetchErr;
+
+    if (log) {
+      const newTag = (log.intent_tag || 'Consulta General') + '_hidden';
+      const { error } = await supabase
+        .from('call_logs')
+        .update({ intent_tag: newTag })
+        .eq('id', log_id)
+        .eq('tenant_id', tenant_id);
+
+      if (error) throw error;
+    }
     res.json({ status: 'success', message: 'Registro de llamada eliminado.' });
   } catch (err: any) {
     console.error('Error al eliminar call log:', err);
@@ -1865,12 +1889,26 @@ app.delete('/api/tenants/:tenant_id/call-logs/:log_id', async (req, res): Promis
 app.delete('/api/tenants/:tenant_id/call-logs', async (req, res): Promise<void> => {
   const { tenant_id } = req.params;
   try {
-    const { error } = await supabase
+    // 1. Obtener todos los logs del tenant
+    const { data: logs, error: fetchErr } = await supabase
       .from('call_logs')
-      .delete()
+      .select('id, intent_tag')
       .eq('tenant_id', tenant_id);
 
-    if (error) throw error;
+    if (fetchErr) throw fetchErr;
+
+    // Filtrar los que no están ocultos ya
+    const activeLogs = (logs || []).filter(log => !log.intent_tag || !log.intent_tag.endsWith('_hidden'));
+
+    // 2. Actualizar cada uno de ellos para añadirle '_hidden'
+    for (const log of activeLogs) {
+      const newTag = (log.intent_tag || 'Consulta General') + '_hidden';
+      await supabase
+        .from('call_logs')
+        .update({ intent_tag: newTag })
+        .eq('id', log.id);
+    }
+
     res.json({ status: 'success', message: 'Historial de llamadas limpiado.' });
   } catch (err: any) {
     console.error('Error al limpiar call logs:', err);
