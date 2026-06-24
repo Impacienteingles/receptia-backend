@@ -51,15 +51,58 @@ router.post('/search', async (req: Request, res: Response): Promise<void> => {
 
     // Guardar leads en Supabase
     for (const lead of leads) {
-      // Evitar duplicados basados en email o nombre de negocio + dirección
-      const { data: existing } = await supabase
+      let existing = null;
+
+      // 1. Buscar por nombre exacto y dirección
+      const { data: byName } = await supabase
         .from('prospects')
         .select('id')
         .eq('business_name', lead.business_name)
         .eq('address', lead.address)
         .maybeSingle();
 
+      if (byName) {
+        existing = byName;
+      }
+
+      // 2. Buscar por email (si es válido y no es genérico)
+      if (!existing && lead.email && lead.email.trim() !== '' && lead.email !== 'No disponible' && !lead.email.includes('example.com')) {
+        const { data: byEmail } = await supabase
+          .from('prospects')
+          .select('id')
+          .eq('email', lead.email.trim())
+          .maybeSingle();
+        if (byEmail) {
+          existing = byEmail;
+        }
+      }
+
+      // 3. Buscar por teléfono (si es válido)
+      if (!existing && lead.phone && lead.phone.trim() !== '' && lead.phone !== 'No disponible') {
+        const { data: byPhone } = await supabase
+          .from('prospects')
+          .select('id')
+          .eq('phone', lead.phone.trim())
+          .maybeSingle();
+        if (byPhone) {
+          existing = byPhone;
+        }
+      }
+
+      // 4. Buscar por sitio web (si es válido y no es genérico)
+      if (!existing && lead.website && lead.website.trim() !== '' && lead.website !== 'No disponible' && !lead.website.includes('google.com')) {
+        const { data: byWebsite } = await supabase
+          .from('prospects')
+          .select('id')
+          .eq('website', lead.website.trim())
+          .maybeSingle();
+        if (byWebsite) {
+          existing = byWebsite;
+        }
+      }
+
       if (existing) {
+        console.log(`[Prospecting API] Lead duplicado omitido: ${lead.business_name} (${lead.email || lead.phone || lead.website || lead.address})`);
         continue;
       }
 
