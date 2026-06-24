@@ -97,7 +97,9 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     client_whatsapp_provider,
     twilio_account_sid,
     twilio_auth_token,
-    twilio_whatsapp_number
+    twilio_whatsapp_number,
+    client_enable_no_show_deposits,
+    client_enable_multi_professional
   } = req.body;
 
   if (!business_name || !email) {
@@ -136,6 +138,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (twilio_account_sid !== undefined) tenantData.twilio_account_sid = twilio_account_sid;
     if (twilio_auth_token !== undefined) tenantData.twilio_auth_token = twilio_auth_token;
     if (twilio_whatsapp_number !== undefined) tenantData.twilio_whatsapp_number = twilio_whatsapp_number;
+    if (client_enable_no_show_deposits !== undefined) tenantData.client_enable_no_show_deposits = !!client_enable_no_show_deposits;
+    if (client_enable_multi_professional !== undefined) tenantData.client_enable_multi_professional = !!client_enable_multi_professional;
 
     let savedTenant: any;
 
@@ -799,14 +803,14 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       voice_speed: voice_speed !== undefined && voice_speed !== null ? Number(voice_speed) : 1.0,
       voice_temperature: voice_temperature !== undefined && voice_temperature !== null ? Number(voice_temperature) : 1.0,
       voice_responsiveness: voice_responsiveness !== undefined && voice_responsiveness !== null ? Number(voice_responsiveness) : 1.0,
-      vacation_mode: vacation_mode !== undefined ? !!vacation_mode : false,
-      vacation_message: vacation_message || '',
+      vacation_mode: vacation_mode !== undefined ? !!vacation_mode : (existing ? existing.vacation_mode : false),
+      vacation_message: vacation_message !== undefined ? vacation_message : (existing ? existing.vacation_message : ''),
       whatsapp_reminder_hours: whatsapp_reminder_hours !== undefined ? Number(whatsapp_reminder_hours) : 24,
       no_show_deposit_limit_mins: no_show_deposit_limit_mins !== undefined ? Number(no_show_deposit_limit_mins) : 10,
-      client_whatsapp_provider: client_whatsapp_provider || 'qr',
-      twilio_account_sid: twilio_account_sid || null,
-      twilio_auth_token: twilio_auth_token || null,
-      twilio_whatsapp_number: twilio_whatsapp_number || null
+      client_whatsapp_provider: client_whatsapp_provider !== undefined ? client_whatsapp_provider : (existing ? existing.client_whatsapp_provider : 'qr'),
+      twilio_account_sid: twilio_account_sid !== undefined ? twilio_account_sid : (existing ? existing.twilio_account_sid : null),
+      twilio_auth_token: twilio_auth_token !== undefined ? twilio_auth_token : (existing ? existing.twilio_auth_token : null),
+      twilio_whatsapp_number: twilio_whatsapp_number !== undefined ? twilio_whatsapp_number : (existing ? existing.twilio_whatsapp_number : null)
     };
 
     if (existing) {
@@ -2141,7 +2145,9 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
       ALTER TABLE tenants 
       ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
       ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE;
+      ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE;
       NOTIFY pgrst, 'reload schema';
     `);
     console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Directa).');
@@ -2172,7 +2178,9 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
       ALTER TABLE tenants 
       ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
       ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE;
+      ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE;
       NOTIFY pgrst, 'reload schema';
     `);
     console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Pooler).');

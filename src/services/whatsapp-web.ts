@@ -223,7 +223,10 @@ export async function disconnectWhatsAppWebSession(tenantId: string): Promise<vo
   const sock = activeSockets.get(tenantId);
   if (sock) {
     try {
-      await sock.logout();
+      sock.ev.removeAllListeners('connection.update');
+      sock.ev.removeAllListeners('creds.update');
+      await sock.logout().catch(() => {});
+      sock.end(undefined);
     } catch (e) {}
   }
   

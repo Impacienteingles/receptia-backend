@@ -831,17 +831,43 @@
       border-color: rgba(139, 92, 246, 0.8) !important;
     }
     @keyframes webrtc-pulse {
-      0% {
-        transform: scale(0.6);
-        opacity: 0;
-      }
-      50% {
-        opacity: 0.5;
-      }
       100% {
         transform: scale(1.6);
         opacity: 0;
       }
+    }
+    
+    /* Estilos para el Modal Personalizado (Alert / Confirm) */
+    #custom-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10px);
+      z-index: 999999;
+      align-items: center;
+      justify-content: center;
+      animation: fadeInModal 0.2s ease;
+    }
+
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    #custom-modal .modal-content {
+      background: rgba(11, 15, 25, 0.95);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      transform: scale(0.95);
+      animation: scaleUpModal 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes scaleUpModal {
+      to { transform: scale(1); }
     }
   </style>
 </head>
@@ -1579,7 +1605,7 @@
           <div class="status-badge" id="client-business-badge">
             <span>Cargando Negocio...</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.5</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.6</span>
         </div>
       </header>
 
@@ -2056,16 +2082,16 @@
                 </button>
               </div>
 
-              <!-- Sección Canales de Notificación -->
+              <!-- Sección Canales y Módulos Avanzados SaaS -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
                   <i data-lucide="bell" style="color: var(--primary); width: 20px; height: 20px;"></i>
-                  Canales de Notificación de Citas
+                  Canales y Módulos Avanzados SaaS
                 </h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Decide qué canales utilizará la IA para recopilar datos de contacto y notificar a tus clientes. Nota: Algunos canales requieren que el módulo esté activo en tu plan.
+                  Decide qué canales y módulos avanzados utilizará la IA. Nota: Algunos módulos requieren que el administrador los haya activado en tu plan.
                 </p>
-                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem;">
+                <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 1.25rem;">
                   <!-- WhatsApp Toggle -->
                   <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
                     <input type="checkbox" id="setting-whatsapp-notif-toggle" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; margin-top: 0.2rem;">
@@ -2093,10 +2119,38 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- Fianza Toggle -->
+                  <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                    <input type="checkbox" id="setting-fianza-toggle" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; margin-top: 0.2rem;">
+                    <div>
+                      <label for="setting-fianza-toggle" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        Cobro de Reserva Fianza (Anti-No-Show) 💰
+                        <span id="badge-fianza-module" style="display: none; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">Bloqueado en tu Plan</span>
+                      </label>
+                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+                        La IA solicitará una fianza para asegurar la reserva y evitar ausencias.
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Multi-Professional Toggle -->
+                  <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                    <input type="checkbox" id="setting-multiprof-toggle" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; margin-top: 0.2rem;">
+                    <div>
+                      <label for="setting-multiprof-toggle" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        Soporte Multi-Profesional y Multi-Calendario 👥
+                        <span id="badge-multiprof-module" style="display: none; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">Bloqueado en tu Plan</span>
+                      </label>
+                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+                        Permite a tus clientes elegir entre diferentes profesionales y sincronizar con sus calendarios correspondientes.
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <button class="btn btn-secondary" onclick="saveNotificationChannels()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
                   <i data-lucide="save"></i>
-                  Guardar Canales
+                  Guardar Módulos
                 </button>
               </div>
 
@@ -2113,7 +2167,7 @@
                 <!-- Selector de Proveedor -->
                 <div style="margin-bottom: 1.5rem;">
                   <label for="setting-whatsapp-provider" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Proveedor de WhatsApp:</label>
-                  <select id="setting-whatsapp-provider" onchange="toggleWhatsappProviderFields()" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+                  <select id="setting-whatsapp-provider" onchange="toggleWhatsappProviderFields()" style="width: 100%; background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem 2.5rem 0.5rem 0.75rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit; cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url(&quot;data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E&quot;); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.25rem;">
                     <option value="qr">Código QR Gratis (WhatsApp Web Autohospedado)</option>
                     <option value="twilio">Twilio Profesional (Tu propia cuenta - Pago)</option>
                   </select>
@@ -2396,6 +2450,21 @@
     </div>
   </div>
 
+  <!-- MODAL PERSONALIZADO DE ALERTA / CONFIRMACIÓN (ESTILO DE LA APP) -->
+  <div id="custom-modal">
+    <div class="modal-content" style="max-width: 450px; text-align: center; gap: 1.25rem; display: flex; flex-direction: column;">
+      <div id="custom-modal-icon" style="margin: 0 auto; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(139, 92, 246, 0.1); color: var(--primary);">
+        <i data-lucide="info" style="width: 24px; height: 24px;"></i>
+      </div>
+      <h3 id="custom-modal-title" style="color: #fff; font-size: 1.25rem; font-family: 'Outfit', sans-serif;">Notificación</h3>
+      <p id="custom-modal-message" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin: 0;"></p>
+      <div style="display: flex; gap: 1rem; margin-top: 0.5rem;" id="custom-modal-buttons">
+        <button class="btn btn-secondary" id="custom-modal-btn-cancel" style="flex: 1; display: none;">Cancelar</button>
+        <button class="btn" id="custom-modal-btn-ok" style="flex: 1;">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="toast">
     <i data-lucide="check-circle" style="color: var(--success);" id="toast-icon"></i>
@@ -2405,6 +2474,89 @@
   <script>
     // Inicializar iconos
     lucide.createIcons();
+
+    // ========================================================
+    // CONTROLADORES DE MODAL PERSONALIZADO (ALERT / CONFIRM)
+    // ========================================================
+    function showCustomAlert(message, title = 'Notificación', icon = 'info') {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('custom-modal');
+        const iconDiv = document.getElementById('custom-modal-icon');
+        const titleEl = document.getElementById('custom-modal-title');
+        const msgEl = document.getElementById('custom-modal-message');
+        const btnCancel = document.getElementById('custom-modal-btn-cancel');
+        const btnOk = document.getElementById('custom-modal-btn-ok');
+
+        titleEl.innerText = title;
+        msgEl.innerText = message;
+        btnCancel.style.display = 'none';
+        btnOk.className = 'btn';
+
+        if (icon === 'success') {
+          iconDiv.style.background = 'rgba(16, 185, 129, 0.1)';
+          iconDiv.style.color = 'var(--success)';
+        } else if (icon === 'error') {
+          iconDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+          iconDiv.style.color = 'var(--error)';
+        } else if (icon === 'warning') {
+          iconDiv.style.background = 'rgba(245, 158, 11, 0.1)';
+          iconDiv.style.color = '#f59e0b';
+        } else {
+          iconDiv.style.background = 'rgba(139, 92, 246, 0.1)';
+          iconDiv.style.color = 'var(--primary)';
+        }
+        
+        iconDiv.innerHTML = `<i data-lucide="${icon}" style="width: 24px; height: 24px;"></i>`;
+        lucide.createIcons({ attrs: { 'data-lucide': icon } });
+
+        modal.style.display = 'flex';
+
+        btnOk.onclick = () => {
+          modal.style.display = 'none';
+          resolve(true);
+        };
+      });
+    }
+
+    function showCustomConfirm(message, title = 'Confirmar', icon = 'help-circle') {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('custom-modal');
+        const iconDiv = document.getElementById('custom-modal-icon');
+        const titleEl = document.getElementById('custom-modal-title');
+        const msgEl = document.getElementById('custom-modal-message');
+        const btnCancel = document.getElementById('custom-modal-btn-cancel');
+        const btnOk = document.getElementById('custom-modal-btn-ok');
+
+        titleEl.innerText = title;
+        msgEl.innerText = message;
+        btnCancel.style.display = 'block';
+
+        if (icon === 'warning') {
+          iconDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+          iconDiv.style.color = 'var(--error)';
+          btnOk.className = 'btn btn-danger';
+        } else {
+          iconDiv.style.background = 'rgba(139, 92, 246, 0.1)';
+          iconDiv.style.color = 'var(--primary)';
+          btnOk.className = 'btn';
+        }
+
+        iconDiv.innerHTML = `<i data-lucide="${icon}" style="width: 24px; height: 24px;"></i>`;
+        lucide.createIcons({ attrs: { 'data-lucide': icon } });
+
+        modal.style.display = 'flex';
+
+        btnOk.onclick = () => {
+          modal.style.display = 'none';
+          resolve(true);
+        };
+
+        btnCancel.onclick = () => {
+          modal.style.display = 'none';
+          resolve(false);
+        };
+      });
+    }
 
     function togglePasswordVisibility(inputId) {
       const input = document.getElementById(inputId);
@@ -2964,9 +3116,13 @@
       
       const chkClientWhatsapp = document.getElementById('setting-whatsapp-notif-toggle');
       const chkClientEmail = document.getElementById('setting-email-notif-toggle');
+      const chkClientFianza = document.getElementById('setting-fianza-toggle');
+      const chkClientMultiProf = document.getElementById('setting-multiprof-toggle');
       
       const clientWhatsapp = chkClientWhatsapp ? chkClientWhatsapp.checked : true;
       const clientEmail = chkClientEmail ? chkClientEmail.checked : true;
+      const clientFianza = chkClientFianza ? chkClientFianza.checked : true;
+      const clientMultiProf = chkClientMultiProf ? chkClientMultiProf.checked : true;
       
       try {
         const res = await fetch('/api/tenants', {
@@ -2976,14 +3132,16 @@
             email: currentTenant.email,
             business_name: currentTenant.business_name,
             client_whatsapp_enabled: clientWhatsapp,
-            client_email_enabled: clientEmail
+            client_email_enabled: clientEmail,
+            client_enable_no_show_deposits: clientFianza,
+            client_enable_multi_professional: clientMultiProf
           })
         });
         
-        if (!res.ok) throw new Error('No se pudieron guardar los canales de notificación.');
+        if (!res.ok) throw new Error('No se pudieron guardar los canales y módulos avanzados.');
         const updated = await res.json();
         currentTenant = updated;
-        showToast('Canales de notificación actualizados correctamente.');
+        showToast('Canales y módulos avanzados actualizados correctamente.');
         
         // Re-sincronizar el prompt del agente con Retell AI para reflejar el cambio al instante
         showToast('Actualizando configuración del agente en Retell AI...');
@@ -3179,7 +3337,13 @@
 
     async function disconnectWhatsappQR() {
       if (!currentTenant) return;
-      if (!confirm('¿Estás seguro de que deseas desconectar y cerrar sesión de tu WhatsApp? Esto detendrá los recordatorios por esta vía.')) return;
+      
+      const confirmDisconnect = await showCustomConfirm(
+        '¿Estás seguro de que deseas desconectar y cerrar sesión de tu WhatsApp? Esto detendrá los recordatorios por esta vía.',
+        'Desconectar WhatsApp',
+        'warning'
+      );
+      if (!confirmDisconnect) return;
       
       try {
         showToast('Desconectando WhatsApp...');
@@ -3492,12 +3656,15 @@
     // Comprobar la seguridad del PIN
     function checkPinSecurity(tenant) {
       pinModal.style.display = 'flex';
+      setTimeout(() => {
+        if (pinInput) pinInput.focus();
+      }, 100);
       
       if (!tenant.admin_pin) {
         // No tiene PIN, pedir establecer uno nuevo (registro inicial del cliente)
         pinTitle.innerText = 'Establece tu PIN';
         pinDescription.innerText = 'Este es tu primer acceso. Crea un código PIN de 4 dígitos para proteger tu panel de citas.';
-        btnPinSubmit.innerText = 'Establecer PIN y Entrar';
+        btnPinSubmit.innerText = 'Establecer PIN and Entrar';
       } else {
         // Ya tiene PIN, pedirlo
         pinTitle.innerText = 'Introduce tu PIN';
@@ -3944,6 +4111,28 @@
       }
       if (badgeEmail) {
         badgeEmail.style.display = isEmailAllowed ? 'none' : 'inline-block';
+      }
+
+      const isFianzaAllowed = !!currentTenant.enable_no_show_deposits;
+      const chkClientFianza = document.getElementById('setting-fianza-toggle');
+      const badgeFianza = document.getElementById('badge-fianza-module');
+      if (chkClientFianza) {
+        chkClientFianza.checked = isFianzaAllowed && currentTenant.client_enable_no_show_deposits !== false;
+        chkClientFianza.disabled = !isFianzaAllowed;
+      }
+      if (badgeFianza) {
+        badgeFianza.style.display = isFianzaAllowed ? 'none' : 'inline-block';
+      }
+
+      const isMultiProfAllowed = !!currentTenant.enable_multi_professional;
+      const chkClientMultiProf = document.getElementById('setting-multiprof-toggle');
+      const badgeMultiProf = document.getElementById('badge-multiprof-module');
+      if (chkClientMultiProf) {
+        chkClientMultiProf.checked = isMultiProfAllowed && currentTenant.client_enable_multi_professional !== false;
+        chkClientMultiProf.disabled = !isMultiProfAllowed;
+      }
+      if (badgeMultiProf) {
+        badgeMultiProf.style.display = isMultiProfAllowed ? 'none' : 'inline-block';
       }
 
       // Rellenar desvío telefónico

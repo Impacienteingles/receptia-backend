@@ -11,7 +11,7 @@ const router = Router();
 async function getTenantDetailsForWebhook(tenantId: string) {
   const { data, error } = await supabase
     .from('tenants')
-    .select('business_name, business_sector, google_refresh_token, working_hours, enable_multi_professional, professionals, enable_no_show_deposits, no_show_deposit_amount, whatsapp_reminders_enabled, voice_id')
+    .select('business_name, business_sector, google_refresh_token, working_hours, enable_multi_professional, professionals, enable_no_show_deposits, no_show_deposit_amount, whatsapp_reminders_enabled, voice_id, client_enable_no_show_deposits, client_enable_multi_professional')
     .eq('id', tenantId)
     .single();
 
@@ -99,7 +99,7 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
 
     // Mapear calendario del profesional si está activo
     let calendarId = 'primary';
-    if (tenantDetails.enable_multi_professional && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
+    if (tenantDetails.enable_multi_professional && tenantDetails.client_enable_multi_professional !== false && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
       if (professional) {
         const prof = tenantDetails.professionals.find((p: any) => 
           p.name.toLowerCase().includes(String(professional).toLowerCase()) ||
@@ -226,7 +226,7 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
     // Mapear al profesional correcto si está activo
     let calendarId = 'primary';
     let matchedProfName = null;
-    if (tenantDetails.enable_multi_professional && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
+    if (tenantDetails.enable_multi_professional && tenantDetails.client_enable_multi_professional !== false && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
       const profName = professional || args.professional;
       if (profName) {
         const prof = tenantDetails.professionals.find((p: any) => 
@@ -263,7 +263,7 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
     // Opcionalmente podemos registrar la cita en la tabla `appointments` de Supabase para que el médico la vea en su panel
     try {
       console.log('Registrando cita en base de datos Supabase...');
-      const status = tenantDetails.enable_no_show_deposits ? 'pending_deposit' : 'confirmed';
+      const status = (tenantDetails.enable_no_show_deposits && tenantDetails.client_enable_no_show_deposits !== false) ? 'pending_deposit' : 'confirmed';
       
       await supabase
         .from('appointments')
@@ -290,7 +290,7 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
 
     res.json({
       status: 'success',
-      message: tenantDetails.enable_no_show_deposits 
+      message: (tenantDetails.enable_no_show_deposits && tenantDetails.client_enable_no_show_deposits !== false) 
         ? `Cita pre-reservada correctamente. Se ha enviado un enlace de pago de fianza de ${tenantDetails.no_show_deposit_amount}€ al número del paciente. Tiene 10 minutos para realizar el pago o la cita se liberará automáticamente.`
         : 'Cita agendada correctamente en el calendario. (IMPORTANTE: Confirma al paciente de forma natural que su cita ha sido reservada con éxito y que recibirá una confirmación por WhatsApp. NO menciones enlaces ni digas URLs).'
     });

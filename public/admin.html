@@ -1151,7 +1151,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.20</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.21</span>
         </div>
       </header>
 
@@ -1582,19 +1582,6 @@
                 <button type="button" class="btn btn-secondary" onclick="addProfessionalRow()" style="padding: 0.5rem 1rem; font-size: 0.85rem; width: fit-content;">
                   <i data-lucide="plus"></i> Agregar Profesional
                 </button>
-              </div>
-
-              <!-- 4. Vacation Mode -->
-              <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(245, 158, 11, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(245, 158, 11, 0.2); grid-column: span 2;">
-                <input type="checkbox" id="vacation-mode-enabled" style="width: 18px; height: 18px; accent-color: #f59e0b;" onchange="toggleVacationModeInput()">
-                <label for="vacation-mode-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                  Activar Modo Vacaciones / Cierre Temporal 🌴
-                </label>
-              </div>
-
-              <div class="form-group full-width" id="vacation-mode-container" style="display: none; background: rgba(245, 158, 11, 0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                <label for="vacation-message-input">Mensaje Explicativo de Vacaciones:</label>
-                <textarea id="vacation-message-input" rows="2" placeholder="ej. Estaremos cerrados por vacaciones del 1 al 15 de agosto. Volvemos el lunes 16 de agosto." oninput="saveDraftToLocalStorage()"></textarea>
               </div>
 
               <!-- 4. Knowledge Base (Base de Conocimientos) -->
@@ -3158,13 +3145,12 @@
     // ========================================================
     // PERSISTENCIA DEL FORMULARIO EN LOCALSTORAGE (AUTOGUARDADO)
     // ========================================================
-    const FORM_FIELDS = [
       'business-name', 'tenant-email', 'specialties-input', 'voice-id', 'retell-agent-id', 'phone-provider',
       'phone-number', 'sip-username', 'sip-password', 'sip-server', 'business-description', 
       'pricing-details', 'custom-instructions', 'admin-pin', 'subscription-status',
       'subscription-plan', 'billing-cycle', 'price-amount', 'contract-start-date', 'contract-end-date',
       'contract-template-select', 'signed-contract-content-view', 'admin-signature-name-input',
-      'voice-speed', 'voice-temperature', 'voice-responsiveness', 'vacation-message-input'
+      'voice-speed', 'voice-temperature', 'voice-responsiveness'
     ];
 
     // Guardar borrador en localStorage
@@ -3213,9 +3199,6 @@
 
         const inputKbContent = document.getElementById('knowledge-base-content');
         if (inputKbContent) draft['knowledge_base_content'] = inputKbContent.value;
-
-        const checkVacation = document.getElementById('vacation-mode-enabled');
-        if (checkVacation) draft['vacation_mode_enabled'] = checkVacation.checked;
 
         draft['professionals'] = getProfessionalsArray();
 
@@ -3404,11 +3387,7 @@
           inputKbContent.value = draft['knowledge_base_content'];
         }
 
-        const checkVacation = document.getElementById('vacation-mode-enabled');
-        if (checkVacation && draft['vacation_mode_enabled'] !== undefined) {
-          checkVacation.checked = draft['vacation_mode_enabled'];
-          toggleVacationModeInput();
-        }
+        // Horarios draft load
 
         const speedVal = document.getElementById('voice-speed-val');
         const speedInput = document.getElementById('voice-speed');
@@ -5786,15 +5765,10 @@
       document.getElementById('knowledge-base-url').value = tenant.knowledge_base_url || '';
       document.getElementById('knowledge-base-content').value = tenant.knowledge_base_content || '';
       
-      const vMode = !!tenant.vacation_mode;
-      document.getElementById('vacation-mode-enabled').checked = vMode;
-      document.getElementById('vacation-message-input').value = tenant.vacation_message || '';
-
       // Toggles displays
       toggleWhatsAppSettings();
       toggleNoShowDepositInput();
       toggleMultiProfessionalInput();
-      toggleVacationModeInput();
 
       // Rellenar profesionales
       const builder = document.getElementById('professionals-list-builder');
@@ -5884,11 +5858,6 @@
       toggleWhatsAppSettings();
       toggleNoShowDepositInput();
       toggleMultiProfessionalInput();
-
-      // Resetear modo vacaciones
-      document.getElementById('vacation-mode-enabled').checked = false;
-      document.getElementById('vacation-mode-container').style.display = 'none';
-      document.getElementById('vacation-message-input').value = '';
 
       // Actualizar vista previa
       updateContractPreview();
@@ -6222,9 +6191,7 @@
         business_sector: document.getElementById('business-sector').value || 'general',
         voice_speed: Number(document.getElementById('voice-speed').value),
         voice_temperature: Number(document.getElementById('voice-temperature').value),
-        voice_responsiveness: Number(document.getElementById('voice-responsiveness').value),
-        vacation_mode: document.getElementById('vacation-mode-enabled').checked,
-        vacation_message: document.getElementById('vacation-message-input').value
+        voice_responsiveness: Number(document.getElementById('voice-responsiveness').value)
       };
 
       // Abrir modal de progreso
