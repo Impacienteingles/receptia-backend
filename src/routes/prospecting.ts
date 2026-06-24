@@ -77,7 +77,7 @@ router.post('/search', async (req: Request, res: Response): Promise<void> => {
     // Fetch all existing prospects to check duplicates in-memory (highly robust)
     const { data: dbProspects, error: fetchErr } = await supabase
       .from('prospects')
-      .select('id, business_name, address, email, phone, website');
+      .select('id, business_name, address, email, phone, website, sector');
     
     if (fetchErr) {
       console.error('[Prospecting API] Error al cargar prospectos existentes para deduplicación:', fetchErr.message);
@@ -98,6 +98,11 @@ router.post('/search', async (req: Request, res: Response): Promise<void> => {
       const normLeadWebsite = normalizeWebsite(lead.website);
 
       for (const existing of existingProspects) {
+        // Solo comprobar duplicados dentro del mismo sector
+        if (existing.sector !== lead.sector) {
+          continue;
+        }
+
         // 1. Check normalized business name AND address
         if (normLeadName && normLeadAddress && 
             normLeadName === normalizeString(existing.business_name) && 
