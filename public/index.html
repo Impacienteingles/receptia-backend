@@ -6,6 +6,12 @@
   <title>Receptia - Panel de Control del Cliente</title>
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1.1">
   <link rel="icon" type="image/png" href="/favicon.png?v=1.1.1">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,6 +42,108 @@
       --error: #ef4444;
       --card-accent: rgba(139, 92, 246, 0.05);
       --modal-overlay: rgba(0, 0, 0, 0.85);
+    }
+
+    :root[data-theme="light"] {
+      --bg-color: #f8fafc;
+      --panel-bg: rgba(255, 255, 255, 0.9);
+      --border-color: rgba(0, 0, 0, 0.08);
+      --text-color: #0f172a;
+      --text-muted: #64748b;
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --accent: #2563eb;
+      --success: #059669;
+      --error: #dc2626;
+      --card-accent: rgba(139, 92, 246, 0.05);
+      --modal-overlay: rgba(15, 23, 42, 0.55);
+    }
+
+    /* Estilos específicos para modo claro */
+    [data-theme="light"] body {
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.06) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.04) 0px, transparent 50%) !important;
+    }
+
+    [data-theme="light"] .sidebar {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-right-color: var(--border-color) !important;
+    }
+
+    [data-theme="light"] .nav-item {
+      color: #475569 !important;
+    }
+
+    [data-theme="light"] .nav-item:hover,
+    [data-theme="light"] .nav-item.active {
+      color: var(--primary) !important;
+      background: rgba(139, 92, 246, 0.08) !important;
+    }
+
+    [data-theme="light"] input,
+    [data-theme="light"] select,
+    [data-theme="light"] textarea {
+      background-color: rgba(0, 0, 0, 0.02) !important;
+      color: #0f172a !important;
+      border-color: rgba(0, 0, 0, 0.12) !important;
+    }
+
+    [data-theme="light"] input:focus,
+    [data-theme="light"] select:focus,
+    [data-theme="light"] textarea:focus {
+      border-color: var(--primary) !important;
+      background-color: #fff !important;
+    }
+
+    [data-theme="light"] .card,
+    [data-theme="light"] .stat-card,
+    [data-theme="light"] .metric-card,
+    [data-theme="light"] .integration-card,
+    [data-theme="light"] .call-item {
+      background: #ffffff !important;
+      border-color: rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05) !important;
+    }
+
+    [data-theme="light"] h1,
+    [data-theme="light"] h2,
+    [data-theme="light"] h3,
+    [data-theme="light"] h4,
+    [data-theme="light"] label {
+      color: #0f172a !important;
+    }
+
+    [data-theme="light"] .status-badge {
+      background: rgba(139, 92, 246, 0.08) !important;
+      color: var(--primary) !important;
+      border-color: rgba(139, 92, 246, 0.15) !important;
+    }
+
+    [data-theme="light"] .modal-content,
+    [data-theme="light"] .custom-modal-content {
+      background: #ffffff !important;
+      border-color: rgba(0, 0, 0, 0.1) !important;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+    }
+
+    [data-theme="light"] td,
+    [data-theme="light"] th {
+      color: #334155 !important;
+      border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+    }
+
+    [data-theme="light"] tr:hover {
+      background-color: rgba(0, 0, 0, 0.01) !important;
+    }
+
+    [data-theme="light"] span[style*="color: #fff"],
+    [data-theme="light"] span[style*="color: white"],
+    [data-theme="light"] div[style*="color: #fff"],
+    [data-theme="light"] div[style*="color: white"],
+    [data-theme="light"] p[style*="color: #fff"],
+    [data-theme="light"] p[style*="color: white"] {
+      color: #0f172a !important;
     }
 
     * {
@@ -1605,7 +1713,10 @@
           <div class="status-badge" id="client-business-badge">
             <span>Cargando Negocio...</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.8</span>
+          <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
+            <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
+          </button>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.9</span>
         </div>
       </header>
 
@@ -2471,6 +2582,36 @@
   </div>
 
   <script>
+    // Cargar y aplicar tema guardado lo antes posible para evitar parpadeos
+    (function() {
+      const currentTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+    })();
+
+    function updateThemeIcon() {
+      const icon = document.getElementById('theme-toggle-icon');
+      if (!icon) return;
+      const activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      if (activeTheme === 'light') {
+        icon.setAttribute('data-lucide', 'moon');
+        icon.style.color = '#475569';
+      } else {
+        icon.setAttribute('data-lucide', 'sun');
+        icon.style.color = '#e5e7eb';
+      }
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+
+    function toggleTheme() {
+      const activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const newTheme = activeTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon();
+    }
+
     // Inicializar iconos
     lucide.createIcons();
 
@@ -3554,6 +3695,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      updateThemeIcon();
       if (!tenantId) {
         const appContainer = document.querySelector('.app-container');
         if (appContainer) appContainer.style.display = 'none';
