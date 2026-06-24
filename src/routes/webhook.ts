@@ -11,7 +11,7 @@ const router = Router();
 async function getTenantDetailsForWebhook(tenantId: string) {
   const { data, error } = await supabase
     .from('tenants')
-    .select('business_name, business_sector, google_refresh_token, working_hours, enable_multi_professional, professionals, enable_no_show_deposits, no_show_deposit_amount, whatsapp_reminders_enabled, voice_id, client_enable_no_show_deposits, client_enable_multi_professional')
+    .select('business_name, business_sector, google_refresh_token, working_hours, enable_multi_professional, professionals, whatsapp_reminders_enabled, voice_id')
     .eq('id', tenantId)
     .single();
 
@@ -99,7 +99,8 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
 
     // Mapear calendario del profesional si está activo
     let calendarId = 'primary';
-    if (tenantDetails.enable_multi_professional && tenantDetails.client_enable_multi_professional !== false && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
+    const clientEnableMulti = tenantDetails.working_hours?.client_enable_multi_professional !== false;
+    if (tenantDetails.enable_multi_professional && clientEnableMulti && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
       if (professional) {
         const prof = tenantDetails.professionals.find((p: any) => 
           p.name.toLowerCase().includes(String(professional).toLowerCase()) ||
@@ -226,7 +227,8 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
     // Mapear al profesional correcto si está activo
     let calendarId = 'primary';
     let matchedProfName = null;
-    if (tenantDetails.enable_multi_professional && tenantDetails.client_enable_multi_professional !== false && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
+    const clientEnableMulti = tenantDetails.working_hours?.client_enable_multi_professional !== false;
+    if (tenantDetails.enable_multi_professional && clientEnableMulti && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
       const profName = professional || args.professional;
       if (profName) {
         const prof = tenantDetails.professionals.find((p: any) => 

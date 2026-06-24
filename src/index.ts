@@ -44,13 +44,23 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
   const { email, id } = req.query;
   try {
     let query = supabase.from('tenants').select('*');
+    const mapTenant = (t: any) => {
+      if (!t) return t;
+      let workingHoursObj = t.working_hours;
+      if (typeof workingHoursObj === 'string') {
+        try { workingHoursObj = JSON.parse(workingHoursObj); } catch (e) {}
+      }
+      t.client_enable_multi_professional = workingHoursObj?.client_enable_multi_professional !== false;
+      return t;
+    };
+
     if (id) {
       const { data, error } = await query.eq('id', id).single();
       if (error || !data) {
         res.status(404).json({ error: 'Inquilino no encontrado.' });
         return;
       }
-      res.json(data);
+      res.json(mapTenant(data));
       return;
     } else if (email) {
       const { data, error } = await query.eq('email', email).single();
@@ -58,7 +68,7 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
         res.status(404).json({ error: 'Inquilino no encontrado.' });
         return;
       }
-      res.json(data);
+      res.json(mapTenant(data));
       return;
     } else {
       // Listar todos los inquilinos activos (no archivados) para el panel de administración
@@ -66,7 +76,7 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
         .eq('is_archived', false)
         .order('business_name', { ascending: true });
       if (error) throw error;
-      res.json(data);
+      res.json((data || []).map(mapTenant));
       return;
     }
   } catch (err: any) {
@@ -136,7 +146,16 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (twilio_account_sid !== undefined) tenantData.twilio_account_sid = twilio_account_sid;
     if (twilio_auth_token !== undefined) tenantData.twilio_auth_token = twilio_auth_token;
     if (twilio_whatsapp_number !== undefined) tenantData.twilio_whatsapp_number = twilio_whatsapp_number;
-    if (client_enable_multi_professional !== undefined) tenantData.client_enable_multi_professional = !!client_enable_multi_professional;
+    if (client_enable_multi_professional !== undefined) {
+      let workingHoursObj: any = {};
+      if (existing && existing.working_hours) {
+        workingHoursObj = typeof existing.working_hours === 'string' 
+          ? JSON.parse(existing.working_hours) 
+          : existing.working_hours;
+      }
+      workingHoursObj.client_enable_multi_professional = !!client_enable_multi_professional;
+      tenantData.working_hours = workingHoursObj;
+    }
 
     let savedTenant: any;
 
@@ -753,6 +772,21 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       computedEmailSentAt = existing && existing.contract_email_sent_at ? existing.contract_email_sent_at : new Date().toISOString();
     }
 
+    let workingHoursObj = working_hours;
+    if (existing && existing.working_hours) {
+      const prevWorkingHours = typeof existing.working_hours === 'string' ? JSON.parse(existing.working_hours) : existing.working_hours;
+      if (prevWorkingHours && prevWorkingHours.client_enable_multi_professional !== undefined) {
+        if (!workingHoursObj) {
+          workingHoursObj = { client_enable_multi_professional: prevWorkingHours.client_enable_multi_professional };
+        } else {
+          if (typeof workingHoursObj === 'string') {
+            try { workingHoursObj = JSON.parse(workingHoursObj); } catch (e) {}
+          }
+          workingHoursObj.client_enable_multi_professional = prevWorkingHours.client_enable_multi_professional;
+        }
+      }
+    }
+
     let tenant: any;
     const tenantData: any = {
       business_name,
@@ -763,7 +797,7 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       sip_username,
       sip_password,
       sip_server,
-      working_hours,
+      working_hours: workingHoursObj,
       business_description,
       pricing_details,
       custom_instructions,

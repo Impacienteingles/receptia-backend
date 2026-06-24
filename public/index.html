@@ -1605,7 +1605,7 @@
           <div class="status-badge" id="client-business-badge">
             <span>Cargando Negocio...</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.6</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.7</span>
         </div>
       </header>
 
@@ -1754,11 +1754,15 @@
               </h2>
               <div style="display:flex; flex-direction:column; gap:0.75rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="color:rgba(167,243,208,0.8); font-size:0.85rem;">Ahorro mensual estimado:</span>
+                  <span style="color:rgba(167,243,208,0.8); font-size:0.85rem;">Ahorro real acumulado (mes):</span>
                   <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                    <strong id="roi-monthly-savings" style="font-size:1.6rem; color:#34d399; line-height:1;">0 €</strong>
-                    <span style="font-size:0.7rem; color:rgba(167,243,208,0.6);">vs. recepcionista física</span>
+                    <strong id="roi-real-accumulated" style="font-size:1.6rem; color:#6ee7b7; line-height:1;">0,00 €</strong>
+                    <span id="roi-real-calls-count" style="font-size:0.7rem; color:rgba(167,243,208,0.6);">0 llamadas atendidas</span>
                   </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="color:rgba(167,243,208,0.8); font-size:0.85rem;">Ahorro mensual proyectado:</span>
+                  <strong id="roi-monthly-savings" style="color:#34d399; font-size:1.1rem;">0 €</strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <span style="color:rgba(167,243,208,0.8); font-size:0.85rem;">Ahorro anual proyectado:</span>
@@ -1925,6 +1929,7 @@
                     <th>Teléfono</th>
                     <th>Intención</th>
                     <th>Duración</th>
+                    <th>Ahorro ROI</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -5153,7 +5158,7 @@
         if (data.migration_required) {
           callsTbody.innerHTML = `
             <tr>
-              <td colspan="5" style="text-align: center; color: var(--error); padding: 2rem;">
+              <td colspan="6" style="text-align: center; color: var(--error); padding: 2rem;">
                 <i data-lucide="alert-triangle" style="width: 24px; height: 24px; margin: 0 auto 0.5rem; display: block;"></i>
                 Se requiere ejecutar la migración SQL en Supabase para habilitar el historial de llamadas (tabla call_logs).
               </td>
@@ -5168,12 +5173,13 @@
         allCallLogs = data.logs || [];
         renderCallLogsTable(allCallLogs);
         updateUsageProgressBar(allCallLogs);
+        calculateAndDisplayROI(currentTenant, allCallLogs);
         renderCharts();
       } catch (err) {
         console.error('Error al cargar call logs:', err);
         callsTbody.innerHTML = `
           <tr>
-            <td colspan="5" style="text-align: center; color: var(--error); padding: 2rem;">
+            <td colspan="6" style="text-align: center; color: var(--error); padding: 2rem;">
               Error al conectar con el servidor para obtener el historial.
             </td>
           </tr>
@@ -5453,11 +5459,22 @@
           badgeHtml = `<span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500;">${log.intent_tag || 'Consulta General'}</span>`;
         }
 
+        // Calcular ahorro ROI de esta llamada (1.50€ fijo + 0.20€ por minuto)
+        let callSavings = 0;
+        if (log.intent_tag !== 'Llamada Perdida' && log.call_duration > 0) {
+          callSavings = 1.50 + (log.call_duration / 60) * 0.20;
+        }
+        const savingsText = callSavings > 0 ? `+${callSavings.toFixed(2)} €` : '0,00 €';
+        const savingsBadge = callSavings > 0 
+          ? `<span class="badge" style="background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; font-family: monospace;">${savingsText}</span>`
+          : `<span class="badge" style="background: rgba(156, 163, 175, 0.08); color: #9ca3af; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-family: monospace;">${savingsText}</span>`;
+
         row.innerHTML = `
           <td style="font-weight: 500; color: #fff;">${formattedDate}</td>
           <td style="font-family: monospace;">${log.caller_phone || 'Oculto'}</td>
           <td>${badgeHtml}</td>
           <td>${durationStr}</td>
+          <td>${savingsBadge}</td>
           <td>
             <div style="display: flex; gap: 0.25rem; align-items: center;">
               <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 6px;" id="btn-toggle-${log.id}">
@@ -5489,7 +5506,7 @@
         }
 
         detailRow.innerHTML = `
-          <td colspan="5" style="padding: 1.25rem; border-bottom: 1px solid var(--border-color);">
+          <td colspan="6" style="padding: 1.25rem; border-bottom: 1px solid var(--border-color);">
             <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; text-align: left;">
               ${audioHtml}
               <div>
@@ -6044,7 +6061,7 @@
 
     let currentROIData = {};
 
-    function calculateAndDisplayROI(tenant) {
+    function calculateAndDisplayROI(tenant, logs = []) {
       if (!tenant) return;
 
       const sector = tenant.business_sector || 'general';
@@ -6062,10 +6079,23 @@
       const savings24x7Month = (monthlyPersonCost * ROI_24_7_MULTIPLIER) - receptiaCostMonthly;
       const savingsAnnual = savingsPerMonth * 12;
 
+      // Calcular ahorro real acumulado
+      let realSavings = 0;
+      let handledCallsCount = 0;
+      if (logs && logs.length > 0) {
+        logs.forEach(log => {
+          if (log.intent_tag !== 'Llamada Perdida' && log.call_duration > 0) {
+            realSavings += 1.50 + (log.call_duration / 60) * 0.20;
+            handledCallsCount++;
+          }
+        });
+      }
+
       currentROIData = {
         sector, grossSalary, totalEmployerCost, monthlyPersonCost,
         receptiaCostMonthly, savingsPerMonth, savingsAnnual,
-        savings24x7Month, multiplier: ROI_24_7_MULTIPLIER
+        savings24x7Month, multiplier: ROI_24_7_MULTIPLIER,
+        realSavings, handledCallsCount
       };
 
       // Actualizar tarjeta ROI
@@ -6076,6 +6106,10 @@
           savingsPerMonth.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €';
         document.getElementById('roi-annual-savings').textContent =
           savingsAnnual.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €/año';
+        document.getElementById('roi-real-accumulated').textContent =
+          realSavings.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        document.getElementById('roi-real-calls-count').textContent =
+          `${handledCallsCount} llamadas atendidas`;
       }
     }
 
@@ -6093,14 +6127,26 @@
 
       const roiModalHtml = `
         <div id="roi-modal-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:99998; display:flex; align-items:center; justify-content:center; padding:1rem;" onclick="if(event.target===this) closeROIModal()">
-          <div style="background:linear-gradient(135deg,#0f1729,#0a1220); border:1px solid rgba(52,211,153,0.25); border-radius:20px; max-width:580px; width:100%; max-height:90vh; overflow-y:auto; padding:2rem; display:flex; flex-direction:column; gap:1.5rem; position:relative;">
+          <div style="background:linear-gradient(135deg,#0f1729,#0a1220); border:1px solid rgba(52,211,153,0.25); border-radius:20px; max-width:580px; width:100%; max-height:90vh; overflow-y:auto; padding:2rem; display:flex; flex-direction:column; gap:1.25rem; position:relative;">
             <button onclick="closeROIModal()" style="position:absolute; top:1rem; right:1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fff; font-size:1.1rem;">&times;</button>
 
             <div>
-              <h2 style="display:flex; align-items:center; gap:0.75rem; color:#34d399; font-size:1.3rem; margin-bottom:0.5rem;">
+              <h2 style="display:flex; align-items:center; gap:0.75rem; color:#34d399; font-size:1.3rem; margin-bottom:0.25rem;">
                 📊 Desglose de Ahorro ROI
               </h2>
-              <p style="color:rgba(167,243,208,0.7); font-size:0.85rem;">Sector: <strong style="color:#34d399;">${sectorNames[d.sector] || d.sector}</strong></p>
+              <p style="color:rgba(167,243,208,0.7); font-size:0.85rem; margin:0;">Sector: <strong style="color:#34d399;">${sectorNames[d.sector] || d.sector}</strong></p>
+            </div>
+
+            <!-- Ahorro real acumulado -->
+            <div style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.06)); border:1px solid rgba(52,211,153,0.3); border-radius:14px; padding:1.25rem; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h4 style="color:#6ee7b7; font-size:0.95rem; margin:0 0 0.25rem 0;">Ahorro Real Acumulado</h4>
+                <p style="font-size:0.75rem; color:rgba(167,243,208,0.7); margin:0;">Medido en base a las llamadas reales atendidas por la IA.</p>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:1.6rem; font-weight:800; color:#34d399; line-height:1;">${d.realSavings.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</div>
+                <div style="font-size:0.7rem; color:rgba(167,243,208,0.5); margin-top:0.25rem;">${d.handledCallsCount} llamadas (€1.50 fijo + €0.20/min)</div>
+              </div>
             </div>
 
             <!-- Tabla de desglose -->
