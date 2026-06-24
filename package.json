@@ -1,6 +1,6 @@
 {
   "name": "receptia",
-  "version": "1.1.18",
+  "version": "1.1.20",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -23,12 +23,14 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.9.3",
+    "@whiskeysockets/baileys": "^7.0.0-rc13",
     "axios": "^1.18.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "googleapis": "^173.0.0",
     "pg": "^8.22.0",
+    "pino": "^10.3.1",
     "stripe": "^22.2.3",
     "typescript": "^6.0.3"
   },

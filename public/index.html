@@ -1579,7 +1579,7 @@
           <div class="status-badge" id="client-business-badge">
             <span>Cargando Negocio...</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.4</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.5</span>
         </div>
       </header>
 
@@ -2097,6 +2097,70 @@
                 <button class="btn btn-secondary" onclick="saveNotificationChannels()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
                   <i data-lucide="save"></i>
                   Guardar Canales
+                </button>
+              </div>
+
+              <!-- Configuración del Proveedor de WhatsApp -->
+              <div id="section-whatsapp-provider-config" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; display: none;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="message-square" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Configuración del Proveedor de WhatsApp
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Elige el método para el envío de recordatorios de WhatsApp a tus clientes. Puedes utilizar nuestro sistema de Código QR gratuito (vinculando tu propio teléfono) o utilizar tus propias credenciales de Twilio.
+                </p>
+
+                <!-- Selector de Proveedor -->
+                <div style="margin-bottom: 1.5rem;">
+                  <label for="setting-whatsapp-provider" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Proveedor de WhatsApp:</label>
+                  <select id="setting-whatsapp-provider" onchange="toggleWhatsappProviderFields()" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+                    <option value="qr">Código QR Gratis (WhatsApp Web Autohospedado)</option>
+                    <option value="twilio">Twilio Profesional (Tu propia cuenta - Pago)</option>
+                  </select>
+                </div>
+
+                <!-- CONTENEDOR MODO QR -->
+                <div id="whatsapp-provider-qr-container" style="background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px; margin-bottom: 1.25rem;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <span style="font-size: 0.85rem; color: var(--text-muted);">Estado del Servicio:</span>
+                      <span id="whatsapp-qr-status-badge" style="font-size: 0.8rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(156, 163, 175, 0.2); color: #d1d5db;">Consultando...</span>
+                    </div>
+                    <button id="btn-whatsapp-qr-disconnect" class="btn" onclick="disconnectWhatsappQR()" style="display: none; padding: 0.35rem 0.75rem; font-size: 0.8rem; background: #ef4444; color: #fff; height: auto; border: none; border-radius: 6px; cursor: pointer;">Desconectar</button>
+                    <button id="btn-whatsapp-qr-connect" class="btn" onclick="connectWhatsappQR()" style="display: none; padding: 0.35rem 0.75rem; font-size: 0.8rem; background: var(--primary); color: #fff; height: auto; border: none; border-radius: 6px; cursor: pointer;">Conectar / Vincular</button>
+                  </div>
+
+                  <!-- QR Display Area -->
+                  <div id="whatsapp-qr-display" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; padding: 1rem; text-align: center;">
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">Cargando estado...</div>
+                  </div>
+                </div>
+
+                <!-- CONTENEDOR MODO TWILIO -->
+                <div id="whatsapp-provider-twilio-container" style="display: none; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px; margin-bottom: 1.25rem;">
+                  <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                      <label for="setting-twilio-sid" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Twilio Account SID:</label>
+                      <input type="text" id="setting-twilio-sid" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;" placeholder="ej. ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                    </div>
+                    <div>
+                      <label for="setting-twilio-token" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Twilio Auth Token:</label>
+                      <input type="password" id="setting-twilio-token" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;" placeholder="Tu token secreto de Twilio">
+                    </div>
+                    <div>
+                      <label for="setting-twilio-number" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Número de WhatsApp de Twilio:</label>
+                      <input type="text" id="setting-twilio-number" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;" placeholder="ej. whatsapp:+14155238886">
+                    </div>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.4;">
+                    💡 Para usar Twilio, debes configurar un Sandbox o adquirir un número de WhatsApp remitente aprobado en la consola de Twilio. Los costes de envío serán facturados directamente a tu cuenta de Twilio.
+                  </div>
+                </div>
+
+                <!-- Botón de Guardar Ajustes Generales de Proveedor -->
+                <button class="btn btn-secondary" onclick="saveWhatsappProviderSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                  <i data-lucide="save"></i>
+                  Guardar Configuración del Proveedor
                 </button>
               </div>
 
@@ -2955,7 +3019,8 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             phone: phone,
-            message: 'Hola! Esta es una notificación de prueba de WhatsApp de Receptia. Tus credenciales y configuración del proveedor funcionan correctamente.'
+            message: 'Hola! Esta es una notificación de prueba de WhatsApp de Receptia. Tus credenciales y configuración del proveedor funcionan correctamente.',
+            tenant_id: currentTenant ? currentTenant.id : undefined
           })
         });
         
@@ -2965,6 +3030,214 @@
         }
         
         showToast('Mensaje de prueba enviado con éxito.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    let whatsappStatusInterval = null;
+
+    function toggleWhatsappProviderFields() {
+      const selProvider = document.getElementById('setting-whatsapp-provider');
+      if (!selProvider) return;
+      const provider = selProvider.value;
+      
+      const qrContainer = document.getElementById('whatsapp-provider-qr-container');
+      const twilioContainer = document.getElementById('whatsapp-provider-twilio-container');
+      
+      if (provider === 'qr') {
+        if (qrContainer) qrContainer.style.display = 'block';
+        if (twilioContainer) twilioContainer.style.display = 'none';
+      } else {
+        if (qrContainer) qrContainer.style.display = 'none';
+        if (twilioContainer) twilioContainer.style.display = 'block';
+      }
+    }
+
+    function startWhatsappStatusPolling() {
+      if (whatsappStatusInterval) clearInterval(whatsappStatusInterval);
+      pollWhatsappStatus();
+      whatsappStatusInterval = setInterval(pollWhatsappStatus, 5000);
+    }
+
+    function stopWhatsappStatusPolling() {
+      if (whatsappStatusInterval) {
+        clearInterval(whatsappStatusInterval);
+        whatsappStatusInterval = null;
+      }
+    }
+
+    async function pollWhatsappStatus() {
+      if (!currentTenant) return;
+      const selProvider = document.getElementById('setting-whatsapp-provider');
+      if (selProvider && selProvider.value !== 'qr') {
+        return;
+      }
+      
+      try {
+        const res = await fetch(`/api/client/whatsapp/status?tenant_id=${currentTenant.id}`);
+        if (!res.ok) throw new Error('Error al obtener estado de WhatsApp');
+        const data = await res.json();
+        
+        updateWhatsappQRStatusUI(data);
+      } catch (err) {
+        console.warn('Error en polling de WhatsApp:', err.message);
+      }
+    }
+
+    function updateWhatsappQRStatusUI(data) {
+      const statusBadge = document.getElementById('whatsapp-qr-status-badge');
+      const displayArea = document.getElementById('whatsapp-qr-display');
+      const btnDisconnect = document.getElementById('btn-whatsapp-qr-disconnect');
+      const btnConnect = document.getElementById('btn-whatsapp-qr-connect');
+      
+      if (!statusBadge || !displayArea) return;
+      
+      const status = data.status || 'disconnected';
+      
+      statusBadge.innerText = status.toUpperCase();
+      if (status === 'connected') {
+        statusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+        statusBadge.style.color = '#10b981';
+        if (btnDisconnect) btnDisconnect.style.display = 'block';
+        if (btnConnect) btnConnect.style.display = 'none';
+      } else if (status === 'connecting') {
+        statusBadge.style.background = 'rgba(59, 130, 246, 0.2)';
+        statusBadge.style.color = '#3b82f6';
+        if (btnDisconnect) btnDisconnect.style.display = 'none';
+        if (btnConnect) btnConnect.style.display = 'none';
+      } else if (status === 'qr') {
+        statusBadge.style.background = 'rgba(245, 158, 11, 0.2)';
+        statusBadge.style.color = '#f59e0b';
+        if (btnDisconnect) btnDisconnect.style.display = 'block';
+        if (btnConnect) btnConnect.style.display = 'none';
+      } else {
+        statusBadge.style.background = 'rgba(156, 163, 175, 0.2)';
+        statusBadge.style.color = '#9ca3af';
+        if (btnDisconnect) btnDisconnect.style.display = 'none';
+        if (btnConnect) btnConnect.style.display = 'block';
+      }
+      
+      if (status === 'connected') {
+        displayArea.innerHTML = `
+          <div style="color: #10b981; font-weight: 500; font-size: 1.1rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+            <i data-lucide="check-circle-2" style="width: 48px; height: 48px;"></i>
+            <span>WhatsApp Vinculado con Éxito</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-top: 0.25rem;">
+              Los recordatorios se enviarán desde tu propio número de teléfono.
+            </span>
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+      } else if (status === 'connecting') {
+        displayArea.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem; color: var(--text-muted);">
+            <div style="border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: var(--primary); border-radius: 50%; width: 36px; height: 36px; animation: spin 1s linear infinite;"></div>
+            <span>Inicializando canal de WhatsApp...</span>
+          </div>
+        `;
+      } else if (status === 'qr' && data.qrText) {
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(data.qrText)}&size=200x200&color=255-255-255&bgcolor=0-0-0`;
+        displayArea.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+            <div style="background: white; padding: 0.75rem; border-radius: 8px;">
+              <img src="${qrUrl}" alt="Código QR WhatsApp" style="display: block; width: 180px; height: 180px;" />
+            </div>
+            <div style="font-size: 0.85rem; color: #fff; max-width: 320px; line-height: 1.4;">
+              📱 Escanea este código QR con tu aplicación de WhatsApp en tu teléfono móvil (Ajustes &gt; Dispositivos vinculados) para enlazar tu cuenta.
+            </div>
+          </div>
+        `;
+      } else {
+        displayArea.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+            <i data-lucide="info" style="width: 32px; height: 32px; color: var(--text-muted);"></i>
+            <span>Servicio de WhatsApp desconectado.</span>
+            <span style="font-size: 0.8rem; margin-top: 0.25rem;">Haz clic en Conectar para generar un código QR.</span>
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    async function connectWhatsappQR() {
+      if (!currentTenant) return;
+      try {
+        showToast('Iniciando conexión de WhatsApp...');
+        const res = await fetch('/api/client/whatsapp/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenant_id: currentTenant.id })
+        });
+        if (!res.ok) throw new Error('Error al conectar WhatsApp');
+        
+        pollWhatsappStatus();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function disconnectWhatsappQR() {
+      if (!currentTenant) return;
+      if (!confirm('¿Estás seguro de que deseas desconectar y cerrar sesión de tu WhatsApp? Esto detendrá los recordatorios por esta vía.')) return;
+      
+      try {
+        showToast('Desconectando WhatsApp...');
+        const res = await fetch('/api/client/whatsapp/disconnect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenant_id: currentTenant.id })
+        });
+        if (!res.ok) throw new Error('Error al desconectar WhatsApp');
+        
+        showToast('Sesión de WhatsApp cerrada correctamente.');
+        pollWhatsappStatus();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function saveWhatsappProviderSettings() {
+      if (!currentTenant) return;
+      
+      const selProvider = document.getElementById('setting-whatsapp-provider');
+      const provider = selProvider ? selProvider.value : 'qr';
+      
+      const sid = document.getElementById('setting-twilio-sid').value.trim();
+      const token = document.getElementById('setting-twilio-token').value.trim();
+      const number = document.getElementById('setting-twilio-number').value.trim();
+      
+      if (provider === 'twilio' && (!sid || !token || !number)) {
+        showToast('Por favor, rellena todas las credenciales de Twilio.', 'error');
+        return;
+      }
+      
+      try {
+        showToast('Guardando configuración de WhatsApp...');
+        const res = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentTenant.email,
+            business_name: currentTenant.business_name,
+            client_whatsapp_provider: provider,
+            twilio_account_sid: provider === 'twilio' ? sid : currentTenant.twilio_account_sid,
+            twilio_auth_token: provider === 'twilio' ? token : currentTenant.twilio_auth_token,
+            twilio_whatsapp_number: provider === 'twilio' ? number : currentTenant.twilio_whatsapp_number
+          })
+        });
+        
+        if (!res.ok) throw new Error('Fallo al guardar la configuración del proveedor.');
+        const updated = await res.json();
+        currentTenant = updated;
+        showToast('Configuración del proveedor de WhatsApp guardada correctamente.');
+        
+        toggleWhatsappProviderFields();
+        if (provider === 'qr') {
+          startWhatsappStatusPolling();
+        } else {
+          stopWhatsappStatusPolling();
+        }
       } catch (err) {
         showToast(err.message, 'error');
       }
@@ -3176,6 +3449,12 @@
         fetchCallLogs();
       } else if (tabId === 'appointments') {
         fetchAppointments(currentTenant.id);
+      }
+
+      if (tabId === 'settings' && currentTenant && !!currentTenant.whatsapp_reminders_enabled) {
+        startWhatsappStatusPolling();
+      } else {
+        stopWhatsappStatusPolling();
       }
       
       // Cerrar sidebar en móviles
@@ -3627,6 +3906,35 @@
       }
       if (badgeWhatsapp) {
         badgeWhatsapp.style.display = isWhatsappAllowed ? 'none' : 'inline-block';
+      }
+
+      // Mostrar o guardar el contenedor de configuración del proveedor de WhatsApp
+      const sectionWhatsappProvider = document.getElementById('section-whatsapp-provider-config');
+      if (sectionWhatsappProvider) {
+        sectionWhatsappProvider.style.display = isWhatsappAllowed ? 'block' : 'none';
+      }
+
+      // Rellenar proveedor actual y credenciales de Twilio
+      const selProvider = document.getElementById('setting-whatsapp-provider');
+      if (selProvider) {
+        selProvider.value = currentTenant.client_whatsapp_provider || 'qr';
+      }
+      
+      const txtTwilioSid = document.getElementById('setting-twilio-sid');
+      const txtTwilioToken = document.getElementById('setting-twilio-token');
+      const txtTwilioNumber = document.getElementById('setting-twilio-number');
+      
+      if (txtTwilioSid) txtTwilioSid.value = currentTenant.twilio_account_sid || '';
+      if (txtTwilioToken) txtTwilioToken.value = currentTenant.twilio_auth_token || '';
+      if (txtTwilioNumber) txtTwilioNumber.value = currentTenant.twilio_whatsapp_number || '';
+      
+      toggleWhatsappProviderFields();
+      
+      // Iniciar el polling de estado de WhatsApp si el proveedor es QR
+      if (isWhatsappAllowed) {
+        startWhatsappStatusPolling();
+      } else {
+        stopWhatsappStatusPolling();
       }
 
       const isEmailAllowed = currentTenant.email_notifications_enabled !== false;

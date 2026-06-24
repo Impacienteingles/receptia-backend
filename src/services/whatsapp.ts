@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { getSettingVal } from './supabase';
+import { getSettingVal, supabase } from './supabase';
+import { sendWhatsAppWebMessage } from './whatsapp-web';
 
 /**
  * Formatea un número de teléfono al formato requerido por la API de WhatsApp de Twilio: "whatsapp:+34600000000"
@@ -27,17 +28,66 @@ function formatWhatsAppNumber(phone: string): string {
 }
 
 /**
- * Envía un mensaje de WhatsApp utilizando Twilio.
+ * Envía un mensaje de WhatsApp utilizando el proveedor correspondiente (QR Web o Twilio).
  */
-export async function sendWhatsAppMessage(toPhone: string, messageText: string): Promise<boolean> {
+export async function sendWhatsAppMessage(toPhone: string, messageText: string, tenantId?: string): Promise<boolean> {
   try {
-    const accountSid = await getSettingVal('TWILIO_ACCOUNT_SID');
-    const authToken = await getSettingVal('TWILIO_AUTH_TOKEN');
-    let fromNumber = await getSettingVal('TWILIO_WHATSAPP_NUMBER');
+    let provider = 'twilio';
+    let accountSid = '';
+    let authToken = '';
+    let fromNumber = '';
 
+    if (tenantId) {
+      // Intentar obtener la configuración específica de WhatsApp para este inquilino
+      const { data: tenant, error } = await supabase
+        .from('tenants')
+        .select('client_whatsapp_provider, twilio_account_sid, twilio_auth_token, twilio_whatsapp_number, client_whatsapp_connected')
+        .eq('id', tenantId)
+        .maybeSingle();
+
+      if (!error && tenant) {
+        provider = tenant.client_whatsapp_provider || 'qr';
+        
+        if (provider === 'qr') {
+          console.log(`[WhatsApp Service] Tenant ${tenantId} prefiere WhatsApp Web (QR).`);
+          const success = await sendWhatsAppWebMessage(tenantId, toPhone, messageText);
+          if (success) {
+            return true;
+          }
+          console.warn(`⚠️ Error o sesión desconectada en WhatsApp Web (QR) para tenant ${tenantId}.`);
+          return false;
+        } else if (provider === 'twilio') {
+          accountSid = tenant.twilio_account_sid || '';
+          authToken = tenant.twilio_auth_token || '';
+          fromNumber = tenant.twilio_whatsapp_number || '';
+          
+          if (accountSid && authToken && fromNumber) {
+            console.log(`[WhatsApp Service] Enviando usando credenciales de Twilio del tenant: ${tenantId}`);
+          } else {
+            console.log(`[WhatsApp Service] El tenant ${tenantId} seleccionó Twilio pero faltan credenciales. Intentando fallback global.`);
+            accountSid = '';
+            authToken = '';
+            fromNumber = '';
+          }
+        }
+      } else {
+        if (error) {
+          console.warn(`[WhatsApp Service] Error al cargar configuración del tenant ${tenantId}:`, error.message);
+        }
+      }
+    }
+
+    // Fallback a los ajustes globales de Twilio si no se especificaron credenciales del tenant
     if (!accountSid || !authToken || !fromNumber) {
-      console.warn('⚠️ No se pudo enviar el WhatsApp: Faltan credenciales de Twilio (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER) en los ajustes.');
-      return false;
+      accountSid = await getSettingVal('TWILIO_ACCOUNT_SID') || '';
+      authToken = await getSettingVal('TWILIO_AUTH_TOKEN') || '';
+      fromNumber = await getSettingVal('TWILIO_WHATSAPP_NUMBER') || '';
+
+      if (!accountSid || !authToken || !fromNumber) {
+        console.warn('⚠️ No se pudo enviar el WhatsApp: Faltan credenciales de Twilio globales y específicas del tenant.');
+        return false;
+      }
+      console.log(`[WhatsApp Service] Usando credenciales globales de Twilio.`);
     }
 
     const to = formatWhatsAppNumber(toPhone);

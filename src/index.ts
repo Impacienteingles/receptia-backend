@@ -8,6 +8,12 @@ import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellA
 import { createStripeCheckoutSession, createStripePortalSession, getStripeClient } from './services/stripe';
 import axios from 'axios';
 import { sendWhatsAppMessage } from './services/whatsapp';
+import { 
+  initWhatsAppWebSession, 
+  disconnectWhatsAppWebSession, 
+  getWhatsAppSessionStatus, 
+  autoStartActiveSessions 
+} from './services/whatsapp-web';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -87,7 +93,11 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     whatsapp_reminder_hours,
     no_show_deposit_limit_mins,
     client_whatsapp_enabled,
-    client_email_enabled
+    client_email_enabled,
+    client_whatsapp_provider,
+    twilio_account_sid,
+    twilio_auth_token,
+    twilio_whatsapp_number
   } = req.body;
 
   if (!business_name || !email) {
@@ -122,6 +132,10 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (no_show_deposit_limit_mins !== undefined) tenantData.no_show_deposit_limit_mins = Number(no_show_deposit_limit_mins);
     if (client_whatsapp_enabled !== undefined) tenantData.client_whatsapp_enabled = !!client_whatsapp_enabled;
     if (client_email_enabled !== undefined) tenantData.client_email_enabled = !!client_email_enabled;
+    if (client_whatsapp_provider !== undefined) tenantData.client_whatsapp_provider = client_whatsapp_provider;
+    if (twilio_account_sid !== undefined) tenantData.twilio_account_sid = twilio_account_sid;
+    if (twilio_auth_token !== undefined) tenantData.twilio_auth_token = twilio_auth_token;
+    if (twilio_whatsapp_number !== undefined) tenantData.twilio_whatsapp_number = twilio_whatsapp_number;
 
     let savedTenant: any;
 
@@ -673,7 +687,11 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     voice_responsiveness,
     whatsapp_reminder_hours,
     no_show_deposit_limit_mins,
-    email_notifications_enabled
+    email_notifications_enabled,
+    client_whatsapp_provider,
+    twilio_account_sid,
+    twilio_auth_token,
+    twilio_whatsapp_number
   } = req.body;
 
   if (!business_name || !email) {
@@ -784,7 +802,11 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       vacation_mode: vacation_mode !== undefined ? !!vacation_mode : false,
       vacation_message: vacation_message || '',
       whatsapp_reminder_hours: whatsapp_reminder_hours !== undefined ? Number(whatsapp_reminder_hours) : 24,
-      no_show_deposit_limit_mins: no_show_deposit_limit_mins !== undefined ? Number(no_show_deposit_limit_mins) : 10
+      no_show_deposit_limit_mins: no_show_deposit_limit_mins !== undefined ? Number(no_show_deposit_limit_mins) : 10,
+      client_whatsapp_provider: client_whatsapp_provider || 'qr',
+      twilio_account_sid: twilio_account_sid || null,
+      twilio_auth_token: twilio_auth_token || null,
+      twilio_whatsapp_number: twilio_whatsapp_number || null
     };
 
     if (existing) {
@@ -2281,21 +2303,92 @@ app.post('/api/client/test-agent-call', async (req, res): Promise<void> => {
   }
 });
 
-// 8.2 Probar envío de WhatsApp (Twilio)
+// 8.2 Probar envío de WhatsApp (Twilio/QR)
 app.post('/api/test-whatsapp', async (req, res): Promise<void> => {
-  const { phone, message } = req.body;
+  const { phone, message, tenant_id } = req.body;
   if (!phone || !message) {
     res.status(400).json({ error: 'El teléfono y el mensaje son obligatorios.' });
     return;
   }
   try {
-    const success = await sendWhatsAppMessage(phone, message);
+    const success = await sendWhatsAppMessage(phone, message, tenant_id);
     if (success) {
       res.json({ status: 'success', message: 'Mensaje de WhatsApp de prueba enviado correctamente.' });
     } else {
       res.status(500).json({ error: 'Fallo al enviar el mensaje de WhatsApp. Revisa las credenciales y configuración del proveedor en los Ajustes.' });
     }
   } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// WhatsApp Web endpoints para clientes
+app.get('/api/client/whatsapp/status', async (req, res): Promise<void> => {
+  const tenantId = (req.query.tenant_id || req.query.tenantId) as string;
+  if (!tenantId) {
+    res.status(400).json({ error: 'El parámetro tenant_id es requerido.' });
+    return;
+  }
+
+  try {
+    const statusInfo = getWhatsAppSessionStatus(tenantId);
+    
+    // Si está desconectado y el proveedor es 'qr', intentamos inicializar de fondo para que genere el QR
+    if (statusInfo.status === 'disconnected') {
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('client_whatsapp_provider')
+        .eq('id', tenantId)
+        .maybeSingle();
+
+      if (tenant && (tenant.client_whatsapp_provider === 'qr' || !tenant.client_whatsapp_provider)) {
+        initWhatsAppWebSession(tenantId).catch(err => {
+          console.error(`Error al autoinicializar sesión de WhatsApp para ${tenantId}:`, err.message);
+        });
+        res.json({ status: 'connecting' });
+        return;
+      }
+    }
+
+    res.json(statusInfo);
+  } catch (err: any) {
+    console.error(`Error al obtener estado de WhatsApp para tenant ${tenantId}:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/client/whatsapp/connect', async (req, res): Promise<void> => {
+  const tenantId = req.body.tenant_id || req.body.tenantId;
+  if (!tenantId) {
+    res.status(400).json({ error: 'El parámetro tenant_id es requerido.' });
+    return;
+  }
+
+  try {
+    console.log(`[WhatsApp Web API] Conectando sesión de WhatsApp para tenant ${tenantId}...`);
+    initWhatsAppWebSession(tenantId).catch(err => {
+      console.error(`Error al iniciar sesión de WhatsApp para ${tenantId}:`, err.message);
+    });
+    res.json({ status: 'connecting' });
+  } catch (err: any) {
+    console.error(`Error al conectar WhatsApp para tenant ${tenantId}:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/client/whatsapp/disconnect', async (req, res): Promise<void> => {
+  const tenantId = req.body.tenant_id || req.body.tenantId;
+  if (!tenantId) {
+    res.status(400).json({ error: 'El parámetro tenant_id es requerido.' });
+    return;
+  }
+
+  try {
+    console.log(`[WhatsApp Web API] Desconectando/Desvinculando WhatsApp para tenant ${tenantId}...`);
+    await disconnectWhatsAppWebSession(tenantId);
+    res.json({ status: 'disconnected' });
+  } catch (err: any) {
+    console.error(`Error al desconectar WhatsApp para tenant ${tenantId}:`, err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -2489,7 +2582,7 @@ setInterval(async () => {
             
             const msg = `Recordatorio de Cita 🔔\n\nHola ${app.patient_name}, le recordamos su cita programada en ${tenant.business_name}.\n\n🔹 Servicio: ${app.specialty}\n🔹 Fecha: ${dateStr}\n🔹 Hora: ${timeStr}\n\n¡Le esperamos!`;
             
-            const success = await sendWhatsAppMessage(app.patient_phone, msg);
+            const success = await sendWhatsAppMessage(app.patient_phone, msg, tenant.id);
             if (success) {
               console.log(`[WhatsApp Reminder] Recordatorio enviado correctamente a ${app.patient_phone}.`);
             } else {
@@ -2515,4 +2608,9 @@ app.listen(PORT, () => {
   console.log(`\n========================================`);
   console.log(` Servidor SanaSalud escuchando en: http://localhost:${PORT}`);
   console.log(`========================================\n`);
+  
+  // Arrancar automáticamente las sesiones activas de WhatsApp Web en segundo plano
+  autoStartActiveSessions().catch(err => {
+    console.error('[WhatsApp Web Boot] Error al arrancar sesiones de WhatsApp:', err.message);
+  });
 });

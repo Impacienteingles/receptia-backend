@@ -283,7 +283,7 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
 
       // Envío de confirmación por WhatsApp (se envía siempre ya que no se pide correo electrónico)
       const msg = `Confirmación de Cita 📅\n\nHola ${name}, le confirmamos su cita en ${tenantDetails.business_name}.\n\n🔹 Servicio: ${specialty}\n🔹 Fecha: ${date}\n🔹 Hora: ${time}\n\n¡Le esperamos!`;
-      sendWhatsAppMessage(resolvedPhone, msg).catch(err => console.error('Error al enviar WhatsApp de confirmación:', err));
+      sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de confirmación:', err));
     } catch (dbErr: any) {
       console.warn('⚠️ No se pudo registrar la cita en la tabla appointments de Supabase:', dbErr.message);
     }
@@ -410,7 +410,7 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
 
     // Enviar confirmación por WhatsApp (se envía siempre ya que no se pide correo electrónico)
     const msg = `Cancelación de Cita ❌\n\nHola ${appToCancel.patient_name}, le confirmamos que su cita en ${tenantDetails.business_name} para el día ${date} ha sido cancelada correctamente.\n\nSentimos las molestias y esperamos verle en otra ocasión.`;
-    sendWhatsAppMessage(resolvedPhone, msg).catch(err => console.error('Error al enviar WhatsApp de cancelación:', err));
+    sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de cancelación:', err));
 
     res.json({
       status: 'success',
@@ -557,7 +557,7 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
 
     // Enviar confirmación por WhatsApp (se envía siempre ya que no se pide correo electrónico)
     const msg = `Modificación de Cita 🔄\n\nHola ${appToReschedule.patient_name}, le confirmamos que su cita en ${tenantDetails.business_name} ha sido modificada con éxito.\n\n🔹 Servicio: ${appToReschedule.specialty}\n🔹 Nueva Fecha: ${new_date}\n🔹 Nueva Hora: ${new_time}\n\n¡Le esperamos!`;
-    sendWhatsAppMessage(resolvedPhone, msg).catch(err => console.error('Error al enviar WhatsApp de reprogramación:', err));
+    sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de reprogramación:', err));
 
     res.json({
       status: 'success',
