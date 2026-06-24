@@ -1281,7 +1281,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.4.7</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.4.8</span>
         </div>
       </header>
 
@@ -5495,6 +5495,9 @@
             <button class="btn btn-secondary" onclick="loadTenantToEdit('${tenant.id}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
               <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Editar
             </button>
+            <button class="btn btn-secondary" onclick="duplicateTenant('${tenant.id}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #34d399; border-color: rgba(52, 211, 153, 0.3);" title="Duplicar ficha de cliente">
+              <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Duplicar
+            </button>
             <button class="btn btn-secondary" onclick="copyClientLinkToClipboard('${tenant.id}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: var(--primary-hover); border-color: rgba(139, 92, 246, 0.3);" title="Copiar enlace de acceso">
               <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Enlace
             </button>
@@ -5943,6 +5946,169 @@
       localStorage.removeItem('corandar_admin_draft');
       
       resetProvisioningForm();
+    }
+
+    // Duplicar la ficha de un cliente existente cargando sus datos en el formulario como un registro nuevo
+    function duplicateTenant(tenantId) {
+      const tenant = allTenants.find(t => t.id === tenantId);
+      if (!tenant) return;
+
+      // Asegurar que el formulario esté en la pestaña principal de creación y no en el modal de edición
+      const provisionCard = document.getElementById('provision-card');
+      const container = document.getElementById('provision-card-container');
+      if (provisionCard && container) {
+        container.appendChild(provisionCard);
+      }
+      document.getElementById('edit-client-modal').style.display = 'none';
+
+      // 1. Limpiar el formulario
+      adminForm.reset();
+
+      // 2. Rellenar campos comunes modificando los valores identificativos para evitar conflictos
+      document.getElementById('business-name').value = (tenant.business_name || '') + ' (Copia)';
+      
+      let originalEmail = tenant.email || '';
+      let duplicateEmail = '';
+      if (originalEmail && originalEmail.includes('@')) {
+        const parts = originalEmail.split('@');
+        duplicateEmail = `${parts[0]}+copia@${parts[1]}`;
+      }
+      document.getElementById('tenant-email').value = duplicateEmail;
+      
+      document.getElementById('specialties-input').value = (tenant.specialties || []).join(', ');
+      document.getElementById('voice-id').value = tenant.voice_id || 'cartesia-Sofia';
+
+      const speed = tenant.voice_speed !== undefined && tenant.voice_speed !== null ? Number(tenant.voice_speed) : 1.0;
+      const temp = tenant.voice_temperature !== undefined && tenant.voice_temperature !== null ? Number(tenant.voice_temperature) : 1.0;
+      const resp = tenant.voice_responsiveness !== undefined && tenant.voice_responsiveness !== null ? Number(tenant.voice_responsiveness) : 1.0;
+      document.getElementById('voice-speed').value = speed;
+      document.getElementById('voice-speed-val').innerText = speed.toFixed(2);
+      document.getElementById('voice-temperature').value = temp;
+      document.getElementById('voice-temperature-val').innerText = temp.toFixed(2);
+      document.getElementById('voice-responsiveness').value = resp;
+      document.getElementById('voice-responsiveness-val').innerText = resp.toFixed(2);
+
+      document.getElementById('business-sector').value = tenant.business_sector || 'general';
+      
+      // Auto-aceptar RGPD
+      const rgpdCheckbox = document.getElementById('accept-terms-privacy');
+      if (rgpdCheckbox) {
+        rgpdCheckbox.checked = true;
+      }
+      
+      // Limpiar Retell Agent ID y teléfono asignado para que se aprovisionen de nuevo
+      document.getElementById('retell-agent-id').value = '';
+      const btnTestCall = document.getElementById('btn-test-webrtc-call');
+      if (btnTestCall) btnTestCall.style.display = 'none';
+
+      document.getElementById('phone-provider').value = tenant.phone_provider || 'retell';
+      document.getElementById('phone-number').value = '';
+      document.getElementById('sip-username').value = '';
+      document.getElementById('sip-password').value = '';
+      document.getElementById('sip-server').value = '';
+      
+      document.getElementById('business-description').value = tenant.business_description || '';
+      document.getElementById('pricing-details').value = tenant.pricing_details || '';
+      document.getElementById('custom-instructions').value = tenant.custom_instructions || '';
+      document.getElementById('admin-pin').value = tenant.admin_pin || '';
+      
+      // Configuración de suscripción
+      document.getElementById('subscription-status').value = 'active';
+      const checkTrial = document.getElementById('is-trial-checkbox');
+      if (checkTrial) {
+        checkTrial.checked = !!tenant.is_trial || tenant.subscription_status === 'trial';
+        priceAmount.disabled = checkTrial.checked;
+      }
+      document.getElementById('subscription-plan').value = tenant.subscription_plan || 'Plan Mensual Estándar';
+      document.getElementById('billing-cycle').value = tenant.billing_cycle || 'monthly';
+      document.getElementById('price-amount').value = tenant.price_amount !== undefined ? tenant.price_amount : '149.00';
+      
+      // Fechas
+      const todayStr = new Date().toISOString().split('T')[0];
+      document.getElementById('contract-start-date').value = todayStr;
+      document.getElementById('contract-end-date').value = '';
+      if (window.fpContractStart) {
+        window.fpContractStart.setDate(todayStr);
+      }
+      if (window.fpContractEnd) {
+        window.fpContractEnd.setDate('');
+      }
+
+      // Rellenar campos de contrato
+      const templateId = tenant.contract_template_id || '';
+      document.getElementById('contract-template-select').value = templateId;
+      
+      document.getElementById('client-contract-legal-name').value = (tenant.representative_name || tenant.business_name || '') + ' (Copia)';
+      document.getElementById('client-contract-tax-id').value = tenant.tax_id || '';
+      document.getElementById('client-contract-address').value = tenant.legal_address || '';
+      document.getElementById('client-contract-rep-name').value = tenant.representative_name || '';
+      document.getElementById('client-contract-rep-id').value = tenant.representative_id || '';
+      document.getElementById('client-contract-rep-role').value = tenant.representative_role || '';
+      document.getElementById('client-contract-signing-city').value = tenant.signing_city || 'Madrid';
+
+      const varContainer = document.getElementById('client-contract-variables-container');
+      if (varContainer) {
+        varContainer.style.display = templateId ? 'flex' : 'none';
+      }
+      
+      const btnDownloadTemplate = document.getElementById('btn-download-selected-template');
+      if (btnDownloadTemplate) btnDownloadTemplate.style.display = templateId ? 'flex' : 'none';
+
+      document.getElementById('admin-sign-checkbox').checked = !!tenant.is_signed_by_admin;
+      document.getElementById('admin-signature-name-input').value = tenant.admin_signature_name || '';
+
+      // Horarios de trabajo del cliente
+      if (tenant.working_hours) {
+        days.forEach(day => {
+          const check = document.getElementById(`check-${day.key}`);
+          const s1 = document.getElementById(`start-${day.key}-1`);
+          const e1 = document.getElementById(`end-${day.key}-1`);
+          const s2 = document.getElementById(`start-${day.key}-2`);
+          const e2 = document.getElementById(`end-${day.key}-2`);
+
+          const shifts = tenant.working_hours[day.key] || [];
+          check.checked = shifts.length > 0;
+
+          s1.value = shifts[0] ? shifts[0].start : '';
+          e1.value = shifts[0] ? shifts[0].end : '';
+          s2.value = shifts[1] ? shifts[1].start : '';
+          e2.value = shifts[1] ? shifts[1].end : '';
+
+          const shiftsDiv = document.getElementById(`shifts-${day.key}`);
+          shiftsDiv.style.opacity = check.checked ? '1' : '0.3';
+          shiftsDiv.querySelectorAll('input').forEach(input => {
+            input.disabled = !check.checked;
+          });
+        });
+      }
+
+      // Propuestas de éxito SaaS
+      document.getElementById('whatsapp-reminders-enabled').checked = !!tenant.whatsapp_reminders_enabled;
+      document.getElementById('email-notifications-enabled').checked = tenant.email_notifications_enabled !== false;
+      document.getElementById('enable-multi-professional').checked = !!tenant.enable_multi_professional;
+      document.getElementById('knowledge-base-url').value = tenant.knowledge_base_url || '';
+      document.getElementById('knowledge-base-content').value = tenant.knowledge_base_content || '';
+      
+      // Profesionales
+      const builder = document.getElementById('professionals-list-builder');
+      builder.innerHTML = '';
+      if (tenant.professionals && Array.isArray(tenant.professionals)) {
+        tenant.professionals.forEach(p => addProfessionalRow(p.name, p.calendar_id, p.specialty));
+      }
+      toggleMultiProfessionalInput();
+      updateContractPreview();
+
+      // Cambiar encabezado y botón para que al enviar se cree como un NUEVO cliente duplicado
+      editingTenantId = null; 
+      formCardTitleText.innerHTML = `<i data-lucide="copy"></i> Duplicar Cliente (Crear como Nuevo)`;
+      btnGenerateText.innerText = 'Generar Agente IA y Registrar Duplicado';
+
+      // Cambiar a la pestaña de Crear Cliente y scroll al formulario
+      switchTab('provision');
+      document.getElementById('admin-form').scrollIntoView({ behavior: 'smooth' });
+
+      showCustomAlert('Los datos del cliente se han cargado como plantilla. Introduce un nuevo email y un nombre de negocio, y haz clic en "Generar Agente IA y Registrar Duplicado" para crear el nuevo cliente.', 'Ficha cargada para duplicar', 'info');
+      lucide.createIcons();
     }
 
     // Resetear el formulario de aprovisionamiento a su estado original

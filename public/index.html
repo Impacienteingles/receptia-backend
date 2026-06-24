@@ -2125,7 +2125,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.4.7</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.4.8</span>
         </div>
       </header>
 
@@ -2297,6 +2297,9 @@
               </div>
               <button class="btn" onclick="openROIModal()" style="margin-top:0.25rem; background:linear-gradient(135deg,#059669,#065f46); border:none; font-size:0.85rem; display:flex; align-items:center; gap:0.5rem; justify-content:center;">
                 <i data-lucide="bar-chart-2" style="width:15px;height:15px;"></i> Ver Desglose Detallado
+              </button>
+              <button class="btn" onclick="openROIHistoryModal()" style="margin-top:0.5rem; background:linear-gradient(135deg,#1f2937,#111827); border:1px solid rgba(255,255,255,0.1); font-size:0.85rem; display:flex; align-items:center; gap:0.5rem; justify-content:center; color:#fff;">
+                <i data-lucide="history" style="width:15px;height:15px;"></i> Histórico Ahorrado
               </button>
             </div>
 
@@ -6900,6 +6903,138 @@
 
     function closeROIModal() {
       const el = document.getElementById('roi-modal-overlay');
+      if (el) el.remove();
+    }
+
+    function openROIHistoryModal() {
+      if (!allCallLogs || allCallLogs.length === 0) {
+        alert('Aún no tienes un historial de llamadas registrado para calcular el histórico de ahorro.');
+        return;
+      }
+
+      // Agrupar llamadas por año-mes (formato "YYYY-MM")
+      const history = {};
+
+      allCallLogs.forEach(log => {
+        if (log.intent_tag !== 'Llamada Perdida' && log.call_duration > 0 && log.created_at) {
+          const logDate = new Date(log.created_at);
+          const year = logDate.getFullYear();
+          const month = logDate.getMonth(); // 0-11
+          const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+
+          if (!history[key]) {
+            history[key] = {
+              year,
+              month,
+              callsCount: 0,
+              savings: 0
+            };
+          }
+
+          const callSavings = 1.50 + (log.call_duration / 60) * 0.20;
+          history[key].savings += callSavings;
+          history[key].callsCount++;
+        }
+      });
+
+      // Convertir a array y ordenar de más reciente a más antiguo
+      const historyList = Object.values(history).sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year;
+        return b.month - a.month;
+      });
+
+      if (historyList.length === 0) {
+        alert('Aún no tienes llamadas válidas registradas para mostrar en el histórico.');
+        return;
+      }
+
+      const monthNames = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+      ];
+
+      let totalHistoricalSavings = 0;
+      let totalHistoricalCalls = 0;
+
+      let tableRowsHtml = historyList.map(item => {
+        totalHistoricalSavings += item.savings;
+        totalHistoricalCalls += item.callsCount;
+        return `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 0.75rem 0.5rem; text-align: left; color:#fff;">
+              ${monthNames[item.month]} ${item.year}
+            </td>
+            <td style="padding: 0.75rem 0.5rem; text-align: center; color:rgba(255,255,255,0.7);">
+              ${item.callsCount} llamadas
+            </td>
+            <td style="padding: 0.75rem 0.5rem; text-align: right; color:#6ee7b7; font-weight:600;">
+              ${item.savings.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const historyModalHtml = `
+        <div id="roi-history-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:99998; display:flex; align-items:center; justify-content:center; padding:1rem;" onclick="if(event.target===this) closeROIHistoryModal()">
+          <div style="background:linear-gradient(135deg,#0f1729,#0a1220); border:1px solid rgba(52,211,153,0.25); border-radius:20px; max-width:500px; width:100%; max-height:85vh; overflow-y:auto; padding:2rem; display:flex; flex-direction:column; gap:1.25rem; position:relative;">
+            <button onclick="closeROIHistoryModal()" style="position:absolute; top:1rem; right:1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fff; font-size:1.1rem;">&times;</button>
+
+            <div>
+              <h2 style="display:flex; align-items:center; gap:0.75rem; color:#34d399; font-size:1.3rem; margin-bottom:0.25rem;">
+                📜 Histórico de Ahorro ROI
+              </h2>
+              <p style="color:rgba(167,243,208,0.7); font-size:0.85rem; margin:0;">
+                Consulte el histórico mensual de los importes ahorrados desde el inicio del servicio.
+              </p>
+            </div>
+
+            <!-- Resumen Total Acumulado -->
+            <div style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.06)); border:1px solid rgba(52,211,153,0.3); border-radius:14px; padding:1.25rem; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h4 style="color:#6ee7b7; font-size:0.95rem; margin:0 0 0.25rem 0;">Ahorro Total Histórico</h4>
+                <p style="font-size:0.75rem; color:rgba(167,243,208,0.7); margin:0;">Acumulado de todos los meses de servicio.</p>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:1.8rem; font-weight:800; color:#34d399; line-height:1;">
+                  ${totalHistoricalSavings.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                </div>
+                <div style="font-size:0.75rem; color:rgba(167,243,208,0.5); margin-top:0.25rem;">
+                  ${totalHistoricalCalls} llamadas totales
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabla de Histórico -->
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1rem; max-height: 40vh; overflow-y: auto;">
+              <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                <thead>
+                  <tr style="border-bottom:1px solid rgba(255,255,255,0.1); text-align:left; color:rgba(255,255,255,0.5); font-size:0.8rem;">
+                    <th style="padding: 0.5rem; text-align: left;">Período</th>
+                    <th style="padding: 0.5rem; text-align:center;">Llamadas</th>
+                    <th style="padding: 0.5rem; text-align:right;">Ahorro</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${tableRowsHtml}
+                </tbody>
+              </table>
+            </div>
+
+            <p style="font-size:0.72rem; color:rgba(255,255,255,0.25); text-align:center; line-height:1.4;">
+              * Importes basados en llamadas reales atendidas por Receptia (€1.50 de coste fijo equivalente por recepcionista + €0.20/minuto de llamada).
+            </p>
+          </div>
+        </div>
+      `;
+
+      const div = document.createElement('div');
+      div.innerHTML = historyModalHtml;
+      document.body.appendChild(div.firstElementChild);
+      lucide.createIcons();
+    }
+
+    function closeROIHistoryModal() {
+      const el = document.getElementById('roi-history-overlay');
       if (el) el.remove();
     }
 
