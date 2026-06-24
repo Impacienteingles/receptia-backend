@@ -1763,7 +1763,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.13</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.14</span>
         </div>
       </header>
 
@@ -2790,6 +2790,7 @@
     const pinInput = document.getElementById('pin-input');
     const pinError = document.getElementById('pin-error');
     const btnPinSubmit = document.getElementById('btn-pin-submit');
+    let isSubmittingPin = false;
 
     // Tabs
     const tabTable = document.getElementById('tab-table');
@@ -3861,7 +3862,7 @@
         // No tiene PIN, pedir establecer uno nuevo (registro inicial del cliente)
         pinTitle.innerText = 'Establece tu PIN';
         pinDescription.innerText = 'Este es tu primer acceso. Crea un código PIN de 4 dígitos para proteger tu panel de citas.';
-        btnPinSubmit.innerText = 'Establecer PIN and Entrar';
+        btnPinSubmit.innerText = 'Establecer PIN y Entrar';
       } else {
         // Ya tiene PIN, pedirlo
         pinTitle.innerText = 'Introduce tu PIN';
@@ -3870,6 +3871,12 @@
       }
 
       btnPinSubmit.onclick = () => handlePinSubmit(tenant);
+      pinInput.oninput = () => {
+        const pin = pinInput.value.trim();
+        if (pin.length === 4 && !isNaN(pin)) {
+          handlePinSubmit(tenant);
+        }
+      };
       pinInput.onkeydown = (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -3880,12 +3887,14 @@
 
     // Validar o registrar el PIN
     async function handlePinSubmit(tenant) {
+      if (isSubmittingPin) return;
       const pin = pinInput.value.trim();
       if (pin.length !== 4 || isNaN(pin)) {
         showToast('El PIN debe ser un código de 4 números.', 'error');
         return;
       }
 
+      isSubmittingPin = true;
       if (!tenant.admin_pin) {
         // Registrar nuevo PIN en Supabase
         try {
@@ -3912,15 +3921,21 @@
           showToast(err.message, 'error');
           btnPinSubmit.disabled = false;
           btnPinSubmit.innerText = 'Establecer PIN y Entrar';
+        } finally {
+          isSubmittingPin = false;
         }
       } else {
         // Validar PIN ingresado
-        if (pin === tenant.admin_pin) {
-          dismissPinModal();
-        } else {
-          pinError.style.display = 'block';
-          pinInput.value = '';
-          pinInput.focus();
+        try {
+          if (pin === tenant.admin_pin) {
+            dismissPinModal();
+          } else {
+            pinError.style.display = 'block';
+            pinInput.value = '';
+            pinInput.focus();
+          }
+        } finally {
+          isSubmittingPin = false;
         }
       }
     }
