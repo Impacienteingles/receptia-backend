@@ -1151,7 +1151,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.29</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.30</span>
         </div>
       </header>
 
@@ -1518,19 +1518,10 @@
               <!-- 1. WhatsApp Reminders -->
               <div class="form-group" style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(16, 185, 129, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(16, 185, 129, 0.2); grid-column: span 2;">
                 <div style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem;">
-                  <input type="checkbox" id="whatsapp-reminders-enabled" style="width: 18px; height: 18px; accent-color: var(--success);" onchange="if (typeof toggleWhatsAppSettings === 'function') toggleWhatsAppSettings(); saveDraftToLocalStorage();">
+                  <input type="checkbox" id="whatsapp-reminders-enabled" style="width: 18px; height: 18px; accent-color: var(--success);" onchange="saveDraftToLocalStorage();">
                   <label for="whatsapp-reminders-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                     Habilitar Recordatorios automáticos de WhatsApp 💬
                   </label>
-                </div>
-                
-                <!-- Sub-ajustes de WhatsApp -->
-                <div id="whatsapp-settings-container" style="display: none; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px dashed rgba(16, 185, 129, 0.2);">
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <label for="whatsapp-reminder-hours" style="color: var(--text-muted); font-size: 0.85rem; margin: 0; white-space: nowrap;">Recordatorio de cita (horas de anticipación):</label>
-                    <input type="number" id="whatsapp-reminder-hours" min="1" max="168" value="24" style="width: 80px; padding: 0.4rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: #fff; text-align: center;" oninput="saveDraftToLocalStorage()">
-                  </div>
-
                 </div>
               </div>
 
@@ -3138,8 +3129,7 @@
         const checkWhatsapp = document.getElementById('whatsapp-reminders-enabled');
         if (checkWhatsapp) draft['whatsapp_reminders_enabled'] = checkWhatsapp.checked;
 
-        const inputWhatsappHours = document.getElementById('whatsapp-reminder-hours');
-        if (inputWhatsappHours) draft['whatsapp_reminder_hours'] = inputWhatsappHours.value;
+
 
         const checkEmailNotif = document.getElementById('email-notifications-enabled');
         if (checkEmailNotif) draft['email_notifications_enabled'] = checkEmailNotif.checked;
@@ -3297,13 +3287,9 @@
         const checkWhatsapp = document.getElementById('whatsapp-reminders-enabled');
         if (checkWhatsapp && draft['whatsapp_reminders_enabled'] !== undefined) {
           checkWhatsapp.checked = draft['whatsapp_reminders_enabled'];
-          if (typeof toggleWhatsAppSettings === 'function') toggleWhatsAppSettings();
         }
 
-        const inputWhatsappHours = document.getElementById('whatsapp-reminder-hours');
-        if (inputWhatsappHours && draft['whatsapp_reminder_hours'] !== undefined) {
-          inputWhatsappHours.value = draft['whatsapp_reminder_hours'];
-        }
+
 
         const checkEmailNotif = document.getElementById('email-notifications-enabled');
         if (checkEmailNotif && draft['email_notifications_enabled'] !== undefined) {
@@ -5686,11 +5672,7 @@
 
       // Rellenar propuestas de éxito SaaS
       document.getElementById('whatsapp-reminders-enabled').checked = !!tenant.whatsapp_reminders_enabled;
-      document.getElementById('whatsapp-reminder-hours').value = tenant.whatsapp_reminder_hours || 24;
       document.getElementById('email-notifications-enabled').checked = tenant.email_notifications_enabled !== false;
-      
-      // Toggles displays
-      toggleWhatsAppSettings();
       toggleMultiProfessionalInput();
 
       // Rellenar profesionales
@@ -5768,14 +5750,11 @@
 
       // Resetear propuestas de éxito SaaS
       document.getElementById('whatsapp-reminders-enabled').checked = false;
-      document.getElementById('whatsapp-reminder-hours').value = 24;
       document.getElementById('email-notifications-enabled').checked = false;
       document.getElementById('enable-multi-professional').checked = false;
       document.getElementById('knowledge-base-url').value = '';
       document.getElementById('knowledge-base-content').value = '';
       document.getElementById('admin-whatsapp-test-phone').value = '';
-
-      toggleWhatsAppSettings();
       toggleNoShowDepositInput();
       toggleMultiProfessionalInput();
 
@@ -6094,7 +6073,6 @@
         signing_city: document.getElementById('client-contract-signing-city').value || null,
         is_trial: document.getElementById('is-trial-checkbox').checked,
         whatsapp_reminders_enabled: document.getElementById('whatsapp-reminders-enabled').checked,
-        whatsapp_reminder_hours: Number(document.getElementById('whatsapp-reminder-hours').value) || 24,
         email_notifications_enabled: document.getElementById('email-notifications-enabled').checked,
         enable_multi_professional: document.getElementById('enable-multi-professional').checked,
         professionals: getProfessionalsArray(),
@@ -6339,11 +6317,6 @@
     }
 
     // Funciones Auxiliares para propuestas de éxito SaaS
-    function toggleWhatsAppSettings() {
-      const checked = document.getElementById('whatsapp-reminders-enabled').checked;
-      document.getElementById('whatsapp-settings-container').style.display = checked ? 'flex' : 'none';
-      saveDraftToLocalStorage();
-    }
 
 
 

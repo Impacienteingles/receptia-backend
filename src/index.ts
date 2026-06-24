@@ -841,7 +841,7 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       voice_responsiveness: voice_responsiveness !== undefined && voice_responsiveness !== null ? Number(voice_responsiveness) : 1.0,
       vacation_mode: vacation_mode !== undefined ? !!vacation_mode : (existing ? existing.vacation_mode : false),
       vacation_message: vacation_message !== undefined ? vacation_message : (existing ? existing.vacation_message : ''),
-      whatsapp_reminder_hours: whatsapp_reminder_hours !== undefined ? Number(whatsapp_reminder_hours) : 24,
+      whatsapp_reminder_hours: whatsapp_reminder_hours !== undefined ? Number(whatsapp_reminder_hours) : (existing ? existing.whatsapp_reminder_hours : 24),
       no_show_deposit_limit_mins: 10,
       client_whatsapp_provider: client_whatsapp_provider !== undefined ? client_whatsapp_provider : (existing ? existing.client_whatsapp_provider : 'qr'),
       twilio_account_sid: twilio_account_sid !== undefined ? twilio_account_sid : (existing ? existing.twilio_account_sid : null),

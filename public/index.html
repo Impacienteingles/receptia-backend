@@ -1605,7 +1605,7 @@
           <div class="status-badge" id="client-business-badge">
             <span>Cargando Negocio...</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.7</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.8</span>
         </div>
       </header>
 
@@ -2156,6 +2156,12 @@
                 <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
                   Elige el método para el envío de recordatorios de WhatsApp a tus clientes. Puedes utilizar nuestro sistema de Código QR gratuito (vinculando tu propio teléfono) o utilizar tus propias credenciales de Twilio.
                 </p>
+
+                <!-- Configuración de Horas de Anticipación -->
+                <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: 8px;">
+                  <label for="setting-whatsapp-reminder-hours" style="color: var(--text-muted); font-size: 0.85rem; margin: 0; white-space: nowrap;">Recordatorio de cita (horas de anticipación):</label>
+                  <input type="number" id="setting-whatsapp-reminder-hours" min="1" max="168" value="24" style="width: 80px; padding: 0.4rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; text-align: center; font-family: inherit;">
+                </div>
 
                 <!-- Selector de Proveedor -->
                 <div style="margin-bottom: 1.5rem;">
@@ -3366,6 +3372,9 @@
         return;
       }
       
+      const hoursInput = document.getElementById('setting-whatsapp-reminder-hours');
+      const reminderHours = hoursInput ? (parseInt(hoursInput.value, 10) || 24) : 24;
+      
       try {
         showToast('Guardando configuración de WhatsApp...');
         const res = await fetch('/api/tenants', {
@@ -3375,6 +3384,7 @@
             email: currentTenant.email,
             business_name: currentTenant.business_name,
             client_whatsapp_provider: provider,
+            whatsapp_reminder_hours: reminderHours,
             twilio_account_sid: provider === 'twilio' ? sid : currentTenant.twilio_account_sid,
             twilio_auth_token: provider === 'twilio' ? token : currentTenant.twilio_auth_token,
             twilio_whatsapp_number: provider === 'twilio' ? number : currentTenant.twilio_whatsapp_number
@@ -4075,6 +4085,11 @@
       const selProvider = document.getElementById('setting-whatsapp-provider');
       if (selProvider) {
         selProvider.value = currentTenant.client_whatsapp_provider || 'qr';
+      }
+      
+      const txtWhatsappHours = document.getElementById('setting-whatsapp-reminder-hours');
+      if (txtWhatsappHours) {
+        txtWhatsappHours.value = currentTenant.whatsapp_reminder_hours || 24;
       }
       
       const txtTwilioSid = document.getElementById('setting-twilio-sid');
