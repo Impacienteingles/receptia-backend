@@ -418,6 +418,11 @@ app.get('/aviso-legal', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'public', 'aviso-legal.html'));
 });
 
+// Ruta limpia para Panel de Administrador
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'admin.html'));
+});
+
 // Ruta para iniciar la autenticación de Google Calendar con tenant_id
 app.get('/auth', async (req, res) => {
   try {

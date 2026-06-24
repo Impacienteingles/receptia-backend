@@ -472,6 +472,26 @@
       border-bottom: 1px solid var(--border-color);
     }
 
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s;
+    }
+
+    th.sortable:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    [data-theme="light"] th.sortable:hover {
+      background: rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .sort-icon {
+      margin-left: 0.5rem;
+      font-size: 0.8rem;
+      opacity: 0.6;
+    }
+
     td {
       padding: 1rem;
       border-bottom: 1px solid var(--border-color);
@@ -1743,7 +1763,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.11</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.12</span>
         </div>
       </header>
 
@@ -1976,10 +1996,10 @@
                 <table>
                   <thead>
                     <tr>
-                      <th>Paciente</th>
+                      <th class="sortable" onclick="sortAppointments('patient_name')">Cliente <span class="sort-icon" id="sort-icon-patient">↕</span></th>
                       <th>Teléfono</th>
                       <th>Especialidad</th>
-                      <th>Fecha y Hora (Madrid)</th>
+                      <th class="sortable" onclick="sortAppointments('date_time')">Fecha y Hora <span class="sort-icon" id="sort-icon-datetime">↕</span></th>
                       <th>Estado</th>
                       <th>Acciones</th>
                     </tr>
@@ -2027,7 +2047,7 @@
                     <table>
                       <thead>
                         <tr>
-                          <th>Paciente</th>
+                          <th>Cliente</th>
                           <th>Teléfono</th>
                           <th>Especialidad</th>
                           <th>Hora</th>
@@ -2749,9 +2769,10 @@
     }
 
     // Estado global
-    // Estado global
     let currentTenant = null;
     let allAppointments = [];
+    let currentSortField = null;
+    let currentSortOrder = 'asc';
     let calendarDate = new Date(2026, 5, 20); // Junio 2026 por defecto para demostración
     let selectedDay = null;
     let appToDeleteId = null;
@@ -5243,7 +5264,7 @@
         if (!response.ok) throw new Error('Error al obtener citas.');
         allAppointments = await response.json();
         
-        renderAppointmentsTable(allAppointments);
+        renderAppointmentsTable(getFilteredAndSortedAppointments());
         renderCalendar();
 
         // Calcular métricas del dashboard en tiempo real
@@ -5305,24 +5326,80 @@
       lucide.createIcons();
     }
 
+    // Obtener citas filtradas y ordenadas
+    function getFilteredAndSortedAppointments() {
+      const query = searchAppointmentsInput ? searchAppointmentsInput.value.toLowerCase() : '';
+      let result = [...allAppointments];
+      
+      if (query) {
+        result = result.filter(app => {
+          const date = new Date(app.date_time);
+          const formattedDate = date.toLocaleDateString('es-ES').toLowerCase();
+          
+          return (
+            (app.patient_name || '').toLowerCase().includes(query) ||
+            (app.patient_phone || '').includes(query) ||
+            (app.patient_email || '').toLowerCase().includes(query) ||
+            (app.specialty || '').toLowerCase().includes(query) ||
+            formattedDate.includes(query)
+          );
+        });
+      }
+      
+      if (currentSortField) {
+        result.sort((a, b) => {
+          let valA = a[currentSortField] || '';
+          let valB = b[currentSortField] || '';
+          
+          if (currentSortField === 'date_time') {
+            valA = new Date(valA).getTime();
+            valB = new Date(valB).getTime();
+          } else {
+            valA = String(valA).toLowerCase();
+            valB = String(valB).toLowerCase();
+          }
+          
+          if (valA < valB) return currentSortOrder === 'asc' ? -1 : 1;
+          if (valA > valB) return currentSortOrder === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+      
+      return result;
+    }
+
     // Buscador de citas
     searchAppointmentsInput.addEventListener('input', () => {
-      const query = searchAppointmentsInput.value.toLowerCase();
-      const filtered = allAppointments.filter(app => {
-        const date = new Date(app.date_time);
-        const formattedDate = date.toLocaleDateString('es-ES').toLowerCase();
-        
-        return (
-          app.patient_name.toLowerCase().includes(query) ||
-          app.patient_phone.includes(query) ||
-          app.patient_email.toLowerCase().includes(query) ||
-          app.specialty.toLowerCase().includes(query) ||
-          formattedDate.includes(query)
-        );
-      });
-      
-      renderAppointmentsTable(filtered);
+      renderAppointmentsTable(getFilteredAndSortedAppointments());
     });
+
+    // Ordenar citas por columna
+    function sortAppointments(field) {
+      if (currentSortField === field) {
+        currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSortField = field;
+        currentSortOrder = 'asc';
+      }
+      
+      updateSortIcons();
+      renderAppointmentsTable(getFilteredAndSortedAppointments());
+    }
+
+    // Actualizar iconos de ordenación en la cabecera de la tabla
+    function updateSortIcons() {
+      const patientIcon = document.getElementById('sort-icon-patient');
+      const datetimeIcon = document.getElementById('sort-icon-datetime');
+      
+      if (patientIcon) patientIcon.innerText = '↕';
+      if (datetimeIcon) datetimeIcon.innerText = '↕';
+      
+      if (currentSortField === 'patient_name') {
+        if (patientIcon) patientIcon.innerText = currentSortOrder === 'asc' ? '↑' : '↓';
+      } else if (currentSortField === 'date_time') {
+        if (datetimeIcon) datetimeIcon.innerText = currentSortOrder === 'asc' ? '↑' : '↓';
+      }
+    }
 
     // Manejo de Tabs de la Agenda (Tabla vs Calendario)
     tabTable.addEventListener('click', () => {
