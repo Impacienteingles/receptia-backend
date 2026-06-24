@@ -1285,7 +1285,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.1</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.2</span>
         </div>
       </header>
 
@@ -6330,11 +6330,11 @@
       checkboxes.forEach(cb => cb.checked = master.checked);
     }
 
-    function copyToClipboard(text) {
+    function copyToClipboard(text, msg = 'Enlace de la demo copiado al portapapeles.') {
       navigator.clipboard.writeText(text).then(() => {
-        showCustomAlert('Enlace de la demo copiado al portapapeles.', 'Copiado', 'success');
+        showCustomAlert(msg, 'Copiado', 'success');
       }).catch(err => {
-        showCustomAlert('No se pudo copiar el enlace: ' + err.message, 'Error', 'error');
+        showCustomAlert('No se pudo copiar: ' + err.message, 'Error', 'error');
       });
     }
 
@@ -6530,9 +6530,24 @@
         // Traducir sector a texto legible
         const sectorStr = sectorNames[p.sector] || p.sector || '-';
 
+        // Formatear email con truncado y botón copiar
+        let emailHtml = '<span style="color: var(--text-muted);">No disponible</span>';
+        if (p.email && p.email !== 'No disponible') {
+          emailHtml = `
+            <div style="display: inline-flex; align-items: center; gap: 0.25rem; max-width: 120px; width: 120px;">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; flex-grow: 1; min-width: 0;" title="${p.email}">
+                ${p.email}
+              </span>
+              <button onclick="copyToClipboard('${p.email}', 'Email copiado al portapapeles.')" style="background: none; border: none; color: var(--primary-light); cursor: pointer; padding: 0.15rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Copiar email">
+                <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
+              </button>
+            </div>
+          `;
+        }
+
         // Select de Clasificación comercial
         const classificationSelect = `
-          <select onchange="updateProspectClassification('${p.id}', this.value)" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; padding: 0.3rem 0.5rem; font-size: 0.8rem; cursor: pointer; outline: none; font-family: inherit;">
+          <select onchange="updateProspectClassification('${p.id}', this.value)" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; padding: 0.3rem 0.4rem; font-size: 0.8rem; cursor: pointer; outline: none; font-family: inherit; width: 135px; max-width: 135px;">
             <option value="no_contactado" ${p.classification === 'no_contactado' || !p.classification ? 'selected' : ''}>No contactado</option>
             <option value="contactado" ${p.classification === 'contactado' ? 'selected' : ''}>Contactado</option>
             <option value="demo_enviada" ${p.classification === 'demo_enviada' ? 'selected' : ''}>Demo enviada</option>
@@ -6592,7 +6607,7 @@
         row.innerHTML = `
           <td style="padding: 0.85rem 0.5rem; text-align: center;"><input type="checkbox" class="prospect-select" value="${p.id}"></td>
           <td style="font-weight: 600; color: #fff; padding: 0.85rem 0.5rem;">${p.business_name}</td>
-          <td style="padding: 0.85rem 0.5rem;">${p.email || 'No disponible'}</td>
+          <td style="padding: 0.85rem 0.5rem;">${emailHtml}</td>
           <td style="padding: 0.85rem 0.5rem; font-family: monospace;">${p.phone || 'No disponible'}</td>
           <td style="padding: 0.85rem 0.5rem;">${websiteLink}</td>
           <td style="padding: 0.85rem 0.5rem; font-weight: 500;">${sectorStr}</td>
