@@ -2858,6 +2858,12 @@ async function runDatabaseMigrations() {
       );
     `);
 
+    // Asegurar columna classification en prospects si no existe
+    await clientInstance.query(`
+      ALTER TABLE prospects 
+      ADD COLUMN IF NOT EXISTS classification VARCHAR DEFAULT 'no_contactado';
+    `);
+
     // 3. Notificar a PostgREST
     await clientInstance.query("NOTIFY pgrst, 'reload schema';");
   };

@@ -37,8 +37,8 @@ export async function scrapeProspects(city: string, country: string, sector: str
     const results = response.data.results || [];
     const leads: ProspectLead[] = [];
 
-    // Limitar a los 10 primeros resultados para no sobrecargar de forma asíncrona
-    const topResults = results.slice(0, 10);
+    // Limitar a los 20 primeros resultados para no sobrecargar de forma asíncrona
+    const topResults = results.slice(0, 20);
 
     for (const place of topResults) {
       // 1. Obtener detalles ampliados del lugar (especialmente sitio web si existe)
@@ -209,18 +209,54 @@ function getSimulatedLeads(city: string, country: string, sector: string): Prosp
   const leads: ProspectLead[] = [];
 
   const namesBySector: { [key: string]: string[] } = {
-    peluqueria: ['Pelas Estilo y Elegancia', 'Barbería Golden Touch', 'Salón de Belleza Aura', 'Peluquería Carlos Romero', 'Hair Studio Vintage'],
-    dental: ['Clínica Dental Sana Dent', 'Odontología Avanzada Smile', 'Centro Dental Oria', 'Clínica Dental Doctora Martínez', 'VitalDent Centro'],
-    medica: ['Policlínica Medica Centro', 'Centro Médico Familiar', 'Clínica Ginecológica Albor', 'Dermatología Avanzada Nova', 'Centro Pediátrico Central'],
-    fisioterapia: ['FisioSport Centro', 'Clínica de Fisioterapia Kinesia', 'Fisioterapia y Pilates Vital', 'Osteopatía Integral', 'Centro de Rehabilitación Activa'],
-    abogados: ['Bufete de Abogados Alcaraz', 'LegalAsesores Abogados', 'Despacho Penal y Laboral Vega', 'Consultoría Jurídica Integral', 'Abogados de Familia y Divorcios'],
-    psicologia: ['Mente Sana Psicología', 'Centro de Psicología Integra', 'PsicoApoyo Familiar', 'Clínica de Psicología Emociona', 'Espacio Psicoterapéutico'],
-    taller: ['Taller Mecánico Rápido', 'Autocentro Garaje Central', 'Mecánica y Electricidad Motor', 'Taller Multimarca Express', 'Car Service Integral'],
-    veterinaria: ['Clínica Veterinaria Mascotas', 'Centro Veterinario San Antón', 'Hospital Veterinario Huellas', 'Veterinaria Fauna Sana', 'Consultorio Canino y Felino'],
-    spa: ['Zenith Spa & Wellness', 'Balneario Urbano Oasis', 'Termas de Relajación Aqua', 'Spa & Beauty Sentidos', 'Templo del Masaje y Bienestar'],
-    gimnasio: ['Gimnasio Iron Fit', 'Studio Entrenamiento Activo', 'Centro de Fitness & Power', 'Gimnasio Vitality', 'Gimnasio Olimpo Body'],
-    academia: ['Academia Saber Más', 'Centro de Estudios Cum Laude', 'School Idiomas y Apoyo', 'Academia Prepara Plus', 'Espacio de Aprendizaje'],
-    inmobiliaria: ['Inmobiliaria Piso Rápido', 'Hogar Dulce Hogar Real Estate', 'Gestión Inmobiliaria Global', 'Inmobiliaria Premium House', 'Soluciones Habitacionales']
+    peluqueria: [
+      'Pelas Estilo y Elegancia', 'Barbería Golden Touch', 'Salón de Belleza Aura', 'Peluquería Carlos Romero', 'Hair Studio Vintage',
+      'Tijeras & Arte Barbería', 'Glamour & Chic Estilistas', 'El Rincón del Peinado', 'Corte Urbano Salón', 'Estilo Único Peluqueros'
+    ],
+    dental: [
+      'Clínica Dental Sana Dent', 'Odontología Avanzada Smile', 'Centro Dental Oria', 'Clínica Dental Doctora Martínez', 'VitalDent Centro',
+      'Sana Dent Clínica Familiar', 'Implantes & Estética Dental', 'Sonrisas Sanas Odontología', 'Centro Dental Odontofit', 'Clínica Dental DentyCare'
+    ],
+    medica: [
+      'Policlínica Medica Centro', 'Centro Médico Familiar', 'Clínica Ginecológica Albor', 'Dermatología Avanzada Nova', 'Centro Pediátrico Central',
+      'Salud y Bienestar Policlínica', 'Centro Médico Integral', 'Clínica SanaSalud Especialistas', 'Policlínica del Doctor Torres', 'Centro de Diagnóstico San Rafael'
+    ],
+    fisioterapia: [
+      'FisioSport Centro', 'Clínica de Fisioterapia Kinesia', 'Fisioterapia y Pilates Vital', 'Osteopatía Integral', 'Centro de Rehabilitación Activa',
+      'FisioVital Terapia Manual', 'Clínica de Fisioterapia Kineo', 'Rehabilitación y Deporte Center', 'FisioMas Masajes Terapéuticos', 'Centro de Fisioterapia Avanzada'
+    ],
+    abogados: [
+      'Bufete de Abogados Alcaraz', 'LegalAsesores Abogados', 'Despacho Penal y Laboral Vega', 'Consultoría Jurídica Integral', 'Abogados de Familia y Divorcios',
+      'Defensa Legal Despacho Asociado', 'Bufete Lex & Asociados', 'Asistencia Jurídica Laboral', 'García & Socios Bufete Civil', 'Abogados de Herencias y Contratos'
+    ],
+    psicologia: [
+      'Mente Sana Psicología', 'Centro de Psicología Integra', 'PsicoApoyo Familiar', 'Clínica de Psicología Emociona', 'Espacio Psicoterapéutico',
+      'Psicoterapia Cognitiva Vital', 'Consulta Psicológica Bienestar', 'Centro Psicopedagógico Crecer', 'Terapia y Equilibrio Psicólogos', 'PsicoSalud Mente Activa'
+    ],
+    taller: [
+      'Taller Mecánico Rápido', 'Autocentro Garaje Central', 'Mecánica y Electricidad Motor', 'Taller Multimarca Express', 'Car Service Integral',
+      'Electromecánica de Precisión', 'Taller de Chapa y Pintura Pro', 'Servicio Rápido del Neumático', 'Boxes Taller de Mecánica', 'Taller Mecánico El Box'
+    ],
+    veterinaria: [
+      'Clínica Veterinaria Mascotas', 'Centro Veterinario San Antón', 'Hospital Veterinario Huellas', 'Veterinaria Fauna Sana', 'Consultorio Canino y Felino',
+      'Clínica Veterinaria El Arca', 'Urgencias Veterinarias 24h', 'Centro Veterinario Mi Fiel Amigo', 'Peluquería y Veterinaria Canina', 'Fauna y Salud Centro Veterinario'
+    ],
+    spa: [
+      'Zenith Spa & Wellness', 'Balneario Urbano Oasis', 'Termas de Relajación Aqua', 'Spa & Beauty Sentidos', 'Templo del Masaje y Bienestar',
+      'Spa Termal Aguas Limpias', 'Wellness & Relax Balneario', 'Oasis de Relajación Termal', 'Eco Spa Masajes Orgánicos', 'Spa Boutique Bienestar'
+    ],
+    gimnasio: [
+      'Gimnasio Iron Fit', 'Studio Entrenamiento Activo', 'Centro de Fitness & Power', 'Gimnasio Vitality', 'Gimnasio Olimpo Body',
+      'Fitness Zone Gimnasio', 'Crossfit & Strength Studio', 'Gimnasio Powerhouse', 'Pilates y Yoga Gimnasio', 'Gimnasio Cardio & Fit'
+    ],
+    academia: [
+      'Academia Saber Más', 'Centro de Estudios Cum Laude', 'School Idiomas y Apoyo', 'Academia Prepara Plus', 'Espacio de Aprendizaje',
+      'Academia de Matemáticas e Idiomas', 'Centro de Estudios Alfa', 'Academia de Apoyo Universitario', 'Clases Particulares e Idiomas', 'Escuela de Formación y Refuerzo'
+    ],
+    inmobiliaria: [
+      'Inmobiliaria Piso Rápido', 'Hogar Dulce Hogar Real Estate', 'Gestión Inmobiliaria Global', 'Inmobiliaria Premium House', 'Soluciones Habitacionales',
+      'Pisos & Locales Inmobiliaria', 'Gestión de Alquileres Inmo', 'Inmobiliaria Costa Blanca', 'Propiedades Urbanas Inmobiliaria', 'Tu Nuevo Hogar Real Estate'
+    ]
   };
 
   const selectedNames = namesBySector[normalizedSector] || ['Negocio Local y Servicios', 'Centro Profesional Activo', 'Servicios Profesionales B2B'];

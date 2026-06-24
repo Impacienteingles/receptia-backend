@@ -321,4 +321,113 @@ async function generateCartesiaAudio(businessName: string, demoUrl: string): Pro
   }
 }
 
+/**
+ * 4. Actualizar campos de un prospecto (por ejemplo, clasificación o estado)
+ */
+router.patch('/:id', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  try {
+    const { data, error } = await supabase
+      .from('prospects')
+      .update(updates)
+      .eq('id', id)
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    res.json({ status: 'success', prospect: data });
+  } catch (error: any) {
+    console.error('[Prospecting API] Error al actualizar prospecto:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * 5. Eliminar un prospecto y opcionalmente su tenant demo
+ */
+router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  try {
+    // 1. Obtener demo_tenant_id para ver si hay que borrar el tenant
+    const { data: prospect, error: fetchErr } = await supabase
+      .from('prospects')
+      .select('demo_tenant_id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (fetchErr) throw fetchErr;
+
+    // 2. Si tiene tenant de demo, eliminarlo de la tabla tenants
+    if (prospect && prospect.demo_tenant_id) {
+      await supabase
+        .from('tenants')
+        .delete()
+        .eq('id', prospect.demo_tenant_id);
+    }
+
+    // 3. Eliminar el prospecto
+    const { error: deleteErr } = await supabase
+      .from('prospects')
+      .delete()
+      .eq('id', id);
+
+    if (deleteErr) throw deleteErr;
+
+    res.json({ status: 'success', message: 'Prospecto eliminado correctamente.' });
+  } catch (error: any) {
+    console.error('[Prospecting API] Error al eliminar prospecto:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * 6. Eliminar múltiples prospectos (bulk delete)
+ */
+router.post('/delete-bulk', async (req: Request, res: Response): Promise<void> => {
+  const { ids } = req.body;
+
+  if (!ids || !Array.isArray(ids)) {
+    res.status(400).json({ error: 'Se requiere un array de ids.' });
+    return;
+  }
+
+  try {
+    // 1. Obtener los demo_tenant_ids para borrarlos también
+    const { data: prospects, error: fetchErr } = await supabase
+      .from('prospects')
+      .select('demo_tenant_id')
+      .in('id', ids);
+
+    if (fetchErr) throw fetchErr;
+
+    const tenantIds = prospects
+      ? prospects.map((p: any) => p.demo_tenant_id).filter((id: any) => !!id)
+      : [];
+
+    // 2. Borrar los tenants demo
+    if (tenantIds.length > 0) {
+      await supabase
+        .from('tenants')
+        .delete()
+        .in('id', tenantIds);
+    }
+
+    // 3. Borrar los prospectos
+    const { error: deleteErr } = await supabase
+      .from('prospects')
+      .delete()
+      .in('id', ids);
+
+    if (deleteErr) throw deleteErr;
+
+    res.json({ status: 'success', message: `Se han eliminado ${ids.length} prospectos.` });
+  } catch (error: any) {
+    console.error('[Prospecting API] Error en eliminación masiva:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
