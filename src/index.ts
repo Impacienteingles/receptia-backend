@@ -12,7 +12,8 @@ import {
   initWhatsAppWebSession, 
   disconnectWhatsAppWebSession, 
   getWhatsAppSessionStatus, 
-  autoStartActiveSessions 
+  autoStartActiveSessions,
+  debugLogs
 } from './services/whatsapp-web';
 
 // Cargar variables de entorno
@@ -2328,6 +2329,11 @@ app.post('/api/test-whatsapp', async (req, res): Promise<void> => {
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// 8.3 Obtener logs de depuración del servicio de WhatsApp
+app.get('/api/debug/logs', (req, res): void => {
+  res.json({ logs: debugLogs });
 });
 
 // WhatsApp Web endpoints para clientes
