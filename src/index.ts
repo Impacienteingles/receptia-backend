@@ -92,14 +92,12 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     voice_temperature,
     voice_responsiveness,
     whatsapp_reminder_hours,
-    no_show_deposit_limit_mins,
     client_whatsapp_enabled,
     client_email_enabled,
     client_whatsapp_provider,
     twilio_account_sid,
     twilio_auth_token,
     twilio_whatsapp_number,
-    client_enable_no_show_deposits,
     client_enable_multi_professional
   } = req.body;
 
@@ -132,14 +130,12 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (voice_temperature !== undefined) tenantData.voice_temperature = Number(voice_temperature);
     if (voice_responsiveness !== undefined) tenantData.voice_responsiveness = Number(voice_responsiveness);
     if (whatsapp_reminder_hours !== undefined) tenantData.whatsapp_reminder_hours = Number(whatsapp_reminder_hours);
-    if (no_show_deposit_limit_mins !== undefined) tenantData.no_show_deposit_limit_mins = Number(no_show_deposit_limit_mins);
     if (client_whatsapp_enabled !== undefined) tenantData.client_whatsapp_enabled = !!client_whatsapp_enabled;
     if (client_email_enabled !== undefined) tenantData.client_email_enabled = !!client_email_enabled;
     if (client_whatsapp_provider !== undefined) tenantData.client_whatsapp_provider = client_whatsapp_provider;
     if (twilio_account_sid !== undefined) tenantData.twilio_account_sid = twilio_account_sid;
     if (twilio_auth_token !== undefined) tenantData.twilio_auth_token = twilio_auth_token;
     if (twilio_whatsapp_number !== undefined) tenantData.twilio_whatsapp_number = twilio_whatsapp_number;
-    if (client_enable_no_show_deposits !== undefined) tenantData.client_enable_no_show_deposits = !!client_enable_no_show_deposits;
     if (client_enable_multi_professional !== undefined) tenantData.client_enable_multi_professional = !!client_enable_multi_professional;
 
     let savedTenant: any;
@@ -674,8 +670,6 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     signed_contract_content,
     is_trial,
     whatsapp_reminders_enabled,
-    enable_no_show_deposits,
-    no_show_deposit_amount,
     enable_multi_professional,
     professionals,
     knowledge_base_url,
@@ -699,7 +693,6 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     vacation_message,
     voice_responsiveness,
     whatsapp_reminder_hours,
-    no_show_deposit_limit_mins,
     email_notifications_enabled,
     client_whatsapp_provider,
     twilio_account_sid,
@@ -787,8 +780,8 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       trial_ends_at: computedTrialEndsAt,
       whatsapp_reminders_enabled: !!whatsapp_reminders_enabled,
       email_notifications_enabled: email_notifications_enabled !== false,
-      enable_no_show_deposits: !!enable_no_show_deposits,
-      no_show_deposit_amount: Number(no_show_deposit_amount) || 10.00,
+      enable_no_show_deposits: false,
+      no_show_deposit_amount: 10.00,
       enable_multi_professional: !!enable_multi_professional,
       professionals: professionals || [],
       knowledge_base_url: knowledge_base_url || null,
@@ -815,7 +808,7 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       vacation_mode: vacation_mode !== undefined ? !!vacation_mode : (existing ? existing.vacation_mode : false),
       vacation_message: vacation_message !== undefined ? vacation_message : (existing ? existing.vacation_message : ''),
       whatsapp_reminder_hours: whatsapp_reminder_hours !== undefined ? Number(whatsapp_reminder_hours) : 24,
-      no_show_deposit_limit_mins: no_show_deposit_limit_mins !== undefined ? Number(no_show_deposit_limit_mins) : 10,
+      no_show_deposit_limit_mins: 10,
       client_whatsapp_provider: client_whatsapp_provider !== undefined ? client_whatsapp_provider : (existing ? existing.client_whatsapp_provider : 'qr'),
       twilio_account_sid: twilio_account_sid !== undefined ? twilio_account_sid : (existing ? existing.twilio_account_sid : null),
       twilio_auth_token: twilio_auth_token !== undefined ? twilio_auth_token : (existing ? existing.twilio_auth_token : null),
@@ -2502,67 +2495,7 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
 // Registrar rutas de webhook
 app.use('/api/webhook', webhookRouter);
 
-// Tarea en segundo plano para liberar citas con fianza no pagada después del límite configurado (anti-no-show)
-setInterval(async () => {
-  try {
-    // Obtener citas pendientes de depósito
-    const { data: pendingApps, error } = await supabase
-      .from('appointments')
-      .select('*, tenants(*)')
-      .eq('status', 'pending_deposit');
 
-    if (error) {
-      console.error('[Deposit Cleaner] Error al consultar citas pendientes:', error.message);
-      return;
-    }
-
-    if (pendingApps && pendingApps.length > 0) {
-      const now = Date.now();
-      for (const app of pendingApps) {
-        const tenant = app.tenants;
-        const limitMins = tenant && tenant.no_show_deposit_limit_mins !== undefined && tenant.no_show_deposit_limit_mins !== null 
-          ? Number(tenant.no_show_deposit_limit_mins) 
-          : 10;
-        
-        const createdAtTime = new Date(app.created_at).getTime();
-        const expirationTime = createdAtTime + limitMins * 60 * 1000;
-        
-        if (now > expirationTime) {
-          console.log(`[Deposit Cleaner] Cita ID: ${app.id} (${app.patient_name}) ha expirado (Límite: ${limitMins} mins). Liberando...`);
-          
-          // 1. Eliminar de Google Calendar si tiene evento y el tenant tiene credenciales
-          if (app.google_event_id && tenant && tenant.google_refresh_token) {
-            try {
-              console.log(`[Deposit Cleaner] Eliminando evento de Google Calendar: ${app.google_event_id}...`);
-              await deleteAppointment(
-                tenant.google_refresh_token,
-                app.google_event_id,
-                app.google_calendar_id || 'primary'
-              );
-              console.log('[Deposit Cleaner] Evento de Google Calendar eliminado con éxito.');
-            } catch (calErr: any) {
-              console.error(`[Deposit Cleaner] Error al borrar evento de Google Calendar para cita ${app.id}:`, calErr.message);
-            }
-          }
-
-          // 2. Eliminar la cita de la base de datos de Supabase para liberar el hueco
-          const { error: deleteErr } = await supabase
-            .from('appointments')
-            .delete()
-            .eq('id', app.id);
-
-          if (deleteErr) {
-            console.error(`[Deposit Cleaner] Error al eliminar cita ${app.id} de Supabase:`, deleteErr.message);
-          } else {
-            console.log(`[Deposit Cleaner] Cita ${app.id} de ${app.patient_name} eliminada y liberada de Supabase correctamente.`);
-          }
-        }
-      }
-    }
-  } catch (err: any) {
-    console.error('[Deposit Cleaner] Error crítico en la tarea de limpieza:', err.message);
-  }
-}, 60 * 1000); // Ejecutar cada 1 minuto
 
 // Tarea en segundo plano para enviar recordatorios automáticos de WhatsApp (Twilio)
 setInterval(async () => {

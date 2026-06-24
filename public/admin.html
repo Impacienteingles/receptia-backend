@@ -1151,7 +1151,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.25</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.26</span>
         </div>
       </header>
 
@@ -1542,29 +1542,7 @@
                 </label>
               </div>
 
-              <!-- 2. No-Show Deposits -->
-              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(59, 130, 246, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
-                <div style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem;">
-                  <input type="checkbox" id="enable-no-show-deposits" style="width: 18px; height: 18px; accent-color: var(--accent);" onchange="toggleNoShowDepositInput(); saveDraftToLocalStorage();">
-                  <label for="enable-no-show-deposits" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                    Cobro de Reserva Fianza (Anti-No-Show) 💰
-                  </label>
-                </div>
-                
-                <!-- Sub-ajustes de Fianza -->
-                <div id="no-show-deposit-container" style="display: none; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px dashed rgba(59, 130, 246, 0.2);">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div>
-                      <label for="no-show-deposit-amount" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem; display: block;">Importe de la Fianza (€):</label>
-                      <input type="number" id="no-show-deposit-amount" min="1" step="1" value="10.00" style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: #fff;" oninput="saveDraftToLocalStorage()">
-                    </div>
-                    <div>
-                      <label for="no-show-deposit-limit-mins" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.25rem; display: block;">Tiempo Límite para Pago (minutos):</label>
-                      <input type="number" id="no-show-deposit-limit-mins" min="1" step="1" value="10" style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: #fff;" oninput="saveDraftToLocalStorage()">
-                    </div>
-                  </div>
-                </div>
-              </div>
+
 
               <!-- 3. Multi-Professional -->
               <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(139, 92, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(139, 92, 246, 0.2); grid-column: span 2;">
@@ -3166,14 +3144,7 @@
         const checkEmailNotif = document.getElementById('email-notifications-enabled');
         if (checkEmailNotif) draft['email_notifications_enabled'] = checkEmailNotif.checked;
 
-        const checkNoShow = document.getElementById('enable-no-show-deposits');
-        if (checkNoShow) draft['enable_no_show_deposits'] = checkNoShow.checked;
 
-        const inputNoShowAmt = document.getElementById('no-show-deposit-amount');
-        if (inputNoShowAmt) draft['no_show_deposit_amount'] = inputNoShowAmt.value;
-
-        const inputNoShowLimit = document.getElementById('no-show-deposit-limit-mins');
-        if (inputNoShowLimit) draft['no_show_deposit_limit_mins'] = inputNoShowLimit.value;
 
         const checkMultiProf = document.getElementById('enable-multi-professional');
         if (checkMultiProf) draft['enable_multi_professional'] = checkMultiProf.checked;
@@ -3339,21 +3310,7 @@
           checkEmailNotif.checked = draft['email_notifications_enabled'];
         }
 
-        const checkNoShow = document.getElementById('enable-no-show-deposits');
-        if (checkNoShow && draft['enable_no_show_deposits'] !== undefined) {
-          checkNoShow.checked = draft['enable_no_show_deposits'];
-          toggleNoShowDepositInput();
-        }
 
-        const inputNoShowAmt = document.getElementById('no-show-deposit-amount');
-        if (inputNoShowAmt && draft['no_show_deposit_amount'] !== undefined) {
-          inputNoShowAmt.value = draft['no_show_deposit_amount'];
-        }
-
-        const inputNoShowLimit = document.getElementById('no-show-deposit-limit-mins');
-        if (inputNoShowLimit && draft['no_show_deposit_limit_mins'] !== undefined) {
-          inputNoShowLimit.value = draft['no_show_deposit_limit_mins'];
-        }
 
         const checkMultiProf = document.getElementById('enable-multi-professional');
         if (checkMultiProf && draft['enable_multi_professional'] !== undefined) {
@@ -3504,13 +3461,10 @@
         
         // Reset de propuestas de éxito SaaS
         document.getElementById('whatsapp-reminders-enabled').checked = false;
-        document.getElementById('enable-no-show-deposits').checked = false;
-        document.getElementById('no-show-deposit-amount').value = '10.00';
         document.getElementById('enable-multi-professional').checked = false;
         document.getElementById('knowledge-base-url').value = '';
         document.getElementById('knowledge-base-content').value = '';
         document.getElementById('professionals-list-builder').innerHTML = '';
-        toggleNoShowDepositInput();
         toggleMultiProfessionalInput();
         
         document.getElementById('retell-agent-id').value = '';
@@ -5735,17 +5689,8 @@
       document.getElementById('whatsapp-reminder-hours').value = tenant.whatsapp_reminder_hours || 24;
       document.getElementById('email-notifications-enabled').checked = tenant.email_notifications_enabled !== false;
       
-      document.getElementById('enable-no-show-deposits').checked = !!tenant.enable_no_show_deposits;
-      document.getElementById('no-show-deposit-amount').value = tenant.no_show_deposit_amount !== undefined ? tenant.no_show_deposit_amount : '10.00';
-      document.getElementById('no-show-deposit-limit-mins').value = tenant.no_show_deposit_limit_mins || 10;
-      
-      document.getElementById('enable-multi-professional').checked = !!tenant.enable_multi_professional;
-      document.getElementById('knowledge-base-url').value = tenant.knowledge_base_url || '';
-      document.getElementById('knowledge-base-content').value = tenant.knowledge_base_content || '';
-      
       // Toggles displays
       toggleWhatsAppSettings();
-      toggleNoShowDepositInput();
       toggleMultiProfessionalInput();
 
       // Rellenar profesionales
@@ -5825,9 +5770,6 @@
       document.getElementById('whatsapp-reminders-enabled').checked = false;
       document.getElementById('whatsapp-reminder-hours').value = 24;
       document.getElementById('email-notifications-enabled').checked = false;
-      document.getElementById('enable-no-show-deposits').checked = false;
-      document.getElementById('no-show-deposit-amount').value = 10.00;
-      document.getElementById('no-show-deposit-limit-mins').value = 10;
       document.getElementById('enable-multi-professional').checked = false;
       document.getElementById('knowledge-base-url').value = '';
       document.getElementById('knowledge-base-content').value = '';
@@ -6154,9 +6096,6 @@
         whatsapp_reminders_enabled: document.getElementById('whatsapp-reminders-enabled').checked,
         whatsapp_reminder_hours: Number(document.getElementById('whatsapp-reminder-hours').value) || 24,
         email_notifications_enabled: document.getElementById('email-notifications-enabled').checked,
-        enable_no_show_deposits: document.getElementById('enable-no-show-deposits').checked,
-        no_show_deposit_amount: Number(document.getElementById('no-show-deposit-amount').value) || 10.00,
-        no_show_deposit_limit_mins: Number(document.getElementById('no-show-deposit-limit-mins').value) || 10,
         enable_multi_professional: document.getElementById('enable-multi-professional').checked,
         professionals: getProfessionalsArray(),
         knowledge_base_url: document.getElementById('knowledge-base-url').value || null,
@@ -6406,11 +6345,7 @@
       saveDraftToLocalStorage();
     }
 
-    function toggleNoShowDepositInput() {
-      const checked = document.getElementById('enable-no-show-deposits').checked;
-      document.getElementById('no-show-deposit-container').style.display = checked ? 'flex' : 'none';
-      saveDraftToLocalStorage();
-    }
+
 
     function toggleMultiProfessionalInput() {
       const checked = document.getElementById('enable-multi-professional').checked;

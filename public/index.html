@@ -2120,19 +2120,7 @@
                     </div>
                   </div>
 
-                  <!-- Fianza Toggle -->
-                  <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
-                    <input type="checkbox" id="setting-fianza-toggle" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; margin-top: 0.2rem;">
-                    <div>
-                      <label for="setting-fianza-toggle" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                        Cobro de Reserva Fianza (Anti-No-Show) 💰
-                        <span id="badge-fianza-module" style="display: none; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">Bloqueado en tu Plan</span>
-                      </label>
-                      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-                        La IA solicitará una fianza para asegurar la reserva y evitar ausencias.
-                      </div>
-                    </div>
-                  </div>
+
 
                   <!-- Multi-Professional Toggle -->
                   <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
@@ -3116,12 +3104,10 @@
       
       const chkClientWhatsapp = document.getElementById('setting-whatsapp-notif-toggle');
       const chkClientEmail = document.getElementById('setting-email-notif-toggle');
-      const chkClientFianza = document.getElementById('setting-fianza-toggle');
       const chkClientMultiProf = document.getElementById('setting-multiprof-toggle');
       
       const clientWhatsapp = chkClientWhatsapp ? chkClientWhatsapp.checked : true;
       const clientEmail = chkClientEmail ? chkClientEmail.checked : true;
-      const clientFianza = chkClientFianza ? chkClientFianza.checked : true;
       const clientMultiProf = chkClientMultiProf ? chkClientMultiProf.checked : true;
       
       try {
@@ -3133,7 +3119,6 @@
             business_name: currentTenant.business_name,
             client_whatsapp_enabled: clientWhatsapp,
             client_email_enabled: clientEmail,
-            client_enable_no_show_deposits: clientFianza,
             client_enable_multi_professional: clientMultiProf
           })
         });
@@ -4113,16 +4098,7 @@
         badgeEmail.style.display = isEmailAllowed ? 'none' : 'inline-block';
       }
 
-      const isFianzaAllowed = !!currentTenant.enable_no_show_deposits;
-      const chkClientFianza = document.getElementById('setting-fianza-toggle');
-      const badgeFianza = document.getElementById('badge-fianza-module');
-      if (chkClientFianza) {
-        chkClientFianza.checked = isFianzaAllowed && currentTenant.client_enable_no_show_deposits !== false;
-        chkClientFianza.disabled = !isFianzaAllowed;
-      }
-      if (badgeFianza) {
-        badgeFianza.style.display = isFianzaAllowed ? 'none' : 'inline-block';
-      }
+
 
       const isMultiProfAllowed = !!currentTenant.enable_multi_professional;
       const chkClientMultiProf = document.getElementById('setting-multiprof-toggle');
@@ -4292,10 +4268,7 @@
           modulesDisplay.innerHTML += `<span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 500; display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="message-square" style="width: 14px; height: 14px;"></i> WhatsApp Confirmaciones</span>`;
           hasActiveModules = true;
         }
-        if (currentTenant.enable_no_show_deposits) {
-          modulesDisplay.innerHTML += `<span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 500; display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="coins" style="width: 14px; height: 14px;"></i> Fianza Anti-No-Show (${currentTenant.no_show_deposit_amount}€)</span>`;
-          hasActiveModules = true;
-        }
+
         if (currentTenant.enable_multi_professional) {
           modulesDisplay.innerHTML += `<span class="badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.2); font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 500; display: inline-flex; align-items: center; gap: 0.35rem;"><i data-lucide="users" style="width: 14px; height: 14px;"></i> Multi-Profesional</span>`;
           hasActiveModules = true;

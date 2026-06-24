@@ -263,7 +263,7 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
     // Opcionalmente podemos registrar la cita en la tabla `appointments` de Supabase para que el médico la vea en su panel
     try {
       console.log('Registrando cita en base de datos Supabase...');
-      const status = (tenantDetails.enable_no_show_deposits && tenantDetails.client_enable_no_show_deposits !== false) ? 'pending_deposit' : 'confirmed';
+      const status = 'confirmed';
       
       await supabase
         .from('appointments')
@@ -290,9 +290,7 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
 
     res.json({
       status: 'success',
-      message: (tenantDetails.enable_no_show_deposits && tenantDetails.client_enable_no_show_deposits !== false) 
-        ? `Cita pre-reservada correctamente. Se ha enviado un enlace de pago de fianza de ${tenantDetails.no_show_deposit_amount}€ al número del paciente. Tiene 10 minutos para realizar el pago o la cita se liberará automáticamente.`
-        : 'Cita agendada correctamente en el calendario. (IMPORTANTE: Confirma al paciente de forma natural que su cita ha sido reservada con éxito y que recibirá una confirmación por WhatsApp. NO menciones enlaces ni digas URLs).'
+      message: 'Cita agendada correctamente en el calendario. (IMPORTANTE: Confirma al paciente de forma natural que su cita ha sido reservada con éxito y que recibirá una confirmación por WhatsApp. NO menciones enlaces ni digas URLs).'
     });
   } catch (error: any) {
     console.error('Error en /book-appointment:', error);
