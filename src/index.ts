@@ -2099,6 +2099,41 @@ app.post('/api/admin/update-agent-voice-temp', async (req, res): Promise<void> =
   }
 });
 
+// POST: Sincronizar agente de voz de Retell AI con los datos del inquilino
+app.post('/api/admin/sync-retell', async (req, res): Promise<void> => {
+  const { tenant_id } = req.body;
+  if (!tenant_id) {
+    res.status(400).json({ error: 'El tenant_id es obligatorio.' });
+    return;
+  }
+
+  try {
+    const { data: tenant, error } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('id', tenant_id)
+      .single();
+
+    if (error || !tenant) {
+      res.status(404).json({ error: 'Inquilino no encontrado.' });
+      return;
+    }
+
+    let webhookBaseUrl = process.env.WEBHOOK_BASE_URL;
+    if (!webhookBaseUrl) {
+      const host = req.get('host') || '';
+      const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
+      webhookBaseUrl = `${protocol}://${host}`;
+    }
+
+    await syncTenantWithRetell(tenant, webhookBaseUrl);
+    res.json({ success: true, message: 'Agente de Retell AI sincronizado exitosamente.' });
+  } catch (err: any) {
+    console.error('Error al sincronizar inquilino con Retell:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 6. Obtener ajustes dinámicos de API
 app.get('/api/admin/settings', async (req, res): Promise<void> => {
   try {
