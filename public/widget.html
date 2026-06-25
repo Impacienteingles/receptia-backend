@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistente Virtual - Chat de Reservas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --glass-bg: rgba(17, 25, 40, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --primary-color: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.5);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --bubble-user: #2563eb;
+      --bubble-ai: rgba(31, 41, 55, 0.8);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: transparent;
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .chat-container {
+      width: 100%;
+      height: 100%;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    /* Header */
+    .chat-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(10, 15, 30, 0.4);
+    }
+
+    .avatar-container {
+      position: relative;
+      width: 40px;
+      height: 40px;
+    }
+
+    .avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 16px;
+      color: #fff;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .status-dot {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 10px;
+      height: 10px;
+      background-color: #10b981;
+      border: 2px solid #0f172a;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .header-info {
+      flex: 1;
+    }
+
+    .agent-name {
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: 0.3px;
+    }
+
+    .agent-status {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Message Area */
+    .chat-messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    /* Message Bubbles */
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      animation: fadeInUp 0.3s ease;
+      white-space: pre-wrap;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background-color: var(--bubble-user);
+      color: #ffffff;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .message.ai {
+      align-self: flex-start;
+      background-color: var(--bubble-ai);
+      color: var(--text-main);
+      border-bottom-left-radius: 4px;
+      border: 1px solid var(--glass-border);
+    }
+
+    /* Typing Indicator */
+    .typing-indicator {
+      align-self: flex-start;
+      background-color: var(--bubble-ai);
+      padding: 12px 18px;
+      border-radius: 16px;
+      border-bottom-left-radius: 4px;
+      border: 1px solid var(--glass-border);
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--text-muted);
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Footer Input */
+    .chat-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--glass-border);
+      background: rgba(10, 15, 30, 0.4);
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input {
+      flex: 1;
+      height: 44px;
+      background: rgba(17, 24, 39, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 22px;
+      padding: 0 16px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .chat-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 8px var(--primary-glow);
+    }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      border: none;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 4px 10px var(--primary-glow);
+    }
+
+    .send-btn:hover {
+      background: #2563eb;
+      transform: scale(1.05);
+    }
+
+    .send-btn:active {
+      transform: scale(0.95);
+    }
+
+    .send-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    /* Custom Scrollbar */
+    .chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="avatar-container">
+        <div class="avatar" id="avatarLetter">A</div>
+        <div class="status-dot"></div>
+      </div>
+      <div class="header-info">
+        <div class="agent-name" id="agentName">Asistente Virtual</div>
+        <div class="agent-status">En línea - Reservas 24/7</div>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="messagesContainer">
+      <!-- Mensaje de bienvenida inicial -->
+    </div>
+
+    <div class="typing-indicator" id="typingIndicator">
+      <span class="typing-dot"></span>
+      <span class="typing-dot"></span>
+      <span class="typing-dot"></span>
+    </div>
+
+    <form class="chat-footer" id="chatForm">
+      <input type="text" class="chat-input" id="userInput" placeholder="Escribe un mensaje..." autocomplete="off">
+      <button type="submit" class="send-btn" id="sendBtn">
+        <svg viewBox="0 0 24 24">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+
+  <script>
+    // Obtener parámetros de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const tenantId = urlParams.get('tenant_id');
+
+    if (!tenantId) {
+      document.body.innerHTML = `
+        <div class="chat-container" style="justify-content: center; align-items: center; padding: 20px; text-align: center;">
+          <h3 style="color: #ef4444; margin-bottom: 10px;">Falta el identificador (tenant_id)</h3>
+          <p style="color: var(--text-muted); font-size: 14px;">El widget requiere el parámetro tenant_id en la URL para poder funcionar.</p>
+        </div>
+      `;
+    }
+
+    const messagesContainer = document.getElementById('messagesContainer');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const typingIndicator = document.getElementById('typingIndicator');
+    const agentNameElement = document.getElementById('agentName');
+    const avatarLetter = document.getElementById('avatarLetter');
+
+    // Cargar o crear un session_id persistente en localStorage para este tenant
+    let sessionId = localStorage.getItem(`receptia_chat_session_${tenantId}`);
+    if (!sessionId) {
+      sessionId = 'session_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem(`receptia_chat_session_${tenantId}`, sessionId);
+    }
+
+    // Inicializar detalles del agente
+    let welcomeMessage = '¡Hola! ¿En qué puedo ayudarte hoy?';
+    let agentDisplayName = 'Elena';
+
+    // Obtener configuración del tenant de forma asíncrona
+    async function loadTenantConfig() {
+      try {
+        const res = await fetch(`/api/prospecting/get-tenant-public?id=${tenantId}`);
+        if (res.ok) {
+          const tenant = await res.json();
+          if (tenant) {
+            welcomeMessage = tenant.chatbot_welcome_message || welcomeMessage;
+            
+            // Resolver el nombre del asistente
+            const voice = (tenant.voice_id || '').toLowerCase();
+            if (voice.includes('manuel')) agentDisplayName = 'Manuel';
+            else if (voice.includes('alejandro')) agentDisplayName = 'Alejandro';
+            else if (voice.includes('sarah')) agentDisplayName = 'Sarah';
+            else if (voice.includes('daniel')) agentDisplayName = 'Daniel';
+            else if (voice.includes('hailey') || voice.includes('elena')) agentDisplayName = 'Elena';
+            else if (voice.includes('gabriela')) agentDisplayName = 'Gabriela';
+            else agentDisplayName = 'Elena';
+
+            agentNameElement.textContent = `${agentDisplayName} - ${tenant.business_name || 'Reservas'}`;
+            avatarLetter.textContent = agentDisplayName[0];
+          }
+        }
+      } catch (err) {
+        console.warn('Error al cargar configuración del widget:', err);
+      } finally {
+        addMessage(welcomeMessage, 'ai');
+      }
+    }
+
+    // Agregar mensaje a la UI
+    function addMessage(text, sender) {
+      const bubble = document.createElement('div');
+      bubble.classList.add('message', sender);
+      bubble.textContent = text;
+      messagesContainer.appendChild(bubble);
+      
+      // Auto scroll
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Manejar envío de mensaje
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      userInput.value = '';
+      addMessage(text, 'user');
+
+      // Mostrar indicador de escribiendo
+      typingIndicator.style.display = 'flex';
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      try {
+        const res = await fetch('/api/chat/widget', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            tenant_id: tenantId,
+            session_id: sessionId,
+            message: text
+          })
+        });
+
+        const data = await res.json();
+        typingIndicator.style.display = 'none';
+
+        if (res.ok && data.response) {
+          addMessage(data.response, 'ai');
+        } else {
+          addMessage('Lo siento, ha ocurrido un error al procesar tu mensaje. Por favor, inténtalo de nuevo.', 'ai');
+        }
+      } catch (err) {
+        typingIndicator.style.display = 'none';
+        addMessage('Error de conexión con el asistente. Asegúrate de tener conexión a Internet.', 'ai');
+      }
+    });
+
+    // Cargar config al iniciar
+    loadTenantConfig();
+  </script>
+</body>
+</html>

@@ -9,6 +9,7 @@ import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellA
 import { createStripeCheckoutSession, createStripePortalSession, getStripeClient } from './services/stripe';
 import axios from 'axios';
 import { sendWhatsAppMessage } from './services/whatsapp';
+import { processChatbotMessage } from './services/chatbot';
 import { 
   initWhatsAppWebSession, 
   disconnectWhatsAppWebSession, 
@@ -225,7 +226,9 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     personality_focus,
     personality_speed,
     text_back_enabled,
-    text_back_message
+    text_back_message,
+    chatbot_enabled,
+    chatbot_welcome_message
   } = req.body;
 
   if (!business_name || !email) {
@@ -271,6 +274,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (personality_speed !== undefined) tenantData.personality_speed = Number(personality_speed);
     if (text_back_enabled !== undefined) tenantData.text_back_enabled = !!text_back_enabled;
     if (text_back_message !== undefined) tenantData.text_back_message = text_back_message;
+    if (chatbot_enabled !== undefined) tenantData.chatbot_enabled = !!chatbot_enabled;
+    if (chatbot_welcome_message !== undefined) tenantData.chatbot_welcome_message = chatbot_welcome_message;
     
     // Safely check if database contains the column to prevent query crashes
     const hasImmediateCol = existing ? ('whatsapp_immediate_notification_enabled' in existing) : false;
@@ -1500,8 +1505,102 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
         const session = event.data.object;
         const tenantId = session.metadata?.tenant_id;
         const planId = session.metadata?.plan_id;
+        const type = session.metadata?.type;
 
-        if (tenantId && planId) {
+        if (type === 'no_show_deposit') {
+          const appointmentId = session.metadata?.appointment_id;
+          console.log(`🔔 Recibido pago de fianza para la cita ${appointmentId} (Tenant: ${tenantId})...`);
+
+          if (appointmentId && tenantId) {
+            try {
+              const { data: appointment, error: appErr } = await supabase
+                .from('appointments')
+                .select('*, tenants(*)')
+                .eq('id', appointmentId)
+                .single();
+
+              if (appErr || !appointment) {
+                console.error(`[Stripe Webhook Error] Cita ${appointmentId} no encontrada:`, appErr?.message);
+              } else {
+                const tenant = appointment.tenants;
+
+                await supabase
+                  .from('appointments')
+                  .update({ status: 'confirmed' })
+                  .eq('id', appointmentId);
+                console.log(`Cita ${appointmentId} marcada como confirmed.`);
+
+                const depositAmount = tenant.no_show_deposit_amount || 10.00;
+                await supabase
+                  .from('accounting_transactions')
+                  .insert({
+                    type: 'income',
+                    concept: `Fianza Cita Online: ${appointment.patient_name}`,
+                    amount: depositAmount,
+                    date: new Date().toISOString().split('T')[0]
+                  });
+
+                if (appointment.google_event_id && tenant.google_refresh_token) {
+                  const dateTimeStr = appointment.date_time;
+                  const datePart = dateTimeStr.split('T')[0];
+                  
+                  const madridDate = new Date(dateTimeStr);
+                  const madridTimeStr = madridDate.toLocaleTimeString('es-ES', {
+                    timeZone: 'Europe/Madrid',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                  });
+
+                  const isPeluqueria = tenant.business_sector === 'peluqueria' || 
+                                       (tenant.business_name && (
+                                         tenant.business_name.toLowerCase().includes('peluquería') || 
+                                         tenant.business_name.toLowerCase().includes('peluqueria') || 
+                                         tenant.business_name.toLowerCase().includes('barber')
+                                       ));
+                  const slotDurationMin = isPeluqueria ? 15 : 30;
+                  
+                  const calculateDurationHelper = (spec: string, tId: string) => {
+                    if (tId !== '62d1ed82-287c-4329-941b-50b578c15b14') return 30;
+                    const text = (spec || '').toLowerCase();
+                    if ((text.includes('tres') || text.includes('3')) && text.includes('niño') && text.includes('caballero')) return 60;
+                    if ((text.includes('dos') || text.includes('2')) && text.includes('niño') && text.includes('caballero')) return 45;
+                    if ((text.includes('un') || text.includes('1')) && text.includes('niño') && text.includes('caballero')) return 30;
+                    if (text.includes('corte') || text.includes('pelo') || text.includes('caballero') || text.includes('niño')) return 15;
+                    return 15;
+                  };
+                  const durationMinutes = calculateDurationHelper(appointment.specialty, tenant.id);
+
+                  await updateAppointment(
+                    tenant.google_refresh_token,
+                    appointment.google_event_id,
+                    datePart,
+                    madridTimeStr,
+                    appointment.patient_name,
+                    appointment.patient_email,
+                    appointment.patient_phone,
+                    appointment.specialty,
+                    appointment.google_calendar_id || 'primary',
+                    tenant.business_name,
+                    tenant.business_sector,
+                    durationMinutes
+                  );
+                  console.log(`✅ Evento de Google Calendar actualizado para cita ${appointmentId}`);
+                }
+
+                if (tenant.client_whatsapp_enabled !== false) {
+                  const cleanPhone = appointment.patient_phone.split('|')[0].trim();
+                  const formattedDate = new Date(appointment.date_time).toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid' });
+                  const formattedTime = new Date(appointment.date_time).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' });
+                  const msg = `¡Fianza Recibida y Cita Confirmada! 📅✅\n\nHola ${appointment.patient_name}, hemos recibido correctamente su depósito de fianza. Su cita en ${tenant.business_name} ha quedado plenamente confirmada.\n\n🔹 Servicio: ${appointment.specialty}\n🔹 Fecha: ${formattedDate}\n🔹 Hora: ${formattedTime}\n\n¡Le esperamos!`;
+                  sendWhatsAppMessage(cleanPhone, msg, tenant.id).catch(err => console.error('Error al enviar WhatsApp de fianza:', err));
+                }
+              }
+            } catch (err: any) {
+              console.error('[Stripe Webhook Error] Error procesando fianza:', err.message);
+            }
+          }
+        } else if (tenantId && planId) {
           // Obtener detalles del plan
           const { data: plan, error: pErr } = await supabase
             .from('plans')
@@ -2456,6 +2555,50 @@ app.get('/api/retell-agents', async (req, res): Promise<void> => {
   }
 });
 
+// POST: Responder mensajes del widget de chat público
+app.post('/api/chat/widget', async (req, res): Promise<void> => {
+  const { tenant_id, message, session_id } = req.body;
+  if (!tenant_id || !message || !session_id) {
+    res.status(400).json({ error: 'Faltan parámetros obligatorios (tenant_id, message, session_id).' });
+    return;
+  }
+
+  try {
+    const host = req.get('host') || '';
+    const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
+    const webhookBaseUrl = `${protocol}://${host}`;
+
+    const reply = await processChatbotMessage(tenant_id, session_id, message.trim(), webhookBaseUrl);
+    res.json({ response: reply });
+  } catch (err: any) {
+    console.error('[Widget Chat API ERROR]:', err.message);
+    res.status(500).json({ error: err.message || 'Error al procesar el mensaje del chatbot.' });
+  }
+});
+
+// GET: Obtener detalles públicos de un inquilino (para el widget de chat)
+app.get('/api/prospecting/get-tenant-public', async (req, res): Promise<void> => {
+  const { id } = req.query;
+  if (!id) {
+    res.status(400).json({ error: 'Falta el parámetro id.' });
+    return;
+  }
+
+  try {
+    const { data: tenant, error } = await supabase
+      .from('tenants')
+      .select('business_name, voice_id, chatbot_welcome_message')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) throw error;
+    res.json(tenant || {});
+  } catch (err: any) {
+    console.error('Error al obtener tenant público:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST: Actualizar temporalmente la voz de un agente de Retell AI en caliente para pruebas
 app.post('/api/admin/update-agent-voice-temp', async (req, res): Promise<void> => {
   const { agent_id, voice_id, responsiveness, voice_speed, voice_temperature } = req.body;
@@ -3212,6 +3355,30 @@ async function runDatabaseMigrations() {
     await clientInstance.query(`
       ALTER TABLE tenants 
       ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
+    `);
+
+    // Asegurar columnas de chatbot en tenants si no existen
+    await clientInstance.query(`
+      ALTER TABLE tenants 
+      ADD COLUMN IF NOT EXISTS chatbot_enabled BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS chatbot_welcome_message TEXT DEFAULT '¡Hola! ¿En qué puedo ayudarte hoy?';
+    `);
+
+    // Crear tabla de mensajes de chat si no existe
+    await clientInstance.query(`
+      CREATE TABLE IF NOT EXISTS chat_messages (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+        session_id TEXT NOT NULL,
+        sender TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
+    `);
+
+    // Crear índice para búsquedas rápidas por sesión si no existe
+    await clientInstance.query(`
+      CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(tenant_id, session_id);
     `);
 
     // 3. Notificar a PostgREST

@@ -314,3 +314,51 @@ export async function processMeteredBillingForCall(tenantId: string, durationSec
     console.error('[Metered Billing ERROR] Error al procesar facturación por uso de llamada:', err.message);
   }
 }
+
+/**
+ * Crea una sesión de Stripe Checkout para cobrar una fianza de reserva (no-show deposit).
+ */
+export async function createNoShowDepositSession(
+  tenantId: string,
+  appointmentId: string,
+  amount: number,
+  patientPhone: string,
+  originUrl: string
+): Promise<string> {
+  const stripe = await getStripeClient();
+
+  console.log(`🚀 Creando sesión de Stripe Checkout para fianza de cita ${appointmentId} (${amount} EUR)...`);
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: 'Reserva de Cita (Fianza)',
+            description: 'Depósito de fianza para mitigar inasistencias (no-shows).',
+          },
+          unit_amount: Math.round(amount * 100), // En céntimos
+        },
+        quantity: 1,
+      },
+    ],
+    mode: 'payment', // Pago único
+    success_url: `${originUrl}/payment-success?appointment_id=${appointmentId}`,
+    cancel_url: `${originUrl}/payment-cancel?appointment_id=${appointmentId}`,
+    metadata: {
+      type: 'no_show_deposit',
+      tenant_id: tenantId,
+      appointment_id: appointmentId,
+      patient_phone: patientPhone,
+    },
+  });
+
+  if (!session.url) {
+    throw new Error('No se pudo generar la URL de Stripe Checkout para la fianza.');
+  }
+
+  return session.url;
+}
+

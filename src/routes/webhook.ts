@@ -3,6 +3,7 @@ import { listFreeSlots, bookAppointment, deleteAppointment, updateAppointment } 
 import { supabase } from '../services/supabase';
 import { sendWhatsAppMessage } from '../services/whatsapp';
 import { processMeteredBillingForCall } from '../services/stripe';
+import { processBookingFlow } from '../services/booking-flow';
 
 const router = Router();
 
@@ -272,9 +273,7 @@ function resolvePhoneNumber(phone: string, body: any): string {
 }
 
 /**
- * Endpoint para que Retell AI reserve una cita.
- */
-router.post('/book-appointment', async (req: Request, res: Response): Promise<void> => {
+ * Endporouter.post('/book-appointment', async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('Webhook recibido para book-appointment:', JSON.stringify(req.body));
     
@@ -288,161 +287,98 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    // Normalizar email si se proporciona para corregir errores de transcripción fonética
-    let normalizedEmail = '';
-    if (email) {
-      normalizedEmail = email.trim().toLowerCase();
-      if (normalizedEmail.includes('joyrenfe') || normalizedEmail.includes('yoirenfe') || normalizedEmail.includes('yo y renfe') || normalizedEmail.includes('yoy renfe')) {
-        normalizedEmail = 'yoyrenfe@gmail.com';
-      }
-      if (normalizedEmail.includes('ruedasenbici') || normalizedEmail.includes('ruedas en bici') || normalizedEmail.includes('ruedasenbicicleta') || normalizedEmail.includes('ruedas en bicicleta') || normalizedEmail.includes('ruedaenbici')) {
-        normalizedEmail = 'ruedasenbici@gmail.com';
-      }
-    }
-
-    // Resolver número de teléfono real si la IA indica que llama desde el mismo número
-    const resolvedPhone = resolvePhoneNumber(phone, req.body);
-
-    // Resolver tenant_id y su refresh token
     const tenantId = await resolveTenantId(req);
     const tenantDetails = await getTenantDetailsForWebhook(tenantId);
 
-    if (!tenantDetails.google_refresh_token) {
-      console.warn(`[book-appointment] El inquilino ${tenantId} no tiene Google Calendar conectado.`);
+    const host = req.get('host') || '';
+    const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
+    const originUrl = `${protocol}://${host}`;
+
+    const fromPhone = req.body.call?.from_number || req.body.call?.user_phone_number;
+
+    const result = await processBookingFlow(tenantId, tenantDetails, args, originUrl, fromPhone);
+
+    if (result.status === 'busy') {
       res.json({
         status: 'success',
-        message: 'Lo siento, no se pudo agendar la cita porque el administrador de este negocio aún no ha conectado su cuenta de Google Calendar. Por favor, indícale amablemente al usuario que debe ir a la pestaña Inicio de su panel de control y conectar Google Calendar para poder agendar citas.'
+        message: `El horario de las ${time} para el ${date} ya no está disponible. Huecos libres o error: ${result.message}`
       });
-      return;
-    }
-
-    // Mapear al profesional correcto si está activo
-    let calendarId = 'primary';
-    let matchedProfName = null;
-    const clientEnableMulti = tenantDetails.working_hours?.client_enable_multi_professional !== false;
-    if (tenantDetails.enable_multi_professional && clientEnableMulti && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
-      const profName = professional || args.professional;
-      if (profName) {
-        const prof = tenantDetails.professionals.find((p: any) => 
-          p.name.toLowerCase().includes(String(profName).toLowerCase()) ||
-          String(profName).toLowerCase().includes(p.name.toLowerCase())
-        );
-        if (prof) {
-          calendarId = prof.calendar_id;
-          matchedProfName = prof.name;
-          console.log(`[Multi-Professional] Reservando en calendario: ${prof.name} (${prof.calendar_id})`);
-        } else {
-          console.warn(`[Multi-Professional] Profesional no encontrado al reservar: ${profName}, usando primary`);
-        }
-      }
-    }
-
-    const agentName = resolveAgentName(tenantDetails.voice_id);
-
-    const isPeluqueria = tenantDetails.business_sector === 'peluqueria' || 
-                         (tenantDetails.business_name && (
-                           tenantDetails.business_name.toLowerCase().includes('peluquería') || 
-                           tenantDetails.business_name.toLowerCase().includes('peluqueria') || 
-                           tenantDetails.business_name.toLowerCase().includes('barber')
-                         ));
-    const slotDurationMin = isPeluqueria ? 15 : 30;
-    const applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14';
-
-    // 1. Obtener la disponibilidad en tiempo real
-    const freeSlots = await listFreeSlots(
-      tenantDetails.google_refresh_token,
-      date,
-      tenantDetails.working_hours,
-      calendarId,
-      slotDurationMin,
-      applyBreakRule
-    );
-
-    // 2. Calcular cuántos bloques consume este servicio
-    const durationMinutes = calculateDuration(specialty, tenantId);
-    const numBlocksNeeded = Math.ceil(durationMinutes / slotDurationMin);
-
-    // 3. Generar la secuencia de horas que deben estar libres
-    const neededSlots: string[] = [];
-    const [startHour, startMin] = time.split(':').map(Number);
-    let currentSlotTime = new Date(`1970-01-01T${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}:00Z`);
-
-    for (let i = 0; i < numBlocksNeeded; i++) {
-      const timeStr = currentSlotTime.toISOString().substring(11, 16);
-      neededSlots.push(timeStr);
-      currentSlotTime.setUTCMinutes(currentSlotTime.getUTCMinutes() + slotDurationMin);
-    }
-
-    console.log(`[book-appointment] Cita requiere ${durationMinutes} minutos (${numBlocksNeeded} bloques). Ranuras requeridas: ${neededSlots.join(', ')}`);
-
-    // 4. Verificar que TODAS las ranuras requeridas estén libres
-    const allSlotsFree = neededSlots.every(slot => freeSlots.includes(slot));
-    if (!allSlotsFree) {
-      console.warn(`[book-appointment] Uno o más bloques requeridos no están libres: ${neededSlots.join(', ')}. Ocupados o infringiendo descansos.`);
+    } else if (result.status === 'payment_required') {
       res.json({
         status: 'success',
-        message: `El horario seleccionado de las ${time} para el ${date} ya no está disponible (está ocupado por otra cita). Por favor, infórmale amablemente al paciente que ese hueco ya está reservado por otra persona y ofrécele consultar la disponibilidad con tu herramienta correspondiente para sugerirle otra hora de forma natural.`
+        message: `Se requiere un depósito de ${tenantDetails.no_show_deposit_amount || 10.00}€ para confirmar la cita. Le acabo de enviar un enlace de pago de Stripe por WhatsApp al teléfono. Por favor, realice el pago. Esperaré en línea un momento. Avíseme cuando lo haya hecho para verificarlo.`
       });
-      return;
+    } else {
+      res.json({
+        status: 'success',
+        message: 'Cita agendada correctamente en el calendario. Confirma al paciente de forma natural que su cita ha sido reservada con éxito y que recibirá una confirmación por WhatsApp.'
+      });
     }
-
-    const event = await bookAppointment(
-      tenantDetails.google_refresh_token,
-      date,
-      time,
-      name,
-      normalizedEmail,
-      resolvedPhone,
-      specialty,
-      calendarId,
-      agentName,
-      tenantDetails.business_name,
-      tenantDetails.business_sector,
-      durationMinutes
-    );
-
-    console.log('Cita agendada correctamente:', event.htmlLink);
-    
-    // Opcionalmente podemos registrar la cita en la tabla `appointments` de Supabase para que el médico la vea en su panel
-    try {
-      console.log('Registrando cita en base de datos Supabase...');
-      const status = 'confirmed';
-      
-      await supabase
-        .from('appointments')
-        .insert({
-          tenant_id: tenantId,
-          patient_name: name,
-          patient_phone: resolvedPhone,
-          patient_email: normalizedEmail,
-          date_time: event.start?.dateTime || new Date(`${date}T${time}:00`).toISOString(),
-          specialty: specialty,
-          status: status,
-          google_event_id: event.id,
-          google_calendar_id: calendarId,
-          professional_name: matchedProfName
-        });
-      console.log(`✅ Cita registrada en Supabase exitosamente con estado: ${status}`);
-
-      // Envío de confirmación por WhatsApp (si está habilitado)
-      if (tenantDetails.client_whatsapp_enabled !== false && tenantDetails.whatsapp_immediate_notification_enabled !== false) {
-        const msg = `Confirmación de Cita 📅\n\nHola ${name}, le confirmamos su cita en ${tenantDetails.business_name}.\n\n🔹 Servicio: ${specialty}\n🔹 Fecha: ${date}\n🔹 Hora: ${time}\n\n¡Le esperamos!`;
-        sendWhatsAppMessage(resolvedPhone, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de confirmación:', err));
-      }
-    } catch (dbErr: any) {
-      console.warn('⚠️ No se pudo registrar la cita en la tabla appointments de Supabase:', dbErr.message);
-    }
-
-    res.json({
-      status: 'success',
-      message: 'Cita agendada correctamente en el calendario. (IMPORTANTE: Confirma al paciente de forma natural que su cita ha sido reservada con éxito y que recibirá una confirmación por WhatsApp. NO menciones enlaces ni digas URLs).'
-    });
   } catch (error: any) {
     console.error('Error en /book-appointment:', error);
     res.status(500).json({ 
       error: 'Error interno al reservar la cita', 
       details: error.message 
     });
+  }
+});
+
+/**
+ * Endpoint para que Retell AI verifique el estado del pago de la fianza.
+ */
+router.post('/verify-payment', async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log('Webhook recibido para verify-payment:', JSON.stringify(req.body));
+    
+    const args = req.body.args || {};
+    const { phone } = args;
+
+    if (!phone) {
+      res.status(400).json({ error: 'El parámetro phone es obligatorio.' });
+      return;
+    }
+
+    const tenantId = await resolveTenantId(req);
+    const resolvedPhone = resolvePhoneNumber(phone, req.body.call?.from_number || req.body.call?.user_phone_number);
+    const cleanPhone = resolvedPhone.split('|')[0].trim();
+
+    console.log(`[Verify Payment] Buscando cita pagada para ${cleanPhone} (Tenant: ${tenantId})...`);
+
+    const { data: appointments, error } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .or(`patient_phone.eq.${cleanPhone},patient_phone.like.${cleanPhone}%`)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      throw error;
+    }
+
+    if (!appointments || appointments.length === 0) {
+      res.json({
+        paid: false,
+        message: 'No he encontrado ninguna cita registrada para este número de teléfono.'
+      });
+      return;
+    }
+
+    const latestApp = appointments[0];
+    if (latestApp.status === 'confirmed') {
+      res.json({
+        paid: true,
+        message: '¡El pago de la fianza ha sido verificado con éxito! La cita está confirmada y asegurada.'
+      });
+    } else {
+      res.json({
+        paid: false,
+        message: `El pago de la fianza para la cita del ${latestApp.date_time.split('T')[0]} aún no se ha completado. Por favor, asegúrese de abrir el enlace de Stripe y finalizar el pago en su móvil.`
+      });
+    }
+  } catch (err: any) {
+    console.error('Error en /verify-payment:', err);
+    res.status(500).json({ error: 'Error interno al verificar el pago', details: err.message });
   }
 });
 
@@ -792,7 +728,7 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
         // Buscar inquilino por retell_agent_id
         const { data: tenant, error: tErr } = await supabase
           .from('tenants')
-          .select('id, text_back_enabled, text_back_message')
+          .select('id, text_back_enabled, text_back_message, phone_number')
           .eq('retell_agent_id', retellAgentId)
           .maybeSingle();
 
@@ -868,6 +804,25 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
               sendWhatsAppMessage(cleanPhone, msg, tenant.id)
                 .then(sent => console.log(`[Text-Back] WhatsApp enviado con éxito: ${sent}`))
                 .catch(err => console.error(`[Text-Back Error] Error al enviar mensaje:`, err.message));
+            }
+          }
+
+          // Alerta de Queja / Insatisfacción (Fase 2)
+          if (event === 'call_analyzed') {
+            const hasQueja = intentTag === 'Queja';
+            const transcriptLower = transcript.toLowerCase();
+            const keywords = ['queja', 'reclamación', 'reclamacion', 'insatisfecho', 'enfadado', 'molesto', 'mal servicio', 'hoja de reclamaciones', 'decepcionado', 'fatal', 'peor', 'estafa', 'engaño'];
+            const hasKeywords = keywords.some(kw => transcriptLower.includes(kw));
+
+            if ((hasQueja || hasKeywords) && tenant.phone_number) {
+              const cleanCallerPhone = callerPhone.split('|')[0].trim();
+              console.log(`[Sentiment Alert] Detectada posible queja de ${cleanCallerPhone}. Enviando alerta al administrador...`);
+              
+              const alertMsg = `⚠️ ALERTA DE INSATISFACCIÓN EN LLAMADA ⚠️\n\nHola, hemos detectado una posible queja o cliente molesto en una conversación reciente:\n\n🔹 Cliente: ${cleanCallerPhone}\n🔹 Resumen de la llamada: ${summary || 'Sin resumen disponible.'}\n\n📞 Puedes llamarle de vuelta pinchando aquí:\n👉 https://wa.me/${cleanCallerPhone.replace(/\+/g, '')} o tel:${cleanCallerPhone}`;
+              
+              sendWhatsAppMessage(tenant.phone_number, alertMsg, tenant.id)
+                .then(sent => console.log(`[Sentiment Alert] WhatsApp de alerta enviado al admin ${tenant.phone_number}: ${sent}`))
+                .catch(err => console.error(`[Sentiment Alert Error] Error al enviar alerta:`, err.message));
             }
           }
         } else {

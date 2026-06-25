@@ -9,7 +9,8 @@ import makeWASocket, {
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import { Boom } from '@hapi/boom';
-import { supabase } from './supabase';
+import { supabase, getSettingVal } from './supabase';
+import { processChatbotMessage } from './chatbot';
 
 const logger = pino({ level: 'silent' });
 
@@ -237,6 +238,53 @@ export async function initWhatsAppWebSession(tenantId: string): Promise<WASocket
         } else {
           logDebug(`[WhatsApp Web] Intentando reconexión automática en 5s para tenant: ${tenantId}...`);
           setTimeout(() => initWhatsAppWebSession(tenantId), 5000);
+        }
+      }
+    });
+
+    sock.ev.on('messages.upsert', async (m) => {
+      if (m.type !== 'notify') return;
+      
+      for (const msg of m.messages) {
+        if (msg.key.fromMe) continue;
+        
+        const senderJid = msg.key.remoteJid || '';
+        if (senderJid.endsWith('@g.us') || senderJid.endsWith('@broadcast')) continue;
+        
+        const messageText = msg.message?.conversation || 
+                            msg.message?.extendedTextMessage?.text || 
+                            '';
+                            
+        if (!messageText || messageText.trim() === '') continue;
+        
+        const cleanPhone = senderJid.split('@')[0];
+        logDebug(`[WhatsApp Chatbot] Mensaje entrante de ${cleanPhone} (Tenant: ${tenantId}): "${messageText}"`);
+        
+        try {
+          const { data: tenant, error: tErr } = await supabase
+            .from('tenants')
+            .select('id, chatbot_enabled, phone_number, business_name')
+            .eq('id', tenantId)
+            .single();
+            
+          if (tErr || !tenant) {
+            logDebug(`[WhatsApp Chatbot] Tenant ${tenantId} no encontrado.`);
+            continue;
+          }
+          
+          if (!tenant.chatbot_enabled) {
+            logDebug(`[WhatsApp Chatbot] Chatbot desactivado para ${tenant.business_name}. Omitiendo.`);
+            continue;
+          }
+          
+          const webhookBaseUrl = await getSettingVal('WEBHOOK_BASE_URL') || 'https://corandar.onrender.com';
+          const aiReply = await processChatbotMessage(tenantId, cleanPhone, messageText.trim(), webhookBaseUrl);
+          
+          await sendWhatsAppWebMessage(tenantId, cleanPhone, aiReply);
+          logDebug(`[WhatsApp Chatbot] Respuesta de la IA enviada a ${cleanPhone} con éxito.`);
+          
+        } catch (err: any) {
+          logDebug(`[WhatsApp Chatbot ERROR] Error al procesar mensaje de ${cleanPhone}: ${err.message}`);
         }
       }
     });

@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia - Panel de Control del Cliente</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1.108">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.1.108">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.2.0">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.2.0">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -2908,6 +2908,43 @@
                 </button>
               </div>
 
+              <!-- Sección Chatbot de Reservas y Widget Web -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="bot" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Chatbot de Reservas y Widget Web 💬
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Habilita un chatbot inteligente para reservar citas de forma automatizada por chat (WhatsApp Web QR y Widget Web para tu página).
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="setting-chatbot-enabled" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;">
+                    <label for="setting-chatbot-enabled" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0;">Activar Chatbot de Reservas</label>
+                  </div>
+                  <div>
+                    <label for="setting-chatbot-welcome-message" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Mensaje de Bienvenida del Chatbot:</label>
+                    <input type="text" id="setting-chatbot-welcome-message" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;" placeholder="¡Hola! ¿En qué puedo ayudarte hoy?">
+                  </div>
+                  
+                  <!-- Widget Embed Code -->
+                  <div id="chatbot-widget-embed-container" style="margin-top: 0.5rem;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Código de Inserción para tu Web (iframe):</label>
+                    <div style="position: relative;">
+                      <textarea id="setting-chatbot-embed-code" readonly rows="3" style="width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); padding: 0.5rem; font-size: 0.8rem; resize: none; box-sizing: border-box; font-family: monospace; line-height: 1.4;"></textarea>
+                      <button onclick="copyWidgetEmbedCode()" style="position: absolute; right: 8px; bottom: 8px; background: var(--primary); color: #fff; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
+                        <i data-lucide="copy" style="width: 12px; height: 12px;"></i> Copiar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="saveChatbotSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                  <i data-lucide="save"></i>
+                  Guardar Ajustes Chatbot
+                </button>
+              </div>
+
               <!-- Sección Cambio de PIN / Contraseña -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; gap: 1.25rem;">
                 <div>
@@ -3934,6 +3971,49 @@
       } catch (err) {
         showToast(err.message, 'error');
       }
+    }
+
+    // --- CHATBOT DE RESERVAS Y WIDGET WEB ---
+    async function saveChatbotSettings() {
+      if (!currentTenant) return;
+      
+      const enabled = document.getElementById('setting-chatbot-enabled').checked;
+      const welcomeMessage = document.getElementById('setting-chatbot-welcome-message').value.trim();
+      
+      try {
+        showToast('Guardando configuración del Chatbot...');
+        const res = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentTenant.email,
+            business_name: currentTenant.business_name,
+            chatbot_enabled: enabled,
+            chatbot_welcome_message: welcomeMessage
+          })
+        });
+        
+        if (!res.ok) throw new Error('No se pudo guardar la configuración del Chatbot.');
+        const updated = await res.json();
+        currentTenant = updated;
+        showToast('Configuración del Chatbot guardada con éxito.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function copyWidgetEmbedCode() {
+      const copyText = document.getElementById("setting-chatbot-embed-code");
+      if (!copyText || !copyText.value) return;
+      
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); // For mobile devices
+      
+      navigator.clipboard.writeText(copyText.value).then(() => {
+        showToast('¡Código del Widget copiado al portapapeles!');
+      }).catch(err => {
+        showToast('Error al copiar el código', 'error');
+      });
     }
 
     // --- CLONACIÓN DE VOZ EXPRESS ---
@@ -5227,6 +5307,16 @@
       const txtTextBackMsg = document.getElementById('setting-text-back-message');
       if (chkTextBack) chkTextBack.checked = !!currentTenant.text_back_enabled;
       if (txtTextBackMsg) txtTextBackMsg.value = currentTenant.text_back_message || 'Hola! Vimos que nos llamaste pero no pudimos responder. ¿Te gustaría agendar una cita de forma rápida por este chat?';
+
+      // Cargar chatbot de reservas y widget web
+      const chkChatbot = document.getElementById('setting-chatbot-enabled');
+      const txtChatbotWelcome = document.getElementById('setting-chatbot-welcome-message');
+      const txtChatbotEmbed = document.getElementById('setting-chatbot-embed-code');
+      if (chkChatbot) chkChatbot.checked = !!currentTenant.chatbot_enabled;
+      if (txtChatbotWelcome) txtChatbotWelcome.value = currentTenant.chatbot_welcome_message || '¡Hola! ¿En qué puedo ayudarte hoy?';
+      if (txtChatbotEmbed) {
+        txtChatbotEmbed.value = `<iframe src="${window.location.origin}/widget.html?tenant_id=${currentTenant.id}" width="380" height="600" style="border:none; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.3);"></iframe>`;
+      }
 
       // Cargar canales de notificación
       const chkClientWhatsapp = document.getElementById('setting-whatsapp-notif-toggle');

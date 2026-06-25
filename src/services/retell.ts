@@ -136,6 +136,20 @@ El establecimiento se encuentra CERRADO por vacaciones o cese temporal de activi
   const tone = Number(tenant.personality_tone !== undefined ? tenant.personality_tone : 3);
   const focus = Number(tenant.personality_focus !== undefined ? tenant.personality_focus : 3);
 
+  let depositSection = '';
+  if (tenant.enable_no_show_deposits) {
+    const depositAmount = tenant.no_show_deposit_amount || 10.00;
+    depositSection = `
+# FIANZA Y RESERVA CON DEPÓSITO (CRÍTICO)
+Este establecimiento requiere un depósito de fianza obligatorio de ${depositAmount} euros para poder confirmar cualquier cita.
+1. Al agendar la cita con la herramienta 'crear_cita', el sistema la registrará provisionalmente y enviará un enlace de pago de Stripe por WhatsApp al móvil del cliente.
+2. Debes indicarle al cliente: "Para confirmar su cita, le he enviado un enlace de pago seguro por WhatsApp para realizar el depósito de ${depositAmount} euros. Por favor, realice el pago. Esperaré en línea un momento para verificarlo."
+3. Una vez que el cliente te confirme que ha pagado, DEBES llamar obligatoriamente a la herramienta 'verificar_pago' pasando su número de teléfono.
+4. Si 'verificar_pago' devuelve que el pago se ha completado (paid: true), confírmale que la cita está totalmente asegurada.
+5. Si devuelve que no se ha recibido el pago (paid: false), indícaselo educadamente y espérale o recuérdale que es necesario para guardar su reserva.
+`;
+  }
+
   let toneGuideline = '';
   switch (tone) {
     case 1:
@@ -159,7 +173,7 @@ El establecimiento se encuentra CERRADO por vacaciones o cese temporal de activi
   let focusGuideline = '';
   switch (focus) {
     case 1:
-      focusGuideline = 'Prioriza al máximo la empatía y la conexión emocional. Escucha atentamente al cliente, valida de forma activa sus sentimientos o preocupaciones ("entiendo perfectamente", "siento mucho que pase por eso", "estoy aquí para ayudarle"). No le metas prisa; la calidez humana y la escucha activa son más importantes que la rapidez.';
+      focusGuideline = 'Prioriza al máximo la empatía y la conexión emocional. Escucha atentamente al cliente, valida de forma activa sus sentimientos o preocupaciones ("entiendo perfectamente", "siento mucho que pase por eso", "estoy aquí para ayudarle"). No le metas prisa; la calidez humana and la escucha activa son más importantes que la rapidez.';
       break;
     case 2:
       focusGuideline = 'Muestra empatía y calidez en tus respuestas. Interésate por la comodidad y situación del cliente, validando sus comentarios con amabilidad antes de avanzar.';
@@ -180,6 +194,7 @@ El establecimiento se encuentra CERRADO por vacaciones o cese temporal de activi
 # CONTEXTO TEMPORAL
 La fecha actual de hoy es: ${today}. Úsala como referencia para calcular fechas relativas como "mañana", "el próximo martes", "la semana que viene", etc.
 ${vacationSection}
+${depositSection}
 # PERSONA Y ROL
 Eres ${agentName}, la recepcionista de la empresa "${businessName}". Hablas en español de España (castellano neutro). Evitas sonar robótica; utiliza expresiones de transición naturales como "entiendo", "un segundo, por favor", o "de acuerdo".
 - **Pauta de Tono:** ${toneGuideline}
@@ -391,6 +406,22 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
                 required: ['original_date', 'new_date', 'new_time', 'phone'],
               },
             },
+            {
+              type: 'custom',
+              name: 'verificar_pago',
+              description: 'Verifica si el cliente ya ha completado el pago de la fianza por Stripe para confirmar la cita.',
+              url: `${webhookBaseUrl}/api/webhook/verify-payment?tenant_id=${tenant.id}`,
+              parameters: {
+                type: 'object',
+                properties: {
+                  phone: {
+                    type: 'string',
+                    description: 'El número de teléfono del cliente (facilita el mismo número desde el que llama).'
+                  }
+                },
+                required: ['phone']
+              }
+            }
           ]
         });
         console.log('✅ Prompt y herramientas del LLM de Retell AI actualizados.');
@@ -595,6 +626,22 @@ export async function createRetellAgentForTenant(tenant: any, webhookBaseUrl: st
           required: ['original_date', 'new_date', 'new_time', 'phone'],
         },
       },
+      {
+        type: 'custom',
+        name: 'verificar_pago',
+        description: 'Verifica si el cliente ya ha completado el pago de la fianza por Stripe para confirmar la cita.',
+        url: `${webhookBaseUrl}/api/webhook/verify-payment?tenant_id=${tenant.id}`,
+        parameters: {
+          type: 'object',
+          properties: {
+            phone: {
+              type: 'string',
+              description: 'El número de teléfono del cliente (facilita el mismo número desde el que llama).'
+            }
+          },
+          required: ['phone']
+        }
+      }
     ]
   });
 

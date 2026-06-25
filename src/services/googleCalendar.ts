@@ -337,7 +337,8 @@ export async function bookAppointment(
   agentName?: string,
   businessName?: string,
   businessSector?: string,
-  durationMinutes: number = 30
+  durationMinutes: number = 30,
+  isPendingPayment: boolean = false
 ) {
   const calendar = await getCalendarClient(refreshToken);
   const targetCalendarId = calendarId || 'primary';
@@ -371,6 +372,10 @@ export async function bookAppointment(
     labelSummary = `Cita Médica - ${specialty}`;
   } else if (isPeluqueria) {
     labelSummary = `Cita Peluquería - ${specialty}`;
+  }
+
+  if (isPendingPayment) {
+    labelSummary = `[PENDIENTE DE PAGO] ${labelSummary}`;
   }
 
   const labelPerson = isClinic ? 'Paciente' : 'Cliente';
