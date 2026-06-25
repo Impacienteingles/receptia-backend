@@ -46,6 +46,7 @@
   
   <style>
     :root {
+      --sidebar-width: 260px;
       --bg-color: #080c14;
       --panel-bg: rgba(17, 24, 39, 0.6);
       --border-color: rgba(255, 255, 255, 0.08);
@@ -219,8 +220,17 @@
       flex-direction: column;
       padding: 1.5rem;
       gap: 2rem;
-      transition: transform 0.3s ease;
+      transition: width 0.3s ease, padding 0.3s ease, margin 0.3s ease, transform 0.3s ease;
       z-index: 1000;
+    }
+    @media (min-width: 769px) {
+      .sidebar.collapsed {
+        width: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        border-right: none !important;
+      }
     }
 
     .sidebar-header {
@@ -307,12 +317,29 @@
     }
 
     .hamburger-btn {
-      display: none;
-      background: transparent;
-      border: none;
-      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
       cursor: pointer;
-      font-size: 1.5rem;
+      font-size: 1.25rem;
+      padding: 0.4rem;
+      border-radius: 6px;
+      margin-right: 1rem;
+      transition: all 0.2s ease;
+    }
+    .hamburger-btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: var(--primary);
+    }
+    [data-theme="light"] .hamburger-btn {
+      background: rgba(0,0,0,0.03);
+      color: var(--text-color);
+    }
+    [data-theme="light"] .hamburger-btn:hover {
+      background: rgba(0,0,0,0.06);
     }
 
     .status-badge {
@@ -1093,6 +1120,103 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* Estilos para el select de clasificación comercial */
+    .select-classification {
+      border-radius: 6px;
+      padding: 0.3rem 0.4rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      outline: none;
+      font-family: inherit;
+      width: 135px;
+      max-width: 135px;
+      transition: all 0.2s ease;
+    }
+    
+    /* Default / No contactado */
+    .select-classification.status-no_contactado {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-color);
+      color: #fff;
+    }
+    [data-theme="light"] .select-classification.status-no_contactado {
+      background: rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+
+    /* Contactado */
+    .select-classification.status-contactado {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+    [data-theme="light"] .select-classification.status-contactado {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #1d4ed8;
+    }
+
+    /* Demo enviada */
+    .select-classification.status-demo_enviada {
+      background: rgba(167, 139, 250, 0.15);
+      border: 1px solid rgba(167, 139, 250, 0.4);
+      color: #c084fc;
+    }
+    [data-theme="light"] .select-classification.status-demo_enviada {
+      background: rgba(167, 139, 250, 0.1);
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      color: #6d28d9;
+    }
+
+    /* Muy interesante */
+    .select-classification.status-muy_interesante {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+    [data-theme="light"] .select-classification.status-muy_interesante {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #b45309;
+    }
+
+    /* Interesante */
+    .select-classification.status-interesante {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+    [data-theme="light"] .select-classification.status-interesante {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #047857;
+    }
+
+    /* Poco interesante */
+    .select-classification.status-poco_interesante {
+      background: rgba(107, 114, 128, 0.15);
+      border: 1px solid rgba(107, 114, 128, 0.4);
+      color: #9ca3af;
+    }
+    [data-theme="light"] .select-classification.status-poco_interesante {
+      background: rgba(107, 114, 128, 0.1);
+      border: 1px solid rgba(107, 114, 128, 0.3);
+      color: #4b5563;
+    }
+
+    /* Descartado */
+    .select-classification.status-descartado {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    [data-theme="light"] .select-classification.status-descartado {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #b91c1c;
+    }
   </style>
 </head>
 <body>
@@ -1285,7 +1409,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.6</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.7</span>
         </div>
       </header>
 
@@ -2493,15 +2617,15 @@
             <div style="overflow-x: auto; margin-top: 1rem;">
               <table style="width: 100%; border-collapse: collapse; text-align: left;" class="table">
                 <thead>
-                  <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.85rem;">
+                  <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.85rem; user-select: none;">
                     <th style="padding: 1rem 0.5rem; width: 40px; text-align: center;"><input type="checkbox" id="prospects-select-all" onclick="toggleSelectAllProspects(this)"></th>
-                    <th style="padding: 1rem 0.5rem;">Nombre del Negocio</th>
+                    <th onclick="sortProspects('business_name')" style="padding: 1rem 0.5rem; cursor: pointer;">Nombre del Negocio <span id="sort-icon-business_name"></span></th>
                     <th style="padding: 1rem 0.5rem;">Email</th>
                     <th style="padding: 1rem 0.5rem;">Teléfono</th>
                     <th style="padding: 1rem 0.5rem;">Sitio Web</th>
-                    <th style="padding: 1rem 0.5rem;">Sector</th>
-                    <th style="padding: 1rem 0.5rem;">Clasificación</th>
-                    <th style="padding: 1rem 0.5rem; text-align: center;">Estado Demo</th>
+                    <th onclick="sortProspects('sector')" style="padding: 1rem 0.5rem; cursor: pointer;">Sector <span id="sort-icon-sector"></span></th>
+                    <th onclick="sortProspects('classification')" style="padding: 1rem 0.5rem; cursor: pointer;">Clasificación <span id="sort-icon-classification"></span></th>
+                    <th onclick="sortProspects('status')" style="padding: 1rem 0.5rem; text-align: center; cursor: pointer;">Estado Demo <span id="sort-icon-status"></span></th>
                     <th style="padding: 1rem 0.5rem; text-align: right;">Acciones</th>
                   </tr>
                 </thead>
@@ -3326,10 +3450,16 @@
       saveDraftToLocalStorage();
     });
 
-    // Toggle del menú lateral móvil
+    // Toggle del menú lateral
     function toggleSidebar() {
       const menu = document.getElementById('sidebar-menu');
-      menu.classList.toggle('open');
+      if (window.innerWidth <= 768) {
+        menu.classList.toggle('open');
+      } else {
+        menu.classList.toggle('collapsed');
+        const isCollapsed = menu.classList.contains('collapsed');
+        localStorage.setItem('sidebar-collapsed', isCollapsed ? 'true' : 'false');
+      }
     }
 
     // Cambiar de pestaña (Tabs)
@@ -4456,6 +4586,14 @@
 
     // Cargar configuraciones al cargar la página
     async function initAdminPanel() {
+      // Restaurar estado del menú lateral en escritorio
+      if (window.innerWidth > 768) {
+        const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+        const menu = document.getElementById('sidebar-menu');
+        if (isCollapsed && menu) {
+          menu.classList.add('collapsed');
+        }
+      }
       updateThemeIcon();
       try {
         await fetchPlans();
@@ -6298,6 +6436,8 @@
     // ========================================================
     let allProspects = [];
     let refreshProspectsInterval = null;
+    let prospectsSortField = localStorage.getItem('prospects-sort-field') || 'created_at';
+    let prospectsSortDirection = localStorage.getItem('prospects-sort-direction') || 'desc';
 
     async function fetchProspects() {
       try {
@@ -6305,6 +6445,7 @@
         if (!response.ok) throw new Error('Error al conectar con la base de datos de prospectos.');
         const data = await response.json();
         allProspects = data.prospects || [];
+        applyProspectsSort();
         renderProspectsTable();
 
         // Controlar si hay algún prospecto en estado de procesamiento (para auto-refrescar)
@@ -6551,15 +6692,16 @@
         }
 
         // Select de Clasificación comercial
+        const currentClass = p.classification || 'no_contactado';
         const classificationSelect = `
-          <select onchange="updateProspectClassification('${p.id}', this.value)" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; padding: 0.3rem 0.4rem; font-size: 0.8rem; cursor: pointer; outline: none; font-family: inherit; width: 135px; max-width: 135px;">
-            <option value="no_contactado" ${p.classification === 'no_contactado' || !p.classification ? 'selected' : ''}>No contactado</option>
-            <option value="contactado" ${p.classification === 'contactado' ? 'selected' : ''}>Contactado</option>
-            <option value="demo_enviada" ${p.classification === 'demo_enviada' ? 'selected' : ''}>Demo enviada</option>
-            <option value="muy_interesante" ${p.classification === 'muy_interesante' ? 'selected' : ''}>Muy interesante ★★★</option>
-            <option value="interesante" ${p.classification === 'interesante' ? 'selected' : ''}>Interesante ★★</option>
-            <option value="poco_interesante" ${p.classification === 'poco_interesante' ? 'selected' : ''}>Poco interesante ★</option>
-            <option value="descartado" ${p.classification === 'descartado' ? 'selected' : ''}>Descartado ✗</option>
+          <select onchange="changeProspectClassification('${p.id}', this)" class="select-classification status-${currentClass}">
+            <option value="no_contactado" ${currentClass === 'no_contactado' ? 'selected' : ''}>No contactado</option>
+            <option value="contactado" ${currentClass === 'contactado' ? 'selected' : ''}>Contactado</option>
+            <option value="demo_enviada" ${currentClass === 'demo_enviada' ? 'selected' : ''}>Demo enviada</option>
+            <option value="muy_interesante" ${currentClass === 'muy_interesante' ? 'selected' : ''}>Muy interesante ★★★</option>
+            <option value="interesante" ${currentClass === 'interesante' ? 'selected' : ''}>Interesante ★★</option>
+            <option value="poco_interesante" ${currentClass === 'poco_interesante' ? 'selected' : ''}>Poco interesante ★</option>
+            <option value="descartado" ${currentClass === 'descartado' ? 'selected' : ''}>Descartado ✗</option>
           </select>
         `;
 
@@ -6634,6 +6776,67 @@
         tbody.appendChild(row);
       });
       lucide.createIcons();
+      updateSortIcons();
+    }
+
+    function sortProspects(field) {
+      if (prospectsSortField === field) {
+        prospectsSortDirection = prospectsSortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        prospectsSortField = field;
+        prospectsSortDirection = 'asc';
+      }
+      localStorage.setItem('prospects-sort-field', prospectsSortField);
+      localStorage.setItem('prospects-sort-direction', prospectsSortDirection);
+      
+      applyProspectsSort();
+      renderProspectsTable();
+    }
+
+    function applyProspectsSort() {
+      if (!prospectsSortField) return;
+      
+      allProspects.sort((a, b) => {
+        let valA = a[prospectsSortField];
+        let valB = b[prospectsSortField];
+
+        if (typeof valA === 'string') valA = valA.trim().toLowerCase();
+        if (typeof valB === 'string') valB = valB.trim().toLowerCase();
+        
+        if (valA === undefined || valA === null) valA = '';
+        if (valB === undefined || valB === null) valB = '';
+
+        if (Array.isArray(valA)) valA = valA.join(', ');
+        if (Array.isArray(valB)) valB = valB.join(', ');
+
+        if (valA < valB) return prospectsSortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return prospectsSortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    function updateSortIcons() {
+      const fields = ['business_name', 'sector', 'classification', 'status'];
+      fields.forEach(field => {
+        const el = document.getElementById(`sort-icon-${field}`);
+        if (!el) return;
+        
+        if (prospectsSortField === field) {
+          const iconName = prospectsSortDirection === 'asc' ? 'chevron-up' : 'chevron-down';
+          el.innerHTML = `<i data-lucide="${iconName}" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-left: 4px;"></i>`;
+        } else {
+          el.innerHTML = `<i data-lucide="chevrons-up-down" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-left: 4px; opacity: 0.3;"></i>`;
+        }
+      });
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+
+    async function changeProspectClassification(id, selectEl) {
+      const val = selectEl.value;
+      selectEl.className = `select-classification status-${val}`;
+      await updateProspectClassification(id, val);
     }
 
     async function searchProspectLeads(event) {
