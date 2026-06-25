@@ -1442,7 +1442,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.19</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.20</span>
         </div>
       </header>
 
@@ -2673,6 +2673,9 @@
                 </button>
                 <button class="btn btn-secondary" id="btn-prospects-bulk-delete" onclick="deleteSelectedProspects()" style="font-size: 0.85rem; padding: 0.4rem 1rem; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.1); color: var(--error); border-color: rgba(239, 68, 68, 0.2);">
                   <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Eliminar Seleccionados
+                </button>
+                <button class="btn btn-secondary" onclick="exportProspectsPDF()" style="font-size: 0.85rem; padding: 0.4rem 1rem; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(139, 92, 246, 0.1); color: var(--primary-light); border-color: rgba(139, 92, 246, 0.2);">
+                  <i data-lucide="file-text" style="width: 14px; height: 14px;"></i> Exportar PDF
                 </button>
                 <button class="btn btn-secondary" onclick="exportProspectsCSV()" style="font-size: 0.85rem; padding: 0.4rem 1rem; display: inline-flex; align-items: center; gap: 0.25rem;">
                   <i data-lucide="download" style="width: 14px; height: 14px;"></i> Exportar CSV
@@ -6127,10 +6130,26 @@
     }
 
 
-    // Cargar los datos de un cliente existente al formulario para edición
-    function loadTenantToEdit(tenantId) {
-      const tenant = allTenants.find(t => t.id === tenantId);
-      if (!tenant) return;
+    // Cargar los datos de un cliente existente al formulario para edición (bajo demanda si no está en memoria)
+    async function loadTenantToEdit(tenantId) {
+      let tenant = allTenants.find(t => t.id === tenantId);
+      if (!tenant) {
+        try {
+          const response = await fetch(`/api/tenants?id=${tenantId}`);
+          if (response.ok) {
+            tenant = await response.json();
+            if (tenant) {
+              allTenants.push(tenant);
+            }
+          }
+        } catch (err) {
+          console.error('Error al recuperar inquilino bajo demanda:', err);
+        }
+      }
+      if (!tenant) {
+        showCustomAlert('No se pudo encontrar la configuración de esta demo.', 'Error', 'error');
+        return;
+      }
 
       editingTenantId = tenant.id;
       
@@ -6867,11 +6886,7 @@
           </button>
         ` : '';
 
-        const duplicateBtn = p.demo_tenant_id ? `
-          <button class="btn btn-secondary" onclick="duplicateTenant('${p.demo_tenant_id}')" style="color: #a78bfa; border-color: rgba(167, 139, 250, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Duplicar demo como nuevo cliente">
-            <i data-lucide="copy-plus" style="width: 13px; height: 13px;"></i>
-          </button>
-        ` : '';
+        const duplicateBtn = ''; // Botón duplicar eliminado a petición del usuario
 
         const deleteBtn = `
           <button class="btn btn-secondary" onclick="deleteProspect('${p.id}')" style="color: #f87171; border-color: rgba(248, 113, 113, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Eliminar lead de prospección">
@@ -7284,6 +7299,163 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+
+    function exportProspectsPDF() {
+      const selectedCheckboxes = document.querySelectorAll('.prospect-select:checked');
+      if (selectedCheckboxes.length === 0) {
+        showCustomAlert('Por favor, selecciona al menos un lead para descargar en PDF.', 'Ningún lead seleccionado', 'warning');
+        return;
+      }
+
+      const ids = Array.from(selectedCheckboxes).map(cb => cb.value);
+      const listToExport = allProspects.filter(p => ids.includes(p.id));
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      
+      const leftMargin = 20;
+      const rightMargin = 20;
+      const topMargin = 25;
+      const bottomMargin = 25;
+      const contentWidth = pageWidth - leftMargin - rightMargin;
+
+      listToExport.forEach((p, index) => {
+        if (index > 0) {
+          doc.addPage();
+        }
+
+        // Draw header
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(139, 92, 246); // #8b5cf6
+        doc.text('RECEPTIA B2B PROSPECTING', leftMargin, 15);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(107, 114, 128); // #6b7280
+        doc.text('INFORME DE LEAD', pageWidth - rightMargin, 15, { align: 'right' });
+        
+        doc.setDrawColor(139, 92, 246);
+        doc.setLineWidth(0.3);
+        doc.line(leftMargin, 17, pageWidth - rightMargin, 17);
+
+        // Draw footer
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(156, 163, 175); // #9ca3af
+        doc.text('© 2026 Corandar S.L. - Receptia. Todos los derechos reservados.', leftMargin, pageHeight - 12);
+        doc.text(`Lead ${index + 1} de ${listToExport.length}`, pageWidth - rightMargin, pageHeight - 12, { align: 'right' });
+
+        // Content variables
+        let y = 30;
+
+        // Business Name
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.setTextColor(31, 41, 55); // #1f2937 (dark grey)
+        
+        // Wrap text if name is too long
+        const splitTitle = doc.splitTextToSize(p.business_name || 'Negocio sin nombre', contentWidth);
+        doc.text(splitTitle, leftMargin, y);
+        y += (splitTitle.length * 8) + 2;
+
+        // Divider
+        doc.setDrawColor(229, 231, 235); // #e5e7eb
+        doc.line(leftMargin, y, pageWidth - rightMargin, y);
+        y += 8;
+
+        // Details Grid
+        doc.setFontSize(11);
+        
+        const printField = (label, value) => {
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(75, 85, 99); // #4b5563
+          doc.text(label, leftMargin, y);
+          
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(31, 41, 55);
+          
+          const valText = value || 'No disponible';
+          const splitVal = doc.splitTextToSize(valText, contentWidth - 45);
+          doc.text(splitVal, leftMargin + 45, y);
+          
+          y += (splitVal.length * 6) + 4;
+        };
+
+        printField('Sector:', p.sector ? p.sector.toUpperCase() : 'GENERAL');
+        
+        let classificationText = 'No Contactado';
+        if (p.classification === 'contactado') classificationText = 'Contactado';
+        else if (p.classification === 'no_interesado') classificationText = 'No Interesado';
+        else if (p.classification === 'interesado') classificationText = 'Interesado / Demo Activa';
+        printField('Clasificación:', classificationText);
+
+        printField('Email:', p.email);
+        printField('Teléfono:', p.phone);
+        printField('Sitio Web:', p.website);
+        printField('Dirección:', p.address);
+
+        // Demo Block (with grey background)
+        y += 4;
+        doc.setFillColor(243, 244, 246); // Light grey card background
+        doc.rect(leftMargin, y, contentWidth, 42, 'F');
+        
+        let demoY = y + 8;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(139, 92, 246); // Purple
+        doc.text('INFORMACIÓN DE LA DEMO IA', leftMargin + 6, demoY);
+        
+        demoY += 8;
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81);
+        doc.text('Estado de Demo:', leftMargin + 6, demoY);
+        
+        doc.setFont('helvetica', 'normal');
+        let statusText = 'No Activada';
+        if (p.status === 'demo_created') statusText = 'Creada / Procesando Audio';
+        else if (p.status === 'audio_generated') statusText = 'Audio Generado / Enviando Email';
+        else if (p.status === 'email_sent') statusText = 'Demo Enviada Exitosamente';
+        else if (p.status === 'failed') statusText = 'Error en Generación';
+        
+        doc.text(statusText, leftMargin + 45, demoY);
+        
+        demoY += 7;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Enlace Demo:', leftMargin + 6, demoY);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(59, 130, 246); // Blue link color
+        const demoUrlText = p.demo_url || 'No generada aún';
+        const splitDemoUrl = doc.splitTextToSize(demoUrlText, contentWidth - 55);
+        doc.text(splitDemoUrl, leftMargin + 45, demoY);
+        
+        demoY += (splitDemoUrl.length * 5) + 2;
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(55, 65, 81);
+        doc.text('Enlace Audio:', leftMargin + 6, demoY);
+        doc.setFont('helvetica', 'normal');
+        const audioUrlText = p.audio_url || 'No generado aún';
+        if (p.audio_url) {
+          doc.setTextColor(59, 130, 246);
+        } else {
+          doc.setTextColor(107, 114, 128);
+        }
+        const splitAudioUrl = doc.splitTextToSize(audioUrlText, contentWidth - 55);
+        doc.text(splitAudioUrl, leftMargin + 45, demoY);
+      });
+
+      // Save document
+      const count = listToExport.length;
+      const suffix = count === 1 ? '1_lead' : `${count}_leads`;
+      doc.save(`leads_receptia_${suffix}_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
     // Resetear el formulario de aprovisionamiento a su estado original
