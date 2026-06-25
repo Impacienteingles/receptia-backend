@@ -392,7 +392,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
       </div>
       
       <div class="footer">
-        <p>Este correo electrónico fue generado automáticamente por <a href="https://receptia.corandar.com" target="_blank">Receptia</a>, una solución de Corandar, S.L.</p>
+        <p>Este correo electrónico fue generado automáticamente por <a href="https://receptia.corandar.com" target="_blank">Receptia</a>, una solución de <a href="https://corandar.com" target="_blank">Corandar, S.L.</a></p>
         <p>Para no recibir más demostraciones, responda indicando "Baja" y procesaremos su solicitud de inmediato.</p>
       </div>
     </div>
