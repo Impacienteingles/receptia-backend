@@ -2530,15 +2530,56 @@ app.post('/api/client/test-agent-call', async (req, res): Promise<void> => {
     return;
   }
   try {
-    const { data: tenant, error: tErr } = await supabase
+    let tenant: any = null;
+    
+    // Intentar consultar incluyendo la columna demo_calls_count
+    const firstQuery = await supabase
       .from('tenants')
-      .select('retell_agent_id')
+      .select('retell_agent_id, subscription_status, demo_calls_count')
       .eq('id', tenant_id)
       .single();
+      
+    if (firstQuery.error && (firstQuery.error.message?.includes('demo_calls_count') || firstQuery.error.code === 'PGRST204')) {
+      console.warn('[Client Test Call] La columna demo_calls_count no existe en la base de datos. Saltando validación de límite.');
+      const fallbackQuery = await supabase
+        .from('tenants')
+        .select('retell_agent_id, subscription_status')
+        .eq('id', tenant_id)
+        .single();
+      if (fallbackQuery.error || !fallbackQuery.data) {
+        res.status(404).json({ error: 'No se encontró un Agente de Voz configurado para este negocio.' });
+        return;
+      }
+      tenant = fallbackQuery.data;
+    } else {
+      if (firstQuery.error || !firstQuery.data) {
+        res.status(404).json({ error: 'No se encontró un Agente de Voz configurado para este negocio.' });
+        return;
+      }
+      tenant = firstQuery.data;
+    }
 
-    if (tErr || !tenant || !tenant.retell_agent_id) {
+    if (!tenant.retell_agent_id) {
       res.status(404).json({ error: 'No se encontró un Agente de Voz configurado para este negocio.' });
       return;
+    }
+
+    const isTrial = tenant.subscription_status === 'trial';
+    let nextCount = tenant.demo_calls_count || 0;
+
+    if (isTrial && tenant.demo_calls_count !== undefined) {
+      if (tenant.demo_calls_count >= 5) {
+        res.status(403).json({ error: 'Has alcanzado el límite de 5 llamadas de prueba en tu demostración. Para continuar, por favor contrata un plan de pago o contacta con el soporte para ampliar tus pruebas.' });
+        return;
+      }
+      nextCount = (tenant.demo_calls_count || 0) + 1;
+      const { error: updErr } = await supabase
+        .from('tenants')
+        .update({ demo_calls_count: nextCount })
+        .eq('id', tenant_id);
+      if (updErr) {
+        console.warn(`[Client Test Call WARNING] No se pudo incrementar demo_calls_count para ${tenant_id}:`, updErr.message);
+      }
     }
 
     const apiKey = await getSettingVal('RETELL_API_KEY');
@@ -2565,7 +2606,8 @@ app.post('/api/client/test-agent-call', async (req, res): Promise<void> => {
 
     res.json({
       access_token: response.data.access_token,
-      call_id: response.data.call_id
+      call_id: response.data.call_id,
+      demo_calls_count: isTrial && tenant.demo_calls_count !== undefined ? nextCount : undefined
     });
   } catch (err: any) {
     console.error('Error al iniciar llamada de prueba de cliente:', err.response?.data || err.message);

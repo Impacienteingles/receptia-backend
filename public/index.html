@@ -2579,10 +2579,13 @@
                 <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
                   Llama y conversa directamente con tu asistente de voz IA desde el navegador para probar su comportamiento y afinar sus respuestas en tiempo real antes del uso telefónico.
                 </p>
-                <button class="btn" onclick="startClientWebRTCCall()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; background: var(--primary); border: none; cursor: pointer; color: #fff;">
-                  <i data-lucide="phone"></i>
-                  Iniciar Llamada de Prueba
-                </button>
+                 <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                   <button class="btn" onclick="startClientWebRTCCall()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; background: var(--primary); border: none; cursor: pointer; color: #fff;">
+                     <i data-lucide="phone"></i>
+                     Iniciar Llamada de Prueba
+                   </button>
+                   <div id="demo-trials-count" style="display: none; font-size: 0.85rem; font-weight: 500;"></div>
+                 </div>
               </div>
 
               <!-- Sección Modo Vacaciones -->
@@ -4026,6 +4029,26 @@
         const data = await response.json();
         const access_token = data.access_token;
 
+        if (data.demo_calls_count !== undefined && currentTenant) {
+          currentTenant.demo_calls_count = data.demo_calls_count;
+          const demoTrialsEl = document.getElementById('demo-trials-count');
+          if (demoTrialsEl) {
+            const callsUsed = currentTenant.demo_calls_count;
+            const callsLeft = Math.max(0, 5 - callsUsed);
+            demoTrialsEl.innerText = `Llamadas de prueba: ${callsUsed} / 5 (Restantes: ${callsLeft})`;
+            if (callsLeft <= 0) {
+              demoTrialsEl.style.color = 'var(--error)';
+              const callBtn = document.querySelector('button[onclick="startClientWebRTCCall()"]');
+              if (callBtn) {
+                callBtn.disabled = true;
+                callBtn.style.opacity = '0.5';
+                callBtn.style.cursor = 'not-allowed';
+                callBtn.title = 'Límite de llamadas de demostración alcanzado.';
+              }
+            }
+          }
+        }
+
         // 3. Cargar dinámicamente el SDK de Retell e instanciarlo
         const { RetellWebClient } = await import('https://cdn.jsdelivr.net/npm/retell-client-js-sdk@2.0.8/+esm');
         clientRetellInstance = new RetellWebClient();
@@ -4599,6 +4622,38 @@
       const trialEnds = currentTenant.trial_ends_at;
 
       let accessBlocked = false;
+
+      // Mostrar límite de llamadas demo
+      const demoTrialsEl = document.getElementById('demo-trials-count');
+      if (demoTrialsEl) {
+        if (isTrial) {
+          const callsUsed = currentTenant.demo_calls_count || 0;
+          const callsLeft = Math.max(0, 5 - callsUsed);
+          demoTrialsEl.innerText = `Llamadas de prueba: ${callsUsed} / 5 (Restantes: ${callsLeft})`;
+          demoTrialsEl.style.display = 'inline-block';
+          
+          const callBtn = document.querySelector('button[onclick="startClientWebRTCCall()"]');
+          if (callsLeft <= 0) {
+            demoTrialsEl.style.color = 'var(--error)';
+            if (callBtn) {
+              callBtn.disabled = true;
+              callBtn.style.opacity = '0.5';
+              callBtn.style.cursor = 'not-allowed';
+              callBtn.title = 'Límite de llamadas de demostración alcanzado.';
+            }
+          } else {
+            demoTrialsEl.style.color = 'var(--text-muted)';
+            if (callBtn) {
+              callBtn.disabled = false;
+              callBtn.style.opacity = '1';
+              callBtn.style.cursor = 'pointer';
+              callBtn.title = '';
+            }
+          }
+        } else {
+          demoTrialsEl.style.display = 'none';
+        }
+      }
 
       if (status === 'paused' || status === 'cancelled') {
         accessBlocked = true;

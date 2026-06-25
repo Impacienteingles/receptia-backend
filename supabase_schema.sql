@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS tenants (
   business_description TEXT,
   pricing_details TEXT,
   custom_instructions TEXT,
+  demo_calls_count INT DEFAULT 0,
   
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
