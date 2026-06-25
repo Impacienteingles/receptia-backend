@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia - Panel de Control del Cliente</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1.41">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.1.41">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1.107">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.1.107">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -2769,6 +2769,145 @@
                 </div>
               </div>
 
+              <!-- Configuración de Personalidad de la IA -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="sliders" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Personalidad del Asistente de Voz IA
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Ajusta la actitud, la velocidad y el enfoque de tu asistente virtual de voz para que se adapte perfectamente al estilo de tu marca y al tipo de atención al cliente deseado.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 1.5rem;">
+                  <!-- Tone Slider -->
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                      <label for="setting-personality-tone" style="color: #fff; font-size: 0.9rem; font-weight: 500;">Tono de Voz y Cercanía</label>
+                      <span id="tone-value-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">Neutro</span>
+                    </div>
+                    <input type="range" id="setting-personality-tone" min="1" max="5" value="3" step="1" oninput="updateToneLabel(this.value)" style="width: 100%; accent-color: var(--primary); height: 6px; border-radius: 3px; outline: none; background: rgba(255, 255, 255, 0.1); cursor: pointer;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                      <span>Muy Formal (Usted)</span>
+                      <span>Neutro</span>
+                      <span>Muy Cercano (Tú)</span>
+                    </div>
+                  </div>
+
+                  <!-- Focus Slider -->
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                      <label for="setting-personality-focus" style="color: #fff; font-size: 0.9rem; font-weight: 500;">Enfoque de la Conversación</label>
+                      <span id="focus-value-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">Equilibrado</span>
+                    </div>
+                    <input type="range" id="setting-personality-focus" min="1" max="5" value="3" step="1" oninput="updateFocusLabel(this.value)" style="width: 100%; accent-color: var(--primary); height: 6px; border-radius: 3px; outline: none; background: rgba(255, 255, 255, 0.1); cursor: pointer;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                      <span>Empatía Máxima</span>
+                      <span>Equilibrado</span>
+                      <span>Eficiencia Máxima</span>
+                    </div>
+                  </div>
+
+                  <!-- Speed Slider -->
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                      <label for="setting-personality-speed" style="color: #fff; font-size: 0.9rem; font-weight: 500;">Velocidad del Habla</label>
+                      <span id="speed-value-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">Normal (1.0x)</span>
+                    </div>
+                    <input type="range" id="setting-personality-speed" min="0.8" max="1.2" value="1.0" step="0.05" oninput="updateSpeedLabel(this.value)" style="width: 100%; accent-color: var(--primary); height: 6px; border-radius: 3px; outline: none; background: rgba(255, 255, 255, 0.1); cursor: pointer;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                      <span>Lenta (0.8x)</span>
+                      <span>Normal (1.0x)</span>
+                      <span>Rápida (1.2x)</span>
+                    </div>
+                  </div>
+                </div>
+                <button class="btn btn-secondary" onclick="savePersonalitySettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                  <i data-lucide="save"></i>
+                  Guardar Personalidad IA
+                </button>
+              </div>
+
+              <!-- Clonación de Voz Express (Click & Clone) -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="mic" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Clonación de Voz Express (Click & Clone)
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Clona tu propia voz o la de un locutor en sólo 30 segundos usando ElevenLabs. Puedes grabar directamente desde tu micrófono o subir un archivo de audio (.mp3 o .wav).
+                </p>
+                
+                <div style="background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <!-- Source Choice -->
+                  <div style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
+                    <label style="color: #fff; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                      <input type="radio" name="voice-clone-source" value="record" checked onchange="toggleVoiceSource(this.value)"> Grabar Micrófono
+                    </label>
+                    <label style="color: #fff; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                      <input type="radio" name="voice-clone-source" value="upload" onchange="toggleVoiceSource(this.value)"> Subir Archivo Audio
+                    </label>
+                  </div>
+
+                  <!-- Name Input -->
+                  <div>
+                    <label for="setting-voice-clone-name" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Nombre para tu Voz Clonada:</label>
+                    <input type="text" id="setting-voice-clone-name" placeholder="ej. Voz de Jose - Peluquero Principal" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+                  </div>
+
+                  <!-- Recorder Container -->
+                  <div id="clone-source-record" style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1);">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                      <button id="btn-record-voice" class="btn" onclick="toggleAudioRecording()" style="background: #ef4444; color: #fff; border: none; height: 42px; border-radius: 50%; width: 42px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">
+                        <i id="record-icon" data-lucide="mic" style="width: 20px; height: 20px;"></i>
+                      </button>
+                      <span id="record-status" style="font-size: 0.85rem; color: var(--text-muted);">Haz clic para empezar a grabar (mínimo 10s, sugerido 30s)</span>
+                    </div>
+                    <div id="recording-timer" style="display: none; font-family: monospace; font-size: 1.1rem; color: #f87171; font-weight: bold;">00:00</div>
+                    <audio id="audio-preview-player" controls style="display: none; width: 100%; margin-top: 0.5rem;"></audio>
+                  </div>
+
+                  <!-- Upload Container -->
+                  <div id="clone-source-upload" style="display: none; flex-direction: column; gap: 0.5rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1);">
+                    <label for="voice-upload-file" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Selecciona un archivo de voz de buena calidad (.wav o .mp3):</label>
+                    <input type="file" id="voice-upload-file" accept="audio/*" onchange="handleVoiceFileSelected()" style="color: #fff; font-size: 0.85rem; cursor: pointer;">
+                    <div id="upload-file-info" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;"></div>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <button id="btn-submit-voice-clone" class="btn" onclick="startVoiceCloningProcess()" disabled style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; background: var(--primary); border: none; cursor: not-allowed; color: #fff; opacity: 0.5;">
+                    <i data-lucide="cloud-upload"></i>
+                    Clonar y Aplicar Voz
+                  </button>
+                  <span id="voice-clone-progress-text" style="font-size: 0.8rem; font-weight: 500; color: var(--primary);"></span>
+                </div>
+              </div>
+
+              <!-- Sección Missed Call Text-Back -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="message-square" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Recuperación de Llamadas Perdidas (Text-Back)
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Cuando un cliente llame pero la llamada no sea atendida o finalice sin agendar una cita, el sistema enviará automáticamente un WhatsApp con una invitación para que reserve su cita de forma interactiva en el chat.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="setting-text-back-enabled" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;">
+                    <label for="setting-text-back-enabled" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0;">Activar Text-Back Automático 📲</label>
+                  </div>
+                  <div>
+                    <label for="setting-text-back-message" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Mensaje de WhatsApp a Enviar:</label>
+                    <textarea id="setting-text-back-message" rows="3" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; resize: vertical; box-sizing: border-box; font-family: inherit;" placeholder="ej. Hola! Vimos que nos llamaste pero no pudimos responder. ¿Te gustaría agendar una cita de forma rápida por este chat?"></textarea>
+                  </div>
+                </div>
+                <button class="btn btn-secondary" onclick="saveTextBackSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                  <i data-lucide="save"></i>
+                  Guardar Ajustes Text-Back
+                </button>
+              </div>
+
               <!-- Sección Cambio de PIN / Contraseña -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; gap: 1.25rem;">
                 <div>
@@ -3689,6 +3828,336 @@
         showToast('Configuración del Modo Vacaciones guardada correctamente.');
       } catch (err) {
         showToast(err.message, 'error');
+      }
+    }
+
+    // --- PERSONALIDAD DE LA IA ---
+    function updateToneLabel(val) {
+      const label = document.getElementById('tone-value-label');
+      if (!label) return;
+      const tones = {
+        '1': 'Extremadamente Formal 👔',
+        '2': 'Formal 💼',
+        '3': 'Neutro ⚖️',
+        '4': 'Cercano (Tú) 👋',
+        '5': 'Muy Familiar (Tú) ❤️'
+      };
+      label.innerText = tones[val] || 'Neutro ⚖️';
+    }
+
+    function updateFocusLabel(val) {
+      const label = document.getElementById('focus-value-label');
+      if (!label) return;
+      const focuses = {
+        '1': 'Empatía Máxima 🤍',
+        '2': 'Empático 😊',
+        '3': 'Equilibrado ⚖️',
+        '4': 'Orientado a Objetivos 🎯',
+        '5': 'Eficiencia Máxima ⚡'
+      };
+      label.innerText = focuses[val] || 'Equilibrado ⚖️';
+    }
+
+    function updateSpeedLabel(val) {
+      const label = document.getElementById('speed-value-label');
+      if (!label) return;
+      label.innerText = `${val === '1.0' || val === 1 ? 'Normal (1.0x) 🏃' : val + 'x'}`;
+    }
+
+    async function savePersonalitySettings() {
+      if (!currentTenant) return;
+      
+      const toneVal = parseInt(document.getElementById('setting-personality-tone').value);
+      const focusVal = parseInt(document.getElementById('setting-personality-focus').value);
+      const speedVal = parseFloat(document.getElementById('setting-personality-speed').value);
+      
+      try {
+        showToast('Guardando personalidad de la IA...');
+        const res = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentTenant.email,
+            business_name: currentTenant.business_name,
+            personality_tone: toneVal,
+            personality_focus: focusVal,
+            personality_speed: speedVal
+          })
+        });
+        
+        if (!res.ok) throw new Error('No se pudo guardar la personalidad de la IA.');
+        const updated = await res.json();
+        currentTenant = updated;
+        showToast('¡Personalidad de la IA guardada correctamente!');
+
+        // Re-sincronizar el agente en Retell AI
+        showToast('Sincronizando personalidad con Retell AI...');
+        const syncRes = await fetch('/api/admin/sync-retell', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenant_id: currentTenant.id })
+        });
+        if (syncRes.ok) {
+          showToast('¡Agente de Retell AI sincronizado con éxito!');
+        } else {
+          console.warn('No se pudo re-sincronizar el agente en Retell AI.');
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- RECOPILACIÓN LLAMADAS PERDIDAS (TEXT-BACK) ---
+    async function saveTextBackSettings() {
+      if (!currentTenant) return;
+      
+      const enabled = document.getElementById('setting-text-back-enabled').checked;
+      const message = document.getElementById('setting-text-back-message').value.trim();
+      
+      try {
+        showToast('Guardando configuración de Text-Back...');
+        const res = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentTenant.email,
+            business_name: currentTenant.business_name,
+            text_back_enabled: enabled,
+            text_back_message: message
+          })
+        });
+        
+        if (!res.ok) throw new Error('No se pudo guardar la configuración de Text-Back.');
+        const updated = await res.json();
+        currentTenant = updated;
+        showToast('Configuración de Text-Back guardada con éxito.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- CLONACIÓN DE VOZ EXPRESS ---
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordedBase64 = null;
+    let recordingTimerInterval = null;
+    let recordingSeconds = 0;
+
+    function toggleVoiceSource(source) {
+      const recordDiv = document.getElementById('clone-source-record');
+      const uploadDiv = document.getElementById('clone-source-upload');
+      
+      if (source === 'record') {
+        recordDiv.style.display = 'flex';
+        uploadDiv.style.display = 'none';
+      } else {
+        recordDiv.style.display = 'none';
+        uploadDiv.style.display = 'flex';
+      }
+      checkCloneButtonState();
+    }
+
+    function checkCloneButtonState() {
+      const submitBtn = document.getElementById('btn-submit-voice-clone');
+      const voiceName = document.getElementById('setting-voice-clone-name').value.trim();
+      const activeSource = document.querySelector('input[name="voice-clone-source"]:checked').value;
+      
+      let hasAudio = false;
+      if (activeSource === 'record') {
+        hasAudio = !!recordedBase64;
+      } else {
+        const fileInput = document.getElementById('voice-upload-file');
+        hasAudio = fileInput && fileInput.files && fileInput.files.length > 0;
+      }
+
+      if (voiceName && hasAudio) {
+        submitBtn.removeAttribute('disabled');
+        submitBtn.style.cursor = 'pointer';
+        submitBtn.style.opacity = '1';
+      } else {
+        submitBtn.setAttribute('disabled', 'true');
+        submitBtn.style.cursor = 'not-allowed';
+        submitBtn.style.opacity = '0.5';
+      }
+    }
+
+    // Listener para el input del nombre de la voz clonada
+    document.addEventListener('DOMContentLoaded', () => {
+      const nameInput = document.getElementById('setting-voice-clone-name');
+      if (nameInput) {
+        nameInput.addEventListener('input', checkCloneButtonState);
+      }
+    });
+
+    async function toggleAudioRecording() {
+      const statusText = document.getElementById('record-status');
+      const timerDiv = document.getElementById('recording-timer');
+      const recordBtn = document.getElementById('btn-record-voice');
+      const recordIcon = document.getElementById('record-icon');
+      
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        // Detener grabación
+        mediaRecorder.stop();
+        clearInterval(recordingTimerInterval);
+        timerDiv.style.display = 'none';
+        recordBtn.style.background = '#ef4444';
+        recordBtn.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.4)';
+        recordIcon.setAttribute('data-lucide', 'mic');
+        lucide.createIcons();
+        return;
+      }
+
+      // Iniciar grabación
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          const previewPlayer = document.getElementById('audio-preview-player');
+          if (previewPlayer) {
+            previewPlayer.src = URL.createObjectURL(audioBlob);
+            previewPlayer.style.display = 'block';
+          }
+
+          // Convertir a base64
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = () => {
+            recordedBase64 = reader.result;
+            statusText.innerText = 'Grabación completada. Puedes escucharla abajo o volver a grabar.';
+            checkCloneButtonState();
+          };
+          
+          // Detener todos los tracks de audio para apagar el micrófono
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorder.start();
+        statusText.innerText = 'Grabando... Habla de forma clara y continua.';
+        timerDiv.style.display = 'block';
+        recordingSeconds = 0;
+        timerDiv.innerText = '00:00';
+        
+        recordBtn.style.background = '#22c55e';
+        recordBtn.style.boxShadow = '0 0 10px rgba(34, 197, 94, 0.4)';
+        recordIcon.setAttribute('data-lucide', 'square');
+        lucide.createIcons();
+
+        recordingTimerInterval = setInterval(() => {
+          recordingSeconds++;
+          const mins = String(Math.floor(recordingSeconds / 60)).padStart(2, '0');
+          const secs = String(recordingSeconds % 60).padStart(2, '0');
+          timerDiv.innerText = `${mins}:${secs}`;
+          
+          if (recordingSeconds >= 120) { // Límite de 2 minutos
+            toggleAudioRecording();
+          }
+        }, 1000);
+
+      } catch (err) {
+        showToast('No se pudo acceder al micrófono: ' + err.message, 'error');
+        statusText.innerText = 'Error al acceder al micrófono.';
+      }
+    }
+
+    async function handleVoiceFileSelected() {
+      const fileInput = document.getElementById('voice-upload-file');
+      const fileInfo = document.getElementById('upload-file-info');
+      
+      if (fileInput.files && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileInfo.innerText = `Archivo seleccionado: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+      } else {
+        fileInfo.innerText = '';
+      }
+      checkCloneButtonState();
+    }
+
+    async function startVoiceCloningProcess() {
+      if (!currentTenant) return;
+      
+      const submitBtn = document.getElementById('btn-submit-voice-clone');
+      const progressText = document.getElementById('voice-clone-progress-text');
+      const voiceName = document.getElementById('setting-voice-clone-name').value.trim();
+      const activeSource = document.querySelector('input[name="voice-clone-source"]:checked').value;
+      
+      let base64Payload = null;
+
+      if (activeSource === 'record') {
+        base64Payload = recordedBase64;
+      } else {
+        const fileInput = document.getElementById('voice-upload-file');
+        if (fileInput.files && fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          base64Payload = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (e) => reject(e);
+          });
+        }
+      }
+
+      if (!base64Payload) {
+        showToast('No hay datos de audio disponibles para clonar.', 'error');
+        return;
+      }
+
+      try {
+        submitBtn.setAttribute('disabled', 'true');
+        submitBtn.style.cursor = 'not-allowed';
+        submitBtn.style.opacity = '0.5';
+        progressText.innerText = 'Subiendo y clonando voz en ElevenLabs (puede tardar unos 10-20 segundos)...';
+        showToast('Iniciando clonación de voz express...');
+
+        const res = await fetch('/api/voice/clone', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: currentTenant.id,
+            audio_base64: base64Payload,
+            voice_name: voiceName
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'Error al clonar la voz.');
+        }
+
+        const data = await res.json();
+        
+        // Actualizar localmente el tenant
+        currentTenant.voice_id = data.voice_id;
+        
+        showToast('¡Voz clonada con éxito y configurada como tu voz de Retell AI!');
+        progressText.innerText = '¡Proceso completado con éxito!';
+        
+        // Limpiar campos
+        document.getElementById('setting-voice-clone-name').value = '';
+        document.getElementById('voice-upload-file').value = '';
+        document.getElementById('upload-file-info').innerText = '';
+        recordedBase64 = null;
+        const previewPlayer = document.getElementById('audio-preview-player');
+        if (previewPlayer) {
+          previewPlayer.style.display = 'none';
+          previewPlayer.src = '';
+        }
+        document.getElementById('record-status').innerText = 'Haz clic para empezar a grabar (mínimo 10s, sugerido 30s)';
+        
+      } catch (err) {
+        showToast(err.message, 'error');
+        progressText.innerText = 'Error al clonar la voz.';
+      } finally {
+        checkCloneButtonState();
       }
     }
 
@@ -4730,6 +5199,34 @@
       const txtVacation = document.getElementById('setting-vacation-message');
       if (chkVacation) chkVacation.checked = !!currentTenant.vacation_mode;
       if (txtVacation) txtVacation.value = currentTenant.vacation_message || '';
+
+      // Cargar personalidad de la IA en Ajustes
+      const toneVal = currentTenant.personality_tone !== undefined ? currentTenant.personality_tone : 3;
+      const focusVal = currentTenant.personality_focus !== undefined ? currentTenant.personality_focus : 3;
+      const speedVal = currentTenant.personality_speed !== undefined ? currentTenant.personality_speed : 1.0;
+      
+      const sliderTone = document.getElementById('setting-personality-tone');
+      const sliderFocus = document.getElementById('setting-personality-focus');
+      const sliderSpeed = document.getElementById('setting-personality-speed');
+      
+      if (sliderTone) {
+        sliderTone.value = toneVal;
+        updateToneLabel(toneVal);
+      }
+      if (sliderFocus) {
+        sliderFocus.value = focusVal;
+        updateFocusLabel(focusVal);
+      }
+      if (sliderSpeed) {
+        sliderSpeed.value = speedVal;
+        updateSpeedLabel(speedVal);
+      }
+
+      // Cargar text-back en Ajustes
+      const chkTextBack = document.getElementById('setting-text-back-enabled');
+      const txtTextBackMsg = document.getElementById('setting-text-back-message');
+      if (chkTextBack) chkTextBack.checked = !!currentTenant.text_back_enabled;
+      if (txtTextBackMsg) txtTextBackMsg.value = currentTenant.text_back_message || 'Hola! Vimos que nos llamaste pero no pudimos responder. ¿Te gustaría agendar una cita de forma rápida por este chat?';
 
       // Cargar canales de notificación
       const chkClientWhatsapp = document.getElementById('setting-whatsapp-notif-toggle');

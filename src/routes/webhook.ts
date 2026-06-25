@@ -792,7 +792,7 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
         // Buscar inquilino por retell_agent_id
         const { data: tenant, error: tErr } = await supabase
           .from('tenants')
-          .select('id')
+          .select('id, text_back_enabled, text_back_message')
           .eq('retell_agent_id', retellAgentId)
           .maybeSingle();
 
@@ -858,6 +858,18 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
           processMeteredBillingForCall(tenant.id, durationSeconds).catch(billErr => {
             console.error(`[Metered Billing Error] Error al facturar minutos para ${tenant.id}:`, billErr.message);
           });
+
+          // Recuperación de llamada perdida (Missed Call Text-Back)
+          if (event === 'call_analyzed' && tenant.text_back_enabled && intentTag !== 'Cita Agendada') {
+            const cleanPhone = callerPhone.split('|')[0].trim();
+            if (cleanPhone && cleanPhone !== 'Desconocido' && cleanPhone.length > 5) {
+              const msg = tenant.text_back_message || 'Hola! Vimos que nos llamaste pero no pudimos responder. ¿Te gustaría agendar una cita de forma rápida por este chat?';
+              console.log(`[Text-Back] Enviando mensaje de recuperación a ${cleanPhone} para tenant ${tenant.id}...`);
+              sendWhatsAppMessage(cleanPhone, msg, tenant.id)
+                .then(sent => console.log(`[Text-Back] WhatsApp enviado con éxito: ${sent}`))
+                .catch(err => console.error(`[Text-Back Error] Error al enviar mensaje:`, err.message));
+            }
+          }
         } else {
           console.warn(`⚠️ No se encontró inquilino con retell_agent_id: ${retellAgentId}`);
         }

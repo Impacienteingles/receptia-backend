@@ -220,7 +220,12 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     client_enable_no_show_deposits,
     whatsapp_immediate_notification_enabled,
     business_sector,
-    block_admin_access
+    block_admin_access,
+    personality_tone,
+    personality_focus,
+    personality_speed,
+    text_back_enabled,
+    text_back_message
   } = req.body;
 
   if (!business_name || !email) {
@@ -261,6 +266,11 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (twilio_auth_token !== undefined) tenantData.twilio_auth_token = twilio_auth_token;
     if (twilio_whatsapp_number !== undefined) tenantData.twilio_whatsapp_number = twilio_whatsapp_number;
     if (business_sector !== undefined) tenantData.business_sector = business_sector;
+    if (personality_tone !== undefined) tenantData.personality_tone = Number(personality_tone);
+    if (personality_focus !== undefined) tenantData.personality_focus = Number(personality_focus);
+    if (personality_speed !== undefined) tenantData.personality_speed = Number(personality_speed);
+    if (text_back_enabled !== undefined) tenantData.text_back_enabled = !!text_back_enabled;
+    if (text_back_message !== undefined) tenantData.text_back_message = text_back_message;
     
     // Safely check if database contains the column to prevent query crashes
     const hasImmediateCol = existing ? ('whatsapp_immediate_notification_enabled' in existing) : false;
@@ -2349,6 +2359,80 @@ app.delete('/api/voices-catalog/:id', async (req, res): Promise<void> => {
   }
 });
 
+// POST: Clonar voz expresiva (Click & Clone) mediante ElevenLabs
+app.post('/api/voice/clone', async (req, res): Promise<void> => {
+  const { tenant_id, audio_base64, voice_name } = req.body;
+  if (!tenant_id || !audio_base64) {
+    res.status(400).json({ error: 'Faltan parámetros obligatorios (tenant_id, audio_base64).' });
+    return;
+  }
+
+  try {
+    const elevenLabsApiKey = await getSettingVal('ELEVENLABS_API_KEY') || process.env.ELEVENLABS_API_KEY;
+    if (!elevenLabsApiKey) {
+      res.status(500).json({ error: 'No se ha configurado la API Key de ElevenLabs en los ajustes.' });
+      return;
+    }
+
+    // Limpiar cabeceras de Data URL si existen en el base64
+    const base64Data = audio_base64.replace(/^data:audio\/\w+;base64,/, '');
+    const audioBuffer = Buffer.from(base64Data, 'base64');
+    
+    // Crear el FormData usando el constructor nativo de Node.js v24
+    const formData = new FormData();
+    formData.append('name', voice_name || `Receptia Clone - ${tenant_id}`);
+    
+    // Crear el Blob para el archivo
+    const blob = new Blob([audioBuffer], { type: 'audio/wav' });
+    formData.append('files', blob, 'sample.wav');
+    formData.append('description', `Clonado de voz express de Receptia para tenant ${tenant_id}`);
+
+    console.log(`[Voice Clone] Enviando audio a ElevenLabs para clonación (${audioBuffer.length} bytes)...`);
+    const response = await axios.post('https://api.elevenlabs.io/v1/voices/add', formData, {
+      headers: {
+        'xi-api-key': elevenLabsApiKey,
+      }
+    });
+
+    const voiceId = response.data.voice_id;
+    if (!voiceId) {
+      throw new Error('ElevenLabs no devolvió un voice_id válido.');
+    }
+
+    const formattedVoiceId = `elevenlabs_${voiceId}`;
+    console.log(`[Voice Clone] Clonación exitosa. Voice ID: ${voiceId}. Actualizando tenant ${tenant_id}...`);
+
+    // Guardar en la base de datos de Supabase
+    const { data: updatedTenant, error: dbErr } = await supabase
+      .from('tenants')
+      .update({ voice_id: formattedVoiceId })
+      .eq('id', tenant_id)
+      .select()
+      .single();
+
+    if (dbErr) {
+      throw dbErr;
+    }
+
+    // Sincronizar en segundo plano con Retell AI
+    let webhookBaseUrl = process.env.WEBHOOK_BASE_URL;
+    if (!webhookBaseUrl) {
+      const host = req.get('host') || '';
+      const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
+      webhookBaseUrl = `${protocol}://${host}`;
+    }
+
+    console.log(`[Voice Clone] Sincronizando con Retell AI usando webhookBaseUrl: ${webhookBaseUrl}...`);
+    await syncTenantWithRetell(updatedTenant, webhookBaseUrl);
+
+    res.json({ success: true, voice_id: formattedVoiceId });
+  } catch (err: any) {
+    const errorDetails = err.response?.data || err.message;
+    console.error('[Voice Clone Error]:', errorDetails);
+    res.status(500).json({ error: typeof errorDetails === 'object' ? JSON.stringify(errorDetails) : errorDetails });
+  }
+});
+
 // GET: Obtener lista de agentes reales desde Retell AI
 app.get('/api/retell-agents', async (req, res): Promise<void> => {
   try {
@@ -2526,7 +2610,12 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
         ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE,
-        ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
+        ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS personality_tone INT DEFAULT 3,
+        ADD COLUMN IF NOT EXISTS personality_focus INT DEFAULT 3,
+        ADD COLUMN IF NOT EXISTS personality_speed NUMERIC DEFAULT 1.0,
+        ADD COLUMN IF NOT EXISTS text_back_enabled BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS text_back_message TEXT DEFAULT 'Hola! Vimos que nos llamaste pero no pudimos responder. ¿Te gustaría agendar una cita de forma rápida por este chat?';
         
         ALTER TABLE call_logs 
         ADD COLUMN IF NOT EXISTS retell_call_id TEXT;
@@ -2566,7 +2655,12 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
         ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE,
-        ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
+        ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS personality_tone INT DEFAULT 3,
+        ADD COLUMN IF NOT EXISTS personality_focus INT DEFAULT 3,
+        ADD COLUMN IF NOT EXISTS personality_speed NUMERIC DEFAULT 1.0,
+        ADD COLUMN IF NOT EXISTS text_back_enabled BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS text_back_message TEXT DEFAULT 'Hola! Vimos que nos llamaste pero no pudimos responder. ¿Te gustaría agendar una cita de forma rápida por este chat?';
         
         ALTER TABLE call_logs 
         ADD COLUMN IF NOT EXISTS retell_call_id TEXT;

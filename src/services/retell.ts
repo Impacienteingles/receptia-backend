@@ -133,12 +133,57 @@ El establecimiento se encuentra CERRADO por vacaciones o cese temporal de activi
     emailInstruction = '- Correo electrónico: NO solicites el correo electrónico bajo ningún concepto, ya que las confirmaciones por email están desactivadas para este negocio.';
   }
 
+  const tone = Number(tenant.personality_tone !== undefined ? tenant.personality_tone : 3);
+  const focus = Number(tenant.personality_focus !== undefined ? tenant.personality_focus : 3);
+
+  let toneGuideline = '';
+  switch (tone) {
+    case 1:
+      toneGuideline = 'Tu tono debe ser extremadamente formal y de la máxima cortesía. Usa siempre el pronombre "usted" y conjugaciones correspondientes con total rigor. Utiliza un vocabulario culto, refinado y estructurado.';
+      break;
+    case 2:
+      toneGuideline = 'Tu tono debe ser formal, profesional y educado. Dirígete al cliente siempre de "usted" y mantén un lenguaje estructurado.';
+      break;
+    case 4:
+      toneGuideline = 'Tu tono debe ser cercano, cálido y amigable. Trata al cliente de "tú" con naturalidad, manteniendo siempre la educación y el respeto.';
+      break;
+    case 5:
+      toneGuideline = 'Tu tono debe ser muy cercano, de confianza y familiar. Trata al cliente de "tú" de forma directa y espontánea, mostrándote sumamente accesible y ameno.';
+      break;
+    case 3:
+    default:
+      toneGuideline = 'Tu tono debe ser neutro, educado y equilibrado. Trata al cliente de "usted", combinando profesionalidad con un trato cordial.';
+      break;
+  }
+
+  let focusGuideline = '';
+  switch (focus) {
+    case 1:
+      focusGuideline = 'Prioriza al máximo la empatía y la conexión emocional. Escucha atentamente al cliente, valida de forma activa sus sentimientos o preocupaciones ("entiendo perfectamente", "siento mucho que pase por eso", "estoy aquí para ayudarle"). No le metas prisa; la calidez humana y la escucha activa son más importantes que la rapidez.';
+      break;
+    case 2:
+      focusGuideline = 'Muestra empatía y calidez en tus respuestas. Interésate por la comodidad y situación del cliente, validando sus comentarios con amabilidad antes de avanzar.';
+      break;
+    case 4:
+      focusGuideline = 'Sé resolutivo e inclinado hacia la eficiencia. Muestra cortesía pero minimiza los comentarios informales innecesarios para guiar al cliente directamente hacia el objetivo de su llamada.';
+      break;
+    case 5:
+      focusGuideline = 'Prioriza al máximo la eficiencia y rapidez. Tu comunicación debe ser sumamente concisa, directa y orientada a resolver o agendar en el menor número de turnos posible. Evita rodeos, charlas informales o expresiones repetitivas. Ve directo al grano con extrema educación.';
+      break;
+    case 3:
+    default:
+      focusGuideline = 'Mantén un equilibrio entre la amabilidad empática y la eficiencia en la gestión. Escucha con cordialidad pero mantén el flujo de la conversación orientado a resolver su solicitud.';
+      break;
+  }
+
   return `
 # CONTEXTO TEMPORAL
 La fecha actual de hoy es: ${today}. Úsala como referencia para calcular fechas relativas como "mañana", "el próximo martes", "la semana que viene", etc.
 ${vacationSection}
 # PERSONA Y ROL
-Eres ${agentName}, la recepcionista de la empresa "${businessName}". Tu tono es profesional, empático, calmado y muy natural. Hablas en español de España (castellano neutro). Tratas siempre al cliente/paciente de "usted". Evitas sonar robótica; utiliza expresiones de transición naturales como "entiendo", "un segundo, por favor", o "de acuerdo".
+Eres ${agentName}, la recepcionista de la empresa "${businessName}". Hablas en español de España (castellano neutro). Evitas sonar robótica; utiliza expresiones de transición naturales como "entiendo", "un segundo, por favor", o "de acuerdo".
+- **Pauta de Tono:** ${toneGuideline}
+- **Pauta de Enfoque:** ${focusGuideline}
 
 # INFORMACIÓN DE LA EMPRESA / NEGOCIO
 - **Nombre de la Empresa:** ${businessName}
@@ -377,7 +422,9 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
       agentPayload.voice_id = requestedVoiceId;
     }
 
-    if (tenant.voice_speed !== undefined && tenant.voice_speed !== null) {
+    if (tenant.personality_speed !== undefined && tenant.personality_speed !== null) {
+      agentPayload.voice_speed = Number(tenant.personality_speed);
+    } else if (tenant.voice_speed !== undefined && tenant.voice_speed !== null) {
       agentPayload.voice_speed = Number(tenant.voice_speed);
     }
     if (tenant.voice_temperature !== undefined && tenant.voice_temperature !== null) {
@@ -559,7 +606,9 @@ export async function createRetellAgentForTenant(tenant: any, webhookBaseUrl: st
   let agentRes;
   
   const requestedVoiceId = voiceId;
-  const speed = tenant.voice_speed !== undefined && tenant.voice_speed !== null ? Number(tenant.voice_speed) : 1.0;
+    const speed = tenant.personality_speed !== undefined && tenant.personality_speed !== null 
+    ? Number(tenant.personality_speed) 
+    : (tenant.voice_speed !== undefined && tenant.voice_speed !== null ? Number(tenant.voice_speed) : 1.0);
   const temp = tenant.voice_temperature !== undefined && tenant.voice_temperature !== null ? Number(tenant.voice_temperature) : 1.0;
   const resp = tenant.voice_responsiveness !== undefined && tenant.voice_responsiveness !== null ? Number(tenant.voice_responsiveness) : 1.0;
 
