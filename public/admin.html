@@ -1442,7 +1442,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.26</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.27</span>
         </div>
       </header>
 
@@ -2961,8 +2961,8 @@
 
   <!-- MODAL DE VISTA PREVIA DE CORREO DE OUTREACH -->
   <div class="modal" id="email-preview-modal" style="display: none; align-items: center; justify-content: center; z-index: 1050; background: rgba(0, 0, 0, 0.85); position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
-    <div class="modal-content" style="max-width: 800px; width: 90%; max-height: 90vh; display: flex; flex-direction: column; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 2rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-shrink: 0;">
+    <div class="modal-content" style="max-width: 1250px; width: 96%; height: 88vh; display: flex; flex-direction: column; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem; flex-shrink: 0;">
         <h3 style="margin: 0; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem; color: #fff; font-size: 1.25rem;">
           <i data-lucide="mail" style="color: #60a5fa; width: 22px; height: 22px;"></i> Vista Previa del Correo de Captación
         </h3>
@@ -2971,19 +2971,57 @@
         </button>
       </div>
       
-      <div style="margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0; background: rgba(255, 255, 255, 0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
-        <div style="display: flex; gap: 0.5rem; font-size: 0.9rem;">
-          <span style="color: var(--text-muted); font-weight: 600; width: 100px;">Destinatario:</span>
-          <span id="preview-email-to" style="color: #fff; font-weight: 500;"></span>
-        </div>
-        <div style="display: flex; gap: 0.5rem; font-size: 0.9rem;">
-          <span style="color: var(--text-muted); font-weight: 600; width: 100px;">Asunto:</span>
-          <span id="preview-email-subject" style="color: #60a5fa; font-weight: 500;"></span>
+      <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; background: rgba(255, 255, 255, 0.02); padding: 0.75rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); gap: 2rem;">
+        <div style="display: flex; gap: 1.5rem; flex-grow: 1;">
+          <div style="display: flex; gap: 0.5rem; font-size: 0.85rem;">
+            <span style="color: var(--text-muted); font-weight: 600; min-width: 80px;">Destinatario:</span>
+            <span id="preview-email-to" style="color: #fff; font-weight: 500;"></span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; font-size: 0.85rem; flex-grow: 1;">
+            <span style="color: var(--text-muted); font-weight: 600; min-width: 50px;">Asunto:</span>
+            <span id="preview-email-subject" style="color: #60a5fa; font-weight: 500;"></span>
+          </div>
         </div>
       </div>
-      
-      <div style="flex-grow: 1; overflow-y: auto; background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 1.5rem; position: relative; min-height: 350px;">
-        <iframe id="preview-email-iframe" style="width: 100%; height: 100%; border: none; background: #0b0f19; display: block;"></iframe>
+
+      <!-- Two column container -->
+      <div style="display: flex; gap: 1.5rem; flex-grow: 1; min-height: 250px; overflow: hidden; margin-bottom: 1.25rem;">
+        
+        <!-- COLUMNA IZQUIERDA: CONFIGURADOR DE AUDIO -->
+        <div style="width: 38%; display: flex; flex-direction: column; gap: 1rem; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; overflow-y: auto;">
+          <h4 style="margin: 0; font-family: 'Outfit', sans-serif; color: #fff; font-size: 0.95rem; display: flex; align-items: center; gap: 0.35rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+            <i data-lucide="mic" style="color: #a78bfa; width: 16px; height: 16px;"></i> Alocución de Voz IA
+          </h4>
+          
+          <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+            <label style="color: var(--text-muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Voz del Agente (Cartesia):</label>
+            <select id="preview-audio-voice" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: #fff; font-size: 0.85rem;">
+              <option value="cefcb124-080b-4655-b31f-932f3ee743de">Elena (España - Femenino - Recomendado)</option>
+              <option value="b5aa8098-49ef-475d-89b0-c9262ecf33fd">Manuel (España - Masculino)</option>
+              <option value="5c5ad5e7-1020-476b-8b91-fdcbe9cc313c">Sofía (Latino - Femenino)</option>
+            </select>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 0.35rem; flex-grow: 1; min-height: 150px;">
+            <label style="color: var(--text-muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Texto del Guion (TTS):</label>
+            <textarea id="preview-audio-script" style="width: 100%; flex-grow: 1; min-height: 180px; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.25); color: #fff; font-size: 0.8rem; line-height: 1.45; resize: none; font-family: sans-serif;"></textarea>
+            <p style="font-size: 0.68rem; color: var(--text-muted); margin: 0; line-height: 1.3;">Para mejorar la pronunciación, escribe los números y siglas en texto plano (ej: escriba "veinticuatro" en lugar de "24").</p>
+          </div>
+          
+          <button type="button" id="regenerate-audio-btn" class="btn" style="padding: 0.65rem; border-radius: 6px; background: rgba(167, 139, 250, 0.12); border: 1px solid rgba(167, 139, 250, 0.25); color: #c084fc; font-weight: 600; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem; cursor: pointer; transition: all 0.2s;">
+            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Actualizar Audio de Demo
+          </button>
+        </div>
+        
+        <!-- COLUMNA DERECHA: IFRAME VISTA PREVIA CORREO -->
+        <div style="width: 62%; display: flex; flex-direction: column; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #0b0f19;">
+          <div style="background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border-color); padding: 0.5rem 1rem; font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+            <i data-lucide="eye" style="width: 13px; height: 13px;"></i> Vista previa del correo recibido
+          </div>
+          <div style="flex-grow: 1; position: relative;">
+            <iframe id="preview-email-iframe" style="width: 100%; height: 100%; border: none; background: #0b0f19; display: block;"></iframe>
+          </div>
+        </div>
       </div>
       
       <div style="display: flex; justify-content: flex-end; gap: 1rem; flex-shrink: 0; border-top: 1px solid var(--border-color); padding-top: 1rem;">
@@ -6670,13 +6708,57 @@
         // Populate details
         document.getElementById('preview-email-to').innerText = data.to;
         document.getElementById('preview-email-subject').innerText = data.subject;
+        
+        // Populate custom outreach parameters
+        document.getElementById('preview-audio-voice').value = data.voice_id || 'cefcb124-080b-4655-b31f-932f3ee743de';
+        document.getElementById('preview-audio-script').value = data.script || '';
 
         // Write HTML to the iframe
         const iframe = document.getElementById('preview-email-iframe');
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-        doc.open();
-        doc.write(data.html);
-        doc.close();
+        const writeToIframe = (htmlContent) => {
+          const doc = iframe.contentDocument || iframe.contentWindow.document;
+          doc.open();
+          doc.write(htmlContent);
+          doc.close();
+        };
+        writeToIframe(data.html);
+
+        // Configure the "Regenerar Audio" button
+        const regenBtn = document.getElementById('regenerate-audio-btn');
+        regenBtn.disabled = false;
+        regenBtn.innerHTML = `<i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Actualizar Audio de Demo`;
+        regenBtn.onclick = async () => {
+          regenBtn.disabled = true;
+          regenBtn.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Regenerando...`;
+          
+          const voice_id = document.getElementById('preview-audio-voice').value;
+          const script = document.getElementById('preview-audio-script').value;
+          
+          try {
+            const regenRes = await fetch(`/api/admin/prospects/${prospectId}/regenerate-audio`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ voice_id, script })
+            });
+            const regenData = await regenRes.json();
+            if (!regenRes.ok) {
+              throw new Error(regenData.error || 'Error al regenerar el audio de captación.');
+            }
+            
+            // Rewrite the updated HTML with the new audio player
+            writeToIframe(regenData.html);
+            showCustomAlert('Audio de captación regenerado y guardado con éxito.', 'Actualizado', 'success');
+          } catch (regenErr) {
+            console.error('Error al regenerar audio:', regenErr);
+            showCustomAlert(regenErr.message, 'Fallo', 'error');
+          } finally {
+            regenBtn.disabled = false;
+            regenBtn.innerHTML = `<i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Actualizar Audio de Demo`;
+            lucide.createIcons();
+          }
+        };
 
         // Configure the "Enviar Ahora" button in the modal
         const confirmBtn = document.getElementById('confirm-send-email-btn');

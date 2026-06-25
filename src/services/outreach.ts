@@ -312,7 +312,9 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
           </div>
         </a>
 
-        <p>Además de la presentación en audio, hemos preparado un <span class="highlight">Panel de Demostración Privado y Gratuito</span> donde podrá interactuar con el agente en tiempo real, visualizar el calendario de citas auto-gestionadas y comprobar el funcionamiento de la plataforma:</p>
+        <p>Además de esta presentación en audio, le hemos configurado una <span class="highlight">Demostración Real e Interactiva</span> de su receptor virtual de llamadas en su **Panel de Control de Cliente** privado.</p>
+        
+        <p>Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña <span class="highlight">"Llamadas IA"</span>. Podrá probar al agente virtual, ver su calendario y utilizar su contraseña de acceso temporal: <strong style="color: #60a5fa; font-family: monospace; font-size: 1.1em; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">0000</strong>.</p>
 
         <!-- Beneficios en tarjetas -->
         <div class="benefit-card">
@@ -323,6 +325,11 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
         <div class="benefit-card">
           <div class="benefit-title">📅 Gestión Automática de Agenda</div>
           <p class="benefit-desc">Permite a ${sectorTerm} reservar, modificar o cancelar citas directamente en el sistema de manera natural y sin errores.</p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-title">🧮 Calculadora de ROI Integrada</div>
+          <p class="benefit-desc">Descubra el impacto económico directo en su negocio. Pruebe la calculadora en su panel para estimar cuánto dinero y cuántas citas está perdiendo al mes por llamadas no atendidas, y cómo Receptia las recuperará.</p>
         </div>
 
         <div class="benefit-card">

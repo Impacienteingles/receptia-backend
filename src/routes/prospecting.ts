@@ -462,7 +462,12 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
 /**
  * Llama a la API de Cartesia para generar el audio MP3 y subirlo al Storage de Supabase
  */
-async function generateCartesiaAudio(businessName: string, demoUrl: string): Promise<string> {
+async function generateCartesiaAudio(
+  businessName: string,
+  demoUrl: string,
+  voiceId?: string,
+  customScript?: string
+): Promise<string> {
   const cartesiaKey = await getSettingVal('CARTESIA_API_KEY');
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -473,18 +478,21 @@ async function generateCartesiaAudio(businessName: string, demoUrl: string): Pro
     return `${supabaseUrl}/storage/v1/object/public/public-assets/gabriela_spanish.mp3`;
   }
 
-  // Script dinámico personalizado en español
-  const transcript = `Hola, buenas. Soy la asistente virtual inteligente de ${businessName}. He sido diseñada específicamente para atender las llamadas de su negocio las 24 horas del día, resolver dudas de clientes y gestionar su agenda. Le he preparado un panel de demostración privado para que pueda ver cómo funciona en tiempo real. Acceda al enlace de su panel en este correo.`;
+  // Si no se suministra una voz, usamos por defecto la de Elena (España - Femenino)
+  const finalVoiceId = voiceId || 'cefcb124-080b-4655-b31f-932f3ee743de';
+  
+  // Si no se suministra un guion, usamos el guion dinámico premium por defecto
+  const finalScript = customScript || `Hola, muy buenas. He diseñado un asistente de voz inteligente a medida para su negocio, ${businessName}. Este asistente ya está listo para atender sus llamadas, resolver dudas de sus clientes y gestionar sus citas las veinticuatro horas del día. Le he preparado una simulación de llamada real en su panel de cliente. Puede acceder hoy mismo utilizando el enlace de este correo y su contraseña temporal: 0000. También le invito a probar nuestra calculadora de ROI integrada en su panel, con la que podrá estimar el ahorro mensual y las citas que recuperará con Receptia. ¡Espero que le guste!`;
 
   try {
     const response = await axios.post(
       'https://api.cartesia.ai/tts/bytes',
       {
         model_id: 'sonic-3.5',
-        transcript: transcript,
+        transcript: finalScript,
         voice: {
           mode: 'id',
-          id: '5c5ad5e7-1020-476b-8b91-fdcbe9cc313c' // Voz Sofia/Gabriela en español
+          id: finalVoiceId
         },
         output_format: {
           container: 'mp3',
@@ -783,6 +791,17 @@ router.get('/:id/preview-email', async (req: Request, res: Response): Promise<vo
       return;
     }
 
+    const voiceKey = `outreach_voice_${id}`;
+    const scriptKey = `outreach_script_${id}`;
+
+    // Obtener valores personalizados guardados en settings
+    const { data: voiceVal } = await supabase.from('settings').select('value').eq('key', voiceKey).maybeSingle();
+    const { data: scriptVal } = await supabase.from('settings').select('value').eq('key', scriptKey).maybeSingle();
+
+    const selectedVoiceId = voiceVal?.value || 'cefcb124-080b-4655-b31f-932f3ee743de'; // Elena por defecto
+    const defaultScriptText = `Hola, muy buenas. He diseñado un asistente de voz inteligente a medida para su negocio, ${prospect.business_name}. Este asistente ya está listo para atender sus llamadas, resolver dudas de sus clientes y gestionar sus citas las veinticuatro horas del día. Le he preparado una simulación de llamada real en su panel de cliente. Puede acceder hoy mismo utilizando el enlace de este correo y su contraseña temporal: 0000. También le invito a probar nuestra calculadora de ROI integrada en su panel, con la que podrá estimar el ahorro mensual y las citas que recuperará con Receptia. ¡Espero que le guste!`;
+    const selectedScript = scriptVal?.value || defaultScriptText;
+
     const htmlContent = getOutreachEmailTemplate(
       prospect.business_name,
       prospect.demo_url || '#',
@@ -794,10 +813,96 @@ router.get('/:id/preview-email', async (req: Request, res: Response): Promise<vo
       status: 'success',
       subject: `🎙️ Hemos diseñado un Asistente de Voz IA para ${prospect.business_name}`,
       to: prospect.email,
-      html: htmlContent
+      html: htmlContent,
+      voice_id: selectedVoiceId,
+      script: selectedScript
     });
   } catch (err: any) {
     console.error(`[Prospecting API ERROR] Fallo al obtener vista previa para prospecto ${id}:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * 9. Regenerar la alocución de audio (TTS) con voz/guion personalizados
+ */
+router.post('/:id/regenerate-audio', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { voice_id, script } = req.body;
+
+  try {
+    const { data: prospect, error: fetchErr } = await supabase
+      .from('prospects')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchErr || !prospect) {
+      res.status(404).json({ error: `No se pudo encontrar el prospecto con ID: ${id}` });
+      return;
+    }
+
+    if (!prospect.demo_url) {
+      res.status(400).json({ error: 'El prospecto debe tener una demo creada antes de generar su alocución.' });
+      return;
+    }
+
+    console.log(`[Prospecting API] Regenerando alocución de audio para ${prospect.business_name} con voz ${voice_id}...`);
+    
+    // Generar el audio usando Cartesia
+    const audioUrl = await generateCartesiaAudio(prospect.business_name, prospect.demo_url, voice_id, script);
+
+    // Guardar en la tabla settings el script y la voz para este prospecto
+    const voiceKey = `outreach_voice_${id}`;
+    const scriptKey = `outreach_script_${id}`;
+
+    // Upsert para la voz
+    const { data: existingVoice } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', voiceKey)
+      .maybeSingle();
+
+    if (existingVoice) {
+      await supabase.from('settings').update({ value: voice_id }).eq('key', voiceKey);
+    } else {
+      await supabase.from('settings').insert({ key: voiceKey, value: voice_id });
+    }
+
+    // Upsert para el script
+    const { data: existingScript } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', scriptKey)
+      .maybeSingle();
+
+    if (existingScript) {
+      await supabase.from('settings').update({ value: script }).eq('key', scriptKey);
+    } else {
+      await supabase.from('settings').insert({ key: scriptKey, value: script });
+    }
+
+    // Actualizar la URL de audio en el prospecto
+    await supabase
+      .from('prospects')
+      .update({ audio_url: audioUrl })
+      .eq('id', id);
+
+    // Obtener la nueva vista previa del HTML del correo con el nuevo reproductor de audio
+    const htmlContent = getOutreachEmailTemplate(
+      prospect.business_name,
+      prospect.demo_url,
+      audioUrl,
+      prospect.sector || 'general'
+    );
+
+    res.json({
+      status: 'success',
+      audioUrl: audioUrl,
+      html: htmlContent
+    });
+  } catch (err: any) {
+    console.error(`[Prospecting API ERROR] Fallo al regenerar audio de captación para prospecto ${id}:`, err.message);
     res.status(500).json({ error: err.message });
   }
 });
