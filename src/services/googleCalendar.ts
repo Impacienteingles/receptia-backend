@@ -263,7 +263,8 @@ export async function listFreeSlots(
   workingHours?: any, 
   calendarId?: string,
   slotDurationMin: number = 30,
-  applyPeluqueriaBreakRule: boolean = false
+  applyPeluqueriaBreakRule: boolean = false,
+  agendaOptimizationEnabled: boolean = false
 ) {
   const calendar = await getCalendarClient(refreshToken);
   const targetCalendarId = calendarId || 'primary';
@@ -317,6 +318,59 @@ export async function listFreeSlots(
       });
       freeSlots.push(timeString);
     }
+  }
+
+  // Si la optimización está habilitada, ordenar los huecos por puntuación de adyacencia
+  if (agendaOptimizationEnabled && freeSlots.length > 1) {
+    const scoredSlots = freeSlots.map(timeStr => {
+      let score = 0;
+      const slotStart = new Date(`${dateStr}T${timeStr}:00Z`).getTime();
+      const slotEnd = slotStart + stepMs;
+
+      // Comprobar si es el primer o último slot de la jornada laboral
+      const isFirst = timeStr === workingSlots[0].toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false });
+      const isLast = timeStr === workingSlots[workingSlots.length - 1].toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false });
+      
+      if (isFirst || isLast) {
+        score += 10; // Adyacente al inicio/fin del día
+      }
+
+      // Comprobar adyacencia con eventos ocupados
+      let adjacentToBusy = false;
+      for (const event of events) {
+        if (!event.start?.dateTime || !event.end?.dateTime) continue;
+        const eventStart = new Date(event.start.dateTime).getTime();
+        const eventEnd = new Date(event.end.dateTime).getTime();
+
+        // Si el slot empieza justo cuando el evento termina, o termina cuando el evento empieza
+        if (Math.abs(slotStart - eventEnd) < 5 * 60 * 1000 || Math.abs(slotEnd - eventStart) < 5 * 60 * 1000) {
+          adjacentToBusy = true;
+          break;
+        }
+      }
+
+      if (adjacentToBusy) {
+        score += 15; // Gran bonus por adyacencia a cita existente (agrupación de citas)
+      }
+
+      // Penalizar si booking este slot dejaría un hueco aislado huérfano de slotDurationMin a cada lado
+      const prevTimeStr = new Date(slotStart - stepMs).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false });
+      const nextTimeStr = new Date(slotStart + stepMs).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false });
+      
+      const hasPrevFree = freeSlots.includes(prevTimeStr);
+      const hasNextFree = freeSlots.includes(nextTimeStr);
+
+      if (!hasPrevFree && !hasNextFree && !isFirst && !isLast) {
+        score -= 20; // Penalización por ser un "isla" totalmente aislado de tamaño mínimo
+      }
+
+      return { timeStr, score };
+    });
+
+    // Ordenar de mayor a menor puntuación y retornar sólo los strings
+    return scoredSlots
+      .sort((a, b) => b.score - a.score)
+      .map(item => item.timeStr);
   }
 
   return freeSlots;

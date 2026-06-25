@@ -282,7 +282,8 @@ export async function processChatbotMessage(
                 tenant.working_hours,
                 calendarId,
                 slotDurationMin,
-                applyBreakRule
+                applyBreakRule,
+                !!tenant.agenda_optimization_enabled
               );
 
               resultObj = {

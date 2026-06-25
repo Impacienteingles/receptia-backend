@@ -790,6 +790,29 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
             console.log(`✅ Registro de llamada guardado para el cliente: ${tenant.id}`);
           }
 
+          // Sincronizar estado de recipiente de campaña saliente (Fase 3)
+          if (callId) {
+            const { data: recipient } = await supabase
+              .from('outbound_campaign_recipients')
+              .select('id, status')
+              .eq('call_id', callId)
+              .maybeSingle();
+
+            if (recipient) {
+              let newStatus = 'completed';
+              if (intentTag === 'Cita Agendada') {
+                newStatus = 'completed_with_booking';
+              } else if (durationSeconds < 10) {
+                newStatus = 'no_answer';
+              }
+              await supabase
+                .from('outbound_campaign_recipients')
+                .update({ status: newStatus })
+                .eq('id', recipient.id);
+              console.log(`[Campaign Webhook] Recipiente actualizado a ${newStatus} para llamada ${callId}`);
+            }
+          }
+
           // Procesar facturación por uso de minutos (Metered Billing) en segundo plano
           processMeteredBillingForCall(tenant.id, durationSeconds).catch(billErr => {
             console.error(`[Metered Billing Error] Error al facturar minutos para ${tenant.id}:`, billErr.message);

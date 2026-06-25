@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia - Panel de Control del Cliente</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.2.0">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.2.0">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.0">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.0">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -2095,6 +2095,10 @@
           <i data-lucide="credit-card"></i>
           <span>Mi Suscripción</span>
         </button>
+        <button class="nav-item" id="btn-tab-campaigns" onclick="switchTab('campaigns')">
+          <i data-lucide="megaphone"></i>
+          <span>Campañas Outbound</span>
+        </button>
         <button class="nav-item" id="btn-tab-settings" onclick="switchTab('settings')">
           <i data-lucide="settings"></i>
           <span>Ajustes</span>
@@ -2539,6 +2543,64 @@
           </div>
         </div>
 
+        <!-- VISTA: CAMPAÑAS OUTBOUND -->
+        <div id="client-view-campaigns" class="client-view">
+          <div class="card" style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+              <h2 class="card-title" style="margin: 0; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
+                <i data-lucide="megaphone" style="color: var(--primary);"></i>
+                Campañas Outbound de Reactivación 🎙️
+              </h2>
+              <button class="btn" onclick="openCreateCampaignModal()" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
+                <i data-lucide="plus"></i> Nueva Campaña
+              </button>
+            </div>
+
+            <!-- Dashboard Stats Summary for Campaigns -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Total Campañas</span>
+                <span id="campaigns-stat-total" style="font-size: 1.5rem; font-weight: 700; color: #fff;">0</span>
+              </div>
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Llamadas Realizadas</span>
+                <span id="campaigns-stat-calls" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-light);">0</span>
+              </div>
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Citas Agendadas</span>
+                <span id="campaigns-stat-bookings" style="font-size: 1.5rem; font-weight: 700; color: var(--success);">0</span>
+              </div>
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Conversión</span>
+                <span id="campaigns-stat-rate" style="font-size: 1.5rem; font-weight: 700; color: #fbbf24;">0%</span>
+              </div>
+            </div>
+
+            <!-- Campaigns List Table -->
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                    <th style="padding: 0.75rem 1rem;">Nombre de Campaña</th>
+                    <th style="padding: 0.75rem 1rem;">Fecha Creación</th>
+                    <th style="padding: 0.75rem 1rem; text-align: center;">Estado</th>
+                    <th style="padding: 0.75rem 1rem; text-align: center;">Progreso Llamadas</th>
+                    <th style="padding: 0.75rem 1rem; text-align: center;">Citas</th>
+                    <th style="padding: 0.75rem 1rem; text-align: right;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="campaigns-table-body">
+                  <tr>
+                    <td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                      No se han encontrado campañas.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- VISTA: AJUSTES -->
         <div id="client-view-settings" class="client-view">
           <div class="card" style="flex: 1;">
@@ -2945,6 +3007,72 @@
                 </button>
               </div>
 
+              <!-- Sección Optimización de Agenda (Agenda Dinámica) -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="sparkles" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Agenda Inteligente y Optimización de Huecos 📅
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Habilita la optimización dinámica de huecos. El sistema priorizará la reserva de citas adyacentes a bloques ya ocupados (o al inicio/fin del día), evitando dejar ranuras huérfanas aisladas que dificultan el agendamiento de citas más largas.
+                </p>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+                  <input type="checkbox" id="setting-agenda-optimization-enabled" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;">
+                  <label for="setting-agenda-optimization-enabled" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0;">Activar Optimización de Agenda Dinámica</label>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="saveAgendaOptimizationSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                  <i data-lucide="save"></i>
+                  Guardar Optimización de Agenda
+                </button>
+              </div>
+
+              <!-- Sección Integración de Agenda (PMS Local) -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="database" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Integración de Agenda (PMS Local / Escritorio) 🔌
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Si utilizas software local en tu servidor físico (ej. Gesden o Dentrix), puedes conectar tu agenda local en tiempo real con Receptia. Habilita esta opción para generar un token de sincronización y configurar tu agente de sincronización local.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem;">
+                  <div>
+                    <label for="setting-pms-database-type" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Tipo de Software de Gestión (PMS):</label>
+                    <select id="setting-pms-database-type" onchange="togglePMSTokenVisibility(this.value)" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+                      <option value="none">Sin Integración (Usar Google Calendar Cloud)</option>
+                      <option value="gesden">Gesden (SQL Server)</option>
+                      <option value="dentrix">Dentrix</option>
+                      <option value="other">Otro Software Local</option>
+                    </select>
+                  </div>
+                  
+                  <div id="pms-sync-token-container" style="display: none;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Token de Sincronización PMS:</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                      <input type="text" id="setting-pms-sync-token" readonly style="flex: 1; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); padding: 0.5rem; font-size: 0.85rem; height: 38px; box-sizing: border-box; font-family: monospace;">
+                      <button class="btn" onclick="generateNewPMSToken()" style="background: var(--primary); color: #fff; height: 38px; white-space: nowrap;">Generar Token</button>
+                    </div>
+                    
+                    <div id="pms-agent-command-container" style="margin-top: 1rem;">
+                      <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Instrucción de Ejecución en tu Servidor Local:</label>
+                      <div style="position: relative;">
+                        <textarea id="setting-pms-command" readonly rows="2" style="width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); padding: 0.5rem; font-size: 0.8rem; resize: none; box-sizing: border-box; font-family: monospace; line-height: 1.4;"></textarea>
+                        <button onclick="copyPMSCommand()" style="position: absolute; right: 8px; bottom: 8px; background: var(--primary); color: #fff; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
+                          <i data-lucide="copy" style="width: 12px; height: 12px;"></i> Copiar Comando
+                        </button>
+                      </div>
+                      <span id="pms-last-sync-time" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; display: block;">Última sincronización exitosa: Nunca</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="savePMSConfigSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                  <i data-lucide="save"></i>
+                  Guardar Ajustes PMS
+                </button>
+              </div>
+
               <!-- Sección Cambio de PIN / Contraseña -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; gap: 1.25rem;">
                 <div>
@@ -3172,6 +3300,90 @@
       <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
         <button class="btn btn-secondary" onclick="closeChangePinModal()">Cancelar</button>
         <button class="btn" onclick="confirmChangePin()">Guardar PIN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CREAR CAMPAÑA OUTBOUND -->
+  <div class="modal" id="modal-create-campaign" style="display: none; z-index: 9999;">
+    <div class="modal-content" style="max-width: 500px; width: 90%; gap: 1.25rem;">
+      <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.2rem; font-family: 'Outfit', sans-serif;">
+        <i data-lucide="megaphone" style="color: var(--primary); width: 22px; height: 22px;"></i>
+        Crear Nueva Campaña de Voz Outbound
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+        Las llamadas salientes se realizarán de manera secuencial a través de tu número de Retell configurado. La IA mantendrá una conversación fluida con el cliente para reactivar su interés.
+      </p>
+      
+      <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+        <div>
+          <label for="input-campaign-name" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Nombre de la Campaña:</label>
+          <input type="text" id="input-campaign-name" placeholder="ej. Campaña Reactivación - Odontología Verano" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+        </div>
+        
+        <div>
+          <label for="textarea-campaign-recipients" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Lista de Destinatarios (un cliente por línea en formato: Nombre, Teléfono, Nota):</label>
+          <textarea id="textarea-campaign-recipients" rows="6" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.85rem; resize: vertical; box-sizing: border-box; font-family: monospace; line-height: 1.4;" placeholder="Juan Perez, +34600112233, limpieza dental&#10;Maria Lopez, +34655443322, ortodoncia invisible"></textarea>
+          <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">Nota: La 'Nota' se pasará a la IA como contexto dinámico de la llamada.</span>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+        <button class="btn btn-secondary" onclick="closeCreateCampaignModal()">Cancelar</button>
+        <button class="btn" onclick="saveAndLaunchCampaign()" style="background: var(--primary); color: #fff;">Crear y Lanzar Campaña</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DETALLE/ESTADO DE CAMPAÑA -->
+  <div class="modal" id="modal-view-campaign" style="display: none; z-index: 9999;">
+    <div class="modal-content" style="max-width: 600px; width: 90%; gap: 1.25rem; max-height: 80vh; display: flex; flex-direction: column;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+        <h3 id="view-campaign-title" style="color: #fff; margin: 0; font-size: 1.2rem; font-family: 'Outfit', sans-serif;">
+          Detalle de Campaña
+        </h3>
+        <span id="view-campaign-status-badge" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600;">Cargando...</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 0.75rem; border-radius: 8px;">
+        <div style="text-align: center;">
+          <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Llamadas</span>
+          <span id="view-campaign-calls-count" style="font-size: 1.1rem; font-weight: 700; color: #fff;">0 / 0</span>
+        </div>
+        <div style="text-align: center;">
+          <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Citas Reservadas</span>
+          <span id="view-campaign-bookings-count" style="font-size: 1.1rem; font-weight: 700; color: var(--success);">0</span>
+        </div>
+        <div style="text-align: center;">
+          <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Conversión</span>
+          <span id="view-campaign-conversion-rate" style="font-size: 1.1rem; font-weight: 700; color: #fbbf24;">0%</span>
+        </div>
+      </div>
+
+      <!-- Recipient Detail List -->
+      <div style="overflow-y: auto; flex: 1; min-height: 200px; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(0,0,0,0.1);">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+          <thead>
+            <tr style="background: rgba(255,255,255,0.02); color: var(--text-muted); border-bottom: 1px solid var(--border-color);">
+              <th style="padding: 0.5rem 0.75rem;">Destinatario</th>
+              <th style="padding: 0.5rem 0.75rem;">Teléfono</th>
+              <th style="padding: 0.5rem 0.75rem;">Nota Variable</th>
+              <th style="padding: 0.5rem 0.75rem; text-align: center;">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="view-campaign-recipients-body">
+            <tr>
+              <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--text-muted);">Cargando destinatarios...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+        <button id="btn-view-campaign-refresh" class="btn btn-secondary" onclick="refreshActiveCampaignDetails()" style="display: flex; align-items: center; gap: 0.25rem;">
+          <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Actualizar
+        </button>
+        <button class="btn" onclick="closeViewCampaignModal()">Cerrar</button>
       </div>
     </div>
   </div>
@@ -4016,6 +4228,343 @@
       });
     }
 
+    // --- OPTIMIZACIÓN DE AGENDA Y PMS LOCAL ---
+    async function saveAgendaOptimizationSettings() {
+      if (!currentTenant) return;
+      const enabled = document.getElementById('setting-agenda-optimization-enabled').checked;
+
+      try {
+        showToast('Guardando optimización de agenda...');
+        const res = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentTenant.email,
+            business_name: currentTenant.business_name,
+            agenda_optimization_enabled: enabled
+          })
+        });
+
+        if (!res.ok) throw new Error('No se pudo guardar la optimización de agenda.');
+        const updated = await res.json();
+        currentTenant = updated;
+        showToast('Optimización de agenda guardada con éxito.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function togglePMSTokenVisibility(dbType) {
+      const container = document.getElementById('pms-sync-token-container');
+      if (container) {
+        container.style.display = dbType !== 'none' ? 'block' : 'none';
+      }
+      updatePMSCommand();
+    }
+
+    function updatePMSCommand() {
+      const tokenInput = document.getElementById('setting-pms-sync-token');
+      const typeSelect = document.getElementById('setting-pms-database-type');
+      const commandText = document.getElementById('setting-pms-command');
+
+      if (tokenInput && typeSelect && commandText && currentTenant) {
+        const token = tokenInput.value || 'tu_token_pms';
+        const type = typeSelect.value || 'gesden';
+        commandText.value = `node pms-agent-sync.js --token=${token} --type=${type} --url=${window.location.origin}`;
+      }
+    }
+
+    async function savePMSConfigSettings() {
+      if (!currentTenant) return;
+      const dbType = document.getElementById('setting-pms-database-type').value;
+
+      try {
+        showToast('Guardando configuración de PMS...');
+        const res = await fetch('/api/integrations/pms/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: currentTenant.id,
+            database_type: dbType
+          })
+        });
+
+        if (!res.ok) throw new Error('No se pudo guardar la configuración de PMS.');
+        const data = await res.json();
+        if (data.success && data.config) {
+          currentTenant.pms_database_type = data.config.pms_database_type;
+          currentTenant.pms_sync_token = data.config.pms_sync_token;
+          showToast('Configuración de PMS guardada con éxito.');
+          updatePMSCommand();
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function generateNewPMSToken() {
+      if (!currentTenant) return;
+      const dbType = document.getElementById('setting-pms-database-type').value;
+
+      try {
+        showToast('Generando nuevo token PMS...');
+        const res = await fetch('/api/integrations/pms/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: currentTenant.id,
+            database_type: dbType,
+            reset_token: true
+          })
+        });
+
+        if (!res.ok) throw new Error('No se pudo generar el token.');
+        const data = await res.json();
+        if (data.success && data.config) {
+          currentTenant.pms_sync_token = data.config.pms_sync_token;
+          document.getElementById('setting-pms-sync-token').value = data.config.pms_sync_token;
+          showToast('¡Token PMS generado con éxito!');
+          updatePMSCommand();
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function copyPMSCommand() {
+      const copyText = document.getElementById("setting-pms-command");
+      if (!copyText || !copyText.value) return;
+      copyText.select();
+      navigator.clipboard.writeText(copyText.value).then(() => {
+        showToast('¡Comando copiado al portapapeles!');
+      }).catch(err => {
+        showToast('Error al copiar el comando', 'error');
+      });
+    }
+
+    // --- CAMPAÑAS OUTBOUND ---
+    let activeCampaignId = null;
+    let campaignRefreshInterval = null;
+
+    async function fetchCampaigns() {
+      if (!currentTenant) return;
+      const body = document.getElementById('campaigns-table-body');
+      if (!body) return;
+
+      try {
+        const res = await fetch(`/api/campaigns?tenant_id=${currentTenant.id}`);
+        if (!res.ok) throw new Error('No se pudieron obtener las campañas.');
+        const list = await res.json();
+
+        let totalCamp = list.length;
+        let totalCalls = 0;
+        let totalBookings = 0;
+
+        list.forEach(c => {
+          totalCalls += (c.stats?.total || 0) - (c.stats?.pending || 0);
+          totalBookings += c.stats?.completed_with_booking || 0;
+        });
+
+        document.getElementById('campaigns-stat-total').innerText = totalCamp;
+        document.getElementById('campaigns-stat-calls').innerText = totalCalls;
+        document.getElementById('campaigns-stat-bookings').innerText = totalBookings;
+        const rate = totalCalls > 0 ? Math.round((totalBookings / totalCalls) * 100) : 0;
+        document.getElementById('campaigns-stat-rate').innerText = `${rate}%`;
+
+        if (list.length === 0) {
+          body.innerHTML = `<tr><td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-muted);">No se han creado campañas todavía.</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = list.map(c => {
+          const dateStr = new Date(c.created_at).toLocaleDateString('es-ES', { hour: '2-digit', minute: '2-digit' });
+          let statusBadge = '';
+          if (c.status === 'pending') statusBadge = '<span style="background: rgba(255,255,255,0.05); color: #fff; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Pendiente</span>';
+          else if (c.status === 'running') statusBadge = '<span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; animation: pulse 2s infinite;">Llamando</span>';
+          else if (c.status === 'completed') statusBadge = '<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Completada</span>';
+          
+          const callsProg = `${(c.stats?.total || 0) - (c.stats?.pending || 0)} / ${c.stats?.total || 0}`;
+
+          return `
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 0.75rem 1rem; font-weight: 500; color: #fff;">${c.name}</td>
+              <td style="padding: 0.75rem 1rem; color: var(--text-muted);">${dateStr}</td>
+              <td style="padding: 0.75rem 1rem; text-align: center;">${statusBadge}</td>
+              <td style="padding: 0.75rem 1rem; text-align: center; color: #fff;">${callsProg}</td>
+              <td style="padding: 0.75rem 1rem; text-align: center; color: var(--success); font-weight: 600;">${c.stats?.completed_with_booking || 0}</td>
+              <td style="padding: 0.75rem 1rem; text-align: right;">
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                  <button class="btn btn-secondary" onclick="viewCampaignDetails('${c.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Ver</button>
+                  ${c.status === 'pending' ? `<button class="btn" onclick="launchCampaign('${c.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: var(--primary);">Lanzar</button>` : ''}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function openCreateCampaignModal() {
+      document.getElementById('input-campaign-name').value = '';
+      document.getElementById('textarea-campaign-recipients').value = '';
+      document.getElementById('modal-create-campaign').style.display = 'flex';
+    }
+
+    function closeCreateCampaignModal() {
+      document.getElementById('modal-create-campaign').style.display = 'none';
+    }
+
+    async function saveAndLaunchCampaign() {
+      if (!currentTenant) return;
+      const name = document.getElementById('input-campaign-name').value.trim();
+      const rawRecipients = document.getElementById('textarea-campaign-recipients').value.trim();
+
+      if (!name || !rawRecipients) {
+        showToast('Por favor, rellena todos los campos.', 'error');
+        return;
+      }
+
+      const lines = rawRecipients.split('\n');
+      const recipients = [];
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        const parts = line.split(',');
+        if (parts.length < 2) {
+          showToast(`Formato incorrecto en línea: "${line}". Use "Nombre, Teléfono, Variable".`, 'error');
+          return;
+        }
+        recipients.push({
+          client_name: parts[0].trim(),
+          client_phone: parts[1].trim(),
+          custom_variable: parts[2] ? parts[2].trim() : null
+        });
+      }
+
+      try {
+        showToast('Guardando campaña...');
+        const res = await fetch('/api/campaigns', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: currentTenant.id,
+            name,
+            recipients
+          })
+        });
+
+        if (!res.ok) throw new Error('No se pudo guardar la campaña.');
+        const data = await res.json();
+        closeCreateCampaignModal();
+        showToast('Campaña creada con éxito.');
+        
+        // Auto-lanzar tras crear
+        await launchCampaign(data.campaign_id);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function launchCampaign(id) {
+      try {
+        showToast('Lanzando campaña...');
+        const res = await fetch(`/api/campaigns/${id}/launch`, {
+          method: 'POST'
+        });
+
+        if (!res.ok) throw new Error('No se pudo lanzar la campaña.');
+        const data = await res.json();
+        showToast(data.message);
+        fetchCampaigns();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function viewCampaignDetails(id) {
+      activeCampaignId = id;
+      document.getElementById('modal-view-campaign').style.display = 'flex';
+      refreshActiveCampaignDetails();
+
+      // Iniciar autorefresco cada 5 segundos si la campaña está en ejecución
+      if (campaignRefreshInterval) clearInterval(campaignRefreshInterval);
+      campaignRefreshInterval = setInterval(() => {
+        if (document.getElementById('modal-view-campaign').style.display === 'flex') {
+          refreshActiveCampaignDetails();
+        } else {
+          clearInterval(campaignRefreshInterval);
+        }
+      }, 5000);
+    }
+
+    function closeViewCampaignModal() {
+      document.getElementById('modal-view-campaign').style.display = 'none';
+      if (campaignRefreshInterval) clearInterval(campaignRefreshInterval);
+      fetchCampaigns();
+    }
+
+    async function refreshActiveCampaignDetails() {
+      if (!activeCampaignId) return;
+      const tbody = document.getElementById('view-campaign-recipients-body');
+
+      try {
+        const res = await fetch(`/api/campaigns/${activeCampaignId}`);
+        if (!res.ok) throw new Error('No se pudo obtener el detalle.');
+        const data = await res.json();
+
+        const { campaign, recipients } = data;
+
+        document.getElementById('view-campaign-title').innerText = campaign.name;
+        
+        const badge = document.getElementById('view-campaign-status-badge');
+        badge.innerText = campaign.status === 'running' ? 'En ejecución' : (campaign.status === 'completed' ? 'Completada' : 'Pendiente');
+        badge.style.background = campaign.status === 'running' ? 'rgba(139, 92, 246, 0.2)' : (campaign.status === 'completed' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.05)');
+        badge.style.color = campaign.status === 'running' ? '#a78bfa' : (campaign.status === 'completed' ? '#34d399' : '#fff');
+
+        const total = recipients.length;
+        let completed = 0;
+        let bookings = 0;
+
+        recipients.forEach(r => {
+          if (r.status !== 'pending') completed++;
+          if (r.status === 'completed_with_booking') bookings++;
+        });
+
+        document.getElementById('view-campaign-calls-count').innerText = `${completed} / ${total}`;
+        document.getElementById('view-campaign-bookings-count').innerText = bookings;
+        const rate = completed > 0 ? Math.round((bookings / completed) * 100) : 0;
+        document.getElementById('view-campaign-conversion-rate').innerText = `${rate}%`;
+
+        tbody.innerHTML = recipients.map(r => {
+          let statusBadge = '';
+          if (r.status === 'pending') statusBadge = '<span style="color: var(--text-muted);">Pendiente</span>';
+          else if (r.status === 'calling') statusBadge = '<span style="color: #a78bfa; animation: pulse 2s infinite;">Llamando</span>';
+          else if (r.status === 'completed') statusBadge = '<span style="color: #9ca3af;">Completada</span>';
+          else if (r.status === 'failed') statusBadge = '<span style="color: var(--error);">Fallida</span>';
+          else if (r.status === 'no_answer') statusBadge = '<span style="color: #fbbf24;">Sin respuesta</span>';
+          else if (r.status === 'completed_with_booking') statusBadge = '<span style="color: var(--success); font-weight: bold;">Cita Reservada 🎉</span>';
+
+          return `
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 0.5rem 0.75rem; color: #fff;">${r.client_name}</td>
+              <td style="padding: 0.5rem 0.75rem; color: var(--text-muted);">${r.client_phone}</td>
+              <td style="padding: 0.5rem 0.75rem; color: var(--text-muted);">${r.custom_variable || '-'}</td>
+              <td style="padding: 0.5rem 0.75rem; text-align: center;">${statusBadge}</td>
+            </tr>
+          `;
+        }).join('');
+
+        // Recargar iconos lucide en el modal
+        if (window.lucide) window.lucide.createIcons();
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
     // --- CLONACIÓN DE VOZ EXPRESS ---
     let mediaRecorder = null;
     let audioChunks = [];
@@ -4769,6 +5318,8 @@
         fetchCallLogs();
       } else if (tabId === 'appointments') {
         fetchAppointments(currentTenant.id);
+      } else if (tabId === 'campaigns') {
+        fetchCampaigns();
       }
 
       if (tabId === 'settings' && currentTenant && !!currentTenant.whatsapp_reminders_enabled) {
@@ -5316,6 +5867,26 @@
       if (txtChatbotWelcome) txtChatbotWelcome.value = currentTenant.chatbot_welcome_message || '¡Hola! ¿En qué puedo ayudarte hoy?';
       if (txtChatbotEmbed) {
         txtChatbotEmbed.value = `<iframe src="${window.location.origin}/widget.html?tenant_id=${currentTenant.id}" width="380" height="600" style="border:none; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.3);"></iframe>`;
+      }
+
+      // Cargar Optimización de Agenda (Fase 3)
+      const chkAgendaOptimization = document.getElementById('setting-agenda-optimization-enabled');
+      if (chkAgendaOptimization) chkAgendaOptimization.checked = !!currentTenant.agenda_optimization_enabled;
+
+      // Cargar Integración PMS (Fase 3)
+      const selPMSDatabaseType = document.getElementById('setting-pms-database-type');
+      const txtPMSSyncToken = document.getElementById('setting-pms-sync-token');
+      const pmsLastSyncEl = document.getElementById('pms-last-sync-time');
+
+      if (selPMSDatabaseType) {
+        selPMSDatabaseType.value = currentTenant.pms_database_type || 'none';
+        togglePMSTokenVisibility(currentTenant.pms_database_type || 'none');
+      }
+      if (txtPMSSyncToken) {
+        txtPMSSyncToken.value = currentTenant.pms_sync_token || '';
+      }
+      if (pmsLastSyncEl && currentTenant.pms_last_sync) {
+        pmsLastSyncEl.innerText = `Última sincronización exitosa: ${new Date(currentTenant.pms_last_sync).toLocaleString('es-ES')}`;
       }
 
       // Cargar canales de notificación

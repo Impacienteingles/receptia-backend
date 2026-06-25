@@ -734,3 +734,34 @@ export async function deleteRetellAgent(agentId: string) {
   }
 }
 
+/**
+ * Inicia una llamada saliente (outbound call) utilizando la API de Retell.
+ */
+export async function triggerOutboundCall(
+  fromNumber: string,
+  toNumber: string,
+  agentId: string,
+  dynamicVariables?: any
+): Promise<string> {
+  try {
+    console.log(`[Retell Outbound] Iniciando llamada de ${fromNumber} a ${toNumber} con agente ${agentId}...`);
+    const payload: any = {
+      from_number: fromNumber,
+      to_number: toNumber,
+      override_agent_id: agentId
+    };
+
+    if (dynamicVariables) {
+      payload.retell_llm_dynamic_variables = dynamicVariables;
+    }
+
+    const response = await retellClient.post('/create-phone-call', payload);
+    const callId = response.data.call_id;
+    console.log(`[Retell Outbound] ✅ Llamada creada con éxito. Call ID: ${callId}`);
+    return callId;
+  } catch (error: any) {
+    console.error('[Retell Outbound ERROR] Error al crear llamada saliente:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || error.message);
+  }
+}
+

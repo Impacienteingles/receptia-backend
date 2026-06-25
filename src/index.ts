@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import webhookRouter from './routes/webhook';
 import prospectingRouter from './routes/prospecting';
+import pmsRouter from './routes/pms';
+import campaignsRouter from './routes/campaigns';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
 import { supabase, getSettingVal, clearSettingsCache } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName } from './services/retell';
@@ -228,7 +230,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     text_back_enabled,
     text_back_message,
     chatbot_enabled,
-    chatbot_welcome_message
+    chatbot_welcome_message,
+    agenda_optimization_enabled
   } = req.body;
 
   if (!business_name || !email) {
@@ -276,6 +279,7 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (text_back_message !== undefined) tenantData.text_back_message = text_back_message;
     if (chatbot_enabled !== undefined) tenantData.chatbot_enabled = !!chatbot_enabled;
     if (chatbot_welcome_message !== undefined) tenantData.chatbot_welcome_message = chatbot_welcome_message;
+    if (agenda_optimization_enabled !== undefined) tenantData.agenda_optimization_enabled = !!agenda_optimization_enabled;
     
     // Safely check if database contains the column to prevent query crashes
     const hasImmediateCol = existing ? ('whatsapp_immediate_notification_enabled' in existing) : false;
@@ -3231,6 +3235,8 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
 // Registrar rutas de webhook
 app.use('/api/webhook', webhookRouter);
 app.use('/api/admin/prospects', prospectingRouter);
+app.use('/api/integrations/pms', pmsRouter);
+app.use('/api/campaigns', campaignsRouter);
 
 
 
