@@ -1442,7 +1442,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.21</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.22</span>
         </div>
       </header>
 
@@ -6153,9 +6153,24 @@
 
       editingTenantId = tenant.id;
       
+      const isBlocked = !!tenant.block_admin_access || !!tenant.admin_access_blocked;
+      
       // Cambiar encabezado y botón
-      formCardTitleText.innerHTML = `<i data-lucide="edit-3"></i> Editar Cliente: ${tenant.business_name}`;
-      btnGenerateText.innerText = 'Guardar Cambios del Cliente';
+      formCardTitleText.innerHTML = isBlocked 
+        ? `<i data-lucide="edit-3"></i> Editar Cliente: ${tenant.business_name} <span style="background: #f87171; color: white; font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; margin-left: 0.5rem; display: inline-block;">🔒 PRIVADO (Acceso Restringido)</span>`
+        : `<i data-lucide="edit-3"></i> Editar Cliente: ${tenant.business_name}`;
+      btnGenerateText.innerText = isBlocked ? 'Guardar Cambios de Facturación' : 'Guardar Cambios del Cliente';
+
+      // Deshabilitar campos si está bloqueado por privacidad
+      document.getElementById('specialties-input').disabled = isBlocked;
+      document.getElementById('business-description').disabled = isBlocked;
+      document.getElementById('pricing-details').disabled = isBlocked;
+      document.getElementById('custom-instructions').disabled = isBlocked;
+      document.getElementById('admin-pin').disabled = isBlocked;
+      document.getElementById('voice-id').disabled = isBlocked;
+      document.getElementById('voice-speed').disabled = isBlocked;
+      document.getElementById('voice-temperature').disabled = isBlocked;
+      document.getElementById('voice-responsiveness').disabled = isBlocked;
 
       // Rellenar campos comunes
       document.getElementById('business-name').value = tenant.business_name || '';
@@ -6601,6 +6616,32 @@
       }
     }
 
+    async function resendDemoEmail(prospectId, buttonEl) {
+      if (buttonEl) {
+        buttonEl.disabled = true;
+        buttonEl.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Enviando...`;
+      }
+      try {
+        const response = await fetch(`/api/admin/prospects/${prospectId}/resend-email`, {
+          method: 'POST'
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al reenviar el correo.');
+        }
+        showCustomAlert('Correo reenviado con éxito al prospecto.', 'Éxito', 'success');
+      } catch (err) {
+        console.error('Error al reenviar correo:', err);
+        showCustomAlert(err.message, 'Fallo', 'error');
+      } finally {
+        if (buttonEl) {
+          buttonEl.disabled = false;
+          buttonEl.innerHTML = `<i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Reenviar`;
+          lucide.createIcons();
+        }
+      }
+    }
+
     async function deleteProspect(id) {
       const confirmDelete = confirm('¿Estás seguro de que deseas eliminar este prospecto? Si tiene una demo creada, también se eliminará su configuración.');
       if (!confirmDelete) return;
@@ -6853,7 +6894,7 @@
                          <i data-lucide="loader" class="spin" style="width: 13px; height: 13px;"></i> Procesando...
                        </button>`;
         } else if (p.status === 'email_sent') {
-          actionBtn = `<button class="btn btn-secondary" onclick="openDemoGenerationModal('${p.id}')" style="color: #60a5fa; border-color: rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Reenviar correo de demo">
+          actionBtn = `<button class="btn btn-secondary" onclick="resendDemoEmail('${p.id}', this)" style="color: #60a5fa; border-color: rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Reenviar correo de demo">
                          <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Reenviar
                        </button>`;
         } else {
@@ -7465,6 +7506,17 @@
       isContractManuallyEdited = false;
       formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Nuevo Cliente`;
       btnGenerateText.innerText = 'Generar Agente IA y Registrar';
+
+      // Re-habilitar campos bloqueados por privacidad
+      document.getElementById('specialties-input').disabled = false;
+      document.getElementById('business-description').disabled = false;
+      document.getElementById('pricing-details').disabled = false;
+      document.getElementById('custom-instructions').disabled = false;
+      document.getElementById('admin-pin').disabled = false;
+      document.getElementById('voice-id').disabled = false;
+      document.getElementById('voice-speed').disabled = false;
+      document.getElementById('voice-temperature').disabled = false;
+      document.getElementById('voice-responsiveness').disabled = false;
       
       // Fechas por defecto
       document.getElementById('contract-start-date').value = new Date().toISOString().split('T')[0];

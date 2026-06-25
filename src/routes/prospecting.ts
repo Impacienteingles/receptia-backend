@@ -306,6 +306,7 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
           ? `Demo Autogenerada (Clon de ${baseTenant.business_name})`
           : 'Plan Demo Autogenerado',
         price_amount: 0,
+        admin_pin: '0000',
         billing_cycle: 'monthly',
         business_description: businessDescription,
         pricing_details: pricingDetails,
@@ -705,6 +706,63 @@ router.post('/delete-bulk', async (req: Request, res: Response): Promise<void> =
   } catch (error: any) {
     console.error('[Prospecting API] Error en eliminación masiva:', error.message);
     res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * 7. Reenviar correo electrónico de captación (Outreach) para un prospecto existente
+ */
+router.post('/:id/resend-email', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  try {
+    const { data: prospect, error: fetchErr } = await supabase
+      .from('prospects')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchErr || !prospect) {
+      res.status(404).json({ error: `No se pudo encontrar el prospecto con ID: ${id}` });
+      return;
+    }
+
+    if (!prospect.email || prospect.email.includes('example.com')) {
+      res.status(400).json({ error: `El prospecto no tiene un correo electrónico válido configurado: ${prospect.email}` });
+      return;
+    }
+
+    if (!prospect.demo_url || !prospect.audio_url) {
+      res.status(400).json({ error: 'El prospecto debe tener una demo y un audio generados antes de reenviar el correo.' });
+      return;
+    }
+
+    console.log(`[Prospecting API] Reenviando correo de outreach para ${prospect.business_name} a ${prospect.email}...`);
+    const emailSent = await sendOutreachEmail({
+      businessName: prospect.business_name,
+      toEmail: prospect.email,
+      demoUrl: prospect.demo_url,
+      audioUrl: prospect.audio_url,
+      sector: prospect.sector || 'general'
+    });
+
+    if (!emailSent) {
+      throw new Error('Fallo al enviar el correo a través del proveedor de email.');
+    }
+
+    // Actualizar el estado por si acaso estaba en failed
+    await supabase
+      .from('prospects')
+      .update({
+        status: 'email_sent',
+        error_details: null
+      })
+      .eq('id', id);
+
+    res.json({ status: 'success', message: 'Correo reenviado con éxito.' });
+  } catch (err: any) {
+    console.error(`[Prospecting API ERROR] Fallo al reenviar correo para prospecto ${id}:`, err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 

@@ -73,79 +73,182 @@ function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUr
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asistente de Voz IA Personalizado</title>
+  <title>Tu Asistente de Voz con Inteligencia Artificial - Receptia</title>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f3f4f6;
-      color: #1f2937;
+      font-family: -apple-system, BlinkMacSystemFont, "Outfit", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0b0f19;
+      color: #f3f4f6;
       margin: 0;
       padding: 0;
       -webkit-font-smoothing: antialiased;
     }
     .wrapper {
       width: 100%;
-      background-color: #f3f4f6;
-      padding: 20px 0;
+      background-color: #0b0f19;
+      padding: 40px 0;
     }
     .container {
       max-width: 600px;
       margin: 0 auto;
-      background-color: #ffffff;
-      border-radius: 16px;
+      background-color: #111827;
+      border-radius: 24px;
       overflow: hidden;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      border: 1px solid #1f2937;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
     }
     .header {
       background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-      padding: 40px 30px;
+      padding: 50px 40px;
       text-align: center;
       color: #ffffff;
+      position: relative;
     }
     .header h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 800;
-      letter-spacing: -0.025em;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .header p {
+      margin: 10px 0 0 0;
+      font-size: 15px;
+      color: #c084fc;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
     .content {
-      padding: 40px 30px;
-      line-height: 1.6;
+      padding: 40px;
+      line-height: 1.7;
     }
     .content p {
       margin-top: 0;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       font-size: 16px;
-      color: #4b5563;
+      color: #9ca3af;
     }
-    .audio-block {
-      background-color: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 20px;
+    .highlight {
+      color: #ffffff;
+      font-weight: 600;
+    }
+    
+    /* Mockup Premium Card for Play/Demo */
+    .dashboard-mockup {
+      background-color: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 16px;
+      padding: 24px;
+      margin: 35px 0;
       text-align: center;
-      margin: 30px 0;
+      text-decoration: none !important;
+      display: block;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
-    .audio-block h3 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      font-size: 16px;
-      color: #111827;
+    .dashboard-mockup:hover {
+      border-color: #6d28d9;
+      box-shadow: 0 0 20px rgba(109, 40, 217, 0.3);
+    }
+    .mockup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #374151;
+      padding-bottom: 12px;
+    }
+    .mockup-title {
+      color: #f3f4f6;
+      font-size: 13px;
       font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
-    .audio-btn {
+    .mockup-status {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      background-color: #1f2937;
-      color: #ffffff !important;
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 9999px;
+      gap: 6px;
+      color: #10b981;
+      font-size: 12px;
       font-weight: 600;
-      font-size: 14px;
-      margin-top: 5px;
     }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #10b981;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 8px #10b981;
+    }
+    .mockup-preview-body {
+      background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+      border-radius: 12px;
+      padding: 30px 20px;
+      border: 1px solid #374151;
+      position: relative;
+    }
+    .play-circle {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px auto;
+      box-shadow: 0 8px 16px rgba(124, 58, 237, 0.4);
+    }
+    .play-icon {
+      width: 0;
+      height: 0;
+      border-top: 12px solid transparent;
+      border-left: 20px solid #ffffff;
+      border-bottom: 12px solid transparent;
+      margin-left: 5px;
+      display: inline-block;
+    }
+    .mockup-button-text {
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    .mockup-subtext {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    /* Benefits Table */
+    .benefits-grid {
+      width: 100%;
+      margin: 30px 0;
+      border-collapse: collapse;
+    }
+    .benefit-card {
+      background-color: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .benefit-title {
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .benefit-desc {
+      color: #9ca3af;
+      font-size: 14px;
+      margin: 0;
+      line-height: 1.5;
+    }
+
     .cta-block {
       text-align: center;
       margin: 40px 0 20px 0;
@@ -155,22 +258,24 @@ function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUr
       background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
       color: #ffffff !important;
       text-decoration: none;
-      padding: 16px 32px;
-      border-radius: 12px;
+      padding: 16px 36px;
+      border-radius: 14px;
       font-weight: 700;
       font-size: 16px;
-      box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+      box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.4);
+      transition: all 0.3s ease;
     }
+    
     .footer {
-      background-color: #f9fafb;
-      border-top: 1px solid #e5e7eb;
+      background-color: #0f172a;
+      border-top: 1px solid #1f2937;
       padding: 30px;
       text-align: center;
       font-size: 13px;
-      color: #9ca3af;
+      color: #6b7280;
     }
     .footer a {
-      color: #7c3aed;
+      color: #a78bfa;
       text-decoration: none;
     }
   </style>
@@ -179,36 +284,63 @@ function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUr
   <div class="wrapper">
     <div class="container">
       <div class="header">
-        <h1>🎙️ Elena IA para ${businessName}</h1>
+        <p>Demostración Exclusiva</p>
+        <h1>Asistente de Voz Inteligente para ${businessName}</h1>
       </div>
       
       <div class="content">
-        <p>Hola,</p>
-        <p>Hemos analizado el sitio web de <strong>${businessName}</strong> y diseñado un agente de voz con Inteligencia Artificial hecho a su medida.</p>
-        <p>Este asistente telefónico es capaz de atender a ${sectorTerm} las 24 horas del día, responder dudas frecuentes y agendar citas directamente en su calendario sin que pierda ninguna llamada cuando su equipo está ocupado o fuera de horario laboral.</p>
+        <p>Estimado/a responsable de <span class="highlight">${businessName}</span>,</p>
         
-        <!-- Bloque de Audio Generado -->
-        <div class="audio-block">
-          <h3>🔊 Escuche su demostración personalizada</h3>
-          <p style="font-size: 14px; margin-bottom: 12px; color: #6b7280;">Haga clic en el botón inferior para escuchar cómo se presentaría Elena IA al responder el teléfono de su negocio:</p>
-          <a href="${audioUrl}" class="audio-btn" target="_blank">
-            ▶️ Escuchar Audio Personalizado
-          </a>
+        <p>Hemos diseñado y configurado un <span class="highlight">Agente de Voz con Inteligencia Artificial</span> adaptado a las necesidades específicas de su negocio.</p>
+        
+        <p>Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.</p>
+
+        <!-- Tarjeta de Mockup del Reproductor de Audio -->
+        <a href="${audioUrl}" class="dashboard-mockup" target="_blank">
+          <div class="mockup-header">
+            <span class="mockup-title">🔊 Presentación Telefónica de Elena IA</span>
+            <span class="mockup-status">
+              <span class="status-dot"></span> LISTO PARA ESCUCHAR
+            </span>
+          </div>
+          <div class="mockup-preview-body">
+            <div class="play-circle">
+              <span class="play-icon"></span>
+            </div>
+            <div class="mockup-button-text">Escuchar demo de audio</div>
+            <div class="mockup-subtext">Haga clic aquí para escuchar cómo se presentará Elena IA al atender a sus clientes.</div>
+          </div>
+        </a>
+
+        <p>Además de la presentación en audio, hemos preparado un <span class="highlight">Panel de Demostración Privado y Gratuito</span> donde podrá interactuar con el agente en tiempo real, visualizar el calendario de citas auto-gestionadas y comprobar el funcionamiento de la plataforma:</p>
+
+        <!-- Beneficios en tarjetas -->
+        <div class="benefit-card">
+          <div class="benefit-title">📞 Recepción Disponible 24/7</div>
+          <p class="benefit-desc">Elena atiende llamadas de forma instantánea a cualquier hora, evitando que pierda clientes cuando su equipo está ocupado o fuera de horario comercial.</p>
         </div>
 
-        <p>Hemos habilitado un <strong>entorno de demostración privado y seguro</strong> donde podrá probar interactivamente el agente, ver la agenda de citas y configurar los ajustes del servicio en tiempo real.</p>
-        
-        <!-- CTA a la demo -->
+        <div class="benefit-card">
+          <div class="benefit-title">📅 Gestión Automática de Agenda</div>
+          <p class="benefit-desc">Permite a ${sectorTerm} reservar, modificar o cancelar citas directamente en el sistema de manera natural y sin errores.</p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-title">🧠 Base de Conocimientos del Negocio</div>
+          <p class="benefit-desc">El agente ha sido entrenado con la información de su establecimiento para responder preguntas sobre servicios, precios y dirección legal.</p>
+        </div>
+
+        <!-- Botón de Acción Principal a la Demo -->
         <div class="cta-block">
           <a href="${demoUrl}" class="cta-btn" target="_blank">
-            Acceder a mi Panel Demo Gratis
+            Acceder a mi Panel de Control Demo ↗
           </a>
         </div>
       </div>
       
       <div class="footer">
         <p>Este correo electrónico fue generado automáticamente por <a href="https://receptia.corandar.com" target="_blank">Receptia</a>, una solución de Corandar, S.L.</p>
-        <p>Para desactivar las demos y no recibir más emails, responda a este correo indicando "Baja".</p>
+        <p>Para no recibir más demostraciones, responda indicando "Baja" y procesaremos su solicitud de inmediato.</p>
       </div>
     </div>
   </div>

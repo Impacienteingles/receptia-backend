@@ -2770,18 +2770,37 @@
               </div>
 
               <!-- Sección Cambio de PIN / Contraseña -->
-              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
-                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
-                  <i data-lucide="key-round" style="color: var(--primary); width: 20px; height: 20px;"></i>
-                  Seguridad y Acceso
-                </h3>
-                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Modifica el código PIN de 4 dígitos que protege el acceso a la configuración del panel de administración del cliente.
-                </p>
-                <button class="btn btn-outline" onclick="openChangePinModal()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px;">
-                  <i data-lucide="key-round" style="width: 16px; height: 16px;"></i>
-                  Cambiar PIN del Panel
-                </button>
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; gap: 1.25rem;">
+                <div>
+                  <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                    <i data-lucide="key-round" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                    Seguridad y Acceso
+                  </h3>
+                  <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+                    Modifica el código PIN de 4 dígitos que protege el acceso a la configuración del panel de administración del cliente.
+                  </p>
+                  <button id="btn-change-pin" class="btn btn-outline" onclick="openChangePinModal()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; cursor: pointer; background: transparent; color: #fff;">
+                    <i data-lucide="key-round" style="width: 16px; height: 16px;"></i>
+                    Cambiar PIN del Panel
+                  </button>
+                  <p id="pin-change-warning-text" style="font-size: 0.75rem; color: #f87171; margin-top: 0.5rem; display: none; line-height: 1.3;"></p>
+                </div>
+
+                <!-- Bloqueo Acceso Administrador (Privacidad) -->
+                <div id="admin-privacy-container" style="border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+                  <h4 style="color: #fff; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                    <i data-lucide="shield-alert" style="color: #fbbf24; width: 20px; height: 20px;"></i>
+                    Privacidad de Datos
+                  </h4>
+                  <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1rem;">
+                    Bloquea al administrador de la plataforma para que no pueda ver tu PIN, configuraciones operativas o tu historial de citas.
+                  </p>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="toggle-block-admin" onchange="toggleAdminAccessBlock(this)" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;">
+                    <span style="font-size: 0.9rem; color: #fff; font-weight: 500;" id="block-admin-label">Bloquear acceso al administrador</span>
+                  </div>
+                  <p id="admin-privacy-warning-text" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.3;"></p>
+                </div>
               </div>
 
             </div>
@@ -4224,7 +4243,8 @@
     // Cargar datos de inquilino por ID
     async function loadTenantData(id) {
       try {
-        const response = await fetch(`/api/tenants?id=${id}`);
+        const savedPin = sessionStorage.getItem('current_tenant_pin') || '';
+        const response = await fetch(`/api/tenants?id=${id}&pin=${encodeURIComponent(savedPin)}`);
         if (!response.ok) throw new Error('No se encontró tu negocio en el sistema.');
         const tenant = await response.json();
         
@@ -4323,13 +4343,24 @@
       } else {
         // Validar PIN ingresado
         try {
-          if (pin === tenant.admin_pin) {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: tenant.email, pin: pin })
+          });
+          
+          if (response.ok) {
+            sessionStorage.setItem('current_tenant_pin', pin);
+            await loadTenantData(tenant.id);
             dismissPinModal();
           } else {
             pinError.style.display = 'block';
             pinInput.value = '';
             pinInput.focus();
           }
+        } catch (err) {
+          console.error(err);
+          showToast('Error al validar el PIN de acceso.', 'error');
         } finally {
           isSubmittingPin = false;
         }
@@ -5016,8 +5047,117 @@
       // Calcular y mostrar ahorro ROI
       calculateAndDisplayROI(currentTenant);
 
+      // Verificar si el inquilino tiene contrato firmado o suscripción activa
+      const hasContractOrSub = 
+        (currentTenant.signed_contract_content && currentTenant.signed_contract_content.trim() !== '') || 
+        (currentTenant.stripe_subscription_id && currentTenant.stripe_subscription_id.trim() !== '') ||
+        (currentTenant.subscription_status && currentTenant.subscription_status !== 'trial');
+
+      const btnChangePin = document.getElementById('btn-change-pin');
+      const pinChangeWarning = document.getElementById('pin-change-warning-text');
+      const toggleBlockAdmin = document.getElementById('toggle-block-admin');
+      const blockAdminLabel = document.getElementById('block-admin-label');
+      const adminPrivacyWarning = document.getElementById('admin-privacy-warning-text');
+
+      if (!hasContractOrSub) {
+        // Deshabilitar cambio de PIN
+        if (btnChangePin) {
+          btnChangePin.disabled = true;
+          btnChangePin.style.opacity = '0.5';
+          btnChangePin.style.cursor = 'not-allowed';
+          btnChangePin.title = 'Esta opción requiere una suscripción activa o contrato firmado.';
+        }
+        if (pinChangeWarning) {
+          pinChangeWarning.style.display = 'block';
+          pinChangeWarning.innerText = '⚠️ El cambio de PIN requiere una suscripción activa o un contrato firmado. Mientras tanto, tu PIN de demo es 0000.';
+        }
+
+        // Deshabilitar bloqueo de admin
+        if (toggleBlockAdmin) {
+          toggleBlockAdmin.checked = false;
+          toggleBlockAdmin.disabled = true;
+          toggleBlockAdmin.style.cursor = 'not-allowed';
+        }
+        if (blockAdminLabel) {
+          blockAdminLabel.style.color = 'var(--text-muted)';
+        }
+        if (adminPrivacyWarning) {
+          adminPrivacyWarning.style.color = '#f87171';
+          adminPrivacyWarning.innerText = '⚠️ El bloqueo del acceso al administrador requiere una suscripción activa o un contrato firmado.';
+        }
+      } else {
+        // Habilitar cambio de PIN
+        if (btnChangePin) {
+          btnChangePin.disabled = false;
+          btnChangePin.style.opacity = '1';
+          btnChangePin.style.cursor = 'pointer';
+          btnChangePin.title = '';
+        }
+        if (pinChangeWarning) {
+          pinChangeWarning.style.display = 'none';
+        }
+
+        // Habilitar bloqueo de admin
+        if (toggleBlockAdmin) {
+          toggleBlockAdmin.disabled = false;
+          toggleBlockAdmin.style.cursor = 'pointer';
+          toggleBlockAdmin.checked = !!currentTenant.block_admin_access;
+        }
+        if (blockAdminLabel) {
+          blockAdminLabel.style.color = '#fff';
+        }
+        if (adminPrivacyWarning) {
+          adminPrivacyWarning.style.color = 'var(--text-muted)';
+          adminPrivacyWarning.innerHTML = currentTenant.block_admin_access 
+            ? '✅ Acceso bloqueado. El administrador de la plataforma no puede acceder a tu historial de citas ni configuraciones.'
+            : 'El administrador podrá ayudarte con soporte técnico y configuraciones iniciales si mantienes esta opción desactivada.';
+        }
+      }
+
       // Renderizar iconos de Lucide dinámicos
       lucide.createIcons();
+    }
+
+    // Alternar el bloqueo de acceso al administrador
+    async function toggleAdminAccessBlock(checkboxEl) {
+      const block = checkboxEl.checked;
+      const adminPrivacyWarning = document.getElementById('admin-privacy-warning-text');
+      
+      try {
+        checkboxEl.disabled = true;
+        const response = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: currentTenant.email,
+            business_name: currentTenant.business_name,
+            block_admin_access: block
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al actualizar la configuración de privacidad.');
+        }
+
+        const updatedTenant = await response.json();
+        currentTenant.block_admin_access = updatedTenant.block_admin_access;
+        
+        showToast(block ? 'Acceso al administrador bloqueado.' : 'Acceso al administrador permitido.', 'success');
+        
+        if (adminPrivacyWarning) {
+          adminPrivacyWarning.style.color = 'var(--text-muted)';
+          adminPrivacyWarning.innerHTML = block 
+            ? '✅ Acceso bloqueado. El administrador de la plataforma no puede acceder a tu historial de citas ni configuraciones.'
+            : 'El administrador podrá ayudarte con soporte técnico y configuraciones iniciales si mantienes esta opción desactivada.';
+        }
+      } catch (err) {
+        checkboxEl.checked = !block; // Revertir checkbox
+        showToast(err.message, 'error');
+      } finally {
+        checkboxEl.disabled = false;
+      }
     }
 
     // Helper to export contract text as clean A4 PDF
@@ -5703,7 +5843,8 @@
     // Buscar citas del servidor
     async function fetchAppointments(tenantId) {
       try {
-        const response = await fetch(`/api/appointments?tenant_id=${tenantId}`);
+        const savedPin = sessionStorage.getItem('current_tenant_pin') || '';
+        const response = await fetch(`/api/appointments?tenant_id=${tenantId}&pin=${encodeURIComponent(savedPin)}`);
         if (!response.ok) throw new Error('Error al obtener citas.');
         allAppointments = await response.json();
         

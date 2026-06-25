@@ -56,6 +56,22 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
       t.whatsapp_immediate_notification_enabled = t.whatsapp_immediate_notification_enabled !== undefined && t.whatsapp_immediate_notification_enabled !== null
         ? t.whatsapp_immediate_notification_enabled
         : (workingHoursObj?.whatsapp_immediate_notification_enabled !== false);
+        
+      // Privacy Block: if block_admin_access is enabled
+      const reqPin = req.query.pin || req.headers['x-client-pin'];
+      const isClientRequest = reqPin && reqPin === t.admin_pin;
+      
+      if (t.block_admin_access && !isClientRequest) {
+        // Redact sensitive details for admin
+        t.admin_pin = '****';
+        t.custom_instructions = 'Acceso bloqueado por privacidad del cliente';
+        t.business_description = 'Acceso bloqueado por privacidad del cliente';
+        t.pricing_details = 'Acceso bloqueado por privacidad del cliente';
+        t.specialties = [];
+        t.vacation_message = 'Acceso bloqueado';
+        t.knowledge_base_content = 'Acceso bloqueado';
+        t.admin_access_blocked = true;
+      }
       return t;
     };
 
@@ -160,7 +176,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     client_enable_multi_professional,
     client_enable_no_show_deposits,
     whatsapp_immediate_notification_enabled,
-    business_sector
+    business_sector,
+    block_admin_access
   } = req.body;
 
   if (!business_name || !email) {
@@ -186,6 +203,7 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (pricing_details !== undefined) tenantData.pricing_details = pricing_details;
     if (custom_instructions !== undefined) tenantData.custom_instructions = custom_instructions;
     if (admin_pin !== undefined) tenantData.admin_pin = admin_pin;
+    if (block_admin_access !== undefined) tenantData.block_admin_access = !!block_admin_access;
     if (vacation_mode !== undefined) tenantData.vacation_mode = !!vacation_mode;
     if (vacation_message !== undefined) tenantData.vacation_message = vacation_message;
     if (voice_speed !== undefined) tenantData.voice_speed = Number(voice_speed);
@@ -272,6 +290,9 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     } else {
       // Crear un nuevo registro
       let attemptData: any = { ...tenantData };
+      if (!attemptData.admin_pin) {
+        attemptData.admin_pin = '0000';
+      }
       let retries = 10;
       let success = false;
       let lastError: any = null;
@@ -329,13 +350,33 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
 
 // 3. Listar citas de un inquilino
 app.get('/api/appointments', async (req, res): Promise<void> => {
-  const { tenant_id } = req.query;
+  const { tenant_id, pin } = req.query;
   if (!tenant_id) {
     res.status(400).json({ error: 'Se requiere el parámetro tenant_id.' });
     return;
   }
   
   try {
+    // Check if the tenant has blocked admin access
+    const { data: tenant, error: tenantErr } = await supabase
+      .from('tenants')
+      .select('admin_pin, block_admin_access')
+      .eq('id', tenant_id)
+      .single();
+
+    if (tenantErr || !tenant) {
+      res.status(404).json({ error: 'Inquilino no encontrado.' });
+      return;
+    }
+
+    if (tenant.block_admin_access) {
+      const reqPin = pin || req.headers['x-client-pin'];
+      if (!reqPin || reqPin !== tenant.admin_pin) {
+        res.status(403).json({ error: 'El cliente ha bloqueado el acceso del administrador al historial de citas.' });
+        return;
+      }
+    }
+
     const { data, error } = await supabase
       .from('appointments')
       .select('*')
@@ -789,7 +830,8 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     twilio_account_sid,
     twilio_auth_token,
     twilio_whatsapp_number,
-    whatsapp_immediate_notification_enabled
+    whatsapp_immediate_notification_enabled,
+    block_admin_access
   } = req.body;
 
   if (!business_name || !email) {
@@ -881,6 +923,7 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       contract_start_date: contract_start_date || new Date().toISOString().split('T')[0],
       contract_end_date: contract_end_date || null,
       admin_pin: admin_pin || null,
+      block_admin_access: block_admin_access !== undefined ? !!block_admin_access : (existing ? existing.block_admin_access : false),
       contract_template_id: contract_template_id || null,
       signed_contract_content: signed_contract_content || null,
       is_trial: !!is_trial,
@@ -984,6 +1027,9 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       if (!success && lastError) throw lastError;
     } else {
       let attemptData: any = { ...tenantData };
+      if (!attemptData.admin_pin) {
+        attemptData.admin_pin = '0000';
+      }
       let retries = 10;
       let success = false;
       let lastError: any = null;
@@ -2408,7 +2454,8 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
       ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE,
       ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
       ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE;
+      ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
       NOTIFY pgrst, 'reload schema';
     `);
     console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Directa).');
@@ -2779,6 +2826,28 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
   }
 
   try {
+    // Check if client is allowed to change PIN (must have active subscription or signed contract)
+    const { data: tenant, error: fetchErr } = await supabase
+      .from('tenants')
+      .select('subscription_status, signed_contract_content, stripe_subscription_id')
+      .eq('id', id)
+      .single();
+
+    if (fetchErr || !tenant) {
+      res.status(404).json({ error: 'Inquilino no encontrado.' });
+      return;
+    }
+
+    const hasContractOrSub = 
+      (tenant.signed_contract_content && tenant.signed_contract_content.trim() !== '') || 
+      (tenant.stripe_subscription_id && tenant.stripe_subscription_id.trim() !== '') ||
+      (tenant.subscription_status && tenant.subscription_status !== 'trial');
+
+    if (!hasContractOrSub) {
+      res.status(403).json({ error: 'La posibilidad de cambiar el PIN requiere una suscripción activa o un contrato firmado. Mientras tanto, tu PIN predeterminado es 0000.' });
+      return;
+    }
+
     const { data, error } = await supabase
       .from('tenants')
       .update({ admin_pin: new_pin })
@@ -2904,6 +2973,12 @@ async function runDatabaseMigrations() {
     await clientInstance.query(`
       ALTER TABLE prospects 
       ADD COLUMN IF NOT EXISTS classification VARCHAR DEFAULT 'no_contactado';
+    `);
+
+    // Asegurar columna block_admin_access en tenants si no existe
+    await clientInstance.query(`
+      ALTER TABLE tenants 
+      ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
     `);
 
     // 3. Notificar a PostgREST
