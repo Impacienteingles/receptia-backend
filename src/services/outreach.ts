@@ -7,6 +7,8 @@ interface SendOutreachEmailRequest {
   demoUrl: string;
   audioUrl: string;
   sector: string;
+  subject?: string;
+  bodyOverride?: string;
 }
 
 /**
@@ -18,8 +20,8 @@ export async function sendOutreachEmail(req: SendOutreachEmailRequest): Promise<
   const apiKey = await getSettingVal('RESEND_API_KEY') || process.env.RESEND_API_KEY;
   const fromEmail = await getSettingVal('RESEND_FROM_EMAIL') || process.env.RESEND_FROM_EMAIL || 'Receptia Demos <onboarding@resend.dev>';
 
-  const subject = `🎙️ Hemos diseñado un Asistente de Voz IA para ${req.businessName}`;
-  const htmlContent = getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector);
+  const subject = req.subject || `🎙️ Hemos diseñado un Asistente de Voz IA para ${req.businessName}`;
+  const htmlContent = getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector, req.bodyOverride);
 
   if (!apiKey || apiKey === 'YOUR_RESEND_API_KEY') {
     console.log(`[Outreach Simulator] Enviando email de captación para ${req.businessName}...`);
@@ -62,10 +64,38 @@ export async function sendOutreachEmail(req: SendOutreachEmailRequest): Promise<
 }
 
 /**
+ * Convierte texto plano con saltos de línea y marcas **negrita** a HTML.
+ */
+export function parseBodyToHtml(text: string): string {
+  const cleanText = text.replace(/\r\n/g, '\n');
+  const processedText = cleanText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  const paragraphs = processedText.split(/\n\s*\n/);
+  return paragraphs
+    .map(p => {
+      const line = p.trim().replace(/\n/g, '<br>');
+      return `<p>${line}</p>`;
+    })
+    .join('\n');
+}
+
+/**
  * Plantilla HTML de correo premium y responsive
  */
-export function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUrl: string, sector: string): string {
+export function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUrl: string, sector: string, bodyOverride?: string): string {
   const sectorTerm = sector.toLowerCase() === 'abogados' ? 'sus clientes' : 'sus pacientes';
+  
+  let bodyHtml = '';
+  if (bodyOverride) {
+    bodyHtml = parseBodyToHtml(bodyOverride);
+  } else {
+    bodyHtml = `
+        <p>Estimado/a responsable de <span class="highlight">${businessName}</span>,</p>
+        
+        <p>Hemos diseñado y configurado un <span class="highlight">Agente de Voz con Inteligencia Artificial</span> adaptado a las necesidades específicas de su negocio.</p>
+        
+        <p>Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.</p>
+    `;
+  }
   
   return `
 <!DOCTYPE html>
@@ -289,11 +319,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
       </div>
       
       <div class="content">
-        <p>Estimado/a responsable de <span class="highlight">${businessName}</span>,</p>
-        
-        <p>Hemos diseñado y configurado un <span class="highlight">Agente de Voz con Inteligencia Artificial</span> adaptado a las necesidades específicas de su negocio.</p>
-        
-        <p>Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.</p>
+        ${bodyHtml}
 
         <!-- Tarjeta de Mockup del Reproductor de Audio -->
         <a href="${audioUrl}" class="dashboard-mockup" target="_blank">
@@ -312,7 +338,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
           </div>
         </a>
 
-        <p>Además de esta presentación en audio, le hemos configurado una <span class="highlight">Demostración Real e Interactiva</span> de su receptor virtual de llamadas en su **Panel de Control de Cliente** privado.</p>
+        <p>Además de esta presentación en audio, le hemos configurado una <span class="highlight">Demostración Real e Interactiva</span> de su receptor virtual de llamadas en su <strong>Panel de Control de Cliente</strong> privado.</p>
         
         <p>Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña <span class="highlight">"Llamadas IA"</span>. Podrá probar al agente virtual, ver su calendario y utilizar su contraseña de acceso temporal: <strong style="color: #60a5fa; font-family: monospace; font-size: 1.1em; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">0000</strong>.</p>
 

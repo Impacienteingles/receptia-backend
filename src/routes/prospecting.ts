@@ -722,6 +722,7 @@ router.post('/delete-bulk', async (req: Request, res: Response): Promise<void> =
  */
 router.post('/:id/resend-email', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
+  const { subject, body, to_email_override } = req.body;
 
   try {
     const { data: prospect, error: fetchErr } = await supabase
@@ -735,41 +736,91 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    if (!prospect.email || prospect.email.includes('example.com')) {
-      res.status(400).json({ error: `El prospecto no tiene un correo electrónico válido configurado: ${prospect.email}` });
+    // Guardar subject en settings si viene en la petición
+    if (subject !== undefined) {
+      const key = `outreach_subject_${id}`;
+      const { data: existing } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+      if (existing) {
+        await supabase.from('settings').update({ value: subject }).eq('key', key);
+      } else {
+        await supabase.from('settings').insert({ key, value: subject });
+      }
+    }
+
+    // Guardar body en settings si viene en la petición
+    if (body !== undefined) {
+      const key = `outreach_body_${id}`;
+      const { data: existing } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+      if (existing) {
+        await supabase.from('settings').update({ value: body }).eq('key', key);
+      } else {
+        await supabase.from('settings').insert({ key, value: body });
+      }
+    }
+
+    let recipient = prospect.email;
+    let isTest = false;
+
+    if (to_email_override) {
+      isTest = true;
+      if (to_email_override === 'admin') {
+        const adminEmail = await getSettingVal('ADMIN_TEST_EMAIL');
+        if (!adminEmail) {
+          res.status(400).json({ error: 'No se ha configurado el "Correo de Prueba del Administrador" en los Ajustes.' });
+          return;
+        }
+        recipient = adminEmail;
+      } else {
+        recipient = to_email_override;
+      }
+    }
+
+    if (!recipient || recipient.includes('example.com')) {
+      res.status(400).json({ error: `El correo electrónico de destino no es válido: ${recipient}` });
       return;
     }
 
     if (!prospect.demo_url || !prospect.audio_url) {
-      res.status(400).json({ error: 'El prospecto debe tener una demo y un audio generados antes de reenviar el correo.' });
+      res.status(400).json({ error: 'El prospecto debe tener una demo y un audio generados antes de enviar el correo.' });
       return;
     }
 
-    console.log(`[Prospecting API] Reenviando correo de outreach para ${prospect.business_name} a ${prospect.email}...`);
+    const emailSubject = subject || `🎙️ Hemos diseñado un Asistente de Voz IA para ${prospect.business_name}`;
+
+    console.log(`[Prospecting API] Enviando correo de outreach para ${prospect.business_name} (Test: ${isTest}) a ${recipient}...`);
     const emailSent = await sendOutreachEmail({
       businessName: prospect.business_name,
-      toEmail: prospect.email,
+      toEmail: recipient,
       demoUrl: prospect.demo_url,
       audioUrl: prospect.audio_url,
-      sector: prospect.sector || 'general'
+      sector: prospect.sector || 'general',
+      subject: emailSubject,
+      bodyOverride: body
     });
 
     if (!emailSent) {
       throw new Error('Fallo al enviar el correo a través del proveedor de email.');
     }
 
-    // Actualizar el estado por si acaso estaba en failed
-    await supabase
-      .from('prospects')
-      .update({
-        status: 'email_sent',
-        error_details: null
-      })
-      .eq('id', id);
+    if (!isTest) {
+      // Actualizar el estado por si acaso estaba en failed o borrador
+      await supabase
+        .from('prospects')
+        .update({
+          status: 'email_sent',
+          error_details: null
+        })
+        .eq('id', id);
+    }
 
-    res.json({ status: 'success', message: 'Correo reenviado con éxito.' });
+    res.json({
+      status: 'success',
+      message: isTest
+        ? `Correo de prueba enviado con éxito a la dirección del administrador: ${recipient}`
+        : `Correo enviado con éxito al prospecto: ${recipient}`
+    });
   } catch (err: any) {
-    console.error(`[Prospecting API ERROR] Fallo al reenviar correo para prospecto ${id}:`, err.message);
+    console.error(`[Prospecting API ERROR] Fallo al enviar correo para prospecto ${id}:`, err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -793,25 +844,41 @@ router.get('/:id/preview-email', async (req: Request, res: Response): Promise<vo
 
     const voiceKey = `outreach_voice_${id}`;
     const scriptKey = `outreach_script_${id}`;
+    const subjectKey = `outreach_subject_${id}`;
+    const bodyKey = `outreach_body_${id}`;
 
     // Obtener valores personalizados guardados en settings
     const { data: voiceVal } = await supabase.from('settings').select('value').eq('key', voiceKey).maybeSingle();
     const { data: scriptVal } = await supabase.from('settings').select('value').eq('key', scriptKey).maybeSingle();
+    const { data: subjectVal } = await supabase.from('settings').select('value').eq('key', subjectKey).maybeSingle();
+    const { data: bodyVal } = await supabase.from('settings').select('value').eq('key', bodyKey).maybeSingle();
 
     const selectedVoiceId = voiceVal?.value || 'cefcb124-080b-4655-b31f-932f3ee743de'; // Elena por defecto
     const defaultScriptText = `Hola, muy buenas. He diseñado un asistente de voz inteligente a medida para su negocio, ${prospect.business_name}. Este asistente ya está listo para atender sus llamadas, resolver dudas de sus clientes y gestionar sus citas las veinticuatro horas del día. Le he preparado una simulación de llamada real en su panel de cliente. Puede acceder hoy mismo utilizando el enlace de este correo y su contraseña temporal: 0000. También le invito a probar nuestra calculadora de ROI integrada en su panel, con la que podrá estimar el ahorro mensual y las citas que recuperará con Receptia. ¡Espero que le guste!`;
     const selectedScript = scriptVal?.value || defaultScriptText;
 
+    const defaultSubject = `🎙️ Hemos diseñado un Asistente de Voz IA para ${prospect.business_name}`;
+    const defaultBodyText = `Estimado/a responsable de ${prospect.business_name},
+
+Hemos diseñado y configurado un Agente de Voz con Inteligencia Artificial adaptado a las necesidades específicas de su negocio.
+
+Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.`;
+
+    const selectedSubject = subjectVal?.value || defaultSubject;
+    const selectedBody = bodyVal?.value || defaultBodyText;
+
     const htmlContent = getOutreachEmailTemplate(
       prospect.business_name,
       prospect.demo_url || '#',
       prospect.audio_url || '#',
-      prospect.sector || 'general'
+      prospect.sector || 'general',
+      selectedBody
     );
 
     res.json({
       status: 'success',
-      subject: `🎙️ Hemos diseñado un Asistente de Voz IA para ${prospect.business_name}`,
+      subject: selectedSubject,
+      body: selectedBody,
       to: prospect.email,
       html: htmlContent,
       voice_id: selectedVoiceId,
@@ -824,11 +891,93 @@ router.get('/:id/preview-email', async (req: Request, res: Response): Promise<vo
 });
 
 /**
+ * 8.5. Guardar ajustes personalizados de outreach sin regenerar el audio de demo
+ */
+router.post('/:id/save-outreach-settings', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { subject, body, voice_id, script } = req.body;
+
+  try {
+    const { data: prospect, error: fetchErr } = await supabase
+      .from('prospects')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchErr || !prospect) {
+      res.status(404).json({ error: `No se pudo encontrar el prospecto con ID: ${id}` });
+      return;
+    }
+
+    // Guardar Asunto
+    if (subject !== undefined) {
+      const key = `outreach_subject_${id}`;
+      const { data: existing } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+      if (existing) {
+        await supabase.from('settings').update({ value: subject }).eq('key', key);
+      } else {
+        await supabase.from('settings').insert({ key, value: subject });
+      }
+    }
+
+    // Guardar Cuerpo
+    if (body !== undefined) {
+      const key = `outreach_body_${id}`;
+      const { data: existing } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+      if (existing) {
+        await supabase.from('settings').update({ value: body }).eq('key', key);
+      } else {
+        await supabase.from('settings').insert({ key, value: body });
+      }
+    }
+
+    // Guardar Voz
+    if (voice_id !== undefined) {
+      const key = `outreach_voice_${id}`;
+      const { data: existing } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+      if (existing) {
+        await supabase.from('settings').update({ value: voice_id }).eq('key', key);
+      } else {
+        await supabase.from('settings').insert({ key, value: voice_id });
+      }
+    }
+
+    // Guardar Script/Guion
+    if (script !== undefined) {
+      const key = `outreach_script_${id}`;
+      const { data: existing } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+      if (existing) {
+        await supabase.from('settings').update({ value: script }).eq('key', key);
+      } else {
+        await supabase.from('settings').insert({ key, value: script });
+      }
+    }
+
+    // Renderizar la plantilla HTML actualizada con los últimos cambios
+    const htmlContent = getOutreachEmailTemplate(
+      prospect.business_name,
+      prospect.demo_url || '#',
+      prospect.audio_url || '#',
+      prospect.sector || 'general',
+      body
+    );
+
+    res.json({
+      status: 'success',
+      html: htmlContent
+    });
+  } catch (err: any) {
+    console.error(`[Prospecting API ERROR] Fallo al guardar ajustes de outreach para prospecto ${id}:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
  * 9. Regenerar la alocución de audio (TTS) con voz/guion personalizados
  */
 router.post('/:id/regenerate-audio', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { voice_id, script } = req.body;
+  const { voice_id, script, subject, body } = req.body;
 
   try {
     const { data: prospect, error: fetchErr } = await supabase
@@ -855,6 +1004,8 @@ router.post('/:id/regenerate-audio', async (req: Request, res: Response): Promis
     // Guardar en la tabla settings el script y la voz para este prospecto
     const voiceKey = `outreach_voice_${id}`;
     const scriptKey = `outreach_script_${id}`;
+    const subjectKey = `outreach_subject_${id}`;
+    const bodyKey = `outreach_body_${id}`;
 
     // Upsert para la voz
     const { data: existingVoice } = await supabase
@@ -882,18 +1033,49 @@ router.post('/:id/regenerate-audio', async (req: Request, res: Response): Promis
       await supabase.from('settings').insert({ key: scriptKey, value: script });
     }
 
+    // Upsert para Asunto si viene en la petición
+    if (subject !== undefined) {
+      const { data: existingSub } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', subjectKey)
+        .maybeSingle();
+
+      if (existingSub) {
+        await supabase.from('settings').update({ value: subject }).eq('key', subjectKey);
+      } else {
+        await supabase.from('settings').insert({ key: subjectKey, value: subject });
+      }
+    }
+
+    // Upsert para Cuerpo si viene en la petición
+    if (body !== undefined) {
+      const { data: existingBody } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', bodyKey)
+        .maybeSingle();
+
+      if (existingBody) {
+        await supabase.from('settings').update({ value: body }).eq('key', bodyKey);
+      } else {
+        await supabase.from('settings').insert({ key: bodyKey, value: body });
+      }
+    }
+
     // Actualizar la URL de audio en el prospecto
     await supabase
       .from('prospects')
       .update({ audio_url: audioUrl })
       .eq('id', id);
 
-    // Obtener la nueva vista previa del HTML del correo con el nuevo reproductor de audio
+    // Obtener la nueva vista previa del HTML del correo con el nuevo reproductor de audio y el cuerpo
     const htmlContent = getOutreachEmailTemplate(
       prospect.business_name,
       prospect.demo_url,
       audioUrl,
-      prospect.sector || 'general'
+      prospect.sector || 'general',
+      body
     );
 
     res.json({

@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import webhookRouter from './routes/webhook';
 import prospectingRouter from './routes/prospecting';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
-import { supabase, getSettingVal } from './services/supabase';
+import { supabase, getSettingVal, clearSettingsCache } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName } from './services/retell';
 import { createStripeCheckoutSession, createStripePortalSession, getStripeClient } from './services/stripe';
 import axios from 'axios';
@@ -2597,6 +2597,7 @@ app.post('/api/admin/settings', async (req, res): Promise<void> => {
       .upsert(upsertData, { onConflict: 'key' });
       
     if (error) throw error;
+    clearSettingsCache();
     res.json({ status: 'success', message: 'Ajustes guardados correctamente.' });
   } catch (err: any) {
     console.error('Error al guardar ajustes:', err);

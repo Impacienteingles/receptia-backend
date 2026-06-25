@@ -57,3 +57,14 @@ export async function getSettingVal(key: string): Promise<string | undefined> {
   settingsCache[key] = { value: envValue, timestamp: now };
   return envValue;
 }
+
+/**
+ * Limpia el caché en memoria de ajustes dinámicos.
+ * Esto asegura que cuando se modifiquen configuraciones, el backend las lea al instante.
+ */
+export function clearSettingsCache(): void {
+  for (const key in settingsCache) {
+    delete settingsCache[key];
+  }
+}
+
