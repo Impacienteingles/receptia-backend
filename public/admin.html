@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.4">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.4">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.5">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.5">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -4428,6 +4428,19 @@
           ]
         },
         {
+          title: 'Prospección B2B Automatizada y Pipeline de Demos',
+          content: [
+            'Receptia incorpora una herramienta de captación y venta automatizada para administradores (Pestaña "Prospección B2B"):',
+            [
+              'Extracción de Leads (Scraping): Busca negocios locales en cualquier sector, país y ciudad. El extractor recopila datos de Google Maps y páginas web (nombre comercial, teléfono, email, dirección, sitio web y especialidades).',
+              'Clasificación Comercial: Clasifica a los prospectos según su interés o estado del pipeline (Frío, Cálido, Interesado, Cliente, Descartado).',
+              'Pipeline de Demostración en Un Clic: Al accionar "Generar Demo", el sistema crea automáticamente un inquilino de prueba temporal y un agente virtual de Retell AI entrenado específicamente con los datos extraídos (sitio web, servicios).',
+              'Outreach por Email / WhatsApp: El sistema genera y envía un correo personalizado al comercio prospectado que incluye un enlace para "Probar el Asistente". Al hacer clic, el prospecto puede llamar y hablar con su propio agente personalizado en tiempo real.',
+              'Exportación: Exporta las listas de leads filtradas o seleccionadas a formatos CSV y PDF para integrarlas con CRM externos.'
+            ]
+          ]
+        },
+        {
           title: 'Copias de Seguridad y APIs de Terceros',
           content: [
             'Para mantener la plataforma segura, en la pestaña "Copia de Seguridad" puedes exportar toda la base de datos de Receptia (clientes, planes, contratos, contabilidad y logs) a un único archivo JSON.',
@@ -4705,7 +4718,8 @@
               'Tabla plans (Planes de Precios): Definición de planes de suscripción. Atributos: id (UUID, PK), name (TEXT), price (NUMERIC), features (JSONB), billing_cycle (TEXT: monthly/yearly).',
               'Tabla call_logs (Historial de Llamadas): Registro estructurado post-llamada. Atributos: id (UUID, PK), tenant_id (UUID, FK a tenants), caller_phone (TEXT), call_duration (INTEGER), recording_url (TEXT), transcript (TEXT), summary (TEXT), intent_tag (TEXT: Cita Agendada/Consulta General/Queja/Llamada Perdida), created_at (TIMESTAMPTZ).',
               'Tabla outbound_campaigns (Campañas Salientes): Definición de campañas outbound por voz. Atributos: id (UUID, PK), tenant_id (UUID, FK a tenants), name (TEXT), status (TEXT: pending/running/completed/failed), created_at (TIMESTAMPTZ).',
-              'Tabla outbound_campaign_recipients (Contactos de Campaña): Destinatarios individuales de campañas salientes. Atributos: id (UUID, PK), campaign_id (UUID, FK a outbound_campaigns), client_name (TEXT), client_phone (TEXT), custom_variable (TEXT), status (TEXT: pending/calling/completed/failed/no_answer/completed_with_booking), call_id (TEXT), created_at (TIMESTAMPTZ).'
+              'Tabla outbound_campaign_recipients (Contactos de Campaña): Destinatarios individuales de campañas salientes. Atributos: id (UUID, PK), campaign_id (UUID, FK a outbound_campaigns), client_name (TEXT), client_phone (TEXT), custom_variable (TEXT), status (TEXT: pending/calling/completed/failed/no_answer/completed_with_booking), call_id (TEXT), created_at (TIMESTAMPTZ).',
+              'Tabla prospects (Prospectos B2B y Generación de Demos): Leads comerciales extraídos por el scraper B2B. Atributos: id (UUID, PK), business_name (TEXT), email (TEXT), phone (TEXT), website (TEXT), address (TEXT), sector (TEXT), specialties (JSONB), created_at (TIMESTAMPTZ), status (TEXT: pending/demo_created/audio_generated/email_sent/failed), classification (TEXT: frio/calido/interesado/descartado/cliente), demo_agent_id (TEXT), custom_audio_url (TEXT), email_subject (TEXT), email_body (TEXT), last_email_sent (TIMESTAMPTZ), email_opened (BOOLEAN), email_opened_at (TIMESTAMPTZ), call_demo_made (BOOLEAN), call_demo_date (TIMESTAMPTZ), call_demo_duration (INTEGER).'
             ]
           ]
         },
@@ -4831,6 +4845,18 @@
               'Worker Asíncrono con Throttle: Al lanzar la campaña, un proceso en segundo plano recorre de forma secuencial la lista y realiza llamadas salientes automatizadas mediante la API de Retell AI (create-phone-call), inyectando el nombre y la nota del cliente.',
               'Retardo de Seguridad: El worker incluye un retraso de 15 segundos entre llamadas para evitar colapsar la línea telefónica y respetar la tasa de canales SIP disponibles.',
               'Actualización en Tiempo Real: Mediante el webhook de eventos telefónicos (/agent-events), el sistema rastrea el call_id y actualiza instantáneamente el estado del destinatario (ej: completed_with_booking si la IA cierra una cita con éxito, no_answer, completed o failed).'
+            ]
+          ]
+        },
+        {
+          title: '14. Módulo de Prospección B2B y Generación de Demos en Lote',
+          content: [
+            'Pipeline automatizado de adquisición de clientes mediante scraping web y provisión dinámica de agentes:',
+            [
+              'Extractor Web y Maps (Scraper): Combina búsquedas geolocalizadas mediante scraping directo de Google Maps y sitios web para extraer datos estructurados y correos de contacto corporativos.',
+              'Provisión Dinámica de Demos: El backend crea de forma efímera un tenant ficticio con catálogo inyectado desde el scraper y le asocia un agente Retell LLM personalizado con voz natural en español.',
+              'Outreach Automatizado (outreach.ts): Módulo que interactúa con el servicio de correo para enviar propuestas comerciales personalizadas con botones interactivos que inician una llamada directa (Click-to-Call) al agente de voz simulador de la clínica o comercio.',
+              'Deduplicación en Tiempo Real: Normaliza nombres, teléfonos y direcciones web para evitar crear registros de prospectos duplicados o enviar emails de prospección repetitivos al mismo comercio.'
             ]
           ]
         }
