@@ -424,6 +424,8 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
     }
 
     const emailSent = await sendOutreachEmail({
+      prospectId: prospectId,
+      originUrl: origin,
       businessName: businessName,
       toEmail: email,
       demoUrl: demoUrl || '',
@@ -786,11 +788,14 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
     }
 
     const emailSubject = subject || `🎙️ Hemos diseñado un Asistente de Voz IA para ${prospect.business_name}`;
+    const webhookBase = (await getSettingVal('WEBHOOK_BASE_URL') || (req.protocol + '://' + req.get('host'))) as string;
 
     console.log(`[Prospecting API] Enviando correo de outreach para ${prospect.business_name} (Test: ${isTest}) a ${recipient}...`);
     const emailSent = await sendOutreachEmail({
+      prospectId: isTest ? undefined : (id as string),
+      originUrl: isTest ? undefined : (webhookBase as string),
       businessName: prospect.business_name,
-      toEmail: recipient,
+      toEmail: recipient as string,
       demoUrl: prospect.demo_url,
       audioUrl: prospect.audio_url,
       sector: prospect.sector || 'general',

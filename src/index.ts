@@ -2770,6 +2770,50 @@ app.get('/api/debug/logs', (req, res): void => {
   res.json({ logs: debugLogs });
 });
 
+// Endpoint público para trackeo de apertura de correos (Outreach)
+app.get('/api/outreach/track-open', async (req, res): Promise<void> => {
+  const { prospect_id } = req.query;
+
+  if (prospect_id && typeof prospect_id === 'string') {
+    try {
+      console.log(`[Outreach Track] Apertura de correo detectada para prospecto: ${prospect_id}`);
+      
+      // Obtener el valor actual de opened_count para incrementarlo
+      const { data: currentVal } = await supabase
+        .from('prospects')
+        .select('opened_count')
+        .eq('id', prospect_id)
+        .maybeSingle();
+
+      const newCount = ((currentVal?.opened_count || 0) as number) + 1;
+
+      // Actualizar registro en base de datos
+      await supabase
+        .from('prospects')
+        .update({
+          opened_at: new Date().toISOString(),
+          opened_count: newCount
+        })
+        .eq('id', prospect_id);
+
+    } catch (err: any) {
+      console.error(`[Outreach Track Error] No se pudo guardar la apertura para ${prospect_id}:`, err.message);
+    }
+  }
+
+  // Responder siempre con una imagen transparente de 1x1 píxel en formato GIF
+  const pixel = Buffer.from(
+    'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+    'base64'
+  );
+  res.writeHead(200, {
+    'Content-Type': 'image/gif',
+    'Content-Length': pixel.length,
+    'Cache-Control': 'no-store, no-cache, must-revalidate, private'
+  });
+  res.end(pixel);
+});
+
 // WhatsApp Web endpoints para clientes
 app.get('/api/client/whatsapp/status', async (req, res): Promise<void> => {
   const tenantId = (req.query.tenant_id || req.query.tenantId) as string;
@@ -3061,6 +3105,13 @@ async function runDatabaseMigrations() {
     await clientInstance.query(`
       ALTER TABLE prospects 
       ADD COLUMN IF NOT EXISTS classification VARCHAR DEFAULT 'no_contactado';
+    `);
+
+    // Asegurar columnas de tracking de apertura en prospects si no existen
+    await clientInstance.query(`
+      ALTER TABLE prospects 
+      ADD COLUMN IF NOT EXISTS opened_at TIMESTAMP WITH TIME ZONE,
+      ADD COLUMN IF NOT EXISTS opened_count INT DEFAULT 0;
     `);
 
     // Asegurar columna block_admin_access en tenants si no existe

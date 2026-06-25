@@ -2,6 +2,8 @@ import axios from 'axios';
 import { getSettingVal } from './supabase';
 
 interface SendOutreachEmailRequest {
+  prospectId?: string;
+  originUrl?: string;
   businessName: string;
   toEmail: string;
   demoUrl: string;
@@ -14,14 +16,20 @@ interface SendOutreachEmailRequest {
 /**
  * Envía el correo electrónico personalizado de captación (Outreach) utilizando la API de Resend.
  * Soporta configuración dinámica de RESEND_API_KEY y RESEND_FROM_EMAIL.
- * Si no está configurada la clave, simula el envío con éxito.
+ * Si no está configurada la clave, lanza un error claro.
  */
 export async function sendOutreachEmail(req: SendOutreachEmailRequest): Promise<boolean> {
   const apiKey = await getSettingVal('RESEND_API_KEY') || process.env.RESEND_API_KEY;
   const fromEmail = await getSettingVal('RESEND_FROM_EMAIL') || process.env.RESEND_FROM_EMAIL || 'Receptia Demos <onboarding@resend.dev>';
 
   const subject = req.subject || `🎙️ Hemos diseñado un Asistente de Voz IA para ${req.businessName}`;
-  const htmlContent = getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector, req.bodyOverride);
+  let htmlContent = getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector, req.bodyOverride);
+
+  // Inyectar píxel de seguimiento si se proveen los parámetros necesarios
+  if (req.prospectId && req.originUrl) {
+    const trackingPixel = `<img src="${req.originUrl}/api/outreach/track-open?prospect_id=${req.prospectId}" width="1" height="1" style="display:none !important;" alt="" />`;
+    htmlContent = htmlContent.replace('</body>', `${trackingPixel}</body>`);
+  }
 
   if (!apiKey || apiKey === 'YOUR_RESEND_API_KEY') {
     const errorMsg = 'No se ha configurado la clave de API de Resend (RESEND_API_KEY) en los Ajustes. Por favor, añada sus credenciales de Resend para poder realizar envíos reales.';
@@ -55,7 +63,9 @@ export async function sendOutreachEmail(req: SendOutreachEmailRequest): Promise<
     throw new Error(`Resend API devolvió código de estado: ${response.status}`);
   } catch (error: any) {
     console.error('[Outreach ERROR] Fallo al enviar email a través de Resend:', error.response?.data || error.message);
-    return false;
+    const errorDetail = error.response?.data?.message || error.response?.data?.error || error.message;
+    const finalDetail = typeof errorDetail === 'object' ? JSON.stringify(errorDetail) : errorDetail;
+    throw new Error(`Error de Resend: ${finalDetail}`);
   }
 }
 

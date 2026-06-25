@@ -1467,7 +1467,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.31</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.32</span>
         </div>
       </header>
 
@@ -2757,12 +2757,13 @@
                     <th onclick="sortProspects('sector')" style="padding: 1rem 0.5rem; cursor: pointer;">Sector <span id="sort-icon-sector"></span></th>
                     <th onclick="sortProspects('classification')" style="padding: 1rem 0.5rem; cursor: pointer;">Clasificación <span id="sort-icon-classification"></span></th>
                     <th onclick="sortProspects('status')" style="padding: 1rem 0.5rem; text-align: center; cursor: pointer;">Estado Demo <span id="sort-icon-status"></span></th>
+                    <th style="padding: 1rem 0.5rem; text-align: center;">Apertura</th>
                     <th style="padding: 1rem 0.5rem; text-align: right;">Acciones</th>
                   </tr>
                 </thead>
                 <tbody id="prospects-tbody">
                   <tr>
-                    <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                       Realice una búsqueda para extraer clientes potenciales.
                     </td>
                   </tr>
@@ -7128,7 +7129,7 @@
       tbody.innerHTML = '';
 
       if (allProspects.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No se encontraron prospectos extraídos. Realiza una búsqueda arriba.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No se encontraron prospectos extraídos. Realiza una búsqueda arriba.</td></tr>`;
         return;
       }
 
@@ -7247,7 +7248,14 @@
                          <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Reenviar
                        </button>`;
         } else {
-          actionBtn = `<button class="btn" onclick="openDemoGenerationModal('${p.id}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #fff; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Crear demo, generar audio y enviar email">
+          // Si falló pero ya tiene la demo y el audio generados, mostramos un botón para intentar enviar el email sin recrear todo
+          let emailRetryBtn = '';
+          if (p.demo_url && p.audio_url) {
+            emailRetryBtn = `<button class="btn btn-secondary" onclick="resendDemoEmail('${p.id}', this)" style="color: #c084fc; border-color: rgba(192,132,252,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; margin-right: 0.35rem;" title="Enviar o configurar email de demo">
+                               <i data-lucide="mail" style="width: 13px; height: 13px;"></i> Enviar Email
+                             </button>`;
+          }
+          actionBtn = emailRetryBtn + `<button class="btn" onclick="openDemoGenerationModal('${p.id}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #fff; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Crear demo, generar audio y enviar email">
                          <i data-lucide="rocket" style="width: 13px; height: 13px;"></i> Activar Demo
                        </button>`;
         }
@@ -7284,6 +7292,26 @@
           </button>
         `;
 
+        // Tracking de apertura
+        let trackingHtml = '<span style="color: var(--text-muted); font-size: 0.75rem;">-</span>';
+        if (p.opened_count > 0) {
+          const dateStr = p.opened_at ? new Date(p.opened_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+          trackingHtml = `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.15rem;" title="Última apertura: ${p.opened_at ? new Date(p.opened_at).toLocaleString('es-ES') : ''}">
+              <span style="font-size: 0.75rem; font-weight: 700; color: #34d399; display: flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="eye" style="width: 12px; height: 12px;"></i> Abierto (${p.opened_count})
+              </span>
+              <span style="font-size: 0.65rem; color: var(--text-muted);">${dateStr}</span>
+            </div>
+          `;
+        } else if (p.status === 'email_sent') {
+          trackingHtml = `
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.25rem;">
+              <i data-lucide="eye-off" style="width: 12px; height: 12px;"></i> No abierto
+            </span>
+          `;
+        }
+
         row.innerHTML = `
           <td style="padding: 0.85rem 0.5rem; text-align: center;"><input type="checkbox" class="prospect-select" value="${p.id}"></td>
           <td style="font-weight: 600; color: #fff; padding: 0.85rem 0.5rem;">${p.business_name}</td>
@@ -7293,6 +7321,7 @@
           <td style="padding: 0.85rem 0.5rem; font-weight: 500;">${sectorStr}</td>
           <td style="padding: 0.85rem 0.5rem;">${classificationSelect}</td>
           <td style="padding: 0.85rem 0.5rem; text-align: center;">${statusBadge}</td>
+          <td style="padding: 0.85rem 0.5rem; text-align: center;">${trackingHtml}</td>
           <td style="padding: 0.85rem 0.5rem; text-align: right; display: flex; gap: 0.3rem; justify-content: flex-end; align-items: center;">
             ${actionBtn}
             ${p.demo_url ? `
