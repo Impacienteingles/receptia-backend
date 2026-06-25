@@ -186,6 +186,16 @@ router.post('/trigger-pipeline', async (req: Request, res: Response): Promise<vo
     return;
   }
 
+  // Actualizar estado a 'extracted' y limpiar errores anteriores de inmediato para reiniciar la barra en la interfaz
+  try {
+    await supabase
+      .from('prospects')
+      .update({ status: 'extracted', error_details: null })
+      .eq('id', prospect_id);
+  } catch (resetErr: any) {
+    console.warn(`[Pipeline Reset WARNING] No se pudo reiniciar el estado del prospecto ${prospect_id}:`, resetErr.message);
+  }
+
   // Responder inmediatamente de forma asíncrona para no congelar el servidor
   res.json({ status: 'processing', message: 'El pipeline de demostración se ha iniciado en segundo plano.' });
 
@@ -254,10 +264,10 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
 
     if (!tenantId) {
       // Definir parámetros a heredar del baseTenant o fallbacks por defecto
-      const voiceId = baseTenant?.voice_id || 'cartesia-Hailey-Spanish-latin-america';
-      const voiceSpeed = baseTenant?.voice_speed !== undefined && baseTenant?.voice_speed !== null ? Number(baseTenant.voice_speed) : 1.0;
-      const voiceTemperature = baseTenant?.voice_temperature !== undefined && baseTenant?.voice_temperature !== null ? Number(baseTenant.voice_temperature) : 1.0;
-      const voiceResponsiveness = baseTenant?.voice_responsiveness !== undefined && baseTenant?.voice_responsiveness !== null ? Number(baseTenant.voice_responsiveness) : 1.0;
+      const voiceId = overrideData?.voice_id || baseTenant?.voice_id || 'cartesia-Hailey-Spanish-latin-america';
+      const voiceSpeed = overrideData?.voice_speed !== undefined ? Number(overrideData.voice_speed) : (baseTenant?.voice_speed !== undefined && baseTenant?.voice_speed !== null ? Number(baseTenant.voice_speed) : 1.0);
+      const voiceTemperature = overrideData?.voice_temperature !== undefined ? Number(overrideData.voice_temperature) : (baseTenant?.voice_temperature !== undefined && baseTenant?.voice_temperature !== null ? Number(baseTenant.voice_temperature) : 1.0);
+      const voiceResponsiveness = overrideData?.voice_responsiveness !== undefined ? Number(overrideData.voice_responsiveness) : (baseTenant?.voice_responsiveness !== undefined && baseTenant?.voice_responsiveness !== null ? Number(baseTenant.voice_responsiveness) : 1.0);
       
       const workingHours = baseTenant?.working_hours || {
         lunes: [{ start: '09:00', end: '19:00' }],
@@ -285,42 +295,70 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
 - Especialidades / Servicios Ofrecidos: ${specialties.length > 0 ? specialties.join(', ') : 'Servicios Generales'}
 - Página Web del Negocio: ${website || 'No especificada'}`;
 
-      const { data: newTenant, error: tenantErr } = await supabase
-        .from('tenants')
-        .insert({
-          business_name: businessName,
-          email: email,
-          phone_number: phone || null,
-          specialties: specialties,
-          business_sector: sector || 'general',
-          subscription_status: 'trial',
-          subscription_plan: baseTenant 
-            ? `Demo Autogenerada (Clon de ${baseTenant.business_name})`
-            : 'Plan Demo Autogenerado',
-          price_amount: 0,
-          billing_cycle: 'monthly',
-          business_description: businessDescription,
-          pricing_details: pricingDetails,
-          custom_instructions: customInstructions,
-          working_hours: workingHours,
-          voice_id: voiceId,
-          voice_speed: voiceSpeed,
-          voice_temperature: voiceTemperature,
-          voice_responsiveness: voiceResponsiveness,
-          legal_address: address || null,
-          knowledge_base_url: website || null,
-          knowledge_base_content: kbContent,
-          whatsapp_reminders_enabled: baseTenant ? !!baseTenant.whatsapp_reminders_enabled : false,
-          email_notifications_enabled: baseTenant ? !!baseTenant.email_notifications_enabled : false,
-          client_whatsapp_provider: baseTenant ? baseTenant.client_whatsapp_provider : null,
-          twilio_account_sid: baseTenant ? baseTenant.twilio_account_sid : null,
-          twilio_auth_token: baseTenant ? baseTenant.twilio_auth_token : null,
-          twilio_whatsapp_number: baseTenant ? baseTenant.twilio_whatsapp_number : null,
-          whatsapp_immediate_notification_enabled: baseTenant ? !!baseTenant.whatsapp_immediate_notification_enabled : false,
-          whatsapp_reminder_hours: baseTenant ? baseTenant.whatsapp_reminder_hours : 24
-        })
-        .select('*')
-        .single();
+      let attemptData: any = {
+        business_name: businessName,
+        email: email,
+        phone_number: phone || null,
+        specialties: specialties,
+        business_sector: sector || 'general',
+        subscription_status: 'trial',
+        subscription_plan: baseTenant 
+          ? `Demo Autogenerada (Clon de ${baseTenant.business_name})`
+          : 'Plan Demo Autogenerado',
+        price_amount: 0,
+        billing_cycle: 'monthly',
+        business_description: businessDescription,
+        pricing_details: pricingDetails,
+        custom_instructions: customInstructions,
+        working_hours: workingHours,
+        voice_id: voiceId,
+        voice_speed: voiceSpeed,
+        voice_temperature: voiceTemperature,
+        voice_responsiveness: voiceResponsiveness,
+        legal_address: address || null,
+        knowledge_base_url: website || null,
+        knowledge_base_content: kbContent,
+        whatsapp_reminders_enabled: baseTenant ? !!baseTenant.whatsapp_reminders_enabled : false,
+        email_notifications_enabled: baseTenant ? !!baseTenant.email_notifications_enabled : false,
+        client_whatsapp_provider: baseTenant ? baseTenant.client_whatsapp_provider : null,
+        twilio_account_sid: baseTenant ? baseTenant.twilio_account_sid : null,
+        twilio_auth_token: baseTenant ? baseTenant.twilio_auth_token : null,
+        twilio_whatsapp_number: baseTenant ? baseTenant.twilio_whatsapp_number : null,
+        whatsapp_immediate_notification_enabled: baseTenant ? !!baseTenant.whatsapp_immediate_notification_enabled : false,
+        whatsapp_reminder_hours: baseTenant ? baseTenant.whatsapp_reminder_hours : 24
+      };
+
+      let retries = 10;
+      let newTenant: any = null;
+      let tenantErr: any = null;
+
+      while (retries > 0) {
+        const result = await supabase
+          .from('tenants')
+          .insert(attemptData)
+          .select('*')
+          .single();
+
+        if (result.error) {
+          tenantErr = result.error;
+          const errMsg = result.error.message || '';
+          if (errMsg.includes('column') && retries > 1) {
+            const match = errMsg.match(/['"]([^'"]+)['"]/);
+            if (match && match[1]) {
+              const colName = match[1];
+              console.warn(`[Pipeline Fallback] Columna faltante detectada en demo insert: ${colName}. Eliminando y reintentando...`);
+              delete attemptData[colName];
+              retries--;
+              continue;
+            }
+          }
+          break;
+        }
+
+        newTenant = result.data;
+        tenantErr = null;
+        break;
+      }
 
       if (tenantErr || !newTenant) {
         throw new Error(`Fallo al crear el tenant de demo: ${tenantErr?.message}`);

@@ -1129,9 +1129,14 @@
       cursor: pointer;
       outline: none;
       font-family: inherit;
-      width: 135px;
-      max-width: 135px;
+      width: 100%;
+      min-width: 145px;
+      max-width: 160px;
       transition: all 0.2s ease;
+    }
+    .select-classification option {
+      background: var(--bg-color);
+      color: #fff;
     }
     
     /* Default / No contactado */
@@ -1184,26 +1189,26 @@
 
     /* Interesante */
     .select-classification.status-interesante {
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: #34d399;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fbbf24;
     }
     [data-theme="light"] .select-classification.status-interesante {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #047857;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      color: #b45309;
     }
 
     /* Poco interesante */
     .select-classification.status-poco_interesante {
-      background: rgba(107, 114, 128, 0.15);
-      border: 1px solid rgba(107, 114, 128, 0.4);
-      color: #9ca3af;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
     }
     [data-theme="light"] .select-classification.status-poco_interesante {
-      background: rgba(107, 114, 128, 0.1);
-      border: 1px solid rgba(107, 114, 128, 0.3);
-      color: #4b5563;
+      background: rgba(245, 158, 11, 0.05);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      color: #b45309;
     }
 
     /* Descartado */
@@ -1216,6 +1221,34 @@
       background: rgba(239, 68, 68, 0.1);
       border: 1px solid rgba(239, 68, 68, 0.3);
       color: #b91c1c;
+    }
+
+    /* Sibling rule to expand main content when sidebar is collapsed */
+    .sidebar.collapsed ~ .content-wrapper main {
+      max-width: 95%;
+    }
+
+    /* CSS Keyframes for slow, active progress transitions */
+    @keyframes progress-extracted {
+      0% { width: 25%; }
+      100% { width: 45%; }
+    }
+    @keyframes progress-demo-created {
+      0% { width: 50%; }
+      100% { width: 70%; }
+    }
+    @keyframes progress-audio-generated {
+      0% { width: 75%; }
+      100% { width: 95%; }
+    }
+    .progress-bar-animate-extracted {
+      animation: progress-extracted 20s cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
+    }
+    .progress-bar-animate-demo-created {
+      animation: progress-demo-created 20s cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
+    }
+    .progress-bar-animate-audio-generated {
+      animation: progress-audio-generated 20s cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
     }
   </style>
 </head>
@@ -1409,7 +1442,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.7</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.8</span>
         </div>
       </header>
 
@@ -6435,6 +6468,7 @@
     // SECCIÓN DE PROSPECCIÓN B2B Y DEMOS
     // ========================================================
     let allProspects = [];
+    let processingProspectIds = new Set();
     let refreshProspectsInterval = null;
     let prospectsSortField = localStorage.getItem('prospects-sort-field') || 'created_at';
     let prospectsSortDirection = localStorage.getItem('prospects-sort-direction') || 'desc';
@@ -6445,11 +6479,19 @@
         if (!response.ok) throw new Error('Error al conectar con la base de datos de prospectos.');
         const data = await response.json();
         allProspects = data.prospects || [];
+        
+        // Clean up completed/failed prospects from processing set
+        allProspects.forEach(p => {
+          if (p.status === 'email_sent' || p.status === 'failed') {
+            processingProspectIds.delete(p.id);
+          }
+        });
+
         applyProspectsSort();
         renderProspectsTable();
 
         // Controlar si hay algún prospecto en estado de procesamiento (para auto-refrescar)
-        const hasProcessing = allProspects.some(p => p.status === 'demo_created' || p.status === 'audio_generated');
+        const hasProcessing = allProspects.some(p => p.status === 'demo_created' || p.status === 'audio_generated' || processingProspectIds.has(p.id));
         if (hasProcessing) {
           if (!refreshProspectsInterval) {
             console.log('[Prospecting] Iniciando intervalo de auto-refresco...');
@@ -6494,7 +6536,6 @@
         // Actualizar valor en memoria
         const p = allProspects.find(item => item.id === id);
         if (p) p.classification = classification;
-        showCustomAlert('Clasificación actualizada correctamente.', 'Actualizado', 'success');
       } catch (err) {
         showCustomAlert(err.message, 'Error', 'error');
       }
@@ -6548,6 +6589,50 @@
       }
     }
 
+    async function populateBaseTenantSelect(selectEl) {
+      selectEl.innerHTML = '<option value="">-- Usar Plantilla Predeterminada (Elena) --</option>';
+      try {
+        const tResponse = await fetch('/api/tenants');
+        const vResponse = await fetch('/api/voices-catalog');
+        
+        let tenants = [];
+        let voices = [];
+        
+        if (tResponse.ok) tenants = await tResponse.json();
+        if (vResponse.ok) voices = await vResponse.json();
+        
+        const activeTenants = tenants.filter(t => !t.is_archived).sort((a,b) => a.business_name.localeCompare(b.business_name));
+        
+        // 1. Agregar Voces del Catálogo
+        if (voices.length > 0) {
+          const optGroup = document.createElement('optgroup');
+          optGroup.label = 'Clonar Agente del Catálogo';
+          voices.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = `voice-${v.id}`;
+            opt.innerText = `Plantilla: ${v.name} (${v.langName || v.provider})`;
+            optGroup.appendChild(opt);
+          });
+          selectEl.appendChild(optGroup);
+        }
+        
+        // 2. Agregar Clientes Propios
+        if (activeTenants.length > 0) {
+          const optGroup = document.createElement('optgroup');
+          optGroup.label = 'Clonar Cliente Activo';
+          activeTenants.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = `tenant-${t.id}`;
+            opt.innerText = t.business_name;
+            optGroup.appendChild(opt);
+          });
+          selectEl.appendChild(optGroup);
+        }
+      } catch (err) {
+        console.error('Error populating base tenant select:', err);
+      }
+    }
+
     async function triggerSelectedDemos() {
       const selectedCheckboxes = document.querySelectorAll('.prospect-select:checked');
       if (selectedCheckboxes.length === 0) {
@@ -6575,22 +6660,9 @@
         }
       });
 
-      // Cargar lista de plantillas (tenants)
+      // Cargar lista de plantillas
       const select = document.getElementById('demo-base-tenant-select');
-      select.innerHTML = '<option value="">-- Usar Plantilla Predeterminada (Elena) --</option>';
-
-      try {
-        const response = await fetch('/api/tenants');
-        if (response.ok) {
-          const tenants = await response.json();
-          const activeTenants = tenants.filter(t => !t.is_archived).sort((a,b) => a.business_name.localeCompare(b.business_name));
-          activeTenants.forEach(t => {
-            select.innerHTML += `<option value="${t.id}">${t.business_name}</option>`;
-          });
-        }
-      } catch (err) {
-        console.error('Error al cargar clientes plantilla:', err);
-      }
+      await populateBaseTenantSelect(select);
 
       // Mostrar modal
       document.getElementById('prospect-demo-modal').style.display = 'flex';
@@ -6634,21 +6706,30 @@
         let progressColor = 'var(--primary)';
         let statusText = 'Extraído';
         let isSpinning = false;
+        let animateClass = '';
 
         if (p.status === 'extracted') {
           progressPercent = 25;
           progressColor = '#9ca3af'; // gris
           statusText = 'Extraído (25%)';
+          if (processingProspectIds.has(p.id)) {
+            animateClass = 'progress-bar-animate-extracted';
+            statusText = 'Creando Demo...';
+            isSpinning = true;
+            progressColor = '#60a5fa'; // azul
+          }
         } else if (p.status === 'demo_created') {
           progressPercent = 50;
           progressColor = '#60a5fa'; // azul
           statusText = 'Demo Creada (50%)';
           isSpinning = true;
+          animateClass = 'progress-bar-animate-demo-created';
         } else if (p.status === 'audio_generated') {
           progressPercent = 75;
           progressColor = '#c084fc'; // morado
           statusText = 'Audio Generado (75%)';
           isSpinning = true;
+          animateClass = 'progress-bar-animate-audio-generated';
         } else if (p.status === 'email_sent') {
           progressPercent = 100;
           progressColor = '#34d399'; // verde
@@ -6668,7 +6749,7 @@
               ${spinnerHtml} ${statusText}
             </span>
             <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; border: 1px solid var(--border-color);">
-              <div style="width: ${progressPercent}%; height: 100%; background: ${progressColor}; transition: width 0.5s ease;"></div>
+              <div class="${animateClass}" style="width: ${progressPercent}%; height: 100%; background: ${progressColor}; transition: width 0.5s ease;"></div>
             </div>
           </div>
         `;
@@ -6680,7 +6761,7 @@
         let emailHtml = '<span style="color: var(--text-muted);">No disponible</span>';
         if (p.email && p.email !== 'No disponible') {
           emailHtml = `
-            <div style="display: inline-flex; align-items: center; gap: 0.25rem; max-width: 120px; width: 120px;">
+            <div style="display: inline-flex; align-items: center; gap: 0.25rem; max-width: 250px; width: 100%; min-width: 100px;">
               <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; flex-grow: 1; min-width: 0;" title="${p.email}">
                 ${p.email}
               </span>
@@ -6698,9 +6779,9 @@
             <option value="no_contactado" ${currentClass === 'no_contactado' ? 'selected' : ''}>No contactado</option>
             <option value="contactado" ${currentClass === 'contactado' ? 'selected' : ''}>Contactado</option>
             <option value="demo_enviada" ${currentClass === 'demo_enviada' ? 'selected' : ''}>Demo enviada</option>
-            <option value="muy_interesante" ${currentClass === 'muy_interesante' ? 'selected' : ''}>Muy interesante ★★★</option>
-            <option value="interesante" ${currentClass === 'interesante' ? 'selected' : ''}>Interesante ★★</option>
-            <option value="poco_interesante" ${currentClass === 'poco_interesante' ? 'selected' : ''}>Poco interesante ★</option>
+            <option value="muy_interesante" ${currentClass === 'muy_interesante' ? 'selected' : ''}>★★★</option>
+            <option value="interesante" ${currentClass === 'interesante' ? 'selected' : ''}>★★</option>
+            <option value="poco_interesante" ${currentClass === 'poco_interesante' ? 'selected' : ''}>★</option>
             <option value="descartado" ${currentClass === 'descartado' ? 'selected' : ''}>Descartado ✗</option>
           </select>
         `;
@@ -6897,23 +6978,9 @@
       document.getElementById('single-prospect-fields').style.display = 'flex';
       document.getElementById('bulk-prospect-fields').style.display = 'none';
 
-      // Cargar lista de plantillas (tenants)
+      // Cargar lista de plantillas
       const select = document.getElementById('demo-base-tenant-select');
-      select.innerHTML = '<option value="">-- Usar Plantilla Predeterminada (Elena) --</option>';
-
-      try {
-        const response = await fetch('/api/tenants');
-        if (response.ok) {
-          const tenants = await response.json();
-          // Filtrar tenants no archivados y ordenarlos por nombre
-          const activeTenants = tenants.filter(t => !t.is_archived).sort((a,b) => a.business_name.localeCompare(b.business_name));
-          activeTenants.forEach(t => {
-            select.innerHTML += `<option value="${t.id}">${t.business_name}</option>`;
-          });
-        }
-      } catch (err) {
-        console.error('Error al cargar clientes plantilla:', err);
-      }
+      await populateBaseTenantSelect(select);
 
       // Mostrar modal
       document.getElementById('prospect-demo-modal').style.display = 'flex';
@@ -6925,15 +6992,39 @@
       
       const modal = document.getElementById('prospect-demo-modal');
       const prospectId = document.getElementById('demo-prospect-id').value;
-      const baseTenantId = document.getElementById('demo-base-tenant-select').value;
+      const baseTenantSelectVal = document.getElementById('demo-base-tenant-select').value;
       
       modal.style.display = 'none';
+
+      let finalBaseTenantId = undefined;
+      let finalVoiceId = undefined;
+
+      if (baseTenantSelectVal) {
+        if (baseTenantSelectVal.startsWith('voice-')) {
+          finalVoiceId = baseTenantSelectVal.replace('voice-', '');
+        } else if (baseTenantSelectVal.startsWith('tenant-')) {
+          finalBaseTenantId = baseTenantSelectVal.replace('tenant-', '');
+        } else {
+          finalBaseTenantId = baseTenantSelectVal;
+        }
+      }
 
       if (prospectId === 'BULK') {
         // Generación en lote
         const selectedCheckboxes = document.querySelectorAll('.prospect-select:checked');
         const ids = Array.from(selectedCheckboxes).map(cb => cb.value);
         
+        // Reset status for selected prospects immediately in UI
+        for (const id of ids) {
+          processingProspectIds.add(id);
+          const p = allProspects.find(item => item.id === id);
+          if (p) {
+            p.status = 'extracted';
+            p.error_details = null;
+          }
+        }
+        renderProspectsTable();
+
         showCustomAlert(`Generando demos en lote para ${ids.length} prospectos en segundo plano...`, 'Pipeline Lote Iniciado', 'info');
         
         let successCount = 0;
@@ -6941,23 +7032,40 @@
 
         for (const id of ids) {
           try {
+            const bodyData = { 
+              prospect_id: id
+            };
+            if (finalBaseTenantId) bodyData.base_tenant_id = finalBaseTenantId;
+            if (finalVoiceId) {
+              bodyData.override_data = { voice_id: finalVoiceId };
+            }
+
             const response = await fetch('/api/admin/prospects/trigger-pipeline', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({ 
-                prospect_id: id,
-                base_tenant_id: baseTenantId
-              })
+              body: JSON.stringify(bodyData)
             });
             if (response.ok) {
               successCount++;
             } else {
               failCount++;
+              processingProspectIds.delete(id);
+              const p = allProspects.find(item => item.id === id);
+              if (p) {
+                p.status = 'failed';
+                p.error_details = 'Fallo en la petición del pipeline.';
+              }
             }
           } catch (err) {
             failCount++;
+            processingProspectIds.delete(id);
+            const p = allProspects.find(item => item.id === id);
+            if (p) {
+              p.status = 'failed';
+              p.error_details = err.message;
+            }
           }
         }
 
@@ -6974,27 +7082,45 @@
         const website = document.getElementById('demo-website').value.trim();
         const specialties = document.getElementById('demo-specialties').value.trim();
 
+        // UI Reset
+        processingProspectIds.add(prospectId);
+        const p = allProspects.find(item => item.id === prospectId);
+        if (p) {
+          p.status = 'extracted';
+          p.error_details = null;
+        }
+        renderProspectsTable();
+
         showCustomAlert('Iniciando la generación de la demo inteligente en segundo plano...', 'Pipeline Iniciado', 'info');
 
         try {
+          const override_data = {
+            business_name: businessName,
+            email: email,
+            phone: phone,
+            address: address,
+            sector: sector,
+            website: website,
+            specialties: specialties
+          };
+          if (finalVoiceId) {
+            override_data.voice_id = finalVoiceId;
+          }
+
+          const bodyData = {
+            prospect_id: prospectId,
+            override_data: override_data
+          };
+          if (finalBaseTenantId) {
+            bodyData.base_tenant_id = finalBaseTenantId;
+          }
+
           const response = await fetch('/api/admin/prospects/trigger-pipeline', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-              prospect_id: prospectId,
-              base_tenant_id: baseTenantId,
-              override_data: {
-                business_name: businessName,
-                email: email,
-                phone: phone,
-                address: address,
-                sector: sector,
-                website: website,
-                specialties: specialties
-              }
-            })
+            body: JSON.stringify(bodyData)
           });
 
           const data = await response.json();
@@ -7003,6 +7129,13 @@
           showCustomAlert(data.message, 'Pipeline Iniciado', 'info');
           await fetchProspects();
         } catch (err) {
+          processingProspectIds.delete(prospectId);
+          const p = allProspects.find(item => item.id === prospectId);
+          if (p) {
+            p.status = 'failed';
+            p.error_details = err.message;
+          }
+          renderProspectsTable();
           showCustomAlert(err.message, 'Error en Pipeline', 'error');
         }
       }
