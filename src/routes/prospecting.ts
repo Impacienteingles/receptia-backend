@@ -529,7 +529,7 @@ async function generateCartesiaAudio(businessName: string, demoUrl: string): Pro
         let dataStr = '';
 
         if (Buffer.isBuffer(rawData) || rawData instanceof ArrayBuffer) {
-          dataStr = Buffer.from(rawData).toString('utf-8');
+          dataStr = Buffer.from(rawData as any).toString('utf-8');
         } else if (typeof rawData === 'string') {
           dataStr = rawData;
         } else if (typeof rawData === 'object') {
