@@ -11,6 +11,7 @@ interface SendOutreachEmailRequest {
   sector: string;
   subject?: string;
   bodyOverride?: string;
+  voiceId?: string;
 }
 
 /**
@@ -23,7 +24,7 @@ export async function sendOutreachEmail(req: SendOutreachEmailRequest): Promise<
   const fromEmail = await getSettingVal('RESEND_FROM_EMAIL') || process.env.RESEND_FROM_EMAIL || 'Receptia Demos <onboarding@resend.dev>';
 
   const subject = req.subject || `🎙️ Hemos diseñado un Asistente de Voz IA para ${req.businessName}`;
-  let htmlContent = getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector, req.bodyOverride);
+  let htmlContent = getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector, req.bodyOverride, req.voiceId);
 
   // Inyectar píxel de seguimiento si se proveen los parámetros necesarios
   if (req.prospectId && req.originUrl) {
@@ -87,7 +88,20 @@ export function parseBodyToHtml(text: string): string {
 /**
  * Plantilla HTML de correo premium y responsive
  */
-export function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUrl: string, sector: string, bodyOverride?: string): string {
+export function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUrl: string, sector: string, bodyOverride?: string, voiceId?: string): string {
+  let voiceName = 'Elena IA';
+  if (voiceId) {
+    const vId = voiceId.toLowerCase();
+    if (vId.includes('cefcb124') || vId.includes('elena')) voiceName = 'Elena IA';
+    else if (vId.includes('f05c3034') || vId.includes('ines')) voiceName = 'Inés IA';
+    else if (vId.includes('b5aa8098') || vId.includes('manuel')) voiceName = 'Manuel IA';
+    else if (vId.includes('515324df') || vId.includes('dario')) voiceName = 'Darío IA';
+    else if (vId.includes('156fb8d2') || vId.includes('sarah')) voiceName = 'Sarah IA';
+    else if (vId.includes('248be419') || vId.includes('emily')) voiceName = 'Emily IA';
+    else if (vId.includes('5c5ad5e7') || vId.includes('sofia')) voiceName = 'Sofía IA';
+    else if (vId.includes('b4eeae21') || vId.includes('lola')) voiceName = 'Lola IA';
+  }
+  const cleanVoiceName = voiceName.replace(' IA', '');
   const sectorTerm = sector.toLowerCase() === 'abogados' ? 'sus clientes' : 'sus pacientes';
   
   let bodyHtml = '';
@@ -330,7 +344,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
         <!-- Tarjeta de Mockup del Reproductor de Audio -->
         <a href="${audioUrl}" class="dashboard-mockup" target="_blank">
           <div class="mockup-header">
-            <span class="mockup-title">🔊 Presentación Telefónica de Elena IA</span>
+            <span class="mockup-title">🔊 Presentación Telefónica de ${voiceName}</span>
             <span class="mockup-status">
               <span class="status-dot"></span> LISTO PARA ESCUCHAR
             </span>
@@ -340,7 +354,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
               <span class="play-icon"></span>
             </div>
             <div class="mockup-button-text">Escuchar demo de audio</div>
-            <div class="mockup-subtext">Haga clic aquí para escuchar cómo se presentará Elena IA al atender a sus clientes.</div>
+            <div class="mockup-subtext">Haga clic aquí para escuchar cómo se presentará ${voiceName} al atender a sus clientes.</div>
           </div>
         </a>
 
@@ -351,7 +365,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
         <!-- Beneficios en tarjetas -->
         <div class="benefit-card">
           <div class="benefit-title">📞 Recepción Disponible 24/7</div>
-          <p class="benefit-desc">Elena atiende llamadas de forma instantánea a cualquier hora, evitando que pierda clientes cuando su equipo está ocupado o fuera de horario comercial.</p>
+          <p class="benefit-desc">${cleanVoiceName} atiende llamadas de forma instantánea a cualquier hora, evitando que pierda clientes cuando su equipo está ocupado o fuera de horario comercial.</p>
         </div>
 
         <div class="benefit-card">

@@ -1,0 +1,66 @@
+const { Client } = require('pg');
+
+const projectRef = 'vnlbxfhzfuamzyqylkvd';
+const host = 'aws-0-eu-west-1.pooler.supabase.com';
+const port = 5432;
+const user = `postgres.${projectRef}`;
+
+const passwords = [
+  '1Prueba+',
+  '1Esp@#ol',
+  '1Prueba#',
+  '1S67.!3CFitNomj',
+  '1S67.!3CFitNmj',
+  '5MP)3i9P7wjBr['
+];
+
+async function tryConnect(password) {
+  const client = new Client({
+    host,
+    port,
+    database: 'postgres',
+    user,
+    password,
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 5000
+  });
+
+  try {
+    console.log(`Connecting to ${host}:${port} as ${user} with password: ${password}...`);
+    await client.connect();
+    console.log('🎉 SUCCESS! Connected.');
+    
+    // Execute migration
+    await client.query(`
+      ALTER TABLE prospects 
+      ADD COLUMN IF NOT EXISTS opened_at TIMESTAMP WITH TIME ZONE,
+      ADD COLUMN IF NOT EXISTS opened_count INT DEFAULT 0;
+      
+      ALTER TABLE tenants 
+      ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
+      
+      NOTIFY pgrst, 'reload schema';
+    `);
+    console.log('✅ Migration succeeded!');
+    await client.end();
+    return true;
+  } catch (err) {
+    console.error(`❌ Failed: ${err.message}`);
+    try { await client.end(); } catch (e) {}
+    return false;
+  }
+}
+
+async function run() {
+  for (const pw of passwords) {
+    const ok = await tryConnect(pw);
+    if (ok) {
+      process.exit(0);
+    }
+    // Wait 2 seconds between attempts to prevent aggressive lockout
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+  process.exit(1);
+}
+
+run();

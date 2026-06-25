@@ -423,6 +423,18 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
       throw new Error(`Email del prospecto inválido o no suministrado: ${email}`);
     }
 
+    let voiceId = 'cefcb124-080b-4655-b31f-932f3ee743de';
+    if (tenantId) {
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('voice_id')
+        .eq('id', tenantId)
+        .maybeSingle();
+      if (tenant?.voice_id) {
+        voiceId = tenant.voice_id;
+      }
+    }
+
     const emailSent = await sendOutreachEmail({
       prospectId: prospectId,
       originUrl: origin,
@@ -430,7 +442,8 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
       toEmail: email,
       demoUrl: demoUrl || '',
       audioUrl: audioUrl || '',
-      sector: sector
+      sector: sector,
+      voiceId: voiceId
     });
 
     if (!emailSent) {
@@ -790,6 +803,18 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
     const emailSubject = subject || `🎙️ Hemos diseñado un Asistente de Voz IA para ${prospect.business_name}`;
     const webhookBase = (await getSettingVal('WEBHOOK_BASE_URL') || (req.protocol + '://' + req.get('host'))) as string;
 
+    let voiceId = 'cefcb124-080b-4655-b31f-932f3ee743de';
+    if (prospect.demo_tenant_id) {
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('voice_id')
+        .eq('id', prospect.demo_tenant_id)
+        .maybeSingle();
+      if (tenant?.voice_id) {
+        voiceId = tenant.voice_id;
+      }
+    }
+
     console.log(`[Prospecting API] Enviando correo de outreach para ${prospect.business_name} (Test: ${isTest}) a ${recipient}...`);
     const emailSent = await sendOutreachEmail({
       prospectId: isTest ? undefined : (id as string),
@@ -800,7 +825,8 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
       audioUrl: prospect.audio_url,
       sector: prospect.sector || 'general',
       subject: emailSubject,
-      bodyOverride: body
+      bodyOverride: body,
+      voiceId: voiceId
     });
 
     if (!emailSent) {
