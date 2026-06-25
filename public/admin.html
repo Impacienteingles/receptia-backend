@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.0">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.0">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.1">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.1">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -4373,7 +4373,8 @@
               'Especialidades y Catálogo de Precios: Define los servicios y tarifas del comercio para que la IA pueda informar con precisión a los clientes.',
               'Configuración de Horarios: Indica el horario laboral semanal. El agente de voz IA solo agendará citas dentro de estas franjas horarias.',
               'Ajustes de Telefonía: Selecciona si usarás el proveedor nativo de Retell AI (con un número comprado allí) o Zadarma SIP (introduciendo usuario, clave y servidor SIP).',
-              'Selección de Voz: Elige una de las voces disponibles del catálogo (español de España, español latino, inglés, etc.) con preescucha previa.'
+              'Selección de Voz: Elige una de las voces disponibles del catálogo (español de España, español latino, inglés, etc.) con preescucha previa.',
+              'Chatbot de Reservas: Puedes pre-configurar si el chatbot textual de reservas y el Widget Web están disponibles de forma predeterminada para el inquilino.'
             ],
             'Una vez introducidos los datos, puedes pulsar "Guardar Borrador Local" para no perder la información, o pulsar "Generar Agente IA y Registrar" para crear el agente en Retell AI y enviar las credenciales al cliente.'
           ]
@@ -4412,6 +4413,17 @@
               'Sustitución de Variables: El sistema sustituye automáticamente marcadores como {{CLIENTE}}, {{PLAN}}, {{PRECIO}} y {{FECHA}} con los valores del formulario.',
               'Omitir Campos Vacíos: Si dejas vacío o con "---" algún campo del proveedor SaaS (como los Datos de Registro Mercantil de Corandar), el compilador eliminará automáticamente la frase correspondiente para no mostrar campos sin información.',
               'Firma Digital: Activa la casilla de firma digital y rellena el nombre del firmante administrador para incrustar la firma en el PDF descargable.'
+            ]
+          ]
+        },
+        {
+          title: 'Monitoreo de Integraciones y Campañas Outbound',
+          content: [
+            'Como administrador, puedes auditar las integraciones locales y campañas desde los detalles del inquilino:',
+            [
+              'Sincronización PMS: Verifica el tipo de software de escritorio del cliente (Gesden, Dentrix) y audita el token de sincronización generado.',
+              'Historial de Sincronización: Examina el timestamp del último envío del agente local para confirmar que no hay fallos de red en el servidor físico del comercio.',
+              'Consumo Outbound: Supervisa el volumen de llamadas generadas por sus campañas secuenciales salientes para prever costes de minutos adicionales de telefonía.'
             ]
           ]
         },
@@ -4540,8 +4552,59 @@
             'En la pestaña "Llamadas IA" verás el registro detallado de cada llamada:',
             [
               'Grabaciones: Escucha el audio completo de la conversación entre el cliente y la IA.',
-              'Etiqueta de Intención: La IA clasifica automáticamente si la llamada resultó en "Cita Agendada", una "Consulta General", o si el cliente colgó.',
-              'Transcripción y Resumen: Lee la conversación palabra por palabra y consulta un resumen estructurado con los puntos clave que identificó la IA (ej. "Llama para preguntar por corte de pelo, se le indica precio de 20€ pero prefiere pensarlo").'
+              'Etiqueta de Intención: La IA clasifica automáticamente si la llamada resultó en "Cita Agendada", una "Consulta General", "Queja" (con análisis de sentimiento automático) o si el cliente colgó.',
+              'Transcripción y Resumen: Lee la conversación palabra por palabra y consulta un resumen estructurado con los puntos clave que identificó la IA.'
+            ]
+          ]
+        },
+        {
+          title: 'Chatbot de Reservas y Widget Web',
+          content: [
+            'Receptia unifica la atención telefónica y escrita en una sola agenda lógica:',
+            [
+              'Atención Multicanal: Desde Ajustes puedes habilitar el Chatbot de Reservas por texto.',
+              'Widget Web: Copia el código iframe proporcionado en tu web para añadir un chat elegante (glassmorphic) donde los clientes pueden resolver dudas y agendar citas directamente con la IA.',
+              'WhatsApp Web: Vincula tu WhatsApp escaneando el código QR para que el chatbot de Receptia responda los mensajes de texto entrantes automáticamente.'
+            ]
+          ]
+        },
+        {
+          title: 'Fianzas y Pagos Stripe (Seguridad Anti-NoShow)',
+          content: [
+            'Reduce las incomparecencias y cancelaciones de última hora cobrando un depósito de reserva:',
+            [
+              'Habilitación: Activa los depósitos en Ajustes de tu Negocio e indica el importe del depósito.',
+              'Envío del Link: Durante la llamada o chat, la IA le enviará al cliente un enlace de Stripe para realizar el pago de forma segura por WhatsApp o SMS.',
+              'Bloqueo Preventivo: La cita se crea en estado pendiente de pago en Google Calendar. En cuanto el cliente complete el pago, se actualizará a confirmada y se le enviará un mensaje final de confirmación.'
+            ]
+          ]
+        },
+        {
+          title: 'Campañas Outbound de Voz (Reactivación)',
+          content: [
+            'Crea campañas automáticas de llamadas salientes para fidelizar o reactivar clientes:',
+            [
+              'Carga de Contactos: Crea una campaña, introduce una lista de clientes con formato "Nombre, Teléfono, Variable Personalizada" y haz clic en lanzar.',
+              'Llamadas Asíncronas: El robot de Receptia llamará de forma automática y secuencial a tus clientes, hablándoles de forma personalizada e invitándoles a agendar una cita que se registrará directamente en tu agenda.'
+            ]
+          ]
+        },
+        {
+          title: 'Integración PMS (Sincronización Local)',
+          content: [
+            'Conecta tu software local de clínica o estética (Gesden, Dentrix) con Receptia:',
+            [
+              'Token PMS: Genera un token único y seguro en la pestaña Ajustes.',
+              'Agente de Escritorio: Descarga el script de sincronización local en tu ordenador. Éste leerá periódicamente tu agenda y la sincronizará bidireccionalmente con la nube de Receptia en tiempo real.'
+            ]
+          ]
+        },
+        {
+          title: 'Agenda Inteligente y Compactador de Huecos',
+          content: [
+            'Activa la Optimización de Agenda en la pestaña Ajustes para compactar tus horarios laborales:',
+            [
+              'Agrupación Eficiente: El sistema de agendamiento priorizará y ofrecerá primero al paciente las ranuras que estén pegadas a citas ya agendadas o en los extremos del día, evitando dejar huecos sueltos e inservibles de 15/30 minutos en tu agenda diaria.'
             ]
           ]
         },
