@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { supabase, getSettingVal } from '../services/supabase';
 import { scrapeProspects } from '../services/scraper';
-import { sendOutreachEmail } from '../services/outreach';
+import { sendOutreachEmail, getOutreachEmailTemplate } from '../services/outreach';
 import { createRetellAgentForTenant, deleteRetellAgent } from '../services/retell';
 import axios from 'axios';
 
@@ -762,6 +762,42 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
     res.json({ status: 'success', message: 'Correo reenviado con éxito.' });
   } catch (err: any) {
     console.error(`[Prospecting API ERROR] Fallo al reenviar correo para prospecto ${id}:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * 8. Obtener vista previa del correo de captación (HTML)
+ */
+router.get('/:id/preview-email', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  try {
+    const { data: prospect, error: fetchErr } = await supabase
+      .from('prospects')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchErr || !prospect) {
+      res.status(404).json({ error: `No se pudo encontrar el prospecto con ID: ${id}` });
+      return;
+    }
+
+    const htmlContent = getOutreachEmailTemplate(
+      prospect.business_name,
+      prospect.demo_url || '#',
+      prospect.audio_url || '#',
+      prospect.sector || 'general'
+    );
+
+    res.json({
+      status: 'success',
+      subject: `🎙️ Hemos diseñado un Asistente de Voz IA para ${prospect.business_name}`,
+      to: prospect.email,
+      html: htmlContent
+    });
+  } catch (err: any) {
+    console.error(`[Prospecting API ERROR] Fallo al obtener vista previa para prospecto ${id}:`, err.message);
     res.status(500).json({ error: err.message });
   }
 });

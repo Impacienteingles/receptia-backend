@@ -64,7 +64,7 @@ export async function sendOutreachEmail(req: SendOutreachEmailRequest): Promise<
 /**
  * Plantilla HTML de correo premium y responsive
  */
-function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUrl: string, sector: string): string {
+export function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUrl: string, sector: string): string {
   const sectorTerm = sector.toLowerCase() === 'abogados' ? 'sus clientes' : 'sus pacientes';
   
   return `

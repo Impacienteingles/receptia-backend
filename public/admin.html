@@ -1442,7 +1442,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.25</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.26</span>
         </div>
       </header>
 
@@ -2956,6 +2956,44 @@
           <button type="submit" class="btn" style="flex: 1; background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%); border: none; color: #fff;">Generar Demo</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE VISTA PREVIA DE CORREO DE OUTREACH -->
+  <div class="modal" id="email-preview-modal" style="display: none; align-items: center; justify-content: center; z-index: 1050; background: rgba(0, 0, 0, 0.85); position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div class="modal-content" style="max-width: 800px; width: 90%; max-height: 90vh; display: flex; flex-direction: column; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-shrink: 0;">
+        <h3 style="margin: 0; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem; color: #fff; font-size: 1.25rem;">
+          <i data-lucide="mail" style="color: #60a5fa; width: 22px; height: 22px;"></i> Vista Previa del Correo de Captación
+        </h3>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('email-preview-modal').style.display = 'none'" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.05); color: var(--text-muted); cursor: pointer;">
+          <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+        </button>
+      </div>
+      
+      <div style="margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0; background: rgba(255, 255, 255, 0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+        <div style="display: flex; gap: 0.5rem; font-size: 0.9rem;">
+          <span style="color: var(--text-muted); font-weight: 600; width: 100px;">Destinatario:</span>
+          <span id="preview-email-to" style="color: #fff; font-weight: 500;"></span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; font-size: 0.9rem;">
+          <span style="color: var(--text-muted); font-weight: 600; width: 100px;">Asunto:</span>
+          <span id="preview-email-subject" style="color: #60a5fa; font-weight: 500;"></span>
+        </div>
+      </div>
+      
+      <div style="flex-grow: 1; overflow-y: auto; background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 1.5rem; position: relative; min-height: 350px;">
+        <iframe id="preview-email-iframe" style="width: 100%; height: 100%; border: none; background: #0b0f19; display: block;"></iframe>
+      </div>
+      
+      <div style="display: flex; justify-content: flex-end; gap: 1rem; flex-shrink: 0; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('email-preview-modal').style.display = 'none'" style="padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-color);">
+          Cancelar
+        </button>
+        <button type="button" id="confirm-send-email-btn" class="btn" style="padding: 0.75rem 1.5rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; background: #3b82f6; border-color: #3b82f6; color: #fff; cursor: pointer; border: none; font-weight: 600;">
+          <i data-lucide="send" style="width: 16px; height: 16px;"></i> Enviar Ahora
+        </button>
+      </div>
     </div>
   </div>
 
@@ -6619,19 +6657,59 @@
     async function resendDemoEmail(prospectId, buttonEl) {
       if (buttonEl) {
         buttonEl.disabled = true;
-        buttonEl.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Enviando...`;
+        buttonEl.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Cargando...`;
       }
       try {
-        const response = await fetch(`/api/admin/prospects/${prospectId}/resend-email`, {
-          method: 'POST'
-        });
+        // Fetch the email preview HTML from the backend
+        const response = await fetch(`/api/admin/prospects/${prospectId}/preview-email`);
         const data = await response.json();
         if (!response.ok) {
-          throw new Error(data.error || 'Error al reenviar el correo.');
+          throw new Error(data.error || 'Error al obtener la vista previa del correo.');
         }
-        showCustomAlert('Correo reenviado con éxito al prospecto.', 'Éxito', 'success');
+
+        // Populate details
+        document.getElementById('preview-email-to').innerText = data.to;
+        document.getElementById('preview-email-subject').innerText = data.subject;
+
+        // Write HTML to the iframe
+        const iframe = document.getElementById('preview-email-iframe');
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        doc.write(data.html);
+        doc.close();
+
+        // Configure the "Enviar Ahora" button in the modal
+        const confirmBtn = document.getElementById('confirm-send-email-btn');
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = `<i data-lucide="send" style="width: 16px; height: 16px;"></i> Enviar Ahora`;
+        confirmBtn.onclick = async () => {
+          confirmBtn.disabled = true;
+          confirmBtn.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Enviando...`;
+          try {
+            const sendRes = await fetch(`/api/admin/prospects/${prospectId}/resend-email`, {
+              method: 'POST'
+            });
+            const sendData = await sendRes.json();
+            if (!sendRes.ok) {
+              throw new Error(sendData.error || 'Error al enviar el correo.');
+            }
+            showCustomAlert('Correo enviado con éxito al prospecto.', 'Éxito', 'success');
+            document.getElementById('email-preview-modal').style.display = 'none';
+          } catch (sendErr) {
+            console.error('Error al enviar correo:', sendErr);
+            showCustomAlert(sendErr.message, 'Fallo', 'error');
+          } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = `<i data-lucide="send" style="width: 16px; height: 16px;"></i> Enviar Ahora`;
+            lucide.createIcons();
+          }
+        };
+
+        // Show the preview modal
+        document.getElementById('email-preview-modal').style.display = 'flex';
+        lucide.createIcons();
       } catch (err) {
-        console.error('Error al reenviar correo:', err);
+        console.error('Error al cargar la vista previa:', err);
         showCustomAlert(err.message, 'Fallo', 'error');
       } finally {
         if (buttonEl) {
