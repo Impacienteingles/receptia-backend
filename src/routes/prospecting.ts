@@ -479,7 +479,7 @@ async function generateCartesiaAudio(businessName: string, demoUrl: string): Pro
     const response = await axios.post(
       'https://api.cartesia.ai/tts/bytes',
       {
-        model_id: 'sonic-multilingual',
+        model_id: 'sonic-3.5',
         transcript: transcript,
         voice: {
           mode: 'id',
