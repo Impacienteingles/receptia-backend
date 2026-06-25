@@ -38,12 +38,53 @@ app.use(express.json({
 // Servir archivos estáticos del panel de control
 app.use(express.static(path.join(process.cwd(), 'public')));
 
+// Helper functions for storing block_admin_access in settings table
+async function getBlockAdminAccess(tenantId: string): Promise<boolean> {
+  if (!tenantId) return false;
+  try {
+    const { data } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', `block_admin_access_${tenantId}`)
+      .maybeSingle();
+    return data?.value === 'true';
+  } catch (e) {
+    return false;
+  }
+}
+
+async function setBlockAdminAccess(tenantId: string, value: boolean): Promise<void> {
+  if (!tenantId) return;
+  try {
+    await supabase
+      .from('settings')
+      .upsert({
+        key: `block_admin_access_${tenantId}`,
+        value: value ? 'true' : 'false'
+      });
+  } catch (e) {
+    console.error(`Error writing block_admin_access_${tenantId} to settings:`, e);
+  }
+}
+
 // Endpoints REST de la Plataforma SaaS
 
 // 1. Obtener detalles de un inquilino por email o ID, o listar todos si no se especifican filtros
 app.get('/api/tenants', async (req, res): Promise<void> => {
   const { email, id } = req.query;
   try {
+    // Fetch all block_admin_access settings from settings table
+    const { data: blockedSettings } = await supabase
+      .from('settings')
+      .select('key, value')
+      .like('key', 'block_admin_access_%');
+    
+    const blockedTenantIds = new Set(
+      (blockedSettings || [])
+        .filter(s => s.value === 'true')
+        .map(s => s.key.replace('block_admin_access_', ''))
+    );
+
     let query = supabase.from('tenants').select('*');
     const mapTenant = (t: any) => {
       if (!t) return t;
@@ -57,6 +98,8 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
         ? t.whatsapp_immediate_notification_enabled
         : (workingHoursObj?.whatsapp_immediate_notification_enabled !== false);
         
+      t.block_admin_access = blockedTenantIds.has(t.id);
+
       // Privacy Block: if block_admin_access is enabled
       const reqPin = req.query.pin || req.headers['x-client-pin'];
       const isClientRequest = reqPin && reqPin === t.admin_pin;
@@ -203,7 +246,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (pricing_details !== undefined) tenantData.pricing_details = pricing_details;
     if (custom_instructions !== undefined) tenantData.custom_instructions = custom_instructions;
     if (admin_pin !== undefined) tenantData.admin_pin = admin_pin;
-    if (block_admin_access !== undefined) tenantData.block_admin_access = !!block_admin_access;
+    let blockAdminAccessVal: boolean | undefined = undefined;
+    if (block_admin_access !== undefined) blockAdminAccessVal = !!block_admin_access;
     if (vacation_mode !== undefined) tenantData.vacation_mode = !!vacation_mode;
     if (vacation_message !== undefined) tenantData.vacation_message = vacation_message;
     if (voice_speed !== undefined) tenantData.voice_speed = Number(voice_speed);
@@ -337,9 +381,18 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
       const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
       webhookBaseUrl = `${protocol}://${host}`;
     }
-    syncTenantWithRetell(savedTenant, webhookBaseUrl)
-      .then(() => console.log(`Sincronización completada con Retell AI para ${email}`))
-      .catch(err => console.error(`Error en segundo plano al sincronizar ${email} con Retell AI:`, err.message));
+    if (savedTenant) {
+      syncTenantWithRetell(savedTenant, webhookBaseUrl)
+        .then(() => console.log(`Sincronización completada con Retell AI para ${email}`))
+        .catch(err => console.error(`Error en segundo plano al sincronizar ${email} con Retell AI:`, err.message));
+
+      if (blockAdminAccessVal !== undefined) {
+        await setBlockAdminAccess(savedTenant.id, blockAdminAccessVal);
+        savedTenant.block_admin_access = blockAdminAccessVal;
+      } else {
+        savedTenant.block_admin_access = await getBlockAdminAccess(savedTenant.id);
+      }
+    }
 
     res.json(savedTenant);
   } catch (err: any) {
@@ -360,7 +413,7 @@ app.get('/api/appointments', async (req, res): Promise<void> => {
     // Check if the tenant has blocked admin access
     const { data: tenant, error: tenantErr } = await supabase
       .from('tenants')
-      .select('admin_pin, block_admin_access')
+      .select('admin_pin')
       .eq('id', tenant_id)
       .single();
 
@@ -369,7 +422,8 @@ app.get('/api/appointments', async (req, res): Promise<void> => {
       return;
     }
 
-    if (tenant.block_admin_access) {
+    const isBlocked = await getBlockAdminAccess(tenant_id as string);
+    if (isBlocked) {
       const reqPin = pin || req.headers['x-client-pin'];
       if (!reqPin || reqPin !== tenant.admin_pin) {
         res.status(403).json({ error: 'El cliente ha bloqueado el acceso del administrador al historial de citas.' });
@@ -856,6 +910,9 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       .eq('email', email)
       .maybeSingle();
 
+    const existingBlockAdminAccess = existing ? await getBlockAdminAccess(existing.id) : false;
+    const blockAdminAccessVal = block_admin_access !== undefined ? !!block_admin_access : existingBlockAdminAccess;
+
     let computedAgentId = retell_agent_id;
     if (computedAgentId === '') {
       computedAgentId = null;
@@ -923,7 +980,6 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       contract_start_date: contract_start_date || new Date().toISOString().split('T')[0],
       contract_end_date: contract_end_date || null,
       admin_pin: admin_pin || null,
-      block_admin_access: block_admin_access !== undefined ? !!block_admin_access : (existing ? existing.block_admin_access : false),
       contract_template_id: contract_template_id || null,
       signed_contract_content: signed_contract_content || null,
       is_trial: !!is_trial,
@@ -1289,6 +1345,14 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     }
 
     addStep('11. ¡Agente de IA generado con éxito!');
+    if (tenant) {
+      if (blockAdminAccessVal !== undefined) {
+        await setBlockAdminAccess(tenant.id, blockAdminAccessVal);
+        tenant.block_admin_access = blockAdminAccessVal;
+      } else {
+        tenant.block_admin_access = await getBlockAdminAccess(tenant.id);
+      }
+    }
     res.json({
       status: 'success',
       tenant,
