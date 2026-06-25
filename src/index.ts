@@ -2578,9 +2578,9 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
   const passwordsToTry = [
-    '1S67.!3CFitNmj',
+    '5MP)3i9P7wjBr[',
     process.env.SUPABASE_DB_PASSWORD,
-    '5MP)3i9P7wjBr['
+    '1S67.!3CFitNmj'
   ].filter(Boolean) as string[];
 
   let migrationSuccess = false;
@@ -3157,9 +3157,9 @@ async function runDatabaseMigrations() {
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
   const passwordsToTry = [
-    '1S67.!3CFitNmj',
+    '5MP)3i9P7wjBr[',
     process.env.SUPABASE_DB_PASSWORD,
-    '5MP)3i9P7wjBr['
+    '1S67.!3CFitNmj'
   ].filter(Boolean) as string[];
 
   const query = async (clientInstance: any) => {
