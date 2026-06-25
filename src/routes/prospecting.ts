@@ -513,6 +513,7 @@ async function generateCartesiaAudio(businessName: string, demoUrl: string): Pro
       response.data,
       {
         headers: {
+          'apikey': supabaseKey,
           'Authorization': `Bearer ${supabaseKey}`,
           'Content-Type': 'audio/mpeg'
         }
