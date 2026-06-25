@@ -1442,7 +1442,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.18</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.19</span>
         </div>
       </header>
 
@@ -2548,7 +2548,15 @@
                       <input type="text" id="setting-stripe-price-premium-anual" placeholder="price_1P..." class="setting-input">
                     </div>
                     <div class="form-group">
-                      <label for="setting-stripe-price-excess-minutes">Minuto Adicional de Exceso (Metered Price ID):</label>
+                      <label for="setting-stripe-price-excess-minutes-monthly">Minutos Excedentes - Mensual (Metered Price ID):</label>
+                      <input type="text" id="setting-stripe-price-excess-minutes-monthly" placeholder="price_1P..." class="setting-input">
+                    </div>
+                    <div class="form-group">
+                      <label for="setting-stripe-price-excess-minutes-annual">Minutos Excedentes - Anual (Metered Price ID):</label>
+                      <input type="text" id="setting-stripe-price-excess-minutes-annual" placeholder="price_1P..." class="setting-input">
+                    </div>
+                    <div class="form-group" style="display: none;">
+                      <label for="setting-stripe-price-excess-minutes">Minuto Adicional de Exceso (Legacy Price ID):</label>
                       <input type="text" id="setting-stripe-price-excess-minutes" placeholder="price_1P..." class="setting-input">
                     </div>
                   </div>
@@ -4708,6 +4716,8 @@
           'STRIPE_PRICE_PREMIUM_MENSUAL': 'setting-stripe-price-premium-mensual',
           'STRIPE_PRICE_ESTANDAR_ANUAL': 'setting-stripe-price-estandar-anual',
           'STRIPE_PRICE_PREMIUM_ANUAL': 'setting-stripe-price-premium-anual',
+          'STRIPE_PRICE_EXCESS_MINUTES_MONTHLY': 'setting-stripe-price-excess-minutes-monthly',
+          'STRIPE_PRICE_EXCESS_MINUTES_ANNUAL': 'setting-stripe-price-excess-minutes-annual',
           'STRIPE_PRICE_EXCESS_MINUTES': 'setting-stripe-price-excess-minutes',
           'PAYPAL_CLIENT_ID': 'setting-paypal-id',
           'PAYPAL_SECRET': 'setting-paypal-secret',
@@ -4762,6 +4772,8 @@
         'STRIPE_PRICE_PREMIUM_MENSUAL': 'setting-stripe-price-premium-mensual',
         'STRIPE_PRICE_ESTANDAR_ANUAL': 'setting-stripe-price-estandar-anual',
         'STRIPE_PRICE_PREMIUM_ANUAL': 'setting-stripe-price-premium-anual',
+        'STRIPE_PRICE_EXCESS_MINUTES_MONTHLY': 'setting-stripe-price-excess-minutes-monthly',
+        'STRIPE_PRICE_EXCESS_MINUTES_ANNUAL': 'setting-stripe-price-excess-minutes-annual',
         'STRIPE_PRICE_EXCESS_MINUTES': 'setting-stripe-price-excess-minutes',
         'PAYPAL_CLIENT_ID': 'setting-paypal-id',
         'PAYPAL_SECRET': 'setting-paypal-secret',

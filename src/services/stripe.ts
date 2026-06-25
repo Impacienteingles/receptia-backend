@@ -111,9 +111,15 @@ export async function createStripeCheckoutSession(
     }
   ];
 
-  const excessPriceId = await getSettingVal('STRIPE_PRICE_EXCESS_MINUTES');
+  const isAnnual = planId.toLowerCase().includes('anual');
+  const excessPriceKey = isAnnual ? 'STRIPE_PRICE_EXCESS_MINUTES_ANNUAL' : 'STRIPE_PRICE_EXCESS_MINUTES_MONTHLY';
+  let excessPriceId = await getSettingVal(excessPriceKey);
+  if (!excessPriceId || excessPriceId.trim() === '') {
+    excessPriceId = await getSettingVal('STRIPE_PRICE_EXCESS_MINUTES');
+  }
+
   if (excessPriceId && excessPriceId.trim() !== '') {
-    console.log(`➕ Añadiendo ítem de cobro por minutos excedentes al checkout: ${excessPriceId}`);
+    console.log(`➕ Añadiendo ítem de cobro por minutos excedentes (${isAnnual ? 'Anual' : 'Mensual'}) al checkout: ${excessPriceId}`);
     lineItems.push({
       price: excessPriceId.trim()
     });
@@ -261,16 +267,19 @@ export async function processMeteredBillingForCall(tenantId: string, durationSec
       const excessMinutes = totalPeriodMinutes - Math.max(limit, prevPeriodMinutes);
       
       if (excessMinutes > 0) {
-        // Encontrar el item metrado de minutos excedentes en la suscripción de Stripe
-        const excessPriceId = await getSettingVal('STRIPE_PRICE_EXCESS_MINUTES');
-        if (!excessPriceId) {
-          console.warn('[Metered Billing] STRIPE_PRICE_EXCESS_MINUTES no está configurado. No se puede cobrar el exceso.');
-          return;
-        }
+        // Encontrar el item metrado de minutos excedentes (Mensual o Anual o Legacy) en la suscripción de Stripe
+        const excessPriceIdMonthly = await getSettingVal('STRIPE_PRICE_EXCESS_MINUTES_MONTHLY');
+        const excessPriceIdAnnual = await getSettingVal('STRIPE_PRICE_EXCESS_MINUTES_ANNUAL');
+        const legacyExcessPriceId = await getSettingVal('STRIPE_PRICE_EXCESS_MINUTES');
 
-        const excessItem = subscription.items.data.find((item: any) => item.price.id === excessPriceId);
+        const excessItem = subscription.items.data.find((item: any) => 
+          item.price.id === excessPriceIdMonthly || 
+          item.price.id === excessPriceIdAnnual || 
+          item.price.id === legacyExcessPriceId
+        );
+
         if (!excessItem) {
-          console.warn(`[Metered Billing WARNING] No se encontró el ítem de minutos excedentes (${excessPriceId}) en la suscripción de Stripe para el inquilino. Asegúrate de que el plan por uso se haya añadido.`);
+          console.warn(`[Metered Billing WARNING] No se encontró el ítem de minutos excedentes en la suscripción de Stripe para el inquilino. Asegúrate de que el plan por uso se haya añadido.`);
           return;
         }
 
