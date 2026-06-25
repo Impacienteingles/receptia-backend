@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { listFreeSlots, bookAppointment, deleteAppointment, updateAppointment } from '../services/googleCalendar';
 import { supabase } from '../services/supabase';
 import { sendWhatsAppMessage } from '../services/whatsapp';
+import { processMeteredBillingForCall } from '../services/stripe';
 
 const router = Router();
 
@@ -791,6 +792,11 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
             intent_tag: intentTag
           });
         console.log(`✅ Registro de llamada guardado para el cliente: ${tenant.id}`);
+
+        // Procesar facturación por uso de minutos (Metered Billing) en segundo plano
+        processMeteredBillingForCall(tenant.id, durationSeconds).catch(billErr => {
+          console.error(`[Metered Billing Error] Error al facturar minutos para ${tenant.id}:`, billErr.message);
+        });
       } else {
         console.warn(`⚠️ No se encontró inquilino con retell_agent_id: ${retellAgentId}`);
       }
