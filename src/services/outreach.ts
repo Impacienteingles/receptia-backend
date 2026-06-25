@@ -111,7 +111,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
     bodyHtml = `
         <p>Estimado/a responsable de <span class="highlight">${businessName}</span>,</p>
         
-        <p>Hemos diseñado y configurado un <span class="highlight">Agente de Voz con Inteligencia Artificial</span> adaptado a las necesidades específicas de su negocio.</p>
+        <p>Desde <span class="highlight">Corandar</span> hemos diseñado y configurado un <span class="highlight">Agente de Voz con Inteligencia Artificial</span> adaptado a las necesidades específicas de su negocio.</p>
         
         <p>Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.</p>
     `;
@@ -299,6 +299,46 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
       line-height: 1.5;
     }
 
+    .corandar-card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px dashed rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 20px 0;
+      text-decoration: none;
+      color: #ffffff !important;
+      transition: all 0.3s ease;
+    }
+    .corandar-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+    .corandar-card-icon {
+      font-size: 28px;
+    }
+    .corandar-card-title {
+      font-weight: 700;
+      color: #a78bfa;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .corandar-card-desc {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .corandar-card-arrow {
+      color: #a78bfa;
+      font-size: 18px;
+      font-weight: bold;
+      margin-left: auto;
+    }
+
     .cta-block {
       text-align: center;
       margin: 40px 0 20px 0;
@@ -340,6 +380,16 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
       
       <div class="content">
         ${bodyHtml}
+
+        <!-- Tarjeta Ficha de Corandar -->
+        <a href="https://corandar.com" class="corandar-card" target="_blank">
+          <div class="corandar-card-icon">🏢</div>
+          <div style="text-align: left;">
+            <div class="corandar-card-title">Desarrollado por Corandar</div>
+            <div class="corandar-card-desc">Visite nuestra web oficial para conocer más sobre nuestras soluciones de IA y automatización.</div>
+          </div>
+          <div class="corandar-card-arrow">→</div>
+        </a>
 
         <!-- Tarjeta de Mockup del Reproductor de Audio -->
         <a href="${audioUrl}" class="dashboard-mockup" target="_blank">
