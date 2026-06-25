@@ -24,13 +24,9 @@ export async function sendOutreachEmail(req: SendOutreachEmailRequest): Promise<
   const htmlContent = getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector, req.bodyOverride);
 
   if (!apiKey || apiKey === 'YOUR_RESEND_API_KEY') {
-    console.log(`[Outreach Simulator] Enviando email de captación para ${req.businessName}...`);
-    console.log(`[Outreach Simulator] Para: ${req.toEmail}`);
-    console.log(`[Outreach Simulator] Asunto: ${subject}`);
-    console.log(`[Outreach Simulator] Demo URL: ${req.demoUrl}`);
-    console.log(`[Outreach Simulator] Audio URL: ${req.audioUrl}`);
-    console.log('[Outreach Simulator] ✅ Email simulado enviado con éxito (Falta RESEND_API_KEY en Ajustes).');
-    return true;
+    const errorMsg = 'No se ha configurado la clave de API de Resend (RESEND_API_KEY) en los Ajustes. Por favor, añada sus credenciales de Resend para poder realizar envíos reales.';
+    console.warn(`[Outreach Warning] ${errorMsg}`);
+    throw new Error(errorMsg);
   }
 
   try {

@@ -1250,6 +1250,31 @@
     .progress-bar-animate-audio-generated {
       animation: progress-audio-generated 20s cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
     }
+
+    /* Responsive Masonry Grid for Settings Cards */
+    .settings-grid {
+      column-count: 3;
+      column-gap: 1.5rem;
+      width: 100%;
+    }
+    .settings-grid > div {
+      break-inside: avoid;
+      display: inline-flex;
+      flex-direction: column;
+      width: 100%;
+      margin-bottom: 1.5rem;
+      box-sizing: border-box;
+    }
+    @media (max-width: 1200px) {
+      .settings-grid {
+        column-count: 2;
+      }
+    }
+    @media (max-width: 768px) {
+      .settings-grid {
+        column-count: 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1442,7 +1467,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.30</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.31</span>
         </div>
       </header>
 
@@ -2383,7 +2408,7 @@
             <form id="settings-form" onsubmit="saveSettings(event)" style="display: flex; flex-direction: column; gap: 2rem;">
               
               <!-- GRID DE CATEGORÍAS -->
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; align-items: start;">
+              <div class="settings-grid">
                 
                 <!-- CARD: INTELIGENCIA ARTIFICIAL -->
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
@@ -2597,6 +2622,29 @@
                     <input type="email" id="setting-admin-test-email" placeholder="admin@receptia.com" class="setting-input">
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
                       Este correo recibirá las copias de prueba del correo de captación antes de enviárselo a los clientes.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- CARD: CONFIGURACIÓN DE RESEND (EMAILS) -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="send" style="color: var(--primary);"></i> Configuración de Resend (Emails)
+                  </h3>
+                  <div class="form-group">
+                    <label for="setting-resend-key">Resend API Key:</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-resend-key" placeholder="re_..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-resend-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-resend-from">Correo Emisor (From):</label>
+                    <input type="text" id="setting-resend-from" placeholder="Receptia Demos <onboarding@resend.dev>" class="setting-input">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
+                      Por defecto: <code>Receptia Demos &lt;onboarding@resend.dev&gt;</code>. Nota: onboarding@resend.dev solo permite envíos a tu propio correo verificado en Resend.
                     </p>
                   </div>
                 </div>
@@ -4846,6 +4894,8 @@
           'ELEVENLABS_API_KEY': 'setting-elevenlabs-key',
           'CARTESIA_API_KEY': 'setting-cartesia-key',
           'ADMIN_TEST_EMAIL': 'setting-admin-test-email',
+          'RESEND_API_KEY': 'setting-resend-key',
+          'RESEND_FROM_EMAIL': 'setting-resend-from',
           'CORANDAR_BUSINESS_NAME': 'setting-corandar-name',
           'CORANDAR_CIF': 'setting-corandar-cif',
           'CORANDAR_ADDRESS': 'setting-corandar-address',
@@ -4903,6 +4953,8 @@
         'ELEVENLABS_API_KEY': 'setting-elevenlabs-key',
         'CARTESIA_API_KEY': 'setting-cartesia-key',
         'ADMIN_TEST_EMAIL': 'setting-admin-test-email',
+        'RESEND_API_KEY': 'setting-resend-key',
+        'RESEND_FROM_EMAIL': 'setting-resend-from',
         'CORANDAR_BUSINESS_NAME': 'setting-corandar-name',
         'CORANDAR_CIF': 'setting-corandar-cif',
         'CORANDAR_ADDRESS': 'setting-corandar-address',
