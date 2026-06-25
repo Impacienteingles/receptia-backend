@@ -2429,79 +2429,90 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
   console.log('[Migration Endpoint] Iniciando alter table en Supabase...');
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
-  const password = process.env.SUPABASE_DB_PASSWORD || '1S67.!3CFitNmj';
-  let directErrorMsg = '';
+  const passwordsToTry = [
+    process.env.SUPABASE_DB_PASSWORD,
+    '5MP)3i9P7wjBr[',
+    '1S67.!3CFitNmj'
+  ].filter(Boolean) as string[];
 
-  // Opción 1: Conexión Directa (Puerto 5432) - Evita el circuit breaker de PgBouncer
-  try {
-    console.log('[Migration Endpoint] Intentando conexión DIRECTA (puerto 5432)...');
-    const client = new Client({
-      host: `db.${projectRef}.supabase.co`,
-      port: 5432,
-      database: 'postgres',
-      user: 'postgres',
-      password,
-      ssl: { rejectUnauthorized: false },
-      connectionTimeoutMillis: 5000
-    });
+  let migrationSuccess = false;
+  let lastErrorMsg = '';
 
-    await client.connect();
-    console.log('[Migration Endpoint] ¡Conexión DIRECTA exitosa!');
-    await client.query(`
-      ALTER TABLE tenants 
-      ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
-      NOTIFY pgrst, 'reload schema';
-    `);
-    console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Directa).');
-    await client.end();
-    res.json({ success: true, message: 'Migración ejecutada con éxito mediante conexión DIRECTA.' });
-    return;
-  } catch (directErr: any) {
-    console.warn('[Migration Endpoint] Falló la conexión directa:', directErr.message);
-    directErrorMsg = directErr.message;
+  for (const password of passwordsToTry) {
+    // Opción 1: Conexión Directa (Puerto 5432) - Evita el circuit breaker de PgBouncer
+    try {
+      console.log(`[Migration Endpoint] Intentando conexión DIRECTA (puerto 5432) con contraseña ${password.substring(0, 3)}...`);
+      const client = new Client({
+        host: `db.${projectRef}.supabase.co`,
+        port: 5432,
+        database: 'postgres',
+        user: 'postgres',
+        password,
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 4000
+      });
+
+      await client.connect();
+      console.log('[Migration Endpoint] ¡Conexión DIRECTA exitosa!');
+      await client.query(`
+        ALTER TABLE tenants 
+        ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
+        NOTIFY pgrst, 'reload schema';
+      `);
+      console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Directa).');
+      await client.end();
+      migrationSuccess = true;
+      res.json({ success: true, message: 'Migración ejecutada con éxito mediante conexión DIRECTA.' });
+      return;
+    } catch (directErr: any) {
+      console.warn('[Migration Endpoint] Falló la conexión directa:', directErr.message);
+      lastErrorMsg = `Direct: ${directErr.message}`;
+    }
+
+    // Opción 2: Conexión Pooler (Puerto 6543) - Fallback
+    try {
+      console.log(`[Migration Endpoint] Intentando conexión vía POOLER (puerto 6543) con contraseña ${password.substring(0, 3)}...`);
+      const client = new Client({
+        host: 'aws-0-eu-west-1.pooler.supabase.com',
+        port: 6543,
+        database: 'postgres',
+        user: `postgres.${projectRef}`,
+        password,
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 4000
+      });
+
+      await client.connect();
+      console.log('[Migration Endpoint] ¡Conexión por POOLER exitosa!');
+      await client.query(`
+        ALTER TABLE tenants 
+        ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
+        NOTIFY pgrst, 'reload schema';
+      `);
+      console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Pooler).');
+      await client.end();
+      migrationSuccess = true;
+      res.json({ success: true, message: 'Migración ejecutada con éxito mediante conexión POOLER.' });
+      return;
+    } catch (poolErr: any) {
+      console.error('[Migration Endpoint ERROR] Falló la conexión por pooler:', poolErr.message);
+      lastErrorMsg = `Pooler: ${poolErr.message}`;
+    }
   }
 
-  // Opción 2: Conexión por Pooler (Puerto 6543) - Fallback
-  try {
-    console.log('[Migration Endpoint] Intentando conexión vía POOLER (puerto 6543)...');
-    const client = new Client({
-      host: 'aws-0-eu-west-1.pooler.supabase.com',
-      port: 6543,
-      database: 'postgres',
-      user: `postgres.${projectRef}`,
-      password,
-      ssl: { rejectUnauthorized: false },
-      connectionTimeoutMillis: 5000
-    });
-
-    await client.connect();
-    console.log('[Migration Endpoint] ¡Conexión por POOLER exitosa!');
-    await client.query(`
-      ALTER TABLE tenants 
-      ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_whatsapp_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_email_enabled BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_enable_no_show_deposits BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE;
-      NOTIFY pgrst, 'reload schema';
-    `);
-    console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Pooler).');
-    await client.end();
-    res.json({ success: true, message: 'Migración ejecutada con éxito mediante conexión por POOLER.' });
-    return;
-  } catch (poolErr: any) {
-    console.error('[Migration Endpoint] Falló también la conexión por pooler:', poolErr.message);
-    res.status(500).json({ 
-      error: `La migración falló. Error Directo: ${directErrorMsg}. Error Pooler: ${poolErr.message}` 
-    });
-  }
+  res.status(500).json({ error: `La migración falló tras intentar todas las contraseñas. Último error: ${lastErrorMsg}` });
 });
 
 // 7. Guardar ajustes dinámicos de API
@@ -2934,7 +2945,11 @@ setInterval(async () => {
 async function runDatabaseMigrations() {
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
-  const password = process.env.SUPABASE_DB_PASSWORD || '1S67.!3CFitNmj';
+  const passwordsToTry = [
+    process.env.SUPABASE_DB_PASSWORD,
+    '5MP)3i9P7wjBr[',
+    '1S67.!3CFitNmj'
+  ].filter(Boolean) as string[];
 
   const query = async (clientInstance: any) => {
     // 1. Crear ENUM de estados de prospección si no existe
@@ -2985,48 +3000,61 @@ async function runDatabaseMigrations() {
     await clientInstance.query("NOTIFY pgrst, 'reload schema';");
   };
 
-  // Opción 1: Conexión Directa (Puerto 5432)
-  try {
-    console.log('[Bootstrap Migration] Intentando conexión DIRECTA (puerto 5432)...');
-    const client = new Client({
-      host: `db.${projectRef}.supabase.co`,
-      port: 5432,
-      database: 'postgres',
-      user: 'postgres',
-      password,
-      ssl: { rejectUnauthorized: false },
-      connectionTimeoutMillis: 10000
-    });
-    await client.connect();
-    console.log('[Bootstrap Migration] ¡Conexión DIRECTA exitosa!');
-    await query(client);
-    console.log('[Bootstrap Migration] ✅ Tabla prospects y tipo prospect_status asegurados (Conexión Directa).');
-    await client.end();
-    return;
-  } catch (directErr: any) {
-    console.warn('[Bootstrap Migration WARNING] Falló la conexión directa:', directErr.message);
+  let migrationSuccess = false;
+  let lastErrorMsg = '';
+
+  for (const password of passwordsToTry) {
+    // Opción 1: Conexión Directa (Puerto 5432)
+    try {
+      console.log(`[Bootstrap Migration] Intentando conexión DIRECTA (puerto 5432) con contraseña ${password.substring(0, 3)}...`);
+      const client = new Client({
+        host: `db.${projectRef}.supabase.co`,
+        port: 5432,
+        database: 'postgres',
+        user: 'postgres',
+        password,
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 5000
+      });
+      await client.connect();
+      console.log('[Bootstrap Migration] ¡Conexión DIRECTA exitosa!');
+      await query(client);
+      console.log('[Bootstrap Migration] ✅ Migración completada con éxito (Conexión Directa).');
+      await client.end();
+      migrationSuccess = true;
+      break;
+    } catch (directErr: any) {
+      console.warn('[Bootstrap Migration WARNING] Falló la conexión directa:', directErr.message);
+      lastErrorMsg = `Direct: ${directErr.message}`;
+    }
+
+    // Opción 2: Conexión Pooler (Puerto 6543)
+    try {
+      console.log(`[Bootstrap Migration] Intentando conexión vía POOLER (puerto 6543) con contraseña ${password.substring(0, 3)}...`);
+      const client = new Client({
+        host: 'aws-0-eu-west-1.pooler.supabase.com',
+        port: 6543,
+        database: 'postgres',
+        user: `postgres.${projectRef}`,
+        password,
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 5000
+      });
+      await client.connect();
+      console.log('[Bootstrap Migration] ¡Conexión por POOLER exitosa!');
+      await query(client);
+      console.log('[Bootstrap Migration] ✅ Migración completada con éxito (Conexión Pooler).');
+      await client.end();
+      migrationSuccess = true;
+      break;
+    } catch (poolErr: any) {
+      console.error('[Bootstrap Migration ERROR] Falló también la conexión por pooler:', poolErr.message);
+      lastErrorMsg = `Pooler: ${poolErr.message}`;
+    }
   }
 
-  // Opción 2: Conexión Pooler (Puerto 6543)
-  try {
-    console.log('[Bootstrap Migration] Intentando conexión vía POOLER (puerto 6543)...');
-    const client = new Client({
-      host: 'aws-0-eu-west-1.pooler.supabase.com',
-      port: 6543,
-      database: 'postgres',
-      user: `postgres.${projectRef}`,
-      password,
-      ssl: { rejectUnauthorized: false },
-      connectionTimeoutMillis: 10000
-    });
-    await client.connect();
-    console.log('[Bootstrap Migration] ¡Conexión por POOLER exitosa!');
-    await query(client);
-    console.log('[Bootstrap Migration] ✅ Tabla prospects y tipo prospect_status asegurados (Conexión Pooler).');
-    await client.end();
-  } catch (poolErr: any) {
-    console.error('[Bootstrap Migration ERROR] Falló también la conexión por pooler:', poolErr.message);
-    console.error('[Bootstrap Migration INSTRUCCIÓN] Si la base de datos ha cambiado de contraseña, defina SUPABASE_DB_PASSWORD en las variables de entorno o ejecute el script SQL de migración directamente en la consola de Supabase.');
+  if (!migrationSuccess) {
+    console.error(`[Bootstrap Migration CRITICAL] Fallaron todas las opciones de conexión para las migraciones. Último error: ${lastErrorMsg}`);
   }
 }
 
