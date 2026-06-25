@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.5">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.5">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.6">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.6">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -4441,6 +4441,18 @@
           ]
         },
         {
+          title: 'Gestión Contable y Facturación',
+          content: [
+            'El panel incluye un módulo de contabilidad general (Pestaña "Contabilidad") para supervisar la salud financiera de la plataforma:',
+            [
+              'Ingresos y Gastos: Registra transacciones manuales y visualiza de forma agregada el balance de ganancias netas, ingresos brutos y costes operativos.',
+              'Facturación de Consumos Extra: Permite supervisar los cargos automatizados generados por excesos de minutos sobre el límite del plan del cliente.',
+              'Filtros por Rango de Fechas: Utiliza el selector de calendario en español para acotar las transacciones por intervalos y analizar tendencias financieras.',
+              'Exportación Contable: Permite descargar el registro contable en CSV para que el administrador lo remita al gestor o lo integre en su software contable.'
+            ]
+          ]
+        },
+        {
           title: 'Copias de Seguridad y APIs de Terceros',
           content: [
             'Para mantener la plataforma segura, en la pestaña "Copia de Seguridad" puedes exportar toda la base de datos de Receptia (clientes, planes, contratos, contabilidad y logs) a un único archivo JSON.',
@@ -4618,6 +4630,18 @@
             'Activa la Optimización de Agenda en la pestaña Ajustes para compactar tus horarios laborales:',
             [
               'Agrupación Eficiente: El sistema de agendamiento priorizará y ofrecerá primero al paciente las ranuras que estén pegadas a citas ya agendadas o en los extremos del día, evitando dejar huecos sueltos e inservibles de 15/30 minutos en tu agenda diaria.'
+            ]
+          ]
+        },
+        {
+          title: 'Gestión de Suscripción y Contrato Digital',
+          content: [
+            'En la pestaña "Mi Suscripción" puedes controlar la relación comercial de tu negocio con la plataforma:',
+            [
+              'Plan y Estado: Monitorea si tu estado está en Trial, Activo o Suspendido, así como la fecha de renovación o expiración.',
+              'Control de Consumo: Muestra la barra de minutos de llamada consumidos en el período actual y te previene sobre posibles excesos de minutos que se tarificarán según la tarifa adicional contratada.',
+              'Firma Digital de Contrato: Lee las condiciones legales de tu plan y firma digitalmente el contrato introduciendo tu nombre de representante legal y completando la firma manuscrita en pantalla para generar el PDF contractual oficial.',
+              'Pasarela Stripe: Accede mediante un enlace directo al Portal de Clientes de Stripe para actualizar tus tarjetas de crédito, descargar facturas anteriores y cambiar tu plan.'
             ]
           ]
         },
