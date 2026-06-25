@@ -93,13 +93,13 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
   if (voiceId) {
     const vId = voiceId.toLowerCase();
     if (vId.includes('cefcb124') || vId.includes('elena')) voiceName = 'Elena IA';
-    else if (vId.includes('f05c3034') || vId.includes('ines')) voiceName = 'Inés IA';
+    else if (vId.includes('f05c3034') || vId.includes('ines') || vId.includes('9d8c6b2e') || vId.includes('nuria')) voiceName = 'Inés IA';
     else if (vId.includes('b5aa8098') || vId.includes('manuel')) voiceName = 'Manuel IA';
-    else if (vId.includes('515324df') || vId.includes('dario')) voiceName = 'Darío IA';
+    else if (vId.includes('515324df') || vId.includes('dario') || vId.includes('13ff5deb') || vId.includes('marcos')) voiceName = 'Darío IA';
     else if (vId.includes('156fb8d2') || vId.includes('sarah')) voiceName = 'Sarah IA';
-    else if (vId.includes('248be419') || vId.includes('emily')) voiceName = 'Emily IA';
+    else if (vId.includes('248be419') || vId.includes('emily') || vId.includes('db6b0ed5') || vId.includes('skylar')) voiceName = 'Emily IA';
     else if (vId.includes('5c5ad5e7') || vId.includes('sofia')) voiceName = 'Sofía IA';
-    else if (vId.includes('b4eeae21') || vId.includes('lola')) voiceName = 'Lola IA';
+    else if (vId.includes('b4eeae21') || vId.includes('lola') || vId.includes('3797b3c0') || vId.includes('carolina')) voiceName = 'Lola IA';
   }
   const cleanVoiceName = voiceName.replace(' IA', '');
   const sectorTerm = sector.toLowerCase() === 'abogados' ? 'sus clientes' : 'sus pacientes';
