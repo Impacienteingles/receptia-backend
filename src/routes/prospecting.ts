@@ -525,11 +525,27 @@ async function generateCartesiaAudio(businessName: string, demoUrl: string): Pro
     let errorDetail = error.message;
     if (error.response && error.response.data) {
       try {
-        const decoded = Buffer.from(error.response.data).toString('utf-8');
-        const parsed = JSON.parse(decoded);
-        errorDetail = parsed.message || parsed.error || decoded;
-      } catch (e) {
-        errorDetail = error.response.data.toString() || error.message;
+        const rawData = error.response.data;
+        let dataStr = '';
+
+        if (Buffer.isBuffer(rawData) || rawData instanceof ArrayBuffer) {
+          dataStr = Buffer.from(rawData).toString('utf-8');
+        } else if (typeof rawData === 'string') {
+          dataStr = rawData;
+        } else if (typeof rawData === 'object') {
+          dataStr = JSON.stringify(rawData);
+        } else {
+          dataStr = String(rawData);
+        }
+
+        try {
+          const parsed = JSON.parse(dataStr);
+          errorDetail = parsed.message || parsed.error || parsed.error_description || dataStr;
+        } catch {
+          errorDetail = dataStr || error.message;
+        }
+      } catch (e: any) {
+        errorDetail = `${error.message} (Failed to parse response: ${e.message})`;
       }
     }
     console.error('[Cartesia Service ERROR] Error al generar audio de Cartesia:', errorDetail);
