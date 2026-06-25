@@ -483,7 +483,7 @@ async function generateCartesiaAudio(businessName: string, demoUrl: string): Pro
         transcript: transcript,
         voice: {
           mode: 'id',
-          id: 'a0e716df-59a4-44b2-a400-343048995c7b' // Voz Sofia/Gabriela en español
+          id: '5c5ad5e7-1020-476b-8b91-fdcbe9cc313c' // Voz Sofia/Gabriela en español
         },
         output_format: {
           container: 'mp3',
