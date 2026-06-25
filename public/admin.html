@@ -1442,7 +1442,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.15</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.16</span>
         </div>
       </header>
 
@@ -1471,17 +1471,17 @@
 
               <div class="form-group">
                 <label for="business-name">Nombre del Negocio / Cliente:</label>
-                <input type="text" id="business-name" placeholder="ej. Peluquería Carlos Romero" required>
+                <input type="text" id="business-name" required>
               </div>
 
               <div class="form-group">
                 <label for="tenant-email">Email Único de Registro:</label>
-                <input type="email" id="tenant-email" placeholder="ej. carlos@peluqueria.com" required>
+                <input type="email" id="tenant-email" required>
               </div>
 
               <div class="form-group full-width">
                 <label for="specialties-input">Servicios / Especialidades (separados por comas):</label>
-                <input type="text" id="specialties-input" placeholder="ej. Corte Caballero, Lavado, Tinte, Peinado" required>
+                <input type="text" id="specialties-input" required>
               </div>
 
               <div class="form-group">
@@ -1564,7 +1564,7 @@
 
               <div class="form-group">
                 <label for="phone-number">Número de Teléfono Asignado / Desvío:</label>
-                <input type="text" id="phone-number" placeholder="ej. +34858215153">
+                <input type="text" id="phone-number">
               </div>
 
               <!-- CAMPOS SIP PARA ZADARMA -->
@@ -1573,7 +1573,7 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                   <div class="form-group">
                     <label for="sip-username">Usuario SIP:</label>
-                    <input type="text" id="sip-username" placeholder="ej. 123456">
+                    <input type="text" id="sip-username">
                   </div>
                   <div class="form-group">
                     <label for="sip-password">Contraseña SIP:</label>
@@ -1586,7 +1586,7 @@
                   </div>
                   <div class="form-group">
                     <label for="sip-server">Servidor/Proxy SIP:</label>
-                    <input type="text" id="sip-server" placeholder="ej. pbx.zadarma.com">
+                    <input type="text" id="sip-server">
                   </div>
                 </div>
               </div>
@@ -1609,17 +1609,17 @@
 
               <div class="form-group full-width">
                 <label for="business-description">Información / Descripción General del Negocio (Inyectada en el prompt):</label>
-                <textarea id="business-description" rows="3" placeholder="ej. Peluquería y barbería especializada en cortes modernos, barbas y tratamientos capilares para caballeros." required></textarea>
+                <textarea id="business-description" rows="3" required></textarea>
               </div>
 
               <div class="form-group full-width">
                 <label for="pricing-details">Tarifas y Precios (para que los informe la IA de viva voz):</label>
-                <textarea id="pricing-details" rows="3" placeholder="ej. Corte de caballero: 15€. Afeitado y arreglo de barba: 10€. Lavado y peinado básico: 12€." required></textarea>
+                <textarea id="pricing-details" rows="3" required></textarea>
               </div>
 
               <div class="form-group full-width">
                 <label for="custom-instructions">Reglas y Comportamiento Específico para la IA (Instrucciones personalizadas):</label>
-                <textarea id="custom-instructions" rows="3" placeholder="ej. Tratar al cliente siempre de usted. Ser muy amable. No reservar citas para cortes de pelo los sábados por la tarde."></textarea>
+                <textarea id="custom-instructions" rows="3"></textarea>
               </div>
 
               <!-- CONFIGURACIÓN DE CONTRATACIÓN Y SEGURIDAD -->
@@ -1630,7 +1630,7 @@
               <div class="form-group">
                 <label for="admin-pin">PIN de acceso al Panel del Cliente (4 dígitos):</label>
                 <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                  <input type="password" id="admin-pin" maxlength="4" placeholder="ej. 1234" required style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                  <input type="password" id="admin-pin" maxlength="4" required style="flex: 1; padding-right: 2.5rem; width: 100%;">
                   <button type="button" onclick="togglePasswordVisibility('admin-pin')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
                     <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
                   </button>

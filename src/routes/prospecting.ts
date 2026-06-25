@@ -592,22 +592,32 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
 
     if (fetchErr) throw fetchErr;
 
-    // 2. Si tiene tenant de demo, eliminarlo de la tabla tenants y borrar de Retell AI
+    // 2. Si tiene tenant de demo, eliminarlo de la tabla tenants y borrar de Retell AI (solo si no tiene contrato ni suscripción)
     if (prospect && prospect.demo_tenant_id) {
       const { data: tenant } = await supabase
         .from('tenants')
-        .select('retell_agent_id')
+        .select('retell_agent_id, signed_contract_content, stripe_subscription_id')
         .eq('id', prospect.demo_tenant_id)
         .maybeSingle();
 
-      if (tenant && tenant.retell_agent_id) {
-        await deleteRetellAgent(tenant.retell_agent_id);
-      }
+      if (tenant) {
+        const hasContractOrSub = 
+          (tenant.signed_contract_content && tenant.signed_contract_content.trim() !== '') || 
+          (tenant.stripe_subscription_id && tenant.stripe_subscription_id.trim() !== '');
 
-      await supabase
-        .from('tenants')
-        .delete()
-        .eq('id', prospect.demo_tenant_id);
+        if (!hasContractOrSub) {
+          console.log(`[Prospecting API] Eliminando tenant demo ${prospect.demo_tenant_id} asociado al prospecto ${id} porque no cuenta con contrato ni suscripción activa.`);
+          if (tenant.retell_agent_id) {
+            await deleteRetellAgent(tenant.retell_agent_id);
+          }
+          await supabase
+            .from('tenants')
+            .delete()
+            .eq('id', prospect.demo_tenant_id);
+        } else {
+          console.log(`[Prospecting API] Preservando tenant ${prospect.demo_tenant_id} asociado al prospecto ${id} por contar con contrato o suscripción activa.`);
+        }
+      }
     }
 
     // 3. Eliminar el prospecto
@@ -649,25 +659,37 @@ router.post('/delete-bulk', async (req: Request, res: Response): Promise<void> =
       ? prospects.map((p: any) => p.demo_tenant_id).filter((id: any) => !!id)
       : [];
 
-    // 2. Borrar los tenants demo y sus agentes en Retell AI
+    // 2. Borrar los tenants demo y sus agentes en Retell AI (solo si no tienen contrato ni suscripción)
     if (tenantIds.length > 0) {
       const { data: tenants } = await supabase
         .from('tenants')
-        .select('retell_agent_id')
+        .select('id, retell_agent_id, signed_contract_content, stripe_subscription_id')
         .in('id', tenantIds);
 
       if (tenants) {
+        const tenantsToDelete: string[] = [];
         for (const tenant of tenants) {
-          if (tenant.retell_agent_id) {
-            await deleteRetellAgent(tenant.retell_agent_id);
+          const hasContractOrSub = 
+            (tenant.signed_contract_content && tenant.signed_contract_content.trim() !== '') || 
+            (tenant.stripe_subscription_id && tenant.stripe_subscription_id.trim() !== '');
+
+          if (!hasContractOrSub) {
+            tenantsToDelete.push(tenant.id);
+            if (tenant.retell_agent_id) {
+              await deleteRetellAgent(tenant.retell_agent_id);
+            }
+          } else {
+            console.log(`[Prospecting API] Preservando tenant ${tenant.id} durante borrado masivo por contar con contrato o suscripción activa.`);
           }
         }
-      }
 
-      await supabase
-        .from('tenants')
-        .delete()
-        .in('id', tenantIds);
+        if (tenantsToDelete.length > 0) {
+          await supabase
+            .from('tenants')
+            .delete()
+            .in('id', tenantsToDelete);
+        }
+      }
     }
 
     // 3. Borrar los prospectos
