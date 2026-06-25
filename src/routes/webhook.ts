@@ -797,33 +797,33 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
           .maybeSingle();
 
         if (tenant) {
-          // Evitar duplicados:
-          // 1. Intentar buscar por retell_call_id
+          // Evitar duplicados usando un identificador único en caller_phone
           let existingLog = null;
+          const phoneWithCallId = callId ? `${callerPhone}|retell:${callId}` : callerPhone;
           
-          const { data: logByCallId } = await supabase
-            .from('call_logs')
-            .select('id, recording_url, transcript, summary')
-            .eq('tenant_id', tenant.id)
-            .eq('retell_call_id', callId)
-            .maybeSingle();
-            
-          if (logByCallId) {
-            existingLog = logByCallId;
-          } else {
-            // 2. Fallback: buscar llamada reciente (últimos 90 segundos) con el mismo teléfono
-            const ninetySecondsAgo = new Date(Date.now() - 90 * 1000).toISOString();
-            const { data: existingLogs } = await supabase
+          if (callId) {
+            const { data: logByPhone } = await supabase
               .from('call_logs')
               .select('id, recording_url, transcript, summary')
               .eq('tenant_id', tenant.id)
-              .eq('caller_phone', callerPhone)
-              .gte('created_at', ninetySecondsAgo)
-              .order('created_at', { ascending: false })
-              .limit(1);
+              .eq('caller_phone', phoneWithCallId)
+              .maybeSingle();
               
-            if (existingLogs && existingLogs.length > 0) {
-              existingLog = existingLogs[0];
+            if (logByPhone) {
+              existingLog = logByPhone;
+            }
+          }
+          
+          if (!existingLog && recordingUrl) {
+            const { data: logByUrl } = await supabase
+              .from('call_logs')
+              .select('id, recording_url, transcript, summary')
+              .eq('tenant_id', tenant.id)
+              .eq('recording_url', recordingUrl)
+              .maybeSingle();
+              
+            if (logByUrl) {
+              existingLog = logByUrl;
             }
           }
 
@@ -836,8 +836,7 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
                 recording_url: recordingUrl || existingLog.recording_url,
                 transcript: transcript || existingLog.transcript,
                 summary: summary || existingLog.summary,
-                intent_tag: intentTag,
-                retell_call_id: callId
+                intent_tag: intentTag
               })
               .eq('id', existingLog.id);
           } else {
@@ -845,13 +844,12 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
               .from('call_logs')
               .insert({
                 tenant_id: tenant.id,
-                caller_phone: callerPhone,
+                caller_phone: phoneWithCallId,
                 call_duration: durationSeconds,
                 recording_url: recordingUrl,
                 transcript,
                 summary,
-                intent_tag: intentTag,
-                retell_call_id: callId
+                intent_tag: intentTag
               });
             console.log(`✅ Registro de llamada guardado para el cliente: ${tenant.id}`);
           }
