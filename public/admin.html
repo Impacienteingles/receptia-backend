@@ -1442,7 +1442,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.11</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.12</span>
         </div>
       </header>
 
@@ -2404,6 +2404,15 @@
                     <div style="position: relative; display: flex; align-items: center; width: 100%;">
                       <input type="password" id="setting-retell-key" placeholder="key_..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
                       <button type="button" onclick="togglePasswordVisibility('setting-retell-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-google-places-key">Google Places API Key (Prospección B2B):</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-google-places-key" placeholder="AIzaSy..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-google-places-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
                         <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
                       </button>
                     </div>
@@ -4668,6 +4677,7 @@
         const inputMap = {
           'GEMINI_API_KEY': 'setting-gemini-key',
           'RETELL_API_KEY': 'setting-retell-key',
+          'GOOGLE_PLACES_API_KEY': 'setting-google-places-key',
           'GOOGLE_CLIENT_ID': 'setting-google-client-id',
           'GOOGLE_CLIENT_SECRET': 'setting-google-client-secret',
           'GOOGLE_REDIRECT_URI': 'setting-google-redirect-uri',
@@ -4720,6 +4730,7 @@
       const inputMap = {
         'GEMINI_API_KEY': 'setting-gemini-key',
         'RETELL_API_KEY': 'setting-retell-key',
+        'GOOGLE_PLACES_API_KEY': 'setting-google-places-key',
         'GOOGLE_CLIENT_ID': 'setting-google-client-id',
         'GOOGLE_CLIENT_SECRET': 'setting-google-client-secret',
         'GOOGLE_REDIRECT_URI': 'setting-google-redirect-uri',
@@ -6800,8 +6811,14 @@
         }
 
         // Enlace web
-        const websiteLink = p.website && p.website !== 'No disponible'
-          ? `<a href="${p.website}" target="_blank" style="color: var(--primary-light); text-decoration: none;">Visitar web ↗</a>`
+        let websiteUrl = p.website;
+        if (websiteUrl && websiteUrl !== 'No disponible') {
+          if (!/^https?:\/\//i.test(websiteUrl)) {
+            websiteUrl = 'https://' + websiteUrl;
+          }
+        }
+        const websiteLink = websiteUrl && websiteUrl !== 'No disponible'
+          ? `<a href="${websiteUrl}" target="_blank" style="color: var(--primary-light); text-decoration: none;">Visitar web ↗</a>`
           : '<span style="color: var(--text-muted);">No disponible</span>';
 
         // Acciones disponibles cuando existe la demo_tenant_id o demo_url

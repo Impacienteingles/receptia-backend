@@ -487,8 +487,7 @@ async function generateCartesiaAudio(businessName: string, demoUrl: string): Pro
         },
         output_format: {
           container: 'mp3',
-          sample_rate: 44100,
-          encoding: 'mp3'
+          sample_rate: 44100
         }
       },
       {
@@ -523,8 +522,18 @@ async function generateCartesiaAudio(businessName: string, demoUrl: string): Pro
     const publicAudioUrl = `${supabaseUrl}/storage/v1/object/public/public-assets/${fileName}`;
     return publicAudioUrl;
   } catch (error: any) {
-    console.error('[Cartesia Service ERROR] Error al generar audio de Cartesia:', error.response?.data || error.message);
-    throw new Error(`Error en Cartesia TTS: ${error.message}`);
+    let errorDetail = error.message;
+    if (error.response && error.response.data) {
+      try {
+        const decoded = Buffer.from(error.response.data).toString('utf-8');
+        const parsed = JSON.parse(decoded);
+        errorDetail = parsed.message || parsed.error || decoded;
+      } catch (e) {
+        errorDetail = error.response.data.toString() || error.message;
+      }
+    }
+    console.error('[Cartesia Service ERROR] Error al generar audio de Cartesia:', errorDetail);
+    throw new Error(`Error en Cartesia TTS: ${errorDetail}`);
   }
 }
 
