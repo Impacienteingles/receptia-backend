@@ -1442,7 +1442,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.12</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.13</span>
         </div>
       </header>
 
@@ -2630,6 +2630,21 @@
                 <span>Buscar Leads</span>
               </button>
             </form>
+          </div>
+
+          <!-- Barra de Progreso de Búsqueda B2B -->
+          <div id="search-progress-container" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; flex-direction: column; gap: 1rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); backdrop-filter: blur(10px);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span id="search-progress-status" style="color: #fff; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="loader" class="spin" style="color: var(--primary); width: 18px; height: 18px;"></i>
+                <span>Conectando con Google Places...</span>
+              </span>
+              <span id="search-progress-percent" style="font-family: monospace; font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">0%</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+              <div id="search-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, #a855f7 100%); transition: width 0.3s ease; border-radius: 10px;"></div>
+            </div>
+            <p id="search-progress-hint" style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Esto puede tomar hasta 25 segundos ya que estamos buscando los mejores negocios y analizando sus sitios web para extraer emails y especialidades de forma real.</p>
           </div>
 
           <!-- Listado de Leads Extraídos -->
@@ -6945,6 +6960,47 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="spinner-small" style="display:inline-block; width:16px; height:16px; border:2px solid #fff; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite;"></i> <span>Buscando leads...</span>`;
 
+      // Inicializar y mostrar la barra de progreso
+      const progressContainer = document.getElementById('search-progress-container');
+      const progressStatus = document.getElementById('search-progress-status').querySelector('span');
+      const progressPercent = document.getElementById('search-progress-percent');
+      const progressBar = document.getElementById('search-progress-bar');
+      
+      if (progressContainer) {
+        progressContainer.style.display = 'flex';
+        progressBar.style.width = '0%';
+        progressPercent.innerText = '0%';
+        progressStatus.innerText = 'Conectando con Google Places...';
+      }
+
+      let progress = 0;
+      const progressSteps = [
+        { limit: 15, text: `Buscando negocios en ${city}...`, rate: 3 },
+        { limit: 45, text: 'Accediendo a los sitios web de los negocios...', rate: 1.5 },
+        { limit: 75, text: 'Buscando correos electrónicos y teléfonos reales...', rate: 1 },
+        { limit: 90, text: 'Identificando especialidades y servicios de cada lead...', rate: 0.5 },
+        { limit: 98, text: 'Guardando datos en la nube y finalizando...', rate: 0.2 }
+      ];
+
+      let currentStepIdx = 0;
+      const progressInterval = setInterval(() => {
+        if (currentStepIdx >= progressSteps.length) {
+          clearInterval(progressInterval);
+          return;
+        }
+
+        const step = progressSteps[currentStepIdx];
+        progress += step.rate;
+        if (progress >= step.limit) {
+          progress = step.limit;
+          currentStepIdx++;
+        }
+
+        if (progressBar) progressBar.style.width = `${Math.floor(progress)}%`;
+        if (progressPercent) progressPercent.innerText = `${Math.floor(progress)}%`;
+        if (progressStatus && step.text) progressStatus.innerText = step.text;
+      }, 200);
+
       try {
         const response = await fetch('/api/admin/prospects/search', {
           method: 'POST',
@@ -6955,6 +7011,16 @@
         });
         
         const data = await response.json();
+        
+        // Finalizar barra de progreso con éxito
+        clearInterval(progressInterval);
+        if (progressBar) progressBar.style.width = '100%';
+        if (progressPercent) progressPercent.innerText = '100%';
+        if (progressStatus) progressStatus.innerText = '¡Búsqueda completada con éxito!';
+        setTimeout(() => {
+          if (progressContainer) progressContainer.style.display = 'none';
+        }, 1500);
+
         btn.disabled = false;
         btn.innerHTML = originalText;
 
@@ -6965,6 +7031,9 @@
         showCustomAlert(data.message, 'Extracción Exitosa', 'success');
         await fetchProspects();
       } catch (err) {
+        clearInterval(progressInterval);
+        if (progressContainer) progressContainer.style.display = 'none';
+        
         btn.disabled = false;
         btn.innerHTML = originalText;
         showCustomAlert(err.message, 'Error de búsqueda', 'error');
