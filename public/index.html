@@ -2125,7 +2125,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.1</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.5.2</span>
         </div>
       </header>
 
@@ -6381,6 +6381,15 @@
                 <strong style="color: var(--accent); display: block; margin-bottom: 0.25rem; font-size: 0.85rem;"><i data-lucide="message-square" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>Transcripción Completa</strong>
                 <div style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; white-space: pre-wrap; padding-right: 0.5rem; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">${log.transcript || 'Sin transcripción.'}</div>
               </div>
+              <div style="display: flex; align-items: center; gap: 0.75rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 0.5rem;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="share-2" style="width: 14px; height: 14px;"></i> Compartir detalle:</span>
+                <button class="btn btn-secondary" onclick="shareCallByEmail('${log.id}', event)" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); color: #fff; cursor: pointer;">
+                  <i data-lucide="mail" style="width: 13px; height: 13px; color: #60a5fa;"></i> Email
+                </button>
+                <button class="btn btn-secondary" onclick="shareCallByWhatsApp('${log.id}', event)" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); color: #fff; cursor: pointer;">
+                  <i data-lucide="message-square" style="width: 13px; height: 13px; color: #22c55e;"></i> WhatsApp
+                </button>
+              </div>
             </div>
           </td>
         `;
@@ -6408,6 +6417,74 @@
       }
       lucide.createIcons();
     };
+
+    window.shareCallByEmail = function(logId, event) {
+      if (event) event.stopPropagation();
+      const log = allCallLogs.find(l => l.id === logId);
+      if (!log) return;
+      
+      const date = new Date(log.created_at);
+      const formattedDate = date.toLocaleString('es-ES', {
+        timeZone: 'Europe/Madrid',
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      const mins = Math.floor(log.call_duration / 60);
+      const secs = log.call_duration % 60;
+      const durationStr = `${mins}:${String(secs).padStart(2, '0')}`;
+      
+      const subject = `Detalles de llamada IA - Receptia`;
+      const body = `Hola, te comparto los detalles de la llamada gestionada por Receptia:
+
+Fecha y Hora: ${formattedDate}
+Teléfono del cliente: ${log.caller_phone || 'Oculto'}
+Duración: ${durationStr}
+Intención: ${log.intent_tag || 'Consulta General'}
+
+Resumen de la IA:
+${log.summary || 'Sin resumen disponible.'}
+
+Transcripción Completa:
+${log.transcript || 'Sin transcripción.'}
+
+Grabación de audio:
+${log.recording_url || 'No disponible'}`;
+
+      window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    };
+
+    window.shareCallByWhatsApp = function(logId, event) {
+      if (event) event.stopPropagation();
+      const log = allCallLogs.find(l => l.id === logId);
+      if (!log) return;
+      
+      const date = new Date(log.created_at);
+      const formattedDate = date.toLocaleString('es-ES', {
+        timeZone: 'Europe/Madrid',
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      const mins = Math.floor(log.call_duration / 60);
+      const secs = log.call_duration % 60;
+      const durationStr = `${mins}:${String(secs).padStart(2, '0')}`;
+      
+      const text = `*Detalles de llamada IA - Receptia* 🎙️\n\n` +
+        `*Fecha y Hora:* ${formattedDate}\n` +
+        `*Teléfono:* ${log.caller_phone || 'Oculto'}\n` +
+        `*Duración:* ${durationStr}\n` +
+        `*Intención:* ${log.intent_tag || 'Consulta General'}\n\n` +
+        `*Resumen de la IA:*\n${log.summary || 'Sin resumen disponible.'}\n\n` +
+        `*Grabación:* ${log.recording_url || 'No disponible'}`;
+
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
 
     // LÓGICA DE BORRADO DE HISTORIAL DE LLAMADAS (CALL LOGS)
     let callToDeleteId = null;

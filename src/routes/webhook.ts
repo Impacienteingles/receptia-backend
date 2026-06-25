@@ -780,18 +780,45 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
         .maybeSingle();
 
       if (tenant) {
-        await supabase
+        // Evitar duplicados: Buscar si ya existe una llamada registrada en los últimos 90 segundos para el mismo cliente y teléfono
+        const ninetySecondsAgo = new Date(Date.now() - 90 * 1000).toISOString();
+        const { data: existingLogs } = await supabase
           .from('call_logs')
-          .insert({
-            tenant_id: tenant.id,
-            caller_phone: callerPhone,
-            call_duration: durationSeconds,
-            recording_url: recordingUrl,
-            transcript,
-            summary,
-            intent_tag: intentTag
-          });
-        console.log(`✅ Registro de llamada guardado para el cliente: ${tenant.id}`);
+          .select('id, recording_url, transcript, summary')
+          .eq('tenant_id', tenant.id)
+          .eq('caller_phone', callerPhone)
+          .gte('created_at', ninetySecondsAgo)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (existingLogs && existingLogs.length > 0) {
+          const lastLog = existingLogs[0];
+          console.log(`[Webhook] Registro de llamada duplicado detectado (ID: ${lastLog.id}). Actualizando con datos más recientes...`);
+          
+          await supabase
+            .from('call_logs')
+            .update({
+              call_duration: durationSeconds,
+              recording_url: recordingUrl || lastLog.recording_url,
+              transcript: transcript || lastLog.transcript,
+              summary: summary || lastLog.summary,
+              intent_tag: intentTag
+            })
+            .eq('id', lastLog.id);
+        } else {
+          await supabase
+            .from('call_logs')
+            .insert({
+              tenant_id: tenant.id,
+              caller_phone: callerPhone,
+              call_duration: durationSeconds,
+              recording_url: recordingUrl,
+              transcript,
+              summary,
+              intent_tag: intentTag
+            });
+          console.log(`✅ Registro de llamada guardado para el cliente: ${tenant.id}`);
+        }
 
         // Procesar facturación por uso de minutos (Metered Billing) en segundo plano
         processMeteredBillingForCall(tenant.id, durationSeconds).catch(billErr => {
