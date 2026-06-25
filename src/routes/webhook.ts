@@ -746,6 +746,9 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
   }
 });
 
+// Objeto global en memoria para serializar eventos concurrentes del mismo call_id y evitar race conditions
+const callMutexes: { [callId: string]: Promise<void> } = {};
+
 /**
  * Endpoint para recibir eventos de Retell AI (Call logs & analytics).
  */
@@ -754,81 +757,119 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
   const { event, call } = req.body;
   
   if (event === 'call_analyzed' || event === 'call_ended') {
-    const retellAgentId = call?.agent_id;
-    const callerPhone = call?.user_phone_number || call?.from_number || 'Desconocido';
-    const durationSeconds = call?.duration_ms ? Math.round(call.duration_ms / 1000) : 0;
-    const recordingUrl = call?.recording_url || null;
-    const transcript = call?.transcript || '';
-    const summary = call?.call_analysis?.call_summary || '';
+    const callId = call?.call_id;
     
-    // Asignar etiqueta de intención en base al resumen y éxito
-    let intentTag = 'Consulta General';
-    if (call?.call_analysis?.custom_analysis_data?.book_success || summary.toLowerCase().includes('cita agendada') || summary.toLowerCase().includes('reserva') || summary.toLowerCase().includes('agendó')) {
-      intentTag = 'Cita Agendada';
-    } else if (summary.toLowerCase().includes('reclamación') || summary.toLowerCase().includes('queja') || summary.toLowerCase().includes('molesto')) {
-      intentTag = 'Queja';
-    } else if (durationSeconds < 10) {
-      intentTag = 'Llamada Perdida';
-    }
-
-    try {
-      // Buscar inquilino por retell_agent_id
-      const { data: tenant, error: tErr } = await supabase
-        .from('tenants')
-        .select('id')
-        .eq('retell_agent_id', retellAgentId)
-        .maybeSingle();
-
-      if (tenant) {
-        // Evitar duplicados: Buscar si ya existe una llamada registrada en los últimos 90 segundos para el mismo cliente y teléfono
-        const ninetySecondsAgo = new Date(Date.now() - 90 * 1000).toISOString();
-        const { data: existingLogs } = await supabase
-          .from('call_logs')
-          .select('id, recording_url, transcript, summary')
-          .eq('tenant_id', tenant.id)
-          .eq('caller_phone', callerPhone)
-          .gte('created_at', ninetySecondsAgo)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (existingLogs && existingLogs.length > 0) {
-          const lastLog = existingLogs[0];
-          console.log(`[Webhook] Registro de llamada duplicado detectado (ID: ${lastLog.id}). Actualizando con datos más recientes...`);
-          
-          await supabase
-            .from('call_logs')
-            .update({
-              call_duration: durationSeconds,
-              recording_url: recordingUrl || lastLog.recording_url,
-              transcript: transcript || lastLog.transcript,
-              summary: summary || lastLog.summary,
-              intent_tag: intentTag
-            })
-            .eq('id', lastLog.id);
-        } else {
-          await supabase
-            .from('call_logs')
-            .insert({
-              tenant_id: tenant.id,
-              caller_phone: callerPhone,
-              call_duration: durationSeconds,
-              recording_url: recordingUrl,
-              transcript,
-              summary,
-              intent_tag: intentTag
-            });
-          console.log(`✅ Registro de llamada guardado para el cliente: ${tenant.id}`);
+    if (callId) {
+      // Esperar a que se libere cualquier bloqueo previo para este callId
+      while (callMutexes[callId]) {
+        await callMutexes[callId];
+      }
+      
+      // Establecer el nuevo bloqueo
+      let resolveLock: () => void = () => {};
+      callMutexes[callId] = new Promise<void>(resolve => {
+        resolveLock = resolve;
+      });
+      
+      try {
+        const retellAgentId = call?.agent_id;
+        const callerPhone = call?.user_phone_number || call?.from_number || 'Desconocido';
+        const durationSeconds = call?.duration_ms ? Math.round(call.duration_ms / 1000) : 0;
+        const recordingUrl = call?.recording_url || null;
+        const transcript = call?.transcript || '';
+        const summary = call?.call_analysis?.call_summary || '';
+        
+        // Asignar etiqueta de intención en base al resumen y éxito
+        let intentTag = 'Consulta General';
+        if (call?.call_analysis?.custom_analysis_data?.book_success || summary.toLowerCase().includes('cita agendada') || summary.toLowerCase().includes('reserva') || summary.toLowerCase().includes('agendó')) {
+          intentTag = 'Cita Agendada';
+        } else if (summary.toLowerCase().includes('reclamación') || summary.toLowerCase().includes('queja') || summary.toLowerCase().includes('molesto')) {
+          intentTag = 'Queja';
+        } else if (durationSeconds < 10) {
+          intentTag = 'Llamada Perdida';
         }
 
-        // Procesar facturación por uso de minutos (Metered Billing) en segundo plano
-        processMeteredBillingForCall(tenant.id, durationSeconds).catch(billErr => {
-          console.error(`[Metered Billing Error] Error al facturar minutos para ${tenant.id}:`, billErr.message);
-        });
-      } else {
-        console.warn(`⚠️ No se encontró inquilino con retell_agent_id: ${retellAgentId}`);
+        // Buscar inquilino por retell_agent_id
+        const { data: tenant, error: tErr } = await supabase
+          .from('tenants')
+          .select('id')
+          .eq('retell_agent_id', retellAgentId)
+          .maybeSingle();
+
+        if (tenant) {
+          // Evitar duplicados:
+          // 1. Intentar buscar por retell_call_id
+          let existingLog = null;
+          
+          const { data: logByCallId } = await supabase
+            .from('call_logs')
+            .select('id, recording_url, transcript, summary')
+            .eq('tenant_id', tenant.id)
+            .eq('retell_call_id', callId)
+            .maybeSingle();
+            
+          if (logByCallId) {
+            existingLog = logByCallId;
+          } else {
+            // 2. Fallback: buscar llamada reciente (últimos 90 segundos) con el mismo teléfono
+            const ninetySecondsAgo = new Date(Date.now() - 90 * 1000).toISOString();
+            const { data: existingLogs } = await supabase
+              .from('call_logs')
+              .select('id, recording_url, transcript, summary')
+              .eq('tenant_id', tenant.id)
+              .eq('caller_phone', callerPhone)
+              .gte('created_at', ninetySecondsAgo)
+              .order('created_at', { ascending: false })
+              .limit(1);
+              
+            if (existingLogs && existingLogs.length > 0) {
+              existingLog = existingLogs[0];
+            }
+          }
+
+          if (existingLog) {
+            console.log(`[Webhook] Registro de llamada existente detectado (ID: ${existingLog.id}). Actualizando con datos más recientes...`);
+            await supabase
+              .from('call_logs')
+              .update({
+                call_duration: durationSeconds,
+                recording_url: recordingUrl || existingLog.recording_url,
+                transcript: transcript || existingLog.transcript,
+                summary: summary || existingLog.summary,
+                intent_tag: intentTag,
+                retell_call_id: callId
+              })
+              .eq('id', existingLog.id);
+          } else {
+            await supabase
+              .from('call_logs')
+              .insert({
+                tenant_id: tenant.id,
+                caller_phone: callerPhone,
+                call_duration: durationSeconds,
+                recording_url: recordingUrl,
+                transcript,
+                summary,
+                intent_tag: intentTag,
+                retell_call_id: callId
+              });
+            console.log(`✅ Registro de llamada guardado para el cliente: ${tenant.id}`);
+          }
+
+          // Procesar facturación por uso de minutos (Metered Billing) en segundo plano
+          processMeteredBillingForCall(tenant.id, durationSeconds).catch(billErr => {
+            console.error(`[Metered Billing Error] Error al facturar minutos para ${tenant.id}:`, billErr.message);
+          });
+        } else {
+          console.warn(`⚠️ No se encontró inquilino con retell_agent_id: ${retellAgentId}`);
+        }
+      } catch (err: any) {
+        console.error('Error al registrar logs de llamada:', err.message);
+      } finally {
+        // Liberar el bloqueo
+        delete callMutexes[callId];
+        resolveLock();
       }
-    } catch (err: any) {
-      console.error('Error al registrar logs de llamada:', err.message);
     }
   }
   res.json({ status: 'ok' });

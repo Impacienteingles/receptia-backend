@@ -2527,6 +2527,10 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
         ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
+        
+        ALTER TABLE call_logs 
+        ADD COLUMN IF NOT EXISTS retell_call_id TEXT;
+        
         NOTIFY pgrst, 'reload schema';
       `);
       console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Directa).');
@@ -2563,6 +2567,10 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
         ADD COLUMN IF NOT EXISTS client_enable_multi_professional BOOLEAN DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS whatsapp_immediate_notification_enabled BOOLEAN DEFAULT TRUE,
         ADD COLUMN IF NOT EXISTS block_admin_access BOOLEAN DEFAULT FALSE;
+        
+        ALTER TABLE call_logs 
+        ADD COLUMN IF NOT EXISTS retell_call_id TEXT;
+        
         NOTIFY pgrst, 'reload schema';
       `);
       console.log('[Migration Endpoint] ✅ Columnas añadidas con éxito (Conexión Pooler).');
