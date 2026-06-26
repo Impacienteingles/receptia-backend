@@ -1454,7 +1454,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.6.1</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.6.2</span>
       </div>
     </aside>
 
@@ -7648,6 +7648,12 @@
         const websiteLink = websiteUrl && websiteUrl !== 'No disponible'
           ? `<a href="${websiteUrl}" target="_blank" style="color: var(--primary-light); text-decoration: none;">Visitar web ↗</a>`
           : '<span style="color: var(--text-muted);">No disponible</span>';
+
+        const emailHtml = p.email && p.email !== 'No disponible'
+          ? `<a href="mailto:${p.email}" style="color: var(--primary-light); text-decoration: none;">${p.email}</a>`
+          : '<span style="color: var(--text-muted);">No disponible</span>';
+
+        const sectorStr = sectorNames[p.sector] || p.sector || 'Desconocido';
 
         // Acciones disponibles cuando existe la demo_tenant_id o demo_url
         const shareBtn = p.demo_url ? `
