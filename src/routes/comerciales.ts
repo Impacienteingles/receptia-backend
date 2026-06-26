@@ -592,7 +592,6 @@ router.post('/run-billing-cycle', async (req: Request, res: Response): Promise<v
               .insert({
                 agent_id: comercial.id,
                 prospect_id: p.id,
-                tenant_id: tenant.id,
                 type: 'percentage',
                 amount: commissionAmount,
                 paid: false,

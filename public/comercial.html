@@ -813,11 +813,41 @@
       currentAccessUrl = urlParams.get('c') || '';
       console.log('[Receptia] Token de acceso detectado:', currentAccessUrl ? `"${currentAccessUrl}"` : '(ninguno)');
 
-      if (currentComercialId && currentComercialPin) {
-        console.log('[Receptia] Sesión restaurada desde storage. Mostrando dashboard.');
-        showDashboard();
+      if (currentAccessUrl) {
+        // Si hay token en la URL, verificamos si coincide con el comercial actual
+        try {
+          const apiUrl = `/api/comercial/auth/agent-by-url/${encodeURIComponent(currentAccessUrl)}`;
+          const response = await fetch(apiUrl);
+          if (response.ok) {
+            const res = await response.json();
+            // Si coincide con la sesión guardada, seguimos. Si no, limpiamos la sesión para cargar el nuevo
+            if (currentComercialId && res.agent && res.agent.id === currentComercialId) {
+              console.log('[Receptia] Sesión coincide con el token de URL. Mostrando dashboard.');
+              showDashboard();
+            } else {
+              console.log('[Receptia] Token de URL no coincide con sesión activa. Limpiando sesión e iniciando pre-login...');
+              handleLogoutQuiet();
+              await initLoginScreen();
+            }
+          } else {
+            // Token inválido, limpiar e ir a login manual
+            currentAccessUrl = '';
+            handleLogoutQuiet();
+            await initLoginScreen();
+          }
+        } catch (err) {
+          console.error('[Receptia] Error verificado token de URL:', err);
+          currentAccessUrl = '';
+          await initLoginScreen();
+        }
       } else {
-        await initLoginScreen();
+        // Modo login manual
+        if (currentComercialId && currentComercialPin) {
+          console.log('[Receptia] Sesión restaurada desde storage. Mostrando dashboard.');
+          showDashboard();
+        } else {
+          await initLoginScreen();
+        }
       }
       lucide.createIcons();
 
@@ -864,7 +894,7 @@
           emailInput.removeAttribute('required');
           emailInput.disabled = true;
           
-          loginWelcome.innerHTML = `Bienvenido, <strong>${res.agent.name}</strong><br><span style="font-size: 0.75rem; opacity: 0.7;">Email: ${res.agent.email}</span>`;
+          loginWelcome.innerHTML = `Bienvenido, <strong>${res.agent.name}</strong>`;
           pinInput.value = '';
           pinInput.focus();
         } catch (err) {
@@ -1006,6 +1036,23 @@
       showLogin();
     }
 
+    // Logout silencioso (sin redirigir a login card visualmente)
+    function handleLogoutQuiet() {
+      sessionStorage.removeItem('comercial_id');
+      sessionStorage.removeItem('comercial_pin');
+      sessionStorage.removeItem('comercial_name');
+      localStorage.removeItem('comercial_id');
+      localStorage.removeItem('comercial_pin');
+      localStorage.removeItem('comercial_name');
+      currentComercialId = '';
+      currentComercialPin = '';
+      currentComercialName = '';
+      if (comercialPollingInterval) {
+        clearInterval(comercialPollingInterval);
+        comercialPollingInterval = null;
+      }
+    }
+
     // Cambiar pestañas principales
     function switchMainTab(tabName) {
       activeTab = tabName;
@@ -1024,11 +1071,21 @@
       try {
         // Cargar Leads
         const leadsRes = await fetch('/api/comercial/leads', { headers: getAuthHeaders() });
+        if (leadsRes.status === 401 || leadsRes.status === 403) {
+          console.warn('[Receptia] Sesión no autorizada al cargar leads. Cerrando sesión...');
+          handleLogout();
+          return;
+        }
         const leadsData = await leadsRes.json();
         allLeads = leadsData.leads || [];
 
         // Cargar Comisiones y Pagos
         const comRes = await fetch('/api/comercial/commissions', { headers: getAuthHeaders() });
+        if (comRes.status === 401 || comRes.status === 403) {
+          console.warn('[Receptia] Sesión no autorizada al cargar comisiones. Cerrando sesión...');
+          handleLogout();
+          return;
+        }
         const comData = await comRes.json();
 
         // Renderizar todo

@@ -49,7 +49,6 @@ async function generateCommissionOnContratado(prospectId: string) {
         .insert({
           agent_id: agent.id,
           prospect_id: prospectId,
-          tenant_id: prospect.demo_tenant_id || null,
           type: 'fixed',
           amount: Number(agent.commission_value),
           paid: false,
@@ -78,7 +77,6 @@ async function generateCommissionOnContratado(prospectId: string) {
         .insert({
           agent_id: agent.id,
           prospect_id: prospectId,
-          tenant_id: prospect.demo_tenant_id || null,
           type: 'percentage',
           amount: commissionAmount,
           paid: false,
@@ -162,6 +160,40 @@ router.get('/auth/agent-by-url/:accessUrl', async (req: Request, res: Response):
     res.json({ success: true, agent });
   } catch (err: any) {
     console.error(`[Comercial Auth] Error inesperado:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Diagnóstico: listar access_urls de todos los agentes (temporal - usar solo para depuración)
+ */
+router.get('/auth/debug-agents', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { data: agents, error } = await supabase
+      .from('commercial_agents')
+      .select('id, name, email, access_url, status, pin');
+
+    if (error) {
+      console.error('[Comercial Debug] Error:', error.message);
+      res.status(500).json({ error: error.message });
+      return;
+    }
+
+    const sanitized = (agents || []).map(a => ({
+      id: a.id,
+      name: a.name,
+      email: a.email,
+      access_url: a.access_url,
+      access_url_length: a.access_url ? a.access_url.length : 0,
+      access_url_chars: a.access_url ? [...a.access_url].map(c => `${c}(${c.charCodeAt(0)})`) : [],
+      pin_length: a.pin ? a.pin.length : 0,
+      pin_chars: a.pin ? [...a.pin].map(c => `${c}(${c.charCodeAt(0)})`) : [],
+      status: a.status
+    }));
+
+    console.log('[Comercial Debug] Agentes encontrados:', JSON.stringify(sanitized, null, 2));
+    res.json({ success: true, agents: sanitized, count: sanitized.length });
+  } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
