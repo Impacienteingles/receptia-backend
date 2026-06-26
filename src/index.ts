@@ -40,8 +40,14 @@ app.use(express.json({
   }
 }));
 
-// Servir archivos estáticos del panel de control
-app.use(express.static(path.join(process.cwd(), 'public')));
+// Servir archivos estáticos del panel de control con control de caché desactivado para archivos HTML
+app.use(express.static(path.join(process.cwd(), 'public'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    }
+  }
+}));
 
 // Helper functions for storing block_admin_access in settings table
 async function getBlockAdminAccess(tenantId: string): Promise<boolean> {
