@@ -494,7 +494,7 @@
           <img src="/receptia_logo.png" alt="Receptia Logo" style="width: 40px; height: 40px; border-radius: 8px;">
           <h2 style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif;">Receptia B2B</h2>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.2</span></p>
+        <p style="color: var(--text-muted); font-size: 0.85rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.3</span></p>
       </div>
 
       <form id="login-form" onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
@@ -511,6 +511,11 @@
           Email o PIN incorrectos. Por favor intente de nuevo.
         </div>
 
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: -0.25rem;">
+          <input type="checkbox" id="login-remember" style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+          <label for="login-remember" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer; user-select: none;">Recordar mis datos de acceso</label>
+        </div>
+
         <button type="submit" class="btn" style="height: 42px; font-size: 0.95rem; justify-content: center; width: 100%; margin-top: 0.5rem;">
           Entrar al Panel
         </button>
@@ -523,7 +528,7 @@
     <header>
       <div class="logo-container">
         <img src="/receptia_logo.png" alt="Receptia Logo">
-        <span>Receptia Comercial <small style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal; margin-left: 0.25rem;">v1.0.2</small></span>
+        <span>Receptia Comercial <small style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal; margin-left: 0.25rem;">v1.0.3</small></span>
       </div>
 
       <div class="user-info">
@@ -778,9 +783,9 @@
 
   <script>
     // Configuración local
-    let currentComercialId = sessionStorage.getItem('comercial_id') || '';
-    let currentComercialPin = sessionStorage.getItem('comercial_pin') || '';
-    let currentComercialName = sessionStorage.getItem('comercial_name') || '';
+    let currentComercialId = sessionStorage.getItem('comercial_id') || localStorage.getItem('comercial_id') || '';
+    let currentComercialPin = sessionStorage.getItem('comercial_pin') || localStorage.getItem('comercial_pin') || '';
+    let currentComercialName = sessionStorage.getItem('comercial_name') || localStorage.getItem('comercial_name') || '';
 
     let allLeads = [];
     let selectedLeadId = null;
@@ -841,12 +846,12 @@
           currentAccessUrl = ''; // Liberar URL errónea para permitir el login normal por email + pin
           emailGroup.style.display = 'flex';
           document.getElementById('login-email').required = true;
-          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.2</span>`;
+          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.3</span>`;
         }
       } else {
         emailGroup.style.display = 'flex';
         document.getElementById('login-email').required = true;
-        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.2</span>`;
+        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.3</span>`;
       }
     }
 
@@ -904,6 +909,17 @@
         sessionStorage.setItem('comercial_id', data.comercial_id);
         sessionStorage.setItem('comercial_pin', pin);
         sessionStorage.setItem('comercial_name', data.name);
+
+        const rememberChk = document.getElementById('login-remember');
+        if (rememberChk && rememberChk.checked) {
+          localStorage.setItem('comercial_id', data.comercial_id);
+          localStorage.setItem('comercial_pin', pin);
+          localStorage.setItem('comercial_name', data.name);
+        } else {
+          localStorage.removeItem('comercial_id');
+          localStorage.removeItem('comercial_pin');
+          localStorage.removeItem('comercial_name');
+        }
         
         currentComercialId = data.comercial_id;
         currentComercialPin = pin;
@@ -928,6 +944,9 @@
       sessionStorage.removeItem('comercial_id');
       sessionStorage.removeItem('comercial_pin');
       sessionStorage.removeItem('comercial_name');
+      localStorage.removeItem('comercial_id');
+      localStorage.removeItem('comercial_pin');
+      localStorage.removeItem('comercial_name');
       currentComercialId = '';
       currentComercialPin = '';
       currentComercialName = '';
