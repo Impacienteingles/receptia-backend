@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Cache busting para evitar servir versiones antiguas -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Receptia - Panel de Comercial</title>
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.0.0">
   <link rel="icon" type="image/png" href="/favicon.png?v=1.0.0">
@@ -494,17 +498,17 @@
           <img src="/receptia_logo.png" alt="Receptia Logo" style="width: 40px; height: 40px; border-radius: 8px;">
           <h2 style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif;">Receptia B2B</h2>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.4</span></p>
+        <p style="color: var(--text-muted); font-size: 0.85rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.5</span></p>
       </div>
 
-      <form id="login-form" onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
+      <form id="login-form" novalidate onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
         <div class="form-group" id="group-login-email">
           <label for="login-email">Correo Electrónico</label>
-          <input type="email" id="login-email" placeholder="comercial@correo.com" required>
+          <input type="email" id="login-email" placeholder="comercial@correo.com" autocomplete="email">
         </div>
         <div class="form-group">
           <label for="login-pin">PIN de Acceso</label>
-          <input type="password" id="login-pin" placeholder="••••" required maxlength="4" style="letter-spacing: 0.1em; text-align: center;">
+          <input type="text" id="login-pin" inputmode="numeric" placeholder="••••" maxlength="4" autocomplete="off" style="letter-spacing: 0.3em; text-align: center; -webkit-text-security: disc;">
         </div>
         
         <div id="login-error-alert" style="display: none; color: var(--error); font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.6rem; border-radius: 6px; text-align: center;">
@@ -528,7 +532,7 @@
     <header>
       <div class="logo-container">
         <img src="/receptia_logo.png" alt="Receptia Logo">
-        <span>Receptia Comercial <small style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal; margin-left: 0.25rem;">v1.0.4</small></span>
+        <span>Receptia Comercial <small style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal; margin-left: 0.25rem;">v1.0.5</small></span>
       </div>
 
       <div class="user-info">
@@ -804,22 +808,28 @@
 
     // Inicializar
     window.addEventListener('DOMContentLoaded', async () => {
+      console.log('[Receptia Comercial v1.0.5] Inicializando panel...');
       const urlParams = new URLSearchParams(window.location.search);
       currentAccessUrl = urlParams.get('c') || '';
+      console.log('[Receptia] Token de acceso detectado:', currentAccessUrl ? `"${currentAccessUrl}"` : '(ninguno)');
 
       if (currentComercialId && currentComercialPin) {
+        console.log('[Receptia] Sesión restaurada desde storage. Mostrando dashboard.');
         showDashboard();
       } else {
         await initLoginScreen();
       }
       lucide.createIcons();
 
-      // Auto-submit al ingresar 4 dígitos del PIN
+      // Auto-submit al ingresar 4 dígitos del PIN (sin pasar por submit del form)
       const pinInput = document.getElementById('login-pin');
       if (pinInput) {
         pinInput.addEventListener('input', (e) => {
+          // Solo filtrar a dígitos numéricos
+          e.target.value = e.target.value.replace(/[^0-9]/g, '');
           if (e.target.value.length === 4) {
-            handleLogin();
+            console.log('[Receptia] PIN completo (4 dígitos). Auto-enviando...');
+            handleLogin(); // Llamada directa, sin evento de form submit
           }
         });
       }
@@ -829,29 +839,48 @@
       showLogin();
       const emailGroup = document.getElementById('group-login-email');
       const loginWelcome = document.getElementById('login-welcome-text');
+      const emailInput = document.getElementById('login-email');
+      const pinInput = document.getElementById('login-pin');
 
       if (currentAccessUrl) {
+        console.log('[Receptia] Modo pre-login por URL. Consultando API...');
         try {
-          const response = await fetch(`/api/comercial/auth/agent-by-url/${currentAccessUrl}`);
+          const apiUrl = `/api/comercial/auth/agent-by-url/${encodeURIComponent(currentAccessUrl)}`;
+          console.log('[Receptia] Fetch:', apiUrl);
+          const response = await fetch(apiUrl);
+          console.log('[Receptia] Respuesta API:', response.status, response.statusText);
+          
           if (!response.ok) {
-            throw new Error('URL de acceso no válida.');
+            const errorBody = await response.text();
+            console.error('[Receptia] Error body:', errorBody);
+            throw new Error(`URL de acceso no válida (HTTP ${response.status}).`);
           }
           const res = await response.json();
+          console.log('[Receptia] Agente encontrado:', res.agent?.name);
+          
+          // Ocultar email y desactivar su validación completamente
           emailGroup.style.display = 'none';
-          document.getElementById('login-email').required = false;
+          emailInput.value = '';
+          emailInput.removeAttribute('required');
+          emailInput.disabled = true;
+          
           loginWelcome.innerHTML = `Bienvenido, <strong>${res.agent.name}</strong><br><span style="font-size: 0.75rem; opacity: 0.7;">Email: ${res.agent.email}</span>`;
-          document.getElementById('login-pin').focus();
+          pinInput.value = '';
+          pinInput.focus();
         } catch (err) {
-          console.error('Error cargando agente por URL:', err);
-          currentAccessUrl = ''; // Liberar URL errónea para permitir el login normal por email + pin
+          console.error('[Receptia] Error en pre-login por URL:', err.message);
+          // Liberar URL errónea para permitir el login normal por email + pin
+          currentAccessUrl = '';
           emailGroup.style.display = 'flex';
-          document.getElementById('login-email').required = true;
-          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.4</span>`;
+          emailInput.disabled = false;
+          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.5</span>`;
+          emailInput.focus();
         }
       } else {
+        console.log('[Receptia] Modo login manual (sin token de URL).');
         emailGroup.style.display = 'flex';
-        document.getElementById('login-email').required = true;
-        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.4</span>`;
+        emailInput.disabled = false;
+        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.5</span>`;
       }
     }
 
@@ -874,22 +903,39 @@
 
     // Login Handler
     async function handleLogin(e) {
+      // Siempre prevenir submit nativo del formulario para evitar validación HTML5
       if (e) e.preventDefault();
+      
       const pinInput = document.getElementById('login-pin');
-      const pin = pinInput.value;
+      const emailInput = document.getElementById('login-email');
+      const pin = pinInput.value.trim();
       const errorAlert = document.getElementById('login-error-alert');
       errorAlert.style.display = 'none';
 
-      if (!pin) return;
+      // Validación JS propia (en lugar de depender de HTML5 required/pattern)
+      if (!pin || pin.length < 4) {
+        console.log('[Receptia] PIN incompleto, ignorando submit.');
+        return;
+      }
 
       const payload = { pin };
       if (currentAccessUrl) {
         payload.access_url = currentAccessUrl;
+        console.log('[Receptia] Login por access_url:', currentAccessUrl);
       } else {
-        payload.email = document.getElementById('login-email').value;
+        const email = emailInput.value.trim();
+        if (!email) {
+          errorAlert.innerText = 'Por favor, introduce tu correo electrónico.';
+          errorAlert.style.display = 'block';
+          emailInput.focus();
+          return;
+        }
+        payload.email = email;
+        console.log('[Receptia] Login por email:', email);
       }
 
       pinInput.disabled = true;
+      console.log('[Receptia] Enviando petición de login...', JSON.stringify({ ...payload, pin: '****' }));
 
       try {
         const response = await fetch('/api/comercial/auth/login', {
@@ -898,12 +944,15 @@
           body: JSON.stringify(payload)
         });
 
+        console.log('[Receptia] Respuesta login:', response.status, response.statusText);
+
         if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.error || 'Credenciales inválidas');
+          const errBody = await response.json().catch(() => ({ error: 'Error de conexión' }));
+          throw new Error(errBody.error || 'Credenciales inválidas');
         }
 
         const data = await response.json();
+        console.log('[Receptia] Login exitoso. Comercial:', data.name);
         
         // Guardar sesión
         sessionStorage.setItem('comercial_id', data.comercial_id);
@@ -927,7 +976,7 @@
 
         showDashboard();
       } catch (err) {
-        console.error(err);
+        console.error('[Receptia] Error de login:', err.message);
         errorAlert.innerText = err.message;
         errorAlert.style.display = 'block';
         

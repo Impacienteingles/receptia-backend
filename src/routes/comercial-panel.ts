@@ -137,6 +137,7 @@ async function requireComercialAuth(req: ComercialRequest, res: Response, next: 
  */
 router.get('/auth/agent-by-url/:accessUrl', async (req: Request, res: Response): Promise<void> => {
   const { accessUrl } = req.params;
+  console.log(`[Comercial Auth] Buscando agente por access_url: "${accessUrl}"`);
   try {
     const { data: agent, error } = await supabase
       .from('commercial_agents')
@@ -145,13 +146,22 @@ router.get('/auth/agent-by-url/:accessUrl', async (req: Request, res: Response):
       .eq('status', 'active')
       .maybeSingle();
 
-    if (error || !agent) {
+    if (error) {
+      console.error(`[Comercial Auth] Error de Supabase:`, error.message);
       res.status(404).json({ error: 'URL de acceso no válida o agente inactivo.' });
       return;
     }
 
+    if (!agent) {
+      console.warn(`[Comercial Auth] No se encontró agente activo con access_url="${accessUrl}".`);
+      res.status(404).json({ error: 'URL de acceso no válida o agente inactivo.' });
+      return;
+    }
+
+    console.log(`[Comercial Auth] Agente encontrado: ${agent.name} (${agent.email})`);
     res.json({ success: true, agent });
   } catch (err: any) {
+    console.error(`[Comercial Auth] Error inesperado:`, err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -162,7 +172,10 @@ router.get('/auth/agent-by-url/:accessUrl', async (req: Request, res: Response):
 router.post('/auth/login', async (req: Request, res: Response): Promise<void> => {
   const { email, pin, access_url } = req.body;
 
+  console.log(`[Comercial Login] Intento de login - Modo: ${email ? 'email' : access_url ? 'access_url' : 'desconocido'}, Email: ${email || 'N/A'}, AccessURL: ${access_url || 'N/A'}, PIN: ${'*'.repeat((pin || '').length)}`);
+
   if (!pin) {
+    console.warn('[Comercial Login] PIN no proporcionado.');
     res.status(400).json({ error: 'El PIN es requerido.' });
     return;
   }
@@ -170,32 +183,47 @@ router.post('/auth/login', async (req: Request, res: Response): Promise<void> =>
   try {
     let query = supabase.from('commercial_agents').select('*');
     if (email) {
-      query = query.eq('email', email.trim().toLowerCase());
+      const normalizedEmail = email.trim().toLowerCase();
+      console.log(`[Comercial Login] Buscando por email: "${normalizedEmail}"`);
+      query = query.eq('email', normalizedEmail);
     } else if (access_url) {
-      query = query.eq('access_url', access_url.trim());
+      const normalizedUrl = access_url.trim();
+      console.log(`[Comercial Login] Buscando por access_url: "${normalizedUrl}"`);
+      query = query.eq('access_url', normalizedUrl);
     } else {
+      console.warn('[Comercial Login] Ni email ni access_url proporcionados.');
       res.status(400).json({ error: 'Email o URL de acceso única son requeridos.' });
       return;
     }
 
     const { data: agent, error } = await query.eq('pin', pin.trim()).maybeSingle();
 
-    if (error || !agent) {
+    if (error) {
+      console.error('[Comercial Login] Error de Supabase:', error.message);
+      res.status(401).json({ error: 'Credenciales inválidas.' });
+      return;
+    }
+
+    if (!agent) {
+      console.warn(`[Comercial Login] No se encontró agente con las credenciales proporcionadas.`);
       res.status(401).json({ error: 'Credenciales inválidas.' });
       return;
     }
 
     if (agent.status !== 'active') {
+      console.warn(`[Comercial Login] Agente "${agent.name}" está inactivo.`);
       res.status(403).json({ error: 'El agente comercial está inactivo.' });
       return;
     }
 
+    console.log(`[Comercial Login] Login exitoso para "${agent.name}" (ID: ${agent.id})`);
     res.json({
       success: true,
       comercial_id: agent.id,
       name: agent.name
     });
   } catch (err: any) {
+    console.error('[Comercial Login] Error inesperado:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
