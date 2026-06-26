@@ -245,6 +245,7 @@ ${customInst}
 - **Seguridad:** No inventes huecos de calendario ni confirmes citas sin antes verificar la disponibilidad real a través del sistema.
 - **Prevención de colisiones y reservas dobles (Crítico):** Bajo ningún concepto agendes dos citas a la misma hora. Debes verificar siempre que la ranura horaria y todo el espacio de tiempo necesario para la cita estén completamente libres utilizando 'consultar_disponibilidad' antes de confirmar cualquier reserva al cliente. Si la herramienta 'crear_cita' o 'reprogramar_cita' devuelve un error indicando que el horario ya está ocupado, debes de inmediato comunicárselo amablemente al cliente y proponerle otros huecos libres.
 - **Citas para Acompañantes y Grupos (Crítico y Proactivo):** Debes ser sumamente proactivo buscando y ofreciendo siempre las alternativas más favorables y continuas para el usuario y sus acompañantes (como niños, familiares o amigos) cuando reservan juntos. Si solicitan cita grupal y algún hueco intermedio está ocupado, debes buscar soluciones inteligentes y ofrecérselas al cliente con claridad. Por ejemplo, si un usuario solicita citas consecutivas a partir de las 11:00 para él y dos niños, pero la hora de las 11:15 ya está ocupada por otra persona, ofrécele proactivamente opciones adaptadas como: "Puedo agendar su cita a las 11:00 y la de los niños a las 11:30 y 11:45 porque a las 11:15 ya hay una reserva previa, o si lo prefiere, puedo agendar a los tres seguidos a partir de las 11:30, como usted prefiera". Si acuerdas agendar al grupo en horarios separados o divididos (ej. uno a las 11:00 y otros a las 11:30 y 11:45), debes invocar la herramienta 'crear_cita' de forma independiente para cada persona en su respectiva hora y con su nombre individual para que el sistema valide la disponibilidad y registre cada cita de forma correcta. Aplica siempre este principio de buscar y proponer proactivamente la combinación horaria más cómoda y compacta para el grupo en cualquier tipo de negocio.
+- **Proactividad y Optimización (Crítico):** Debes ser sumamente proactivo y resolutivo en cada llamada. Busca siempre la mejor opción y la más ventajosa para el usuario. Ofrece alternativas claras de inmediato para reducir al máximo los tiempos de espera del cliente, tanto en la asignación de citas como en la duración de la llamada. Si el hueco solicitado está ocupado, propón opciones cercanas o alternativas convenientes proactivamente sin esperar a que el usuario te lo pida. Sé capaz de crear, modificar y cancelar citas con total fluidez.
 - **Prohibición absoluta de llamadas salientes (Crítico):** Bajo ningún concepto digas o insinúes al cliente que le vas a devolver la llamada o que le llamarás más tarde (incluso ante problemas técnicos, errores de conexión o caídas del sistema). Si surge un error técnico, error de conexión, o no puedes agendar la cita por cualquier motivo, debes informarle amablemente de que no es posible guardar la cita en este momento y que debe ser él/ella quien vuelva a llamar pasados unos minutos. Si el usuario te pide explícitamente que le llames tú o le devuelvas la llamada, dile con educación pero firmeza que no tienes la posibilidad de realizar llamadas salientes porque el sistema no te lo permite.
 - **Evitar silencios al usar herramientas (Crítico):** Siempre que vayas a invocar una herramienta (como 'consultar_disponibilidad', 'crear_cita', 'cancelar_cita' o 'reprogramar_cita'), debes decir primero una coletilla ULTRA-CORTA de máximo 2 o 3 palabras (menos de 1 segundo de duración) para mantener al usuario activo mientras se procesa la consulta de red. Esta frase debe tener una entonación declarativa y firme, finalizando siempre con un punto (".") en lugar de puntos suspensivos ("...") o interrogaciones. Por ejemplo:
   * Al buscar disponibilidad: "Miro la agenda.", "Compruebo la disponibilidad.", "Un momento por favor." o "Un segundo.".
@@ -369,6 +370,10 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
                   email: {
                     type: 'string',
                     description: 'El correo electrónico del cliente.',
+                  },
+                  time: {
+                    type: 'string',
+                    description: 'La hora de la cita que se desea cancelar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
                   }
                 },
                 required: ['date', 'phone'],
@@ -402,6 +407,10 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
                     type: 'string',
                     description: 'El correo electrónico del cliente.',
                   },
+                  original_time: {
+                    type: 'string',
+                    description: 'La hora original de la cita que se desea cambiar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
+                  }
                 },
                 required: ['original_date', 'new_date', 'new_time', 'phone'],
               },
@@ -589,6 +598,10 @@ export async function createRetellAgentForTenant(tenant: any, webhookBaseUrl: st
             email: {
               type: 'string',
               description: 'El correo electrónico del cliente.',
+            },
+            time: {
+              type: 'string',
+              description: 'La hora de la cita que se desea cancelar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
             }
           },
           required: ['date', 'phone'],
@@ -622,6 +635,10 @@ export async function createRetellAgentForTenant(tenant: any, webhookBaseUrl: st
               type: 'string',
               description: 'El correo electrónico del cliente.',
             },
+            original_time: {
+              type: 'string',
+              description: 'La hora original de la cita que se desea cambiar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
+            }
           },
           required: ['original_date', 'new_date', 'new_time', 'phone'],
         },

@@ -273,7 +273,9 @@ function resolvePhoneNumber(phone: string, body: any): string {
 }
 
 /**
- * Endporouter.post('/book-appointment', async (req: Request, res: Response): Promise<void> => {
+ * Endpoint para que Retell AI cree una cita.
+ */
+router.post('/book-appointment', async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('Webhook recibido para book-appointment:', JSON.stringify(req.body));
     
@@ -390,7 +392,7 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
     console.log('Webhook recibido para cancel-appointment:', JSON.stringify(req.body));
     
     const args = req.body.args || {};
-    const { date, email, phone } = args;
+    const { date, email, phone, time } = args;
 
     if (!date || !phone) {
       res.status(400).json({ error: 'La fecha y el teléfono son obligatorios para cancelar una cita.' });
@@ -445,16 +447,28 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
 
     const matchedApp = (allApps || []).find(app => {
       const cleanAppPhone = (app.patient_phone || '').replace(/\D/g, '').slice(-9);
-      if (cleanAppPhone && cleanSearchPhone && cleanAppPhone === cleanSearchPhone) return true;
-      if (cleanSearchEmail && app.patient_email && app.patient_email.trim().toLowerCase() === cleanSearchEmail) return true;
-      return false;
+      const phoneMatches = cleanAppPhone && cleanSearchPhone && cleanAppPhone === cleanSearchPhone;
+      const emailMatches = cleanSearchEmail && app.patient_email && app.patient_email.trim().toLowerCase() === cleanSearchEmail;
+      
+      if (!phoneMatches && !emailMatches) return false;
+      
+      if (time && time.trim() !== '') {
+        const appTime = new Date(app.date_time).toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'Europe/Madrid'
+        });
+        return appTime === time.trim();
+      }
+      return true;
     });
 
     if (!matchedApp) {
-      console.warn(`No se encontró ninguna cita para cancelar el ${date} con teléfono ${resolvedPhone} o email ${normalizedEmail}.`);
+      console.warn(`No se encontró ninguna cita para cancelar el ${date}${time ? ' a las ' + time : ''} con teléfono ${resolvedPhone} o email ${normalizedEmail}.`);
       res.json({
-        status: 'success',
-        message: 'No he encontrado ninguna cita programada a su nombre para esa fecha. Por favor, confirme si la fecha es correcta o facilíteme otros datos de contacto.'
+        status: 'error',
+        message: `No he encontrado ninguna cita programada a su nombre para el día ${date}${time ? ' a las ' + time : ''}. Por favor, confirme si la fecha y hora son correctas o facilíteme otros datos de contacto.`
       });
       return;
     }
@@ -465,11 +479,15 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
     // 1. Eliminar de Google Calendar si tiene evento
     if (appToCancel.google_event_id) {
       console.log(`Eliminando evento de Google Calendar: ${appToCancel.google_event_id}`);
-      await deleteAppointment(
-        tenantDetails.google_refresh_token,
-        appToCancel.google_event_id,
-        appToCancel.google_calendar_id || 'primary'
-      );
+      try {
+        await deleteAppointment(
+          tenantDetails.google_refresh_token,
+          appToCancel.google_event_id,
+          appToCancel.google_calendar_id || 'primary'
+        );
+      } catch (calErr: any) {
+        console.warn(`[Google Calendar] Advertencia al eliminar evento (procediendo igualmente con base de datos):`, calErr.message || calErr);
+      }
     }
 
     // 2. Eliminar de Supabase
@@ -512,7 +530,7 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
     console.log('Webhook recibido para reschedule-appointment:', JSON.stringify(req.body));
     
     const args = req.body.args || {};
-    const { original_date, new_date, new_time, email, phone } = args;
+    const { original_date, new_date, new_time, email, phone, original_time } = args;
 
     if (!original_date || !new_date || !new_time || !phone) {
       res.status(400).json({ error: 'Los parámetros original_date, new_date, new_time y phone son obligatorios.' });
@@ -567,15 +585,27 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
 
     const matchedApp = (allApps || []).find(app => {
       const cleanAppPhone = (app.patient_phone || '').replace(/\D/g, '').slice(-9);
-      if (cleanAppPhone && cleanSearchPhone && cleanAppPhone === cleanSearchPhone) return true;
-      if (cleanSearchEmail && app.patient_email && app.patient_email.trim().toLowerCase() === cleanSearchEmail) return true;
-      return false;
+      const phoneMatches = cleanAppPhone && cleanSearchPhone && cleanAppPhone === cleanSearchPhone;
+      const emailMatches = cleanSearchEmail && app.patient_email && app.patient_email.trim().toLowerCase() === cleanSearchEmail;
+      
+      if (!phoneMatches && !emailMatches) return false;
+      
+      if (original_time && original_time.trim() !== '') {
+        const appTime = new Date(app.date_time).toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'Europe/Madrid'
+        });
+        return appTime === original_time.trim();
+      }
+      return true;
     });
 
     if (!matchedApp) {
       res.json({
-        status: 'success',
-        message: `No he podido encontrar ninguna cita a su nombre programada para el ${original_date}. Por favor, confirme los datos.`
+        status: 'error',
+        message: `No he podido encontrar ninguna cita a su nombre programada para el ${original_date}${original_time ? ' a las ' + original_time : ''}. Por favor, confirme los datos.`
       });
       return;
     }
@@ -626,22 +656,26 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
     // 3. Modificar en Google Calendar si tiene evento
     let newDateTime = new Date(`${new_date}T${new_time}:00`).toISOString();
     if (appToReschedule.google_event_id) {
-      const updatedEvent = await updateAppointment(
-        tenantDetails.google_refresh_token,
-        appToReschedule.google_event_id,
-        new_date,
-        new_time,
-        appToReschedule.patient_name,
-        appToReschedule.patient_email,
-        appToReschedule.patient_phone,
-        appToReschedule.specialty,
-        appToReschedule.google_calendar_id || 'primary',
-        tenantDetails.business_name,
-        tenantDetails.business_sector,
-        durationMinutes
-      );
-      if (updatedEvent && updatedEvent.start?.dateTime) {
-        newDateTime = updatedEvent.start.dateTime;
+      try {
+        const updatedEvent = await updateAppointment(
+          tenantDetails.google_refresh_token,
+          appToReschedule.google_event_id,
+          new_date,
+          new_time,
+          appToReschedule.patient_name,
+          appToReschedule.patient_email,
+          appToReschedule.patient_phone,
+          appToReschedule.specialty,
+          appToReschedule.google_calendar_id || 'primary',
+          tenantDetails.business_name,
+          tenantDetails.business_sector,
+          durationMinutes
+        );
+        if (updatedEvent && updatedEvent.start?.dateTime) {
+          newDateTime = updatedEvent.start.dateTime;
+        }
+      } catch (calErr: any) {
+        console.warn(`[Google Calendar] Advertencia al actualizar evento (procediendo igualmente con base de datos):`, calErr.message || calErr);
       }
     }
 

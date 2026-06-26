@@ -8,38 +8,58 @@ const SERVICE_ID = 'srv-d8r9pr0js32c73bq2slg';
 
 async function run() {
   try {
-    console.log('Fetching logs...');
-    const response = await axios.get('https://api.render.com/v1/logs', {
-      headers: {
-        Authorization: `Bearer ${RENDER_API_KEY}`,
-        Accept: 'application/json'
-      },
-      params: {
+    let nextEndTime = null;
+    let pagesToFetch = 80; 
+
+    console.log(`\n=== SEARCHING LOGS (up to ${pagesToFetch} pages) ===`);
+
+    for (let page = 0; page < pagesToFetch; page++) {
+      console.log(`Fetching page ${page + 1}...`);
+      const params = {
         ownerId: OWNER_ID,
         resource: SERVICE_ID,
         direction: 'backward',
-        limit: 1000
+        limit: 100
+      };
+      if (nextEndTime) {
+        params.endTime = nextEndTime;
       }
-    });
 
-    const logs = response.data;
-    if (Array.isArray(logs)) {
-      console.log(`Total logs fetched: ${logs.length}`);
-      
-      const filtered = logs.filter(log => {
-        const text = (log.text || '').toLowerCase();
-        return text.includes('appointment') || text.includes('error') || text.includes('citas') || text.includes('cancel');
+      const response = await axios.get('https://api.render.com/v1/logs', {
+        headers: {
+          Authorization: `Bearer ${RENDER_API_KEY}`,
+          Accept: 'application/json'
+        },
+        params
       });
-      
-      console.log(`\n=== FILTERED LOGS (${filtered.length}) ===`);
-      filtered.reverse().forEach(log => {
-        console.log(`[${log.timestamp}] ${log.text || ''}`);
+
+      const data = response.data;
+      const items = data.logs || [];
+      nextEndTime = data.nextEndTime;
+
+      const filtered = items.filter(log => {
+        const text = (log.text || log.message || '').toLowerCase();
+        if (text.includes('whatsapp web') || text.includes('creds.update')) return false;
+        return text.includes('error') || text.includes('fail') || text.includes('exception') || text.includes('invalid') || text.includes('rebound') || text.includes('occup') || text.includes('busy') || text.includes('cancel-appointment') || text.includes('book-appointment') || text.includes('reschedule-appointment') || text.includes('webhook') || text.includes('appointment');
       });
-    } else {
-      console.log('Logs output:', logs);
+
+      if (filtered.length > 0) {
+        console.log(`[Page ${page + 1}] Found ${filtered.length} matching logs:`);
+        filtered.forEach(log => {
+          const msg = log.text || log.message || JSON.stringify(log);
+          console.log(`  [${log.timestamp}] ${msg}`);
+        });
+      }
+
+      if (!nextEndTime || items.length === 0) {
+        break;
+      }
+
+      // Evitar Rate Limit (429) con un delay de 500ms
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error:', error.stack || error.message);
   }
 }
 

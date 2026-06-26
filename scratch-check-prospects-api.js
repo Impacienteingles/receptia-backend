@@ -9,8 +9,13 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 async function main() {
   const { data, error } = await supabase
     .from('prospects')
-    .select('id, business_name, opened_at, opened_count')
-    .limit(1);
+    .select(`
+      *,
+      tenants:demo_tenant_id (
+        contract_start_date
+      )
+    `)
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching prospects:', error);
