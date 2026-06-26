@@ -285,12 +285,39 @@ router.get('/leads', requireComercialAuth, async (req: ComercialRequest, res: Re
 
     if (error) throw error;
 
-    const mapped = (leads || []).map((l: any) => ({
+    // Obtener los logs de cambio de clasificación a no_interesado
+    const { data: logs } = await supabase
+      .from('lead_activity_log')
+      .select('prospect_id, created_at')
+      .eq('action_type', 'status_change')
+      .eq('new_status', 'no_interesado')
+      .eq('agent_id', req.comercial.id)
+      .order('created_at', { ascending: false });
+
+    const noInterestTimes: { [key: string]: string } = {};
+    if (logs) {
+      logs.forEach((log: any) => {
+        if (!noInterestTimes[log.prospect_id]) {
+          noInterestTimes[log.prospect_id] = log.created_at;
+        }
+      });
+    }
+
+    const now = Date.now();
+    const filtered = (leads || []).map((l: any) => ({
       ...l,
       comercial_id: l.commercial_agent_id
-    }));
+    })).filter((lead: any) => {
+      if (lead.classification !== 'no_interesado') {
+        return true;
+      }
+      const logTime = noInterestTimes[lead.id];
+      const timeToCheck = logTime ? new Date(logTime).getTime() : new Date(lead.created_at).getTime();
+      const diffMins = (now - timeToCheck) / (1000 * 60);
+      return diffMins < 30;
+    });
 
-    res.json({ success: true, leads: mapped });
+    res.json({ success: true, leads: filtered });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

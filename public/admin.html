@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.6.6">
-  <link rel="icon" type="image/png" href="/favicon.png?v=2.6.6">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.6.7">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.6.7">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1280,6 +1280,42 @@
       background: rgba(52, 211, 153, 0.1);
       border: 1px solid rgba(52, 211, 153, 0.3);
       color: #047857;
+    }
+
+    /* Pendiente de contacto */
+    .select-classification.status-pendiente_contacto {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+    [data-theme="light"] .select-classification.status-pendiente_contacto {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #b45309;
+    }
+
+    /* En negociación */
+    .select-classification.status-en_negociacion {
+      background: rgba(167, 139, 250, 0.15);
+      border: 1px solid rgba(167, 139, 250, 0.4);
+      color: #c084fc;
+    }
+    [data-theme="light"] .select-classification.status-en_negociacion {
+      background: rgba(167, 139, 250, 0.1);
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      color: #6d28d9;
+    }
+
+    /* No interesado */
+    .select-classification.status-no_interesado {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    [data-theme="light"] .select-classification.status-no_interesado {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #b91c1c;
     }
 
     /* Sibling rule to expand main content when sidebar is collapsed */
@@ -4675,7 +4711,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.6.6 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.6.7 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -7829,7 +7865,6 @@
             <option value="en_negociacion" ${currentClass === 'en_negociacion' ? 'selected' : ''}>En negociación</option>
             <option value="contratado" ${currentClass === 'contratado' ? 'selected' : 'disabled'}>${contratadoLabel}</option>
             <option value="no_interesado" ${currentClass === 'no_interesado' ? 'selected' : ''}>No interesado</option>
-            <option value="descartado" ${currentClass === 'descartado' ? 'selected' : ''}>Descartado</option>
           </select>
         `;
 
