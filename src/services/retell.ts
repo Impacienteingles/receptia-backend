@@ -64,7 +64,7 @@ export function resolveAgentName(voiceId: string): string {
 /**
  * Compila el prompt de sistema dinámico para un inquilino inyectando todos sus detalles de negocio.
  */
-export function compileSystemPrompt(tenant: any): string {
+export function compileSystemPrompt(tenant: any, globalKnowledge?: string): string {
   const businessName = tenant.business_name || 'el negocio';
 
   if (tenant.subscription_status === 'suspended' || tenant.subscription_status === 'inactive') {
@@ -235,6 +235,7 @@ ${kbSection}
 
 # INSTRUCCIONES ADICIONALES ESPECÍFICAS DEL NEGOCIO (SÍGUELAS AL PIE DE LA LETRA)
 ${customInst}
+${globalKnowledge && globalKnowledge.trim() !== '' ? `\n# DIRECTIVAS GENERALES DE LA PLATAFORMA (OBLIGATORIO CUMPLIMIENTO)\n${globalKnowledge}\n` : ''}
 
 - **Brevedad y Concisión (Crítico):** Tus respuestas deben ser ultra-cortas, directas y al grano (máximo 1 frase breve por intervención). Elimina preámbulos, saludos repetitivos o fórmulas de cortesía excesiva innecesarias para acortar la llamada al máximo.
 - **Interrupción:** Si el paciente te interrumpe mientras hablas, detén tu discurso de inmediato y escúchalo.
@@ -283,7 +284,8 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
     const llmId = responseEngine?.llm_id;
     if (responseEngine?.type === 'retell-llm' && llmId) {
       // 2. Compilar el prompt dinámico y actualizar el LLM de Retell
-      const systemPrompt = compileSystemPrompt(tenant);
+      const globalKnowledge = await getSettingVal('global_ai_knowledge') || '';
+      const systemPrompt = compileSystemPrompt(tenant, globalKnowledge);
       console.log(`⚙️ Actualizando el LLM ${llmId} con el prompt personalizado y herramientas...`);
       try {
         await retellClient.patch(`/update-retell-llm/${llmId}`, {
@@ -509,7 +511,8 @@ export async function createRetellAgentForTenant(tenant: any, webhookBaseUrl: st
     throw new Error('La clave RETELL_API_KEY no está configurada.');
   }
 
-  const systemPrompt = compileSystemPrompt(tenant);
+  const globalKnowledge = await getSettingVal('global_ai_knowledge') || '';
+  const systemPrompt = compileSystemPrompt(tenant, globalKnowledge);
   const voiceId = formatVoiceId(tenant.voice_id) || 'cartesia-Hailey-Spanish-latin-america';
   const agentName = resolveAgentName(voiceId);
 

@@ -2247,7 +2247,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.2</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.3</span>
         </div>
       </header>
 
@@ -6430,6 +6430,9 @@
       // Calcular y mostrar ahorro ROI
       calculateAndDisplayROI(currentTenant);
 
+      // Inicializar auto-refresco del panel
+      initClientPolling();
+
       // Verificar si el inquilino tiene contrato firmado o suscripción activa
       const hasContractOrSub = 
         (currentTenant.signed_contract_content && currentTenant.signed_contract_content.trim() !== '') || 
@@ -8712,6 +8715,41 @@ ${cleanAudio}`;
       const el = document.getElementById('roi-history-overlay');
       if (el) el.remove();
     }
+
+    // Configurar Polling (Auto-Refresco) dinámico para el Panel del Cliente
+    let clientPollingInterval = null;
+    async function initClientPolling() {
+      try {
+        const response = await fetch('/api/public/refresh-interval');
+        if (!response.ok) throw new Error('Error al consultar intervalo de refresco');
+        const data = await response.json();
+        const interval = data.refresh_interval;
+        
+        if (clientPollingInterval) {
+          clearInterval(clientPollingInterval);
+          clientPollingInterval = null;
+        }
+        
+        if (interval && interval !== 'off') {
+          const seconds = parseInt(interval, 10);
+          if (!isNaN(seconds) && seconds > 0) {
+            console.log(`[Client Polling] Auto-refresco activado cada ${seconds} segundos.`);
+            clientPollingInterval = setInterval(() => {
+              if (currentTenant && currentTenant.id) {
+                console.log('[Client Polling] Refrescando citas e historial en segundo plano...');
+                fetchAppointments(currentTenant.id);
+                fetchCallLogs();
+              }
+            }, seconds * 1000);
+          }
+        } else {
+          console.log('[Client Polling] Auto-refresco desactivado.');
+        }
+      } catch (err) {
+        console.error('Error al inicializar polling del panel de cliente:', err);
+      }
+    }
+
 
   </script>
 

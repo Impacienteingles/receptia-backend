@@ -3021,6 +3021,63 @@ app.post('/api/admin/settings', async (req, res): Promise<void> => {
   }
 });
 
+// Endpoint para sincronizar masivamente todos los agentes con Retell AI
+app.post('/api/admin/settings/sync-all-agents', async (req, res): Promise<void> => {
+  try {
+    const { data: tenants, error } = await supabase
+      .from('tenants')
+      .select('*')
+      .is('is_archived', false);
+    
+    if (error) throw error;
+    
+    const activeTenants = (tenants || []).filter(t => t.retell_agent_id && t.retell_agent_id.trim() !== '');
+    
+    if (activeTenants.length === 0) {
+      res.json({ success: true, count: 0, message: 'No hay inquilinos activos con agentes configurados.' });
+      return;
+    }
+    
+    const webhookBaseUrl = `${req.protocol}://${req.get('host')}`;
+    let successCount = 0;
+    
+    for (const tenant of activeTenants) {
+      try {
+        let workingHoursObj = tenant.working_hours;
+        if (typeof workingHoursObj === 'string') {
+          try { workingHoursObj = JSON.parse(workingHoursObj); } catch (e) {}
+        }
+        tenant.client_enable_multi_professional = workingHoursObj?.client_enable_multi_professional !== false;
+        tenant.client_enable_no_show_deposits = workingHoursObj?.client_enable_no_show_deposits !== false;
+        tenant.whatsapp_immediate_notification_enabled = tenant.whatsapp_immediate_notification_enabled !== undefined && tenant.whatsapp_immediate_notification_enabled !== null
+          ? tenant.whatsapp_immediate_notification_enabled
+          : (workingHoursObj?.whatsapp_immediate_notification_enabled !== false);
+        
+        await syncTenantWithRetell(tenant, webhookBaseUrl);
+        successCount++;
+      } catch (syncErr: any) {
+        console.error(`Error al sincronizar agente para inquilino ${tenant.email}:`, syncErr.message);
+      }
+    }
+    
+    res.json({ success: true, count: successCount, total: activeTenants.length, message: `Sincronizados ${successCount} de ${activeTenants.length} agentes correctamente.` });
+  } catch (err: any) {
+    console.error('Error al sincronizar todos los agentes:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint público para obtener la frecuencia de refresco configurada
+app.get('/api/public/refresh-interval', async (req, res): Promise<void> => {
+  try {
+    const interval = await getSettingVal('refresh_interval');
+    res.json({ refresh_interval: interval || '30' });
+  } catch (err: any) {
+    console.error('Error al obtener refresh-interval público:', err);
+    res.json({ refresh_interval: '30' });
+  }
+});
+
 // 8. Iniciar llamada de prueba por WebRTC para el administrador
 app.post('/api/admin/test-agent-call', async (req, res): Promise<void> => {
   const { agent_id } = req.body;

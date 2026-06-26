@@ -861,6 +861,9 @@
       
       // Cargar datos
       loadDashboardData();
+
+      // Inicializar auto-refresco comercial
+      initComercialPolling();
     }
 
     // Login Handler
@@ -927,6 +930,10 @@
       currentComercialId = '';
       currentComercialPin = '';
       currentComercialName = '';
+      if (comercialPollingInterval) {
+        clearInterval(comercialPollingInterval);
+        comercialPollingInterval = null;
+      }
       showLogin();
     }
 
@@ -1308,11 +1315,39 @@
         loadLeadActivities();
         loadDashboardData();
 
+    }
+
+    // Configurar Polling (Auto-Refresco) dinámico para el Panel del Agente Comercial
+    let comercialPollingInterval = null;
+    async function initComercialPolling() {
+      try {
+        const response = await fetch('/api/public/refresh-interval');
+        if (!response.ok) throw new Error('Error al consultar intervalo de refresco');
+        const data = await response.json();
+        const interval = data.refresh_interval;
+        
+        if (comercialPollingInterval) {
+          clearInterval(comercialPollingInterval);
+          comercialPollingInterval = null;
+        }
+        
+        if (interval && interval !== 'off') {
+          const seconds = parseInt(interval, 10);
+          if (!isNaN(seconds) && seconds > 0) {
+            console.log(`[Comercial Polling] Auto-refresco activado cada ${seconds} segundos.`);
+            comercialPollingInterval = setInterval(() => {
+              const appScreen = document.getElementById('app-screen');
+              if (appScreen && appScreen.style.display === 'flex') {
+                console.log('[Comercial Polling] Refrescando panel comercial en segundo plano...');
+                loadDashboardData();
+              }
+            }, seconds * 1000);
+          }
+        } else {
+          console.log('[Comercial Polling] Auto-refresco desactivado.');
+        }
       } catch (err) {
-        console.error(err);
-        alert('No se pudo guardar la nota.');
-      } finally {
-        submitBtn.disabled = false;
+        console.error('Error al inicializar polling del panel de comercial:', err);
       }
     }
   </script>

@@ -1495,6 +1495,10 @@
           <i data-lucide="briefcase"></i>
           <span>Comerciales</span>
         </button>
+        <button class="nav-item" id="btn-tab-global-knowledge" onclick="switchTab('global-knowledge')">
+          <i data-lucide="brain"></i>
+          <span>Conocimiento IA</span>
+        </button>
         <button class="nav-item" id="btn-tab-backup" onclick="switchTab('backup')">
           <i data-lucide="database"></i>
           <span>Copia de Seguridad</span>
@@ -1513,7 +1517,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.2</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.3</span>
       </div>
     </aside>
 
@@ -1532,7 +1536,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.2</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.3</span>
         </div>
       </header>
 
@@ -2921,6 +2925,25 @@
                   </p>
                 </div>
 
+                <!-- CARD: SINCRONIZACIÓN EN TIEMPO REAL (POLLING) -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="refresh-cw" style="color: var(--primary);"></i> Sincronización en Tiempo Real
+                  </h3>
+                  <div class="form-group">
+                    <label for="setting-refresh-interval">Frecuencia de Auto-Refresco de Paneles:</label>
+                    <select id="setting-refresh-interval" class="setting-input">
+                      <option value="15">Cada 15 segundos (Refresco rápido)</option>
+                      <option value="30" selected>Cada 30 segundos (Recomendado)</option>
+                      <option value="60">Cada 60 segundos (Bajo consumo)</option>
+                      <option value="off">Desactivado (Solo carga manual)</option>
+                    </select>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
+                      Determina el intervalo de tiempo en el que los paneles de Administrador, Cliente y Comercial refrescarán silenciosamente la información (leads, citas) de forma sincronizada y bidireccional.
+                    </p>
+                  </div>
+                </div>
+
               </div>
 
               <!-- BOTÓN DE GUARDAR -->
@@ -3050,6 +3073,50 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB GLOBAL KNOWLEDGE: CONOCIMIENTO GENERAL IA -->
+        <div id="tab-global-knowledge" class="tab-content">
+          <div class="card" style="margin-bottom: 2rem;">
+            <h2 class="card-title" style="color: var(--primary-light);">
+              <i data-lucide="brain"></i>
+              Base de Conocimiento General para Agentes IA
+            </h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4;">
+              Define directivas, reglas o información de contexto general que deban conocer obligatoriamente <strong>todos los agentes de voz IA</strong> creados en la plataforma (ej. políticas de empresa generales, pautas éticas, desvíos globales o advertencias de privacidad).
+            </p>
+            <form id="global-knowledge-form" onsubmit="saveGlobalKnowledge(event)" style="display: flex; flex-direction: column; gap: 1.5rem;">
+              <div class="form-group">
+                <label for="global-knowledge-textarea" style="font-weight: 600; color: #fff;">Instrucciones Generales de la Plataforma:</label>
+                <textarea id="global-knowledge-textarea" rows="12" placeholder="Escribe aquí las pautas generales que acatarán todos los agentes. Por ejemplo:
+- No prometas descuentos adicionales sin autorización.
+- Si el usuario pregunta por reclamaciones oficiales, infórmale de que disponemos de hojas de reclamaciones físicas a su disposición en el local." style="width: 100%; font-family: monospace; font-size: 0.9rem; resize: vertical; line-height: 1.5; padding: 1rem; background: rgba(0,0,0,0.25); color:#fff; border: 1px solid var(--border-color); border-radius: 8px;"></textarea>
+              </div>
+              <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="submit" class="btn" id="btn-save-global-knowledge" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border: none;">
+                  <i data-lucide="save"></i>
+                  Guardar Instrucciones
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card" style="border: 1px solid rgba(139, 92, 246, 0.25); background: rgba(139, 92, 246, 0.02);">
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i data-lucide="refresh-cw" style="color: var(--primary);"></i>
+              Sincronización Masiva de Agentes
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.45;">
+              Una vez que guardes los cambios del Conocimiento IA, estos se aplicarán a los nuevos agentes creados. Para aplicar los cambios a los <strong>agentes existentes</strong> de forma inmediata, debes iniciar una sincronización manual masiva. Esto actualizará el prompt del sistema de todos los LLM activos en Retell AI.
+            </p>
+            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary" onclick="syncAllAgentsMassive(this)" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(139, 92, 246, 0.1); color: var(--primary-light); border-color: rgba(139, 92, 246, 0.25);">
+                <i data-lucide="repeat"></i>
+                Sincronizar Todos los Agentes en la Nube
+              </button>
+              <span id="sync-status-msg" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;"></span>
             </div>
           </div>
         </div>
@@ -4085,6 +4152,8 @@
         fetchComerciales();
       } else if (tabName === 'settings') {
         fetchSettings();
+      } else if (tabName === 'global-knowledge') {
+        fetchGlobalKnowledge();
       }
     }
 
@@ -5436,7 +5505,8 @@
           'CORANDAR_REGISTER_DETAILS': 'setting-corandar-register',
           'CORANDAR_REPRESENTATIVE': 'setting-corandar-rep',
           'CORANDAR_REPRESENTATIVE_ID': 'setting-corandar-rep-id',
-          'CORANDAR_REPRESENTATIVE_ROLE': 'setting-corandar-rep-role'
+          'CORANDAR_REPRESENTATIVE_ROLE': 'setting-corandar-rep-role',
+          'refresh_interval': 'setting-refresh-interval'
         };
 
         // Reset inputs first
@@ -5495,7 +5565,8 @@
         'CORANDAR_REGISTER_DETAILS': 'setting-corandar-register',
         'CORANDAR_REPRESENTATIVE': 'setting-corandar-rep',
         'CORANDAR_REPRESENTATIVE_ID': 'setting-corandar-rep-id',
-        'CORANDAR_REPRESENTATIVE_ROLE': 'setting-corandar-rep-role'
+        'CORANDAR_REPRESENTATIVE_ROLE': 'setting-corandar-rep-role',
+        'refresh_interval': 'setting-refresh-interval'
       };
 
       const settingsArray = [];
@@ -5522,6 +5593,7 @@
 
         await showCustomAlert('Todos los ajustes e integraciones se han guardado correctamente en Supabase.', 'Ajustes Guardados', 'success');
         fetchSettings();
+        initGlobalPolling();
       } catch (err) {
         console.error('Error al guardar ajustes:', err);
         showCustomAlert('No se pudieron guardar los ajustes: ' + err.message, 'Error', 'error');
@@ -10222,6 +10294,132 @@
     }
     loadVoicesCatalog();
     fetchComercialesListOnly();
+
+    // Lógica para Conocimiento IA Global
+    async function fetchGlobalKnowledge() {
+      try {
+        const response = await fetch('/api/admin/settings');
+        if (!response.ok) throw new Error('Error al conectar con la base de datos.');
+        const data = await response.json();
+        const settings = data.settings || [];
+        const knowledgeSetting = settings.find(s => s.key === 'global_ai_knowledge');
+        document.getElementById('global-knowledge-textarea').value = knowledgeSetting ? knowledgeSetting.value : '';
+      } catch (err) {
+        console.error('Error al cargar conocimiento global:', err);
+        showCustomAlert('No se pudo cargar el conocimiento general de la IA.', 'Error', 'error');
+      }
+    }
+
+    async function saveGlobalKnowledge(event) {
+      event.preventDefault();
+      const textarea = document.getElementById('global-knowledge-textarea');
+      const value = textarea.value.trim();
+      const btn = document.getElementById('btn-save-global-knowledge');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:12px; height:12px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Guardando...`;
+
+      try {
+        const response = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            settings: [{ key: 'global_ai_knowledge', value }]
+          })
+        });
+
+        if (!response.ok) throw new Error('Error al guardar las instrucciones.');
+        showCustomAlert('Instrucciones generales del Conocimiento IA guardadas con éxito.', 'Guardado', 'success');
+      } catch (err) {
+        console.error('Error al guardar:', err);
+        showCustomAlert(err.message, 'Fallo al Guardar', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    async function syncAllAgentsMassive(btnEl) {
+      const confirmSync = confirm('¿Estás seguro de que deseas sincronizar el prompt de todos los agentes activos en Retell AI con estas nuevas directivas? Esto tomará unos segundos.');
+      if (!confirmSync) return;
+
+      const statusMsg = document.getElementById('sync-status-msg');
+      btnEl.disabled = true;
+      const oldHtml = btnEl.innerHTML;
+      btnEl.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:12px; height:12px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Sincronizando en la nube...`;
+      statusMsg.innerText = 'Conectando con Retell AI...';
+
+      try {
+        const response = await fetch('/api/admin/settings/sync-all-agents', {
+          method: 'POST'
+        });
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Error en la sincronización masiva.');
+        
+        statusMsg.innerHTML = `<span style="color: var(--success); font-weight: 600;">✓ Completado: ${data.count} de ${data.total} agentes sincronizados.</span>`;
+        showCustomAlert(`Sincronización masiva finalizada con éxito. ${data.count} agentes actualizados.`, 'Sincronizado', 'success');
+      } catch (err) {
+        console.error(err);
+        statusMsg.innerHTML = `<span style="color: var(--error); font-weight: 600;">✗ Falló: ${err.message}</span>`;
+        showCustomAlert(err.message, 'Error de Sincronización', 'error');
+      } finally {
+        btnEl.disabled = false;
+        btnEl.innerHTML = oldHtml;
+      }
+    }
+
+    // Configurar Polling (Auto-Refresco) dinámico para el Administrador
+    let globalPollingInterval = null;
+    async function initGlobalPolling() {
+      try {
+        const response = await fetch('/api/public/refresh-interval');
+        const data = await response.json();
+        const interval = data.refresh_interval;
+        
+        if (globalPollingInterval) {
+          clearInterval(globalPollingInterval);
+          globalPollingInterval = null;
+        }
+        
+        if (interval && interval !== 'off') {
+          const seconds = parseInt(interval, 10);
+          if (!isNaN(seconds) && seconds > 0) {
+            console.log(`[Polling] Auto-refresco activado. Intervalo: ${seconds} segundos.`);
+            globalPollingInterval = setInterval(() => {
+              const activeTab = document.querySelector('.tab-content.active');
+              if (activeTab) {
+                const tabId = activeTab.id;
+                if (tabId === 'tab-provision') {
+                  // No refrescar formulario de aprovisionamiento
+                } else if (tabId === 'tab-clients') {
+                  fetchTenants();
+                } else if (tabId === 'tab-accounting') {
+                  fetchTenants();
+                  fetchTransactions();
+                  fetchComercialesPayoutsHistory();
+                } else if (tabId === 'tab-contracts') {
+                  fetchContracts();
+                } else if (tabId === 'tab-prospecting') {
+                  fetchProspects();
+                } else if (tabId === 'tab-comerciales') {
+                  fetchComerciales();
+                }
+              }
+            }, seconds * 1000);
+          }
+        } else {
+          console.log('[Polling] Auto-refresco desactivado.');
+        }
+      } catch (err) {
+        console.error('Error al inicializar polling global:', err);
+      }
+    }
+    
+    initGlobalPolling();
+
+    window.syncAllAgentsMassive = syncAllAgentsMassive;
+    window.saveGlobalKnowledge = saveGlobalKnowledge;
   </script>
 
   <!-- Carga del SDK de Retell y lógica de WebRTC -->
