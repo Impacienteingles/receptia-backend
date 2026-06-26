@@ -498,7 +498,7 @@
           <img src="/receptia_logo.png" alt="Receptia Logo" style="width: 40px; height: 40px; border-radius: 8px;">
           <h2 style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif;">Receptia B2B</h2>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.5</span></p>
+        <p style="color: var(--text-muted); font-size: 0.85rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.6</span></p>
       </div>
 
       <form id="login-form" novalidate onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
@@ -532,7 +532,7 @@
     <header>
       <div class="logo-container">
         <img src="/receptia_logo.png" alt="Receptia Logo">
-        <span>Receptia Comercial <small style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal; margin-left: 0.25rem;">v1.0.5</small></span>
+        <span>Receptia Comercial <small style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal; margin-left: 0.25rem;">v1.0.6</small></span>
       </div>
 
       <div class="user-info">
@@ -808,7 +808,7 @@
 
     // Inicializar
     window.addEventListener('DOMContentLoaded', async () => {
-      console.log('[Receptia Comercial v1.0.5] Inicializando panel...');
+      console.log('[Receptia Comercial v1.0.6] Inicializando panel...');
       const urlParams = new URLSearchParams(window.location.search);
       currentAccessUrl = urlParams.get('c') || '';
       console.log('[Receptia] Token de acceso detectado:', currentAccessUrl ? `"${currentAccessUrl}"` : '(ninguno)');
@@ -903,14 +903,14 @@
           currentAccessUrl = '';
           emailGroup.style.display = 'flex';
           emailInput.disabled = false;
-          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.5</span>`;
+          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.6</span>`;
           emailInput.focus();
         }
       } else {
         console.log('[Receptia] Modo login manual (sin token de URL).');
         emailGroup.style.display = 'flex';
         emailInput.disabled = false;
-        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.5</span>`;
+        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.6</span>`;
       }
     }
 
@@ -1440,7 +1440,12 @@
         // Recargar ficha
         loadLeadActivities();
         loadDashboardData();
-
+      } catch (err) {
+        console.error('Error al guardar la nota:', err);
+        alert('No se pudo guardar la nota.');
+      } finally {
+        submitBtn.disabled = false;
+      }
     }
 
     // Configurar Polling (Auto-Refresco) dinámico para el Panel del Agente Comercial
