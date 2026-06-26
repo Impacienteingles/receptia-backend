@@ -14,7 +14,12 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const { data, error } = await supabase
       .from('prospects')
-      .select('*')
+      .select(`
+        *,
+        tenants:demo_tenant_id (
+          contract_start_date
+        )
+      `)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -622,6 +627,11 @@ router.patch('/assign-bulk', async (req: Request, res: Response): Promise<void> 
 router.patch('/:id', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const updates = req.body;
+
+  if (updates.classification === 'contratado') {
+    res.status(400).json({ error: 'El estado Contratado se activa automáticamente al realizar el pago.' });
+    return;
+  }
 
   const mappedUpdates = { ...updates };
   if (updates.comercial_id !== undefined) {

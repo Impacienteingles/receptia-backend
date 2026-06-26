@@ -37,7 +37,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 
     const { data: commissions, error: comErr } = await supabase
       .from('commissions')
-      .select('id, agent_id, type, amount, paid');
+      .select('id, agent_id, type, amount, paid, created_at');
 
     if (comErr) throw comErr;
 
@@ -47,6 +47,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 
     if (payErr) throw payErr;
 
+    const now = new Date();
     const list = (agents || []).map((agent: any) => {
       const myProspects = (prospects || []).filter((p: any) => p.commercial_agent_id === agent.id);
       const myCommissions = (commissions || []).filter((com: any) => com.agent_id === agent.id);
@@ -55,11 +56,18 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       const leadsCount = myProspects.length;
       const leadsContratados = myProspects.filter((p: any) => p.classification === 'contratado').length;
 
-      const totalRecurring = myCommissions
+      const myEffectiveCommissions = myCommissions.filter((com: any) => {
+        const comCreated = new Date(com.created_at);
+        const diffTime = now.getTime() - comCreated.getTime();
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+        return diffDays >= 7; // Solo efectivas
+      });
+
+      const totalRecurring = myEffectiveCommissions
         .filter((com: any) => com.type === 'percentage')
         .reduce((sum: number, com: any) => sum + Number(com.amount), 0);
 
-      const totalFixed = myCommissions
+      const totalFixed = myEffectiveCommissions
         .filter((com: any) => com.type === 'fixed')
         .reduce((sum: number, com: any) => sum + Number(com.amount), 0);
 
@@ -69,7 +77,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
         .filter((com: any) => com.paid === true)
         .reduce((sum: number, com: any) => sum + Number(com.amount), 0);
 
-      const pendingBalance = myCommissions
+      const pendingBalance = myEffectiveCommissions
         .filter((com: any) => com.paid === false)
         .reduce((sum: number, com: any) => sum + Number(com.amount), 0);
 
@@ -207,7 +215,12 @@ router.get('/:id/leads', async (req: Request, res: Response): Promise<void> => {
   try {
     const { data: leads, error } = await supabase
       .from('prospects')
-      .select('*')
+      .select(`
+        *,
+        tenants:demo_tenant_id (
+          contract_start_date
+        )
+      `)
       .eq('commercial_agent_id', id)
       .order('created_at', { ascending: false });
 
@@ -255,12 +268,19 @@ router.get('/:id/commissions', async (req: Request, res: Response): Promise<void
       tenants = tData || [];
     }
 
+    const now = new Date();
     const mappedCommissions = (commissions || []).map((com: any) => {
       const tenant = tenants.find((t: any) => t.id === com.prospects?.demo_tenant_id);
+      
+      const comCreated = new Date(com.created_at);
+      const diffTime = now.getTime() - comCreated.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+      const inTrial = diffDays < 7;
+
       return {
         ...com,
         comercial_id: com.agent_id,
-        status: com.paid ? 'paid' : 'pending',
+        status: com.paid ? 'paid' : (inTrial ? 'trial' : 'pending'),
         payout_id: com.payment_id,
         tenants: tenant ? {
           business_name: tenant.business_name,
@@ -304,7 +324,7 @@ router.post('/payout', async (req: Request, res: Response): Promise<void> => {
     const comercial = mapAgentToComercial(agent);
 
     // 2. Obtener comisiones pendientes
-    const { data: pendingCommissions, error: comErr } = await supabase
+    const { data: allPendingCommissions, error: comErr } = await supabase
       .from('commissions')
       .select('*')
       .eq('agent_id', comercial_id)
@@ -312,6 +332,14 @@ router.post('/payout', async (req: Request, res: Response): Promise<void> => {
       .order('created_at', { ascending: true });
 
     if (comErr) throw comErr;
+
+    const now = new Date();
+    const pendingCommissions = (allPendingCommissions || []).filter((com: any) => {
+      const comCreated = new Date(com.created_at);
+      const diffTime = now.getTime() - comCreated.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+      return diffDays >= 7; // Solo efectivas
+    });
 
     const totalPending = (pendingCommissions || []).reduce((sum, com) => sum + Number(com.amount), 0);
     if (amount > totalPending + 0.01) { // 0.01 margin for float inaccuracies

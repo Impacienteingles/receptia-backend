@@ -214,7 +214,12 @@ router.get('/leads', requireComercialAuth, async (req: ComercialRequest, res: Re
   try {
     const { data: leads, error } = await supabase
       .from('prospects')
-      .select('*')
+      .select(`
+        *,
+        tenants:demo_tenant_id (
+          contract_start_date
+        )
+      `)
       .eq('commercial_agent_id', req.comercial.id)
       .order('created_at', { ascending: false });
 
@@ -239,6 +244,11 @@ router.patch('/leads/:id', requireComercialAuth, async (req: ComercialRequest, r
   const { classification, notes } = req.body;
 
   try {
+    if (classification === 'contratado') {
+      res.status(400).json({ error: 'El estado Contratado se activa automáticamente al realizar el pago.' });
+      return;
+    }
+
     // Verificar que el lead pertenece al comercial
     const { data: lead, error: fetchErr } = await supabase
       .from('prospects')
@@ -390,12 +400,19 @@ router.get('/commissions', requireComercialAuth, async (req: ComercialRequest, r
       tenants = tData || [];
     }
 
+    const now = new Date();
     const mappedCommissions = (commissions || []).map((com: any) => {
       const tenant = tenants.find((t: any) => t.id === com.prospects?.demo_tenant_id);
+      
+      const comCreated = new Date(com.created_at);
+      const diffTime = now.getTime() - comCreated.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+      const inTrial = diffDays < 7;
+
       return {
         ...com,
         comercial_id: com.agent_id,
-        status: com.paid ? 'paid' : 'pending',
+        status: com.paid ? 'paid' : (inTrial ? 'trial' : 'pending'),
         payout_id: com.payment_id,
         tenants: tenant ? {
           business_name: tenant.business_name,
@@ -449,11 +466,19 @@ router.get('/commissions', requireComercialAuth, async (req: ComercialRequest, r
       if (tenantIds.length > 0) {
         const { data: activeTenants } = await supabase
           .from('tenants')
-          .select('price_amount')
+          .select('price_amount, contract_start_date')
           .in('id', tenantIds)
           .eq('subscription_status', 'active');
 
-        const totalActiveBilling = (activeTenants || []).reduce((sum, t) => sum + Number(t.price_amount || 0), 0);
+        const totalActiveBilling = (activeTenants || [])
+          .filter((t: any) => {
+            if (!t.contract_start_date) return true; // Fallback
+            const contractStart = new Date(t.contract_start_date);
+            const now = new Date();
+            const diffDays = (now.getTime() - contractStart.getTime()) / (1000 * 60 * 60 * 24);
+            return diffDays >= 7; // Solo clientes reales
+          })
+          .reduce((sum, t) => sum + Number(t.price_amount || 0), 0);
         estimatedMonthlyRecurring = totalActiveBilling * (Number(req.comercial.commission_value) / 100);
       }
     }

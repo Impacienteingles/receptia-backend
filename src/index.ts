@@ -1805,6 +1805,80 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
           } else {
             console.log(`✅ Suscripción de tenant ${tenant.id} cambiada a inactiva.`);
             
+            // Reversión de comisiones y prospecto si ocurre cancelación en periodo de prueba (menos de 7 días)
+            try {
+              let isTrial = false;
+              if (tenant.contract_start_date) {
+                const contractStart = new Date(tenant.contract_start_date);
+                const now = new Date();
+                const diffTime = now.getTime() - contractStart.getTime();
+                const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                isTrial = diffDays < 7;
+              }
+
+              if (isTrial) {
+                console.log(`[Stripe Webhook] Detectada cancelación dentro del periodo de prueba de 7 días para ${tenant.business_name}. Limpiando comisiones e historial...`);
+                
+                // 1. Eliminar comisiones pendientes asociadas a este inquilino creadas hace menos de 7 días
+                const { data: pendingComs } = await supabase
+                  .from('commissions')
+                  .select('*')
+                  .eq('tenant_id', tenant.id)
+                  .eq('paid', false);
+
+                if (pendingComs && pendingComs.length > 0) {
+                  const nowTime = new Date().getTime();
+                  const comsToDelete = pendingComs
+                    .filter((com: any) => {
+                      const comCreated = new Date(com.created_at);
+                      const diffDays = (nowTime - comCreated.getTime()) / (1000 * 60 * 60 * 24);
+                      return diffDays < 7;
+                    })
+                    .map((com: any) => com.id);
+
+                  if (comsToDelete.length > 0) {
+                    const { error: delErr } = await supabase
+                      .from('commissions')
+                      .delete()
+                      .in('id', comsToDelete);
+                    if (delErr) {
+                      console.error('[Stripe Webhook Error] Error al eliminar comisiones en prueba:', delErr.message);
+                    } else {
+                      console.log(`[Stripe Webhook] Eliminadas comisiones en periodo de prueba canceladas:`, comsToDelete);
+                    }
+                  }
+                }
+
+                // 2. Revertir prospecto a "descartado"
+                const { data: prospect } = await supabase
+                  .from('prospects')
+                  .select('*')
+                  .eq('demo_tenant_id', tenant.id)
+                  .maybeSingle();
+
+                if (prospect) {
+                  await supabase
+                    .from('prospects')
+                    .update({ classification: 'descartado' })
+                    .eq('id', prospect.id);
+
+                  await supabase
+                    .from('lead_activity_log')
+                    .insert({
+                      prospect_id: prospect.id,
+                      agent_id: prospect.commercial_agent_id,
+                      action_type: 'status_change',
+                      previous_status: 'contratado',
+                      new_status: 'descartado',
+                      note: 'Suscripción cancelada en Stripe durante el periodo de prueba de 7 días. Se revierten comisiones y estado.'
+                    });
+                  console.log(`[Stripe Webhook] Revertido prospecto ${prospect.id} a descartado debido a cancelación temprana.`);
+                }
+              }
+            } catch (trialErr: any) {
+              console.error('[Stripe Webhook Error] Error al procesar reversión por periodo de prueba:', trialErr.message);
+            }
+            
             // Cargar de nuevo el tenant con su nuevo estado inactivo y sincronizar con Retell AI (para aplicar prompt de suspensión)
             const { data: updatedTenant } = await supabase
               .from('tenants')

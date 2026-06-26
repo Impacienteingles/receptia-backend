@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.6.5">
-  <link rel="icon" type="image/png" href="/favicon.png?v=2.6.5">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.6.6">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.6.6">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1270,6 +1270,18 @@
       color: #b91c1c;
     }
 
+    /* Contratado */
+    .select-classification.status-contratado {
+      background: rgba(52, 211, 153, 0.15);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      color: #34d399;
+    }
+    [data-theme="light"] .select-classification.status-contratado {
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: #047857;
+    }
+
     /* Sibling rule to expand main content when sidebar is collapsed */
     .sidebar.collapsed ~ .content-wrapper main {
       max-width: 95%;
@@ -1501,7 +1513,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.6.5</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.6.6</span>
       </div>
     </aside>
 
@@ -1520,7 +1532,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.6.5</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.6.6</span>
         </div>
       </header>
 
@@ -4593,7 +4605,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.6.5 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.6.6 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -7727,13 +7739,22 @@
 
         // Select de Clasificación comercial
         const currentClass = p.classification || 'no_contactado';
+        
+        let contratadoLabel = 'Contratado ✓';
+        if (currentClass === 'contratado' && p.tenants?.contract_start_date) {
+          const contractStart = new Date(p.tenants.contract_start_date);
+          const now = new Date();
+          const diffDays = (now - contractStart) / (1000 * 60 * 60 * 24);
+          contratadoLabel = diffDays < 7 ? 'Contratado (Prueba)' : 'Contratado (Cliente)';
+        }
+
         const classificationSelect = `
           <select onchange="changeProspectClassification('${p.id}', this)" class="select-classification status-${currentClass}">
             <option value="no_contactado" ${currentClass === 'no_contactado' ? 'selected' : ''}>No contactado</option>
             <option value="pendiente_contacto" ${currentClass === 'pendiente_contacto' ? 'selected' : ''}>Pendiente de contacto</option>
             <option value="contactado" ${currentClass === 'contactado' ? 'selected' : ''}>Contactado</option>
             <option value="en_negociacion" ${currentClass === 'en_negociacion' ? 'selected' : ''}>En negociación</option>
-            <option value="contratado" ${currentClass === 'contratado' ? 'selected' : ''}>Contratado ✓</option>
+            <option value="contratado" ${currentClass === 'contratado' ? 'selected' : 'disabled'}>${contratadoLabel}</option>
             <option value="no_interesado" ${currentClass === 'no_interesado' ? 'selected' : ''}>No interesado</option>
             <option value="descartado" ${currentClass === 'descartado' ? 'selected' : ''}>Descartado</option>
           </select>
@@ -9989,7 +10010,13 @@
             const sectorLabels = { peluqueria: 'Peluquería', dental: 'Dental', medica: 'Médica', forwarding: 'Desvío', forwarding_guide: 'Desvío', forwarding_rules: 'Desvío', forwarding_settings: 'Desvío', forwarding_setup: 'Desvío', audit: 'Auditoría', user: 'Usuario', admin: 'Administración' };
             const sectorText = sectorLabels[l.sector] || l.sector || '-';
             const badgeClass = l.classification || 'no_contactado';
-            const badgeText = classLabels[badgeClass] || badgeClass;
+            let badgeText = classLabels[badgeClass] || badgeClass;
+            if (badgeClass === 'contratado' && l.tenants?.contract_start_date) {
+              const contractStart = new Date(l.tenants.contract_start_date);
+              const now = new Date();
+              const diffDays = (now - contractStart) / (1000 * 60 * 60 * 24);
+              badgeText = diffDays < 7 ? 'Contratado (Prueba)' : 'Contratado (Cliente)';
+            }
 
             row.innerHTML = `
               <td style="font-weight: 500; color: #fff;">${l.business_name}</td>
@@ -10027,7 +10054,9 @@
 
             const statusText = com.status === 'paid' 
               ? '<span class="badge-status badge-contratado">Liquidaded ✓</span>' 
-              : '<span class="badge-status badge-pendiente_contacto" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2);">Pendiente</span>';
+              : (com.status === 'trial'
+                 ? '<span class="badge-status badge-en_negociacion" style="background: rgba(167, 139, 250, 0.1); color: #a78bfa; border-color: rgba(167, 139, 250, 0.2);">En Prueba</span>'
+                 : '<span class="badge-status badge-pendiente_contacto" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2);">Pendiente</span>');
 
             row.innerHTML = `
               <td>${dateStr}</td>

@@ -1038,7 +1038,14 @@
 
         const currentClass = lead.classification || 'no_contactado';
         const sectorText = sectorLabels[lead.sector] || lead.sector || '-';
-        const classText = classLabels[currentClass] || currentClass;
+        
+        let classText = classLabels[currentClass] || currentClass;
+        if (currentClass === 'contratado' && lead.tenants?.contract_start_date) {
+          const contractStart = new Date(lead.tenants.contract_start_date);
+          const now = new Date();
+          const diffDays = (now - contractStart) / (1000 * 60 * 60 * 24);
+          classText = diffDays < 7 ? 'Contratado (Prueba)' : 'Contratado (Cliente)';
+        }
 
         row.innerHTML = `
           <td style="font-weight: 600; color: #fff;">${lead.business_name}</td>
@@ -1088,7 +1095,9 @@
 
           const statusBadge = com.status === 'paid' 
             ? '<span class="badge-status badge-contratado">Pagado ✓</span>' 
-            : '<span class="badge-status badge-pendiente_contacto" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2);">Pendiente</span>';
+            : (com.status === 'trial'
+               ? '<span class="badge-status badge-en_negociacion" style="background: rgba(167, 139, 250, 0.1); color: #a78bfa; border-color: rgba(167, 139, 250, 0.2);">En Prueba</span>'
+               : '<span class="badge-status badge-pendiente_contacto" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2);">Pendiente</span>');
 
           row.innerHTML = `
             <td>${dateStr}</td>
@@ -1170,7 +1179,12 @@
       document.getElementById('detail-address').title = lead.address || '';
       
       // Cargar clasificación
-      document.getElementById('detail-status-select').value = lead.classification || 'pendiente_contacto';
+      const statusSelect = document.getElementById('detail-status-select');
+      statusSelect.value = lead.classification || 'pendiente_contacto';
+      const contratadoOption = statusSelect.querySelector('option[value="contratado"]');
+      if (contratadoOption) {
+        contratadoOption.disabled = (lead.classification !== 'contratado');
+      }
 
       // Limpiar formulario de notas
       document.getElementById('note-text').value = '';
