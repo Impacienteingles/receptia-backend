@@ -16,7 +16,9 @@ export async function getStripeClient(): Promise<Stripe> {
     throw new Error('STRIPE_SECRET_KEY no está configurada en los Ajustes del Administrador ni en el archivo .env.');
   }
 
-  stripeInstance = new Stripe(secretKey);
+  stripeInstance = new Stripe(secretKey, {
+    apiVersion: '2023-10-16' as any
+  });
   return stripeInstance;
 }
 
@@ -304,7 +306,8 @@ export async function processMeteredBillingForCall(tenantId: string, durationSec
         await axios.post(url, params, {
           headers: {
             'Authorization': `Bearer ${secretKey}`,
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Stripe-Version': '2023-10-16'
           }
         });
         
