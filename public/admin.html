@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.6.7">
-  <link rel="icon" type="image/png" href="/favicon.png?v=2.6.7">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.5">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.5">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1553,7 +1553,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.4</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.5</span>
       </div>
     </aside>
 
@@ -1572,7 +1572,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.4</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.5</span>
         </div>
       </header>
 
@@ -3062,7 +3062,7 @@
               </span>
               <div style="margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
                 <div style="display: flex; gap: 0.25rem; align-items: center; border: 1px solid var(--border-color); padding: 0.15rem 0.35rem; border-radius: 6px; background: rgba(255,255,255,0.01);">
-                  <select id="bulk-assign-comercial-select" style="font-size: 0.8rem; background: transparent; border: none; color: #fff; padding: 0.2rem 0.4rem; outline: none; cursor: pointer; max-width: 150px;">
+                  <select id="bulk-assign-comercial-select" style="font-size: 0.8rem; background: transparent; border: none; color: #fff; padding: 0.2rem 0.4rem; outline: none; cursor: pointer; min-width: 180px; max-width: 250px;">
                     <option value="">-- Asignar Comercial --</option>
                   </select>
                   <button class="btn btn-secondary" onclick="bulkAssignComercial()" style="font-size: 0.8rem; padding: 0.25rem 0.6rem; height: auto; display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(139, 92, 246, 0.15); color: var(--primary-light); border-color: rgba(139, 92, 246, 0.25);" title="Asignar comercial seleccionado a los leads marcados">
@@ -4711,7 +4711,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.6.7 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.7.5 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
