@@ -116,8 +116,11 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const crypto = require('crypto');
-    const access_url = crypto.randomBytes(9).toString('base64url');
+    const alphabet = 'abcdefghjkmnpqrstuvwxyz23456789'; // Excluidos: i, l, o, 1, 0
+    let access_url = '';
+    for (let i = 0; i < 12; i++) {
+      access_url += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+    }
 
     const { data, error } = await supabase
       .from('commercial_agents')
