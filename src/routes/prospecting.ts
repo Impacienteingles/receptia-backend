@@ -590,6 +590,33 @@ async function generateCartesiaAudio(
 }
 
 /**
+ * 4. Actualizar asignación de comercial masiva (bulk assign)
+ */
+router.patch('/assign-bulk', async (req: Request, res: Response): Promise<void> => {
+  const { ids, comercial_id } = req.body;
+
+  if (!ids || !Array.isArray(ids)) {
+    res.status(400).json({ error: 'Se requiere un array de ids.' });
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('prospects')
+      .update({ commercial_agent_id: comercial_id || null })
+      .in('id', ids)
+      .select('*');
+
+    if (error) throw error;
+
+    res.json({ status: 'success', count: data?.length || 0 });
+  } catch (error: any) {
+    console.error('[Prospecting API] Error en asignación masiva:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
  * 4. Actualizar campos de un prospecto (por ejemplo, clasificación o estado)
  */
 router.patch('/:id', async (req: Request, res: Response): Promise<void> => {

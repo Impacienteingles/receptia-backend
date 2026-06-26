@@ -499,7 +499,7 @@
         </div>
         <div class="form-group">
           <label for="login-pin">PIN de Acceso</label>
-          <input type="password" id="login-pin" placeholder="PIN de 4 o más dígitos" required max-length="10" style="letter-spacing: 0.1em; text-align: center;">
+          <input type="password" id="login-pin" placeholder="••••" required maxlength="4" style="letter-spacing: 0.1em; text-align: center;">
         </div>
         
         <div id="login-error-alert" style="display: none; color: var(--error); font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.6rem; border-radius: 6px; text-align: center;">
@@ -803,6 +803,16 @@
         await initLoginScreen();
       }
       lucide.createIcons();
+
+      // Auto-submit al ingresar 4 dígitos del PIN
+      const pinInput = document.getElementById('login-pin');
+      if (pinInput) {
+        pinInput.addEventListener('input', (e) => {
+          if (e.target.value.length === 4) {
+            handleLogin();
+          }
+        });
+      }
     });
 
     async function initLoginScreen() {
@@ -818,15 +828,18 @@
           }
           const res = await response.json();
           emailGroup.style.display = 'none';
+          document.getElementById('login-email').required = false;
           loginWelcome.innerHTML = `Bienvenido, <strong>${res.agent.name}</strong><br><span style="font-size: 0.75rem; opacity: 0.7;">Email: ${res.agent.email}</span>`;
           document.getElementById('login-pin').focus();
         } catch (err) {
           console.error('Error cargando agente por URL:', err);
           emailGroup.style.display = 'flex';
+          document.getElementById('login-email').required = true;
           loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.0</span>`;
         }
       } else {
         emailGroup.style.display = 'flex';
+        document.getElementById('login-email').required = true;
         loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.0</span>`;
       }
     }
@@ -847,10 +860,13 @@
 
     // Login Handler
     async function handleLogin(e) {
-      e.preventDefault();
-      const pin = document.getElementById('login-pin').value;
+      if (e) e.preventDefault();
+      const pinInput = document.getElementById('login-pin');
+      const pin = pinInput.value;
       const errorAlert = document.getElementById('login-error-alert');
       errorAlert.style.display = 'none';
+
+      if (!pin) return;
 
       const payload = { pin };
       if (currentAccessUrl) {
@@ -858,6 +874,8 @@
       } else {
         payload.email = document.getElementById('login-email').value;
       }
+
+      pinInput.disabled = true;
 
       try {
         const response = await fetch('/api/comercial/auth/login', {
@@ -887,6 +905,12 @@
         console.error(err);
         errorAlert.innerText = err.message;
         errorAlert.style.display = 'block';
+        
+        // Limpiar y enfocar para reintroducir
+        pinInput.value = '';
+        pinInput.focus();
+      } finally {
+        pinInput.disabled = false;
       }
     }
 
