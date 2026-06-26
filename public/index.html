@@ -638,9 +638,9 @@
     .day-badge {
       background: var(--accent);
       color: #fff;
-      font-size: 1.8rem;
-      width: 54px;
-      height: 54px;
+      font-size: 0.9rem;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -2236,7 +2236,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.6.8</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.6.9</span>
         </div>
       </header>
 
@@ -2517,24 +2517,36 @@
                 </div>
 
                 <!-- Listado de citas del día seleccionado en el calendario -->
-                <div class="selected-day-appointments" id="selected-day-section" style="display: none;">
-                  <h4 style="font-size: 0.9rem; margin-bottom: 0.75rem; color: #fff;" id="selected-day-label">Citas para el día...</h4>
-                  <div class="table-container">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Cliente</th>
-                          <th>Teléfono</th>
-                          <th>Especialidad</th>
-                          <th>Hora</th>
-                          <th>Estado</th>
-                          <th>Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody id="selected-day-tbody">
-                        <!-- Citas del día seleccionado -->
-                      </tbody>
-                    </table>
+                <div class="login-modal-overlay" id="selected-day-section" style="display: none; align-items: center; justify-content: center; z-index: 1000;" onclick="this.style.display='none'">
+                  <div class="login-modal-content" style="max-width: 800px; width: 90%; background: #1f2937; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; text-align: left;" onclick="event.stopPropagation()">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                      <h4 style="font-size: 1.1rem; margin: 0; color: #fff; font-family: 'Outfit', sans-serif;" id="selected-day-label">Citas para el día...</h4>
+                      <button onclick="document.getElementById('selected-day-section').style.display = 'none'" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem;">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                      </button>
+                    </div>
+                    <div class="table-container" style="max-height: 350px; overflow-y: auto;">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Cliente</th>
+                            <th>Teléfono</th>
+                            <th>Especialidad</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody id="selected-day-tbody">
+                          <!-- Citas del día seleccionado -->
+                        </tbody>
+                      </table>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem;">
+                      <button class="btn btn-secondary" onclick="document.getElementById('selected-day-section').style.display = 'none'" style="padding: 0.6rem 1.5rem;">
+                        Volver
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -8124,7 +8136,7 @@ ${cleanAudio}`;
     }
 
     function showAppointmentsForDay(day, month, year, appointments) {
-      selectedDaySection.style.display = 'block';
+      selectedDaySection.style.display = 'flex';
       selectedDayLabel.innerText = `Citas para el ${day} de ${months[month]} de ${year}:`;
       
       selectedDayTbody.innerHTML = '';

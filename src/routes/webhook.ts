@@ -423,37 +423,34 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
       return;
     }
 
-    // Buscar cita en Supabase para ese tenant que coincida con el número de teléfono o email, y que empiece en la fecha indicada
+    // Buscar cita en Supabase para ese tenant que empiece en la fecha indicada
     const startRange = `${date}T00:00:00.000Z`;
     const endRange = `${date}T23:59:59.999Z`;
 
-    // Primero buscamos por teléfono
-    let { data: appointments, error: fetchErr } = await supabase
+    // Descargar todas las citas del día para ese tenant
+    const { data: allApps, error: fetchErr } = await supabase
       .from('appointments')
       .select('*')
       .eq('tenant_id', tenantId)
-      .eq('patient_phone', resolvedPhone)
       .gte('date_time', startRange)
       .lte('date_time', endRange);
 
-    if (fetchErr || !appointments || appointments.length === 0) {
-      // Intentar buscar por email solo si se proporcionó
-      if (normalizedEmail) {
-        const { data: altApps, error: altErr } = await supabase
-          .from('appointments')
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .eq('patient_email', normalizedEmail)
-          .gte('date_time', startRange)
-          .lte('date_time', endRange);
-          
-        if (!altErr && altApps && altApps.length > 0) {
-          appointments = altApps;
-        }
-      }
+    if (fetchErr) {
+      throw fetchErr;
     }
 
-    if (!appointments || appointments.length === 0) {
+    // Comparar de forma flexible limpiando prefijos (últimos 9 dígitos)
+    const cleanSearchPhone = resolvedPhone.replace(/\D/g, '').slice(-9);
+    const cleanSearchEmail = normalizedEmail ? normalizedEmail.trim().toLowerCase() : '';
+
+    const matchedApp = (allApps || []).find(app => {
+      const cleanAppPhone = (app.patient_phone || '').replace(/\D/g, '').slice(-9);
+      if (cleanAppPhone && cleanSearchPhone && cleanAppPhone === cleanSearchPhone) return true;
+      if (cleanSearchEmail && app.patient_email && app.patient_email.trim().toLowerCase() === cleanSearchEmail) return true;
+      return false;
+    });
+
+    if (!matchedApp) {
       console.warn(`No se encontró ninguna cita para cancelar el ${date} con teléfono ${resolvedPhone} o email ${normalizedEmail}.`);
       res.json({
         status: 'success',
@@ -462,8 +459,8 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
       return;
     }
 
-    // Tomar la primera coincidencia
-    const appToCancel = appointments[0];
+    // Tomar la coincidencia encontrada
+    const appToCancel = matchedApp;
 
     // 1. Eliminar de Google Calendar si tiene evento
     if (appToCancel.google_event_id) {
@@ -552,32 +549,30 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
     const startRange = `${original_date}T00:00:00.000Z`;
     const endRange = `${original_date}T23:59:59.999Z`;
 
-    let { data: appointments, error: fetchErr } = await supabase
+    // Descargar todas las citas del día para ese tenant
+    const { data: allApps, error: fetchErr } = await supabase
       .from('appointments')
       .select('*')
       .eq('tenant_id', tenantId)
-      .eq('patient_phone', resolvedPhone)
       .gte('date_time', startRange)
       .lte('date_time', endRange);
 
-    if (fetchErr || !appointments || appointments.length === 0) {
-      // Intentar buscar por email solo si se proporcionó
-      if (normalizedEmail) {
-        const { data: altApps } = await supabase
-          .from('appointments')
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .eq('patient_email', normalizedEmail)
-          .gte('date_time', startRange)
-          .lte('date_time', endRange);
-          
-        if (altApps && altApps.length > 0) {
-          appointments = altApps;
-        }
-      }
+    if (fetchErr) {
+      throw fetchErr;
     }
 
-    if (!appointments || appointments.length === 0) {
+    // Comparar de forma flexible limpiando prefijos (últimos 9 dígitos)
+    const cleanSearchPhone = resolvedPhone.replace(/\D/g, '').slice(-9);
+    const cleanSearchEmail = normalizedEmail ? normalizedEmail.trim().toLowerCase() : '';
+
+    const matchedApp = (allApps || []).find(app => {
+      const cleanAppPhone = (app.patient_phone || '').replace(/\D/g, '').slice(-9);
+      if (cleanAppPhone && cleanSearchPhone && cleanAppPhone === cleanSearchPhone) return true;
+      if (cleanSearchEmail && app.patient_email && app.patient_email.trim().toLowerCase() === cleanSearchEmail) return true;
+      return false;
+    });
+
+    if (!matchedApp) {
       res.json({
         status: 'success',
         message: `No he podido encontrar ninguna cita a su nombre programada para el ${original_date}. Por favor, confirme los datos.`
@@ -585,7 +580,7 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
       return;
     }
 
-    const appToReschedule = appointments[0];
+    const appToReschedule = matchedApp;
 
     const isPeluqueria = tenantDetails.business_sector === 'peluqueria' || 
                          (tenantDetails.business_name && (
