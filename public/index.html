@@ -305,7 +305,7 @@
       color: var(--text-muted);
     }
 
-    input[type="text"], input[type="email"], input[type="password"], textarea, select {
+    input[type="text"], input[type="email"], input[type="password"], input[type="time"], textarea, select {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border-color);
       color: #fff;
@@ -314,6 +314,17 @@
       font-family: inherit;
       font-size: 0.95rem;
       transition: all 0.2s;
+    }
+
+    /* Ajustes premium para inputs de fecha y hora */
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    input[type="time"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
     }
 
     select {
@@ -2236,7 +2247,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.1</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.2</span>
         </div>
       </header>
 
@@ -3290,7 +3301,7 @@
     <div class="modal-content" style="gap: 1.25rem;">
       <h3 style="color: #fff; display: flex; align-items: center; gap: 0.5rem;">
         <i data-lucide="alert-triangle" style="color: var(--error);"></i>
-        Cancelar Cita Médica
+        <span id="delete-modal-title">Cancelar Cita Médica</span>
       </h3>
       <p style="font-size: 0.95rem; line-height: 1.5;">
         ¿Estás seguro de que deseas cancelar la cita del paciente <strong id="delete-patient-name" style="color: #fff;">...</strong> para el día <strong id="delete-patient-date" style="color: #fff;">...</strong>?
@@ -3672,6 +3683,36 @@
     let selectedDay = null;
     let appToDeleteId = null;
     let editDatePicker = null; // Instancia de Flatpickr
+
+    // Helpers para adaptar el lenguaje al tipo de negocio
+    function getAppointmentNoun() {
+      const sector = currentTenant?.business_sector || 'general';
+      switch (sector) {
+        case 'peluqueria':
+          return 'cita de peluquería';
+        case 'dental':
+          return 'cita dental';
+        case 'medica':
+          return 'cita médica';
+        case 'fisioterapia':
+          return 'cita de fisioterapia';
+        case 'abogados':
+          return 'cita de consulta';
+        case 'psicologia':
+          return 'sesión de psicología';
+        case 'taller':
+          return 'cita de taller';
+        case 'veterinaria':
+          return 'cita veterinaria';
+        default:
+          return 'cita';
+      }
+    }
+
+    function getAppointmentNounCapitalized() {
+      const noun = getAppointmentNoun();
+      return noun.charAt(0).toUpperCase() + noun.slice(1);
+    }
 
     // Elementos DOM
     const searchAppointmentsInput = document.getElementById('search-appointments');
@@ -7194,6 +7235,17 @@
         renderAppointmentsTable(getFilteredAndSortedAppointments());
         renderCalendar();
 
+        // Refrescar modal de citas diarias si está activo
+        if (selectedDay && selectedDaySection.style.display === 'flex') {
+          const dayApps = allAppointments.filter(app => {
+            const appDate = new Date(app.date_time);
+            return appDate.getDate() === selectedDay.day && 
+                   appDate.getMonth() === selectedDay.month && 
+                   appDate.getFullYear() === selectedDay.year;
+          });
+          showAppointmentsForDay(selectedDay.day, selectedDay.month, selectedDay.year, dayApps);
+        }
+
         // Calcular métricas del dashboard en tiempo real
         const totalCount = allAppointments.length;
         document.getElementById('metric-total-count').innerText = totalCount;
@@ -7980,7 +8032,7 @@ ${cleanAudio}`;
 
         if (!response.ok) throw new Error('Error al actualizar la cita.');
         
-        showToast('Cita médica modificada y sincronizada con Google Calendar.');
+        showToast(`${getAppointmentNounCapitalized()} modificada y sincronizada con Google Calendar.`);
         editModal.style.display = 'none';
         
         // Recargar citas
@@ -8001,6 +8053,11 @@ ${cleanAudio}`;
       appToDeleteId = id;
       document.getElementById('delete-patient-name').innerText = app.patient_name;
       
+      const titleEl = document.getElementById('delete-modal-title');
+      if (titleEl) {
+        titleEl.innerText = `Cancelar ${getAppointmentNounCapitalized()}`;
+      }
+
       const dt = new Date(app.date_time);
       const dateStr = dt.toLocaleString('es-ES', {
         timeZone: 'Europe/Madrid',
@@ -8033,11 +8090,8 @@ ${cleanAudio}`;
 
         if (!response.ok) throw new Error('Error al cancelar la cita.');
         
-        showToast('Cita médica cancelada con éxito y borrada de Google Calendar.');
+        showToast(`${getAppointmentNounCapitalized()} cancelada con éxito y borrada de Google Calendar.`);
         deleteModal.style.display = 'none';
-        
-        // Ocultar sección de día seleccionado si acabamos de borrar su cita
-        selectedDaySection.style.display = 'none';
         
         // Recargar citas
         fetchAppointments(currentTenant.id);
