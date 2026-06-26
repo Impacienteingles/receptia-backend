@@ -18,7 +18,13 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    res.json({ prospects: data || [] });
+    
+    const mapped = (data || []).map((p: any) => ({
+      ...p,
+      comercial_id: p.commercial_agent_id
+    }));
+    
+    res.json({ prospects: mapped });
   } catch (error: any) {
     console.error('[Prospecting API] Error al obtener prospectos:', error.message);
     res.status(500).json({ error: error.message });
@@ -164,10 +170,15 @@ router.post('/search', async (req: Request, res: Response): Promise<void> => {
       }
     }
 
+    const mapped = (insertedProspects || []).map((p: any) => ({
+      ...p,
+      comercial_id: p.commercial_agent_id
+    }));
+
     res.json({
       status: 'success',
       message: `Se han extraído e insertado ${insertedProspects.length} nuevos leads con éxito.`,
-      prospects: insertedProspects
+      prospects: mapped
     });
   } catch (error: any) {
     console.error('[Prospecting API] Error en la extracción:', error.message);
@@ -585,16 +596,24 @@ router.patch('/:id', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const updates = req.body;
 
+  const mappedUpdates = { ...updates };
+  if (updates.comercial_id !== undefined) {
+    mappedUpdates.commercial_agent_id = updates.comercial_id;
+    delete mappedUpdates.comercial_id;
+  }
+
   try {
     const { data, error } = await supabase
       .from('prospects')
-      .update(updates)
+      .update(mappedUpdates)
       .eq('id', id)
       .select('*')
       .single();
 
     if (error) throw error;
-    res.json({ status: 'success', prospect: data });
+    
+    const mapped = data ? { ...data, comercial_id: data.commercial_agent_id } : null;
+    res.json({ status: 'success', prospect: mapped });
   } catch (error: any) {
     console.error('[Prospecting API] Error al actualizar prospecto:', error.message);
     res.status(500).json({ error: error.message });

@@ -1,7 +1,7 @@
 const axios = require('axios');
 const dotenv = require('dotenv');
 
-dotenv.config({ path: 'e:/APPS/Receptia - v2/.env' });
+dotenv.config();
 
 const RENDER_API_KEY = process.env.RENDER_API_KEY;
 

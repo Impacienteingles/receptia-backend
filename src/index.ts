@@ -5,6 +5,8 @@ import webhookRouter from './routes/webhook';
 import prospectingRouter from './routes/prospecting';
 import pmsRouter from './routes/pms';
 import campaignsRouter from './routes/campaigns';
+import comercialesRouter from './routes/comerciales';
+import comercialPanelRouter from './routes/comercial-panel';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
 import { supabase, getSettingVal, clearSettingsCache } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName } from './services/retell';
@@ -1648,6 +1650,40 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
             if (updatedTenant && updatedTenant.retell_agent_id) {
               await syncTenantWithRetell(updatedTenant, webhookBaseUrl);
             }
+
+            // AUTO-GENERACIÓN DE COMISIÓN DE COMERCIAL POR CONTRATACIÓN
+            try {
+              const { data: prospect } = await supabase
+                .from('prospects')
+                .select('*')
+                .eq('demo_tenant_id', tenantId)
+                .maybeSingle();
+              
+              if (prospect && prospect.commercial_agent_id) {
+                if (prospect.classification !== 'contratado') {
+                  await supabase
+                    .from('prospects')
+                    .update({ classification: 'contratado' })
+                    .eq('id', prospect.id);
+                    
+                  await supabase
+                    .from('lead_activity_log')
+                    .insert({
+                      prospect_id: prospect.id,
+                      agent_id: prospect.commercial_agent_id,
+                      action_type: 'status_change',
+                      previous_status: prospect.classification || 'no_contactado',
+                      new_status: 'contratado',
+                      note: 'Suscripción activada automáticamente tras pago de Stripe Checkout.'
+                    });
+                }
+                
+                const { generateCommissionOnContratado } = require('./routes/comercial-panel');
+                await generateCommissionOnContratado(prospect.id);
+              }
+            } catch (comErr: any) {
+              console.error('[Stripe Webhook Error] Error al generar comisión automática:', comErr.message);
+            }
           }
         }
         break;
@@ -1681,6 +1717,57 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
               console.warn('⚠️ No se pudo registrar la transacción contable tras factura exitosa:', txErr.message);
             } else {
               console.log(`✅ Pago de factura por $${amount} registrado en contabilidad para ${tenant.business_name}.`);
+            }
+
+            // REGISTRO AUTOMÁTICO DE COMISIÓN RECURRENTE DE COMERCIAL
+            try {
+              const { data: prospect } = await supabase
+                .from('prospects')
+                .select('*')
+                .eq('demo_tenant_id', tenant.id)
+                .maybeSingle();
+
+              if (prospect && prospect.commercial_agent_id && prospect.classification === 'contratado') {
+                const { data: agent } = await supabase
+                  .from('commercial_agents')
+                  .select('*')
+                  .eq('id', prospect.commercial_agent_id)
+                  .maybeSingle();
+
+                if (agent && agent.status === 'active' && agent.commission_type === 'percentage') {
+                  const invoiceAmount = (invoice.amount_paid || 0) / 100;
+                  if (invoiceAmount > 0) {
+                    const currentPeriod = new Date().toISOString().substring(0, 7); // 'YYYY-MM'
+                    
+                    const { data: existing } = await supabase
+                      .from('commissions')
+                      .select('id')
+                      .eq('agent_id', agent.id)
+                      .eq('prospect_id', prospect.id)
+                      .eq('period', currentPeriod)
+                      .maybeSingle();
+                    
+                    if (!existing) {
+                      const commissionAmount = invoiceAmount * (Number(agent.commission_value) / 100);
+                      await supabase
+                        .from('commissions')
+                        .insert({
+                          agent_id: agent.id,
+                          prospect_id: prospect.id,
+                          tenant_id: tenant.id,
+                          type: 'percentage',
+                          amount: commissionAmount,
+                          paid: false,
+                          period: currentPeriod
+                        });
+                      
+                      console.log(`[Stripe Webhook] Generada comisión recurrente de ${commissionAmount}€ para ${agent.name} por factura pagada de ${tenant.business_name}`);
+                    }
+                  }
+                }
+              }
+            } catch (recErr: any) {
+              console.error('[Stripe Webhook Error] Error al generar comisión recurrente:', recErr.message);
             }
           }
         }
@@ -3237,6 +3324,8 @@ app.use('/api/webhook', webhookRouter);
 app.use('/api/admin/prospects', prospectingRouter);
 app.use('/api/integrations/pms', pmsRouter);
 app.use('/api/campaigns', campaignsRouter);
+app.use('/api/admin/comerciales', comercialesRouter);
+app.use('/api/comercial', comercialPanelRouter);
 
 
 

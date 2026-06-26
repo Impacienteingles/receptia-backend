@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.7">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.7">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.6.1">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.6.1">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1432,6 +1432,10 @@
           <i data-lucide="target"></i>
           <span>Prospección B2B</span>
         </button>
+        <button class="nav-item" id="btn-tab-comerciales" onclick="switchTab('comerciales')">
+          <i data-lucide="briefcase"></i>
+          <span>Comerciales</span>
+        </button>
         <button class="nav-item" id="btn-tab-backup" onclick="switchTab('backup')">
           <i data-lucide="database"></i>
           <span>Copia de Seguridad</span>
@@ -1449,6 +1453,8 @@
       <!-- COPYRIGHT CORANDAR -->
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
+        <br>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.6.1</span>
       </div>
     </aside>
 
@@ -1467,7 +1473,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.6.0</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.6.1</span>
         </div>
       </header>
 
@@ -2221,6 +2227,35 @@
               </div>
             </div>
 
+            <!-- Liquidaciones y Pagos a Comerciales -->
+            <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+              <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="award" style="color: var(--primary);"></i>
+                Pagos Realizados a Comerciales B2B
+              </h3>
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Agente Comercial</th>
+                      <th>Importe Pagado</th>
+                      <th>Desglose (Recurr. / Fijo)</th>
+                      <th>Método</th>
+                      <th>Referencia Stripe</th>
+                    </tr>
+                  </thead>
+                  <tbody id="accounting-comerciales-tbody">
+                    <tr>
+                      <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                        No hay pagos de comisiones registrados.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -2322,6 +2357,167 @@
               </div>
 
             </div>
+        <!-- TAB COMERCIALES: NUEVA SECCIÓN DE AGENTES COMERCIALES -->
+        <div id="tab-comerciales" class="tab-content">
+          <!-- Métricas de comerciales -->
+          <div class="metrics-grid" style="margin-bottom: 2rem;">
+            <div class="metric-card">
+              <div class="metric-header">
+                <span>Agentes Comerciales</span>
+                <i data-lucide="users" style="color: var(--accent);"></i>
+              </div>
+              <div class="metric-val" id="metric-comerciales-count">0</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-header">
+                <span>Leads Asignados</span>
+                <i data-lucide="target" style="color: var(--primary-hover);"></i>
+              </div>
+              <div class="metric-val" id="metric-comerciales-assigned">0</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-header">
+                <span>Comisiones Acumuladas</span>
+                <i data-lucide="trending-up" style="color: var(--success);"></i>
+              </div>
+              <div class="metric-val" id="metric-comerciales-earned" style="color: var(--success);">0,00 €</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-header">
+                <span>Saldo Pendiente de Pago</span>
+                <i data-lucide="wallet" style="color: #fbbf24;"></i>
+              </div>
+              <div class="metric-val" id="metric-comerciales-pending" style="color: #fbbf24;">0,00 €</div>
+            </div>
+          </div>
+
+          <!-- Acciones de cabecera -->
+          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; justify-content: flex-end;">
+            <button class="btn btn-secondary" onclick="runBillingCycle()" style="background: rgba(139, 92, 246, 0.1); color: var(--primary-hover); border-color: rgba(139, 92, 246, 0.2);">
+              <i data-lucide="refresh-cw"></i> Ejecutar Ciclo Mensual Batch
+            </button>
+          </div>
+
+          <!-- Dos columnas: Listado (Izquierda) y Formulario (Derecha) -->
+          <div style="display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 2rem;">
+            
+            <!-- Listado de comerciales -->
+            <div class="card">
+              <h2 class="card-title">
+                <span>
+                  <i data-lucide="list"></i>
+                  Agentes Comerciales Registrados
+                </span>
+              </h2>
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Comercial</th>
+                      <th>Modalidad</th>
+                      <th>PIN</th>
+                      <th>Leads (Contr.)</th>
+                      <th>Devengado / Saldo</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="comerciales-tbody">
+                    <tr>
+                      <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        Cargando comerciales...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Formulario de Crear / Editar -->
+            <div class="card">
+              <h2 class="card-title">
+                <span id="comercial-form-title">
+                  <i data-lucide="plus-circle"></i>
+                  Registrar Agente Comercial
+                </span>
+                <button class="btn btn-secondary" id="btn-cancel-edit-comercial" style="display: none; padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="resetComercialForm()">Cancelar</button>
+              </h2>
+              <form id="comercial-form" onsubmit="saveComercial(event)" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                <input type="hidden" id="comercial-id">
+                
+                <div class="form-group">
+                  <label for="comercial-name">Nombre Completo:</label>
+                  <input type="text" id="comercial-name" required placeholder="Nombre del comercial">
+                </div>
+
+                <div class="form-group">
+                  <label for="comercial-email">Correo Electrónico:</label>
+                  <input type="email" id="comercial-email" required placeholder="comercial@correo.com">
+                </div>
+
+                <div class="form-group" id="group-comercial-url" style="display: none;">
+                  <label>URL de Acceso Única:</label>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="text" id="comercial-access-url-input" readonly style="opacity: 0.7; font-size: 0.8rem; background: rgba(0,0,0,0.25);">
+                    <button type="button" class="btn btn-secondary" onclick="copyComercialUrl()" style="padding: 0 0.75rem; height: 38px;" title="Copiar enlace"><i data-lucide="copy" style="width: 14px; height: 14px;"></i></button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="comercial-phone">Teléfono (opcional):</label>
+                  <input type="text" id="comercial-phone" placeholder="Ej: +34 600 000 000">
+                </div>
+
+                <div class="form-group">
+                  <label for="comercial-company">Empresa (opcional):</label>
+                  <input type="text" id="comercial-company" placeholder="Nombre de la empresa">
+                </div>
+
+                <div class="form-group">
+                  <label for="comercial-pin">PIN de Acceso:</label>
+                  <input type="text" id="comercial-pin" required placeholder="Ej: 1234 (PIN numérico)" style="text-align: center; letter-spacing: 0.1em;">
+                </div>
+
+                <div class="form-group">
+                  <label for="comercial-mode">Modalidad de Comisión:</label>
+                  <select id="comercial-mode" onchange="toggleComercialModeFields()">
+                    <option value="percentage">Porcentaje Recurrente (%)</option>
+                    <option value="fixed">Importe Fijo Único (€)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="comercial-value" id="lbl-comercial-value">Porcentaje de Comisión (%):</label>
+                  <input type="number" id="comercial-value" step="0.01" min="0" required value="10.00">
+                </div>
+
+                <div class="form-group">
+                  <label for="comercial-payment-method">Método de Pago:</label>
+                  <select id="comercial-payment-method" onchange="toggleComercialStripeField()">
+                    <option value="manual">Manual (Transferencia / Caja)</option>
+                    <option value="stripe">Stripe Connect Transfer</option>
+                  </select>
+                </div>
+
+                <div class="form-group" id="group-comercial-stripe" style="display: none;">
+                  <label for="comercial-stripe-id">ID de Cuenta Stripe Connect (acct_...):</label>
+                  <input type="text" id="comercial-stripe-id" placeholder="acct_XXXXXXXXXXXXXXXX">
+                </div>
+
+                <div class="form-group">
+                  <label for="comercial-status">Estado:</label>
+                  <select id="comercial-status">
+                    <option value="active">Activo</option>
+                    <option value="inactive">Inactivo</option>
+                  </select>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; margin-top: 0.5rem; justify-content: center; height: 42px;">
+                  <i data-lucide="save"></i> Registrar Agente
+                </button>
+              </form>
+            </div>
+
           </div>
         </div>
 
@@ -2755,6 +2951,7 @@
                     <th style="padding: 1rem 0.5rem;">Teléfono</th>
                     <th style="padding: 1rem 0.5rem;">Sitio Web</th>
                     <th onclick="sortProspects('sector')" style="padding: 1rem 0.5rem; cursor: pointer;">Sector <span id="sort-icon-sector"></span></th>
+                    <th style="padding: 1rem 0.5rem;">Comercial</th>
                     <th onclick="sortProspects('classification')" style="padding: 1rem 0.5rem; cursor: pointer;">Clasificación <span id="sort-icon-classification"></span></th>
                     <th onclick="sortProspects('status')" style="padding: 1rem 0.5rem; text-align: center; cursor: pointer;">Estado Demo <span id="sort-icon-status"></span></th>
                     <th style="padding: 1rem 0.5rem; text-align: center;">Apertura</th>
@@ -3721,12 +3918,17 @@
       } else if (tabName === 'accounting') {
         fetchTenants();
         fetchTransactions();
+        fetchComercialesPayoutsHistory(); // Cargar historial de pagos de comerciales en contabilidad
       } else if (tabName === 'contracts') {
         fetchContracts();
       } else if (tabName === 'billing') {
         fetchPlans();
       } else if (tabName === 'prospecting') {
-        fetchProspects();
+        fetchComercialesListOnly().then(() => {
+          fetchProspects();
+        });
+      } else if (tabName === 'comerciales') {
+        fetchComerciales();
       } else if (tabName === 'settings') {
         fetchSettings();
       }
@@ -4250,7 +4452,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.6.0 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.6.1 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -7388,37 +7590,27 @@
           </div>
         `;
 
-        // Traducir sector a texto legible
-        const sectorStr = sectorNames[p.sector] || p.sector || '-';
-
-        // Formatear email con truncado y botón copiar
-        let emailHtml = '<span style="color: var(--text-muted);">No disponible</span>';
-        if (p.email && p.email !== 'No disponible') {
-          emailHtml = `
-            <div style="display: inline-flex; align-items: center; gap: 0.25rem; max-width: 250px; width: 100%; min-width: 100px;">
-              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; flex-grow: 1; min-width: 0;" title="${p.email}">
-                ${p.email}
-              </span>
-              <button onclick="copyToClipboard('${p.email}', 'Email copiado al portapapeles.')" style="background: none; border: none; color: var(--primary-light); cursor: pointer; padding: 0.15rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Copiar email">
-                <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
-              </button>
-            </div>
-          `;
-        }
-
         // Select de Clasificación comercial
         const currentClass = p.classification || 'no_contactado';
         const classificationSelect = `
           <select onchange="changeProspectClassification('${p.id}', this)" class="select-classification status-${currentClass}">
             <option value="no_contactado" ${currentClass === 'no_contactado' ? 'selected' : ''}>No contactado</option>
+            <option value="pendiente_contacto" ${currentClass === 'pendiente_contacto' ? 'selected' : ''}>Pendiente de contacto</option>
             <option value="contactado" ${currentClass === 'contactado' ? 'selected' : ''}>Contactado</option>
-            <option value="demo_enviada" ${currentClass === 'demo_enviada' ? 'selected' : ''}>Demo enviada</option>
-            <option value="muy_interesante" ${currentClass === 'muy_interesante' ? 'selected' : ''}>★★★</option>
-            <option value="interesante" ${currentClass === 'interesante' ? 'selected' : ''}>★★</option>
-            <option value="poco_interesante" ${currentClass === 'poco_interesante' ? 'selected' : ''}>★</option>
-            <option value="descartado" ${currentClass === 'descartado' ? 'selected' : ''}>Descartado ✗</option>
+            <option value="en_negociacion" ${currentClass === 'en_negociacion' ? 'selected' : ''}>En negociación</option>
+            <option value="contratado" ${currentClass === 'contratado' ? 'selected' : ''}>Contratado ✓</option>
+            <option value="no_interesado" ${currentClass === 'no_interesado' ? 'selected' : ''}>No interesado</option>
+            <option value="descartado" ${currentClass === 'descartado' ? 'selected' : ''}>Descartado</option>
           </select>
         `;
+
+        // Select de Comercial asignado
+        let comercialSelect = `<select onchange="assignProspectComercial('${p.id}', this)" class="select-classification" style="width: auto; max-width: 140px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: #fff; padding: 0.25rem 0.5rem; border-radius: 6px;">`;
+        comercialSelect += `<option value="">Sin Asignar</option>`;
+        (allComerciales || []).forEach(c => {
+          comercialSelect += `<option value="${c.id}" ${p.comercial_id === c.id ? 'selected' : ''}>${c.name}</option>`;
+        });
+        comercialSelect += `</select>`;
 
         // Botón principal de acción
         let actionBtn = '';
@@ -7450,6 +7642,7 @@
             websiteUrl = 'https://' + websiteUrl;
           }
         }
+
         const websiteLink = websiteUrl && websiteUrl !== 'No disponible'
           ? `<a href="${websiteUrl}" target="_blank" style="color: var(--primary-light); text-decoration: none;">Visitar web ↗</a>`
           : '<span style="color: var(--text-muted);">No disponible</span>';
@@ -7502,6 +7695,7 @@
           <td style="padding: 0.85rem 0.5rem; font-family: monospace;">${p.phone || 'No disponible'}</td>
           <td style="padding: 0.85rem 0.5rem;">${websiteLink}</td>
           <td style="padding: 0.85rem 0.5rem; font-weight: 500;">${sectorStr}</td>
+          <td style="padding: 0.85rem 0.5rem;">${comercialSelect}</td>
           <td style="padding: 0.85rem 0.5rem;">${classificationSelect}</td>
           <td style="padding: 0.85rem 0.5rem; text-align: center;">${statusBadge}</td>
           <td style="padding: 0.85rem 0.5rem; text-align: center;">${trackingHtml}</td>
@@ -9252,12 +9446,550 @@
       }
     };
 
+    // ========================================================
+    // LOGICA DE COMERCIALES B2B
+    // ========================================================
+    let allComerciales = [];
+    let selectedComercialDetailId = null;
+    let activeComercialDetailTab = 'leads';
+
+    window.fetchComercialesListOnly = async function() {
+      try {
+        const response = await fetch('/api/admin/comerciales');
+        if (response.ok) {
+          const res = await response.json();
+          allComerciales = res.comerciales || [];
+        }
+      } catch (err) {
+        console.error('Error fetching list of comerciales:', err);
+      }
+    };
+
+    window.assignProspectComercial = async function(prospectId, selectEl) {
+      const comercialId = selectEl.value || null;
+      try {
+        const response = await fetch(`/api/admin/prospects/${prospectId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ comercial_id: comercialId })
+        });
+        if (!response.ok) throw new Error('Error al asignar comercial.');
+        
+        // Actualizar en local
+        const p = allProspects.find(item => item.id === prospectId);
+        if (p) p.comercial_id = comercialId;
+        
+        showCustomAlert('Agente comercial asignado correctamente.', 'Comercial Asignado', 'success');
+      } catch (err) {
+        console.error(err);
+        showCustomAlert('No se pudo asignar el agente comercial.', 'Error', 'error');
+        fetchProspects(); // Restaurar vista
+      }
+    };
+
+    window.fetchComerciales = async function() {
+      try {
+        const response = await fetch('/api/admin/comerciales');
+        if (!response.ok) throw new Error('API Error');
+        const res = await response.json();
+        allComerciales = res.comerciales || [];
+
+        // Rellenar métricas generales
+        const totalComerciales = allComerciales.length;
+        const totalLeads = allComerciales.reduce((sum, c) => sum + (c.stats?.leadsCount || 0), 0);
+        const totalEarned = allComerciales.reduce((sum, c) => sum + (c.stats?.totalEarned || 0), 0);
+        const totalPending = allComerciales.reduce((sum, c) => sum + (c.stats?.pendingBalance || 0), 0);
+
+        document.getElementById('metric-comerciales-count').innerText = totalComerciales;
+        document.getElementById('metric-comerciales-assigned').innerText = totalLeads;
+        document.getElementById('metric-comerciales-earned').innerText = `${Number(totalEarned).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+        document.getElementById('metric-comerciales-pending').innerText = `${Number(totalPending).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+
+        renderComercialesList();
+      } catch (err) {
+        console.error('Error fetching comerciales data:', err);
+      }
+    };
+
+    function renderComercialesList() {
+      const tbody = document.getElementById('comerciales-tbody');
+      tbody.innerHTML = '';
+
+      if (allComerciales.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No hay agentes comerciales registrados.</td></tr>`;
+        return;
+      }
+
+      allComerciales.forEach(c => {
+        const row = document.createElement('tr');
+        row.style.borderBottom = '1px solid var(--border-color)';
+
+        const modeText = c.commission_mode === 'percentage' ? `Recurrente (${c.commission_value}%)` : `Fijo (${c.commission_value}€)`;
+        const leadsStat = `${c.stats?.leadsCount || 0} (${c.stats?.leadsContratados || 0})`;
+        const moneyStat = `
+          <div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.15rem;">
+            <span style="font-weight: 500; color: #fff;">Acumulado: ${Number(c.stats?.totalEarned || 0).toLocaleString('es-ES')}€</span>
+            <span style="color: #fbbf24; font-size: 0.75rem;">Pendiente: ${Number(c.stats?.pendingBalance || 0).toLocaleString('es-ES')}€</span>
+          </div>
+        `;
+
+        const statusBadge = c.status === 'active' 
+          ? `<span class="badge badge-success">Activo 🟢</span>` 
+          : `<span class="badge badge-danger">Inactivo 🔴</span>`;
+
+        // Acciones
+        const btnEdit = `<button class="btn btn-secondary" onclick="editComercial('${c.id}')" style="color: #fbbf24; border-color: rgba(251, 191, 36, 0.2); padding: 0.25rem 0.5rem; font-size: 0.75rem; height: auto;" title="Editar agente"><i data-lucide="edit-2" style="width: 12px; height: 12px;"></i></button>`;
+        const btnDelete = `<button class="btn btn-secondary" onclick="deleteComercial('${c.id}')" style="color: #f87171; border-color: rgba(248, 113, 113, 0.2); padding: 0.25rem 0.5rem; font-size: 0.75rem; height: auto;" title="Eliminar agente"><i data-lucide="trash-2" style="width: 12px; height: 12px;"></i></button>`;
+        const btnDetail = `<button class="btn btn-secondary" onclick="openComercialDetailsModal('${c.id}')" style="color: var(--primary-light); border-color: rgba(139, 92, 246, 0.2); padding: 0.25rem 0.5rem; font-size: 0.75rem; height: auto;" title="Ver expediente/ficha"><i data-lucide="award" style="width: 12px; height: 12px;"></i> Ficha</button>`;
+        
+        let btnPay = '';
+        if (c.stats?.pendingBalance > 0) {
+          btnPay = `<button class="btn" onclick="openComercialPayoutModal('${c.id}', '${c.name}', ${c.stats.pendingBalance})" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; padding: 0.25rem 0.5rem; font-size: 0.75rem; height: auto;" title="Liquidar saldo"><i data-lucide="wallet" style="width: 12px; height: 12px;"></i> Pagar</button>`;
+        }
+
+        row.innerHTML = `
+          <td style="padding: 0.85rem 0.5rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <span style="font-weight: 600; color: #fff;">${c.name}</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">${c.email}</span>
+              <div style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; color: var(--primary-hover);">
+                <a href="https://receptia.corandar.com/comercial.html?c=${c.access_url}" target="_blank" style="color: var(--primary-hover); text-decoration: none;">receptia.corandar.com/comercial.html?c=${c.access_url}</a>
+                <button type="button" onclick="copyToClipboard('https://receptia.corandar.com/comercial.html?c=${c.access_url}', 'Enlace copiado al portapapeles')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: inline-flex; align-items: center;" title="Copiar enlace"><i data-lucide="copy" style="width: 10px; height: 10px;"></i></button>
+              </div>
+            </div>
+          </td>
+          <td>${modeText}</td>
+          <td style="font-family: monospace;">${c.pin}</td>
+          <td>${leadsStat}</td>
+          <td>${moneyStat}</td>
+          <td>${statusBadge}</td>
+          <td style="padding: 0.85rem 0.5rem; text-align: right; display: flex; gap: 0.35rem; justify-content: flex-end; align-items: center;">
+            ${btnDetail}
+            ${btnPay}
+            ${btnEdit}
+            ${btnDelete}
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+      lucide.createIcons();
+    }
+
+    window.toggleComercialModeFields = function() {
+      const mode = document.getElementById('comercial-mode').value;
+      const lbl = document.getElementById('lbl-comercial-value');
+      const valInput = document.getElementById('comercial-value');
+      if (mode === 'percentage') {
+        lbl.innerText = 'Porcentaje de Comisión (%):';
+        valInput.placeholder = 'ej. 10.00';
+      } else {
+        lbl.innerText = 'Importe Fijo Único (€):';
+        valInput.placeholder = 'ej. 50.00';
+      }
+    };
+
+    window.toggleComercialStripeField = function() {
+      const method = document.getElementById('comercial-payment-method').value;
+      const stripeGroup = document.getElementById('group-comercial-stripe');
+      if (method === 'stripe') {
+        stripeGroup.style.display = 'flex';
+      } else {
+        stripeGroup.style.display = 'none';
+      }
+    };
+
+    window.resetComercialForm = function() {
+      document.getElementById('comercial-id').value = '';
+      document.getElementById('comercial-name').value = '';
+      document.getElementById('comercial-email').value = '';
+      document.getElementById('comercial-phone').value = '';
+      document.getElementById('comercial-company').value = '';
+      document.getElementById('comercial-pin').value = '';
+      document.getElementById('comercial-mode').value = 'percentage';
+      document.getElementById('comercial-value').value = '10.00';
+      document.getElementById('comercial-payment-method').value = 'manual';
+      document.getElementById('comercial-stripe-id').value = '';
+      document.getElementById('comercial-status').value = 'active';
+
+      document.getElementById('group-comercial-url').style.display = 'none';
+      document.getElementById('comercial-access-url-input').value = '';
+
+      document.getElementById('comercial-form-title').innerHTML = `<i data-lucide="plus-circle"></i> Registrar Agente Comercial`;
+      document.getElementById('btn-cancel-edit-comercial').style.display = 'none';
+      document.getElementById('group-comercial-stripe').style.display = 'none';
+      lucide.createIcons();
+    };
+
+    window.saveComercial = async function(e) {
+      e.preventDefault();
+      
+      const id = document.getElementById('comercial-id').value;
+      const payload = {
+        name: document.getElementById('comercial-name').value.trim(),
+        email: document.getElementById('comercial-email').value.trim(),
+        phone: document.getElementById('comercial-phone').value.trim() || null,
+        company: document.getElementById('comercial-company').value.trim() || null,
+        pin: document.getElementById('comercial-pin').value.trim(),
+        commission_mode: document.getElementById('comercial-mode').value,
+        commission_value: Number(document.getElementById('comercial-value').value),
+        payment_method: document.getElementById('comercial-payment-method').value,
+        stripe_connect_account_id: document.getElementById('comercial-stripe-id').value.trim() || null,
+        status: document.getElementById('comercial-status').value
+      };
+
+      try {
+        let response;
+        if (id) {
+          response = await fetch(`/api/admin/comerciales/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          response = await fetch('/api/admin/comerciales', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Error de API');
+        }
+
+        showCustomAlert(id ? 'Comercial actualizado con éxito.' : 'Comercial registrado con éxito.', 'Comercial Guardado', 'success');
+        resetComercialForm();
+        fetchComerciales();
+      } catch (err) {
+        console.error(err);
+        showCustomAlert(err.message || 'Error', 'Error al Guardar', 'error');
+      }
+    };
+
+    window.copyComercialUrl = function() {
+      const url = document.getElementById('comercial-access-url-input').value;
+      if (url) {
+        copyToClipboard(url, 'Enlace de acceso copiado al portapapeles.');
+      }
+    };
+
+    window.editComercial = function(id) {
+      const c = allComerciales.find(item => item.id === id);
+      if (!c) return;
+
+      document.getElementById('comercial-id').value = c.id;
+      document.getElementById('comercial-name').value = c.name;
+      document.getElementById('comercial-email').value = c.email;
+      document.getElementById('comercial-phone').value = c.phone || '';
+      document.getElementById('comercial-company').value = c.company || '';
+      document.getElementById('comercial-pin').value = c.pin;
+      document.getElementById('comercial-mode').value = c.commission_mode;
+      document.getElementById('comercial-value').value = c.commission_value;
+      document.getElementById('comercial-payment-method').value = c.payment_method;
+      document.getElementById('comercial-stripe-id').value = c.stripe_connect_account_id || '';
+      document.getElementById('comercial-status').value = c.status;
+
+      document.getElementById('group-comercial-url').style.display = 'flex';
+      document.getElementById('comercial-access-url-input').value = `https://receptia.corandar.com/comercial.html?c=${c.access_url}`;
+
+      toggleComercialModeFields();
+      toggleComercialStripeField();
+
+      document.getElementById('comercial-form-title').innerHTML = `<i data-lucide="edit-3"></i> Editar Comercial: ${c.name}`;
+      document.getElementById('btn-cancel-edit-comercial').style.display = 'inline-block';
+      lucide.createIcons();
+    };
+
+    window.deleteComercial = async function(id) {
+      if (!confirm('¿Estás seguro de que deseas eliminar este comercial? Todos los leads asignados quedarán sin comercial.')) return;
+      
+      try {
+        const response = await fetch(`/api/admin/comerciales/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('API Error');
+        showCustomAlert('Comercial eliminado correctamente.', 'Éxito', 'success');
+        fetchComerciales();
+      } catch (err) {
+        console.error(err);
+        showCustomAlert('No se pudo eliminar el comercial.', 'Error', 'error');
+      }
+    };
+
+    window.runBillingCycle = async function() {
+      try {
+        const btn = document.querySelector('button[onclick="runBillingCycle()"]');
+        if (btn) btn.disabled = true;
+        
+        const response = await fetch('/api/admin/comerciales/run-billing-cycle', { method: 'POST' });
+        if (!response.ok) throw new Error('API Error');
+        const res = await response.json();
+        
+        showCustomAlert(res.message, 'Ciclo Finalizado', 'success');
+        fetchComerciales();
+      } catch (err) {
+        console.error(err);
+        showCustomAlert('Fallo al ejecutar el ciclo manual.', 'Error', 'error');
+      } finally {
+        const btn = document.querySelector('button[onclick="runBillingCycle()"]');
+        if (btn) btn.disabled = false;
+      }
+    };
+
+    // Tabs del Detalle del Comercial
+    window.switchComercialDetailTab = function(tabName) {
+      activeComercialDetailTab = tabName;
+      document.querySelectorAll('.com-tab-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('#comercial-details-modal .tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById(`com-tab-${tabName}`).style.display = 'block';
+      
+      const tabId = tabName === 'leads' ? 'btn-com-tab-leads' : (tabName === 'commissions' ? 'btn-com-tab-commissions' : 'btn-com-tab-payouts');
+      document.getElementById(tabId).classList.add('active');
+    };
+
+    window.openComercialDetailsModal = async function(id) {
+      selectedComercialDetailId = id;
+      const c = allComerciales.find(item => item.id === id);
+      if (!c) return;
+
+      document.getElementById('detail-comercial-title').innerText = `Expediente del Agente Comercial: ${c.name}`;
+      
+      // Resetear tab a leads
+      switchComercialDetailTab('leads');
+      
+      // Mostrar Modal
+      document.getElementById('comercial-details-modal').style.display = 'flex';
+
+      // Rellenar dinámicamente
+      try {
+        // 1. Cargar Leads
+        const leadsRes = await fetch(`/api/admin/comerciales/${id}/leads`);
+        const leadsData = await leadsRes.json();
+        const leads = leadsData.leads || [];
+
+        const comDetailLeadsTbody = document.getElementById('com-detail-leads-tbody');
+        comDetailLeadsTbody.innerHTML = '';
+        if (leads.length === 0) {
+          comDetailLeadsTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No tiene leads asignados.</td></tr>`;
+        } else {
+          const classLabels = {
+            no_contactado: 'No Contactado',
+            pendiente_contacto: 'Pendiente de contacto',
+            contactado: 'Contactado',
+            en_negociacion: 'En negociación',
+            contratado: 'Contratado ✓',
+            no_interesado: 'No Interesado',
+            descartado: 'Descartado'
+          };
+          leads.forEach(l => {
+            const row = document.createElement('tr');
+            const dateStr = new Date(l.created_at).toLocaleDateString('es-ES');
+            const sectorLabels = { peluqueria: 'Peluquería', dental: 'Dental', medica: 'Médica', forwarding: 'Desvío', forwarding_guide: 'Desvío', forwarding_rules: 'Desvío', forwarding_settings: 'Desvío', forwarding_setup: 'Desvío', audit: 'Auditoría', user: 'Usuario', admin: 'Administración' };
+            const sectorText = sectorLabels[l.sector] || l.sector || '-';
+            const badgeClass = l.classification || 'no_contactado';
+            const badgeText = classLabels[badgeClass] || badgeClass;
+
+            row.innerHTML = `
+              <td style="font-weight: 500; color: #fff;">${l.business_name}</td>
+              <td style="font-size: 0.8rem;">${l.phone || '-'}<br><span style="color:var(--text-muted);">${l.email || '-'}</span></td>
+              <td>${sectorText}</td>
+              <td><span class="badge-status badge-${badgeClass}">${badgeText}</span></td>
+              <td>${dateStr}</td>
+            `;
+            comDetailLeadsTbody.appendChild(row);
+          });
+        }
+
+        // 2. Cargar Comisiones
+        const comsRes = await fetch(`/api/admin/comerciales/${id}/commissions`);
+        const comsData = await comsRes.json();
+        const commissions = comsData.commissions || [];
+
+        const comDetailCommissionsTbody = document.getElementById('com-detail-commissions-tbody');
+        comDetailCommissionsTbody.innerHTML = '';
+        if (commissions.length === 0) {
+          comDetailCommissionsTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay comisiones registradas.</td></tr>`;
+        } else {
+          commissions.forEach(com => {
+            const row = document.createElement('tr');
+            const dateStr = new Date(com.created_at).toLocaleDateString('es-ES');
+            const leadName = com.prospects?.business_name || com.tenants?.business_name || 'Desconocido';
+            
+            let detail = '';
+            if (com.type === 'percentage') {
+              const plan = com.tenants?.subscription_plan || 'Plan SaaS';
+              detail = `Recurrente (${plan})`;
+            } else {
+              detail = 'Importe Fijo Único';
+            }
+
+            const statusText = com.status === 'paid' 
+              ? '<span class="badge-status badge-contratado">Liquidaded ✓</span>' 
+              : '<span class="badge-status badge-pendiente_contacto" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2);">Pendiente</span>';
+
+            row.innerHTML = `
+              <td>${dateStr}</td>
+              <td style="font-weight: 500; color: #fff;">${leadName}</td>
+              <td style="font-size: 0.8rem; color: var(--text-muted);">${detail}</td>
+              <td style="font-weight: 600;">${Number(com.amount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+              <td>${statusText}</td>
+            `;
+            comDetailCommissionsTbody.appendChild(row);
+          });
+        }
+
+        // 3. Cargar Pagos
+        const payoutsRes = await fetch('/api/admin/comerciales/payouts/all');
+        const payoutsData = await payoutsRes.json();
+        const myPayouts = (payoutsData.payouts || []).filter(p => p.comercial_id === id);
+
+        const comDetailPayoutsTbody = document.getElementById('com-detail-payouts-tbody');
+        comDetailPayoutsTbody.innerHTML = '';
+        if (myPayouts.length === 0) {
+          comDetailPayoutsTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No se han realizado pagos a este agente.</td></tr>`;
+        } else {
+          myPayouts.forEach(p => {
+            const row = document.createElement('tr');
+            const dateStr = new Date(p.created_at).toLocaleDateString('es-ES');
+            const methodText = p.payment_method === 'stripe' ? 'Stripe Connect' : 'Manual';
+            
+            row.innerHTML = `
+              <td>${dateStr}</td>
+              <td style="font-weight: 600; color: var(--success);">${Number(p.amount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+              <td>${methodText}</td>
+              <td style="font-size: 0.8rem; color: var(--text-muted);">${p.stripe_transfer_id || p.notes || '-'}</td>
+            `;
+            comDetailPayoutsTbody.appendChild(row);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading comercial details:', err);
+      }
+    };
+
+    window.closeComercialDetailsModal = function() {
+      document.getElementById('comercial-details-modal').style.display = 'none';
+      selectedComercialDetailId = null;
+    };
+
+    // Modal de Payouts
+    window.openComercialPayoutModal = function(id, name, balance) {
+      document.getElementById('payout-comercial-id').value = id;
+      document.getElementById('payout-comercial-name').value = name;
+      document.getElementById('payout-comercial-balance').value = `${Number(balance).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €`;
+      document.getElementById('payout-amount').value = balance;
+      document.getElementById('payout-notes').value = '';
+      document.getElementById('payout-method').value = 'manual';
+      document.getElementById('payout-stripe-warning').style.display = 'none';
+
+      document.getElementById('comercial-payout-modal').style.display = 'flex';
+      lucide.createIcons();
+    };
+
+    window.closeComercialPayoutModal = function() {
+      document.getElementById('comercial-payout-modal').style.display = 'none';
+    };
+
+    window.togglePayoutStripeCheck = function() {
+      const method = document.getElementById('payout-method').value;
+      const warning = document.getElementById('payout-stripe-warning');
+      if (method === 'stripe') {
+        warning.style.display = 'block';
+      } else {
+        warning.style.display = 'none';
+      }
+    };
+
+    window.submitPayout = async function(e) {
+      e.preventDefault();
+
+      const comercial_id = document.getElementById('payout-comercial-id').value;
+      const amount = Number(document.getElementById('payout-amount').value);
+      const payment_method = document.getElementById('payout-method').value;
+      const notes = document.getElementById('payout-notes').value.trim();
+
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/admin/comerciales/payout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            comercial_id,
+            amount,
+            payment_method,
+            notes
+          })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Error al procesar el pago');
+        }
+
+        showCustomAlert('Pago registrado y liquidación de comisiones completada.', 'Pago Exitoso', 'success');
+        closeComercialPayoutModal();
+        
+        // Recargar datos
+        fetchComerciales();
+      } catch (err: any) {
+        console.error(err);
+        showCustomAlert(err.message, 'Fallo en Liquidación', 'error');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    };
+
+    // Cargar historial de pagos de comerciales en la pestaña contabilidad
+    window.fetchComercialesPayoutsHistory = async function() {
+      const tbody = document.getElementById('accounting-comerciales-tbody');
+      if (!tbody) return;
+
+      try {
+        const response = await fetch('/api/admin/comerciales/payouts/all');
+        if (!response.ok) throw new Error('API Error');
+        const res = await response.json();
+        const payouts = res.payouts || [];
+
+        tbody.innerHTML = '';
+        if (payouts.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay pagos de comisiones registrados.</td></tr>`;
+          return;
+        }
+
+        payouts.forEach(p => {
+          const row = document.createElement('tr');
+          const dateStr = new Date(p.created_at).toLocaleDateString('es-ES');
+          const agentName = p.comerciales?.name || 'Desconocido';
+          const methodText = p.payment_method === 'stripe' ? 'Stripe Connect' : 'Manual';
+          const detailsText = p.stripe_transfer_id || p.notes || '-';
+          
+          const breakdown = `Rec: ${Number(p.commission_recurring_amount || 0).toFixed(2)}€ | Fij: ${Number(p.commission_fixed_amount || 0).toFixed(2)}€`;
+
+          row.innerHTML = `
+            <td>${dateStr}</td>
+            <td style="font-weight: 500; color: #fff;">${agentName}</td>
+            <td style="font-weight: 600; color: var(--error);">${Number(p.amount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+            <td style="font-size: 0.8rem; color: var(--text-muted);">${breakdown}</td>
+            <td>${methodText}</td>
+            <td style="font-size: 0.8rem; font-family: monospace;">${detailsText}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error('Error loading payouts history for accounting:', err);
+      }
+    };
+
     // Inicializar catálogo al arrancar
     const lastVoice = localStorage.getItem('receptia_last_voice_id');
     if (lastVoice) {
       document.getElementById('voice-id').value = lastVoice;
     }
     loadVoicesCatalog();
+    fetchComercialesListOnly();
   </script>
 
   <!-- Carga del SDK de Retell y lógica de WebRTC -->
@@ -9609,6 +10341,136 @@
       <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
         <button class="btn btn-secondary" onclick="closeVoiceCatalogManager()" style="cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 8px;">Cerrar</button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETALLES DEL COMERCIAL -->
+  <div class="modal" id="comercial-details-modal" style="display: none; z-index: 9999;">
+    <div class="modal-content" style="max-width: 800px; display: flex; flex-direction: column; gap: 1rem;">
+      <h3 style="color: #fff; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 0.5rem;">
+        <i data-lucide="award" style="color: var(--primary);"></i>
+        <span id="detail-comercial-title">Ficha del Comercial</span>
+      </h3>
+      
+      <div class="tabs-header" style="display: flex; border-bottom: 1px solid var(--border-color); gap: 1rem;">
+        <button class="tab-btn active" id="btn-com-tab-leads" onclick="switchComercialDetailTab('leads')" style="background: none; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;">Leads Asignados</button>
+        <button class="tab-btn" id="btn-com-tab-commissions" onclick="switchComercialDetailTab('commissions')" style="background: none; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;">Comisiones</button>
+        <button class="tab-btn" id="btn-com-tab-payouts" onclick="switchComercialDetailTab('payouts')" style="background: none; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;">Pagos Realizados</button>
+      </div>
+
+      <!-- Tab: Leads -->
+      <div class="com-tab-content" id="com-tab-leads" style="display: block;">
+        <div class="table-responsive" style="max-height: 350px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Negocio / Lead</th>
+                <th>Contacto</th>
+                <th>Sector</th>
+                <th>Fase Comercial</th>
+                <th>Fecha Asignación</th>
+              </tr>
+            </thead>
+            <tbody id="com-detail-leads-tbody">
+              <!-- Cargado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Comisiones -->
+      <div class="com-tab-content" id="com-tab-commissions" style="display: none;">
+        <div class="table-responsive" style="max-height: 350px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cliente / Lead</th>
+                <th>Detalle</th>
+                <th>Importe</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="com-detail-commissions-tbody">
+              <!-- Cargado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Pagos -->
+      <div class="com-tab-content" id="com-tab-payouts" style="display: none;">
+        <div class="table-responsive" style="max-height: 350px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Importe</th>
+                <th>Método</th>
+                <th>Referencia / Nota</th>
+              </tr>
+            </thead>
+            <tbody id="com-detail-payouts-tbody">
+              <!-- Cargado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+        <button class="btn btn-secondary" onclick="closeComercialDetailsModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PAGO (LIQUIDACIÓN DE COMISIONES) -->
+  <div class="modal" id="comercial-payout-modal" style="display: none; z-index: 9999;">
+    <div class="modal-content" style="max-width: 500px; display: flex; flex-direction: column; gap: 1rem;">
+      <h3 style="color: #fff; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+        <i data-lucide="wallet" style="color: var(--primary);"></i>
+        <span>Liquidar Comisiones</span>
+      </h3>
+      <form id="comercial-payout-form" onsubmit="submitPayout(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+        <input type="hidden" id="payout-comercial-id">
+        
+        <div class="form-group">
+          <label>Agente Comercial:</label>
+          <input type="text" id="payout-comercial-name" readonly style="opacity: 0.7;">
+        </div>
+
+        <div class="form-group">
+          <label>Saldo Pendiente Actual:</label>
+          <input type="text" id="payout-comercial-balance" readonly style="opacity: 0.7; font-weight: 600; color: #fbbf24;">
+        </div>
+
+        <div class="form-group">
+          <label for="payout-amount">Importe a Pagar (€):</label>
+          <input type="number" id="payout-amount" step="0.01" min="0.01" required>
+        </div>
+
+        <div class="form-group">
+          <label for="payout-method">Método de Liquidación:</label>
+          <select id="payout-method" onchange="togglePayoutStripeCheck()">
+            <option value="manual">Manual (Caja, Transferencia Bancaria Directa)</option>
+            <option value="stripe">Stripe Connect Transfer 💳</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="payout-notes">Notas / Concepto:</label>
+          <textarea id="payout-notes" rows="3" placeholder="ej. Liquidación de comisiones acumuladas al cierre de mes."></textarea>
+        </div>
+
+        <div id="payout-stripe-warning" style="display: none; font-size: 0.8rem; color: #fbbf24; background: rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); padding: 0.6rem; border-radius: 6px;">
+          <i data-lucide="alert-triangle" style="width: 14px; height: 14px; display:inline-block; vertical-align:middle; margin-right: 4px;"></i>
+          Se realizará una transferencia directa en euros a la cuenta de Stripe Connect configurada para el comercial. Asegúrate de tener saldo plataforma en Stripe.
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeComercialPayoutModal()">Cancelar</button>
+          <button type="submit" class="btn" style="flex: 1;">Realizar Pago</button>
+        </div>
+      </form>
     </div>
   </div>
 </body>

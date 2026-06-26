@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receptia - Panel de Comercial</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.0.0">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.0.0">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    :root {
+      --bg-color: #080c14;
+      --panel-bg: rgba(17, 24, 39, 0.6);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-color: #e5e7eb;
+      --text-muted: #9ca3af;
+      --primary: #8b5cf6;
+      --primary-hover: #a78bfa;
+      --accent: #3b82f6;
+      --success: #10b981;
+      --error: #ef4444;
+      --modal-bg: rgba(8, 12, 20, 0.95);
+      --card-bg: rgba(255, 255, 255, 0.02);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.08) 0px, transparent 50%);
+      color: var(--text-color);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: rgba(11, 15, 25, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-container img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .logo-container span {
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      color: #fff;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .badge-comercial {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--primary-hover);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Grid de Métricas */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .metric-card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .metric-header i {
+      width: 20px;
+      height: 20px;
+    }
+
+    .metric-val {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .metric-footer {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-color);
+      padding-top: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Contenedor de Tabs / Contenido principal */
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 1.8fr 1.2fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .layout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-title span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Tablas */
+    .table-responsive {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      padding: 1rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border-color);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.9rem;
+      color: var(--text-color);
+      vertical-align: middle;
+    }
+
+    tr:hover {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    /* Badges de clasificación */
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .badge-no_contactado {
+      background: rgba(156, 163, 175, 0.1);
+      color: #9ca3af;
+      border-color: rgba(156, 163, 175, 0.2);
+    }
+    
+    .badge-pendiente_contacto {
+      background: rgba(251, 191, 36, 0.1);
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.2);
+    }
+
+    .badge-contactado {
+      background: rgba(96, 165, 250, 0.1);
+      color: #60a5fa;
+      border-color: rgba(96, 165, 250, 0.2);
+    }
+
+    .badge-en_negociacion {
+      background: rgba(192, 132, 252, 0.1);
+      color: #c084fc;
+      border-color: rgba(192, 132, 252, 0.2);
+    }
+
+    .badge-contratado {
+      background: rgba(52, 211, 153, 0.1);
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.3);
+    }
+
+    .badge-no_interesado {
+      background: rgba(248, 113, 113, 0.1);
+      color: #f87171;
+      border-color: rgba(248, 113, 113, 0.2);
+    }
+
+    .badge-descartado {
+      background: rgba(248, 113, 113, 0.1);
+      color: #f87171;
+      border-color: rgba(248, 113, 113, 0.2);
+    }
+
+    /* Botones */
+    .btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: opacity 0.2s ease;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* Formularios y Inputs */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    input, select, textarea {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      width: 100%;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Timeline de actividades */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-left: 1.5rem;
+      border-left: 2px solid var(--border-color);
+      font-size: 0.85rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -5px;
+      top: 4px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+      font-size: 0.75rem;
+    }
+
+    .timeline-content {
+      color: var(--text-color);
+      line-height: 1.4;
+    }
+
+    /* Ventana de Login */
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100%;
+      padding: 1rem;
+    }
+
+    .login-card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
+    }
+
+    /* Layout Tab */
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--primary-hover);
+      border-bottom-color: var(--primary);
+    }
+
+    .tabs-header {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab-content-panel {
+      display: none;
+    }
+
+    .tab-content-panel.active {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PANTALLA DE LOGIN -->
+  <div class="login-container" id="login-screen">
+    <div class="login-card">
+      <div style="text-align: center; display: flex; flex-direction: column; gap: 0.5rem;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <img src="/receptia_logo.png" alt="Receptia Logo" style="width: 40px; height: 40px; border-radius: 8px;">
+          <h2 style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif;">Receptia B2B</h2>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.85rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.0</span></p>
+      </div>
+
+      <form id="login-form" onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
+        <div class="form-group" id="group-login-email">
+          <label for="login-email">Correo Electrónico</label>
+          <input type="email" id="login-email" placeholder="comercial@correo.com" required>
+        </div>
+        <div class="form-group">
+          <label for="login-pin">PIN de Acceso</label>
+          <input type="password" id="login-pin" placeholder="PIN de 4 o más dígitos" required max-length="10" style="letter-spacing: 0.1em; text-align: center;">
+        </div>
+        
+        <div id="login-error-alert" style="display: none; color: var(--error); font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.6rem; border-radius: 6px; text-align: center;">
+          Email o PIN incorrectos. Por favor intente de nuevo.
+        </div>
+
+        <button type="submit" class="btn" style="height: 42px; font-size: 0.95rem; justify-content: center; width: 100%; margin-top: 0.5rem;">
+          Entrar al Panel
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PANTALLA PRINCIPAL DEL PANEL -->
+  <div class="app-container" id="app-screen" style="display: none;">
+    <header>
+      <div class="logo-container">
+        <img src="/receptia_logo.png" alt="Receptia Logo">
+        <span>Receptia Comercial <small style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal; margin-left: 0.25rem;">v1.0.0</small></span>
+      </div>
+
+      <div class="user-info">
+        <div class="badge-comercial">
+          <i data-lucide="award" style="width: 14px; height: 14px;"></i>
+          <span id="header-comercial-name">Cargando...</span>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()">
+          <i data-lucide="log-out"></i>
+          <span>Salir</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- GRID DE MÉTRICAS -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Leads Asignados</span>
+            <i data-lucide="target" style="color: var(--accent);"></i>
+          </div>
+          <div class="metric-val" id="metric-total-leads">0</div>
+          <div class="metric-footer" id="metric-leads-breakdown">
+            0 Pendientes | 0 Contactados
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Conversiones (Contratados)</span>
+            <i data-lucide="check-circle" style="color: var(--success);"></i>
+          </div>
+          <div class="metric-val" id="metric-converted-leads" style="color: var(--success);">0</div>
+          <div class="metric-footer" id="metric-conversion-rate">
+            Tasa de conversión: 0%
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Ingresos Totales Generados</span>
+            <i data-lucide="dollar-sign" style="color: var(--primary-hover);"></i>
+          </div>
+          <div class="metric-val" id="metric-total-earned">0.00 €</div>
+          <div class="metric-footer" id="metric-payout-received">
+            Cobrado histórico: 0.00 €
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span id="lbl-metric-recurring-title">Saldo Pendiente de Cobro</span>
+            <i data-lucide="wallet" style="color: #f59e0b;"></i>
+          </div>
+          <div class="metric-val" id="metric-pending-balance" style="color: #f59e0b;">0.00 €</div>
+          <div class="metric-footer" id="metric-recurring-projection">
+            Modalidad: -
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN PRINCIPAL: TABS Y TABLAS -->
+      <div class="layout-grid">
+        <!-- Izquierda: Leads o Historial de Comisiones -->
+        <div class="card" style="min-height: 500px;">
+          <div class="tabs-header">
+            <button class="tab-btn active" onclick="switchMainTab('leads')">
+              <i data-lucide="users" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px;"></i>
+              Gestión de Leads
+            </button>
+            <button class="tab-btn" onclick="switchMainTab('commissions')">
+              <i data-lucide="bar-chart-2" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px;"></i>
+              Comisiones y Pagos
+            </button>
+          </div>
+
+          <!-- TAB LEADS -->
+          <div class="tab-content-panel active" id="panel-leads">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Empresa / Negocio</th>
+                    <th>Contacto</th>
+                    <th>Sector</th>
+                    <th>Clasificación</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="leads-tbody">
+                  <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                      Cargando tus leads asignados...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB COMISIONES -->
+          <div class="tab-content-panel" id="panel-commissions">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              <div>
+                <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+                  <i data-lucide="list"></i> Desglose de Comisiones Devengadas
+                </h3>
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Lead / Cliente</th>
+                        <th>Detalle</th>
+                        <th>Importe</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody id="commissions-tbody">
+                      <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                          No hay comisiones registradas.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+                  <i data-lucide="history"></i> Historial de Pagos Recibidos (Liquidaciones)
+                </h3>
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Importe</th>
+                        <th>Método</th>
+                        <th>Detalles / Nota</th>
+                      </tr>
+                    </thead>
+                    <tbody id="payouts-tbody">
+                      <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                          No hay pagos registrados.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Derecha: Ficha de detalle de Lead Seleccionado -->
+        <div class="card" id="detail-card" style="display: none;">
+          <h2 class="card-title">
+            <span>
+              <i data-lucide="file-text"></i>
+              Detalle del Lead
+            </span>
+            <button onclick="closeDetailCard()" style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
+              <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+            </button>
+          </h2>
+
+          <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+            <div>
+              <h3 id="detail-business-name" style="font-size: 1.3rem; color: #fff; font-family: 'Outfit', sans-serif;">Empresa</h3>
+              <p id="detail-sector" style="font-size: 0.8rem; color: var(--primary-hover); font-weight: 600; text-transform: uppercase; margin-top: 0.25rem;">Peluquería</p>
+            </div>
+
+            <!-- Datos de contacto -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Email:</span>
+                <span id="detail-email" style="font-weight: 500;">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Teléfono:</span>
+                <span id="detail-phone" style="font-weight: 500;">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Web:</span>
+                <a id="detail-web" href="#" target="_blank" style="color: var(--accent); text-decoration: none;">-</a>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Dirección:</span>
+                <span id="detail-address" style="font-weight: 500; text-align: right; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">-</span>
+              </div>
+            </div>
+
+            <!-- Selector de Clasificación Comercial -->
+            <div class="form-group">
+              <label for="detail-status-select">Clasificación / Fase Comercial:</label>
+              <select id="detail-status-select" onchange="updateLeadClassification()">
+                <option value="pendiente_contacto">Pendiente de contacto</option>
+                <option value="contactado">Contactado</option>
+                <option value="en_negociacion">En negociación</option>
+                <option value="contratado">Contratado ✓</option>
+                <option value="no_interesado">No interesado</option>
+                <option value="descartado">Descartado</option>
+              </select>
+            </div>
+
+            <!-- Formulario de Notas / Actividad -->
+            <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+              <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="plus-circle" style="color: var(--primary); width: 14px; height: 14px;"></i>
+                Añadir Comentario / Registro
+              </h4>
+              <form id="note-form" onsubmit="addLeadNote(event)" style="display: flex; flex-direction: column; gap: 0.6rem;">
+                <textarea id="note-text" placeholder="Ej: Llamé hoy al cliente. Quedó interesado en agendar demo la próxima semana." rows="3" required></textarea>
+                <button type="submit" class="btn" style="align-self: flex-end;">
+                  <i data-lucide="save"></i> Guardar Nota
+                </button>
+              </form>
+            </div>
+
+            <!-- Historial de Interacciones -->
+            <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+              <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="history" style="width: 14px; height: 14px;"></i>
+                Historial de Actividad
+              </h4>
+              <div id="detail-activities-container" class="timeline">
+                <!-- Se cargan dinámicamente -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card" id="no-detail-placeholder" style="display: flex; align-items: center; justify-content: center; text-align: center; color: var(--text-muted); border-style: dashed;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+            <i data-lucide="arrow-left-right" style="width: 48px; height: 48px; stroke-width: 1; color: var(--primary);"></i>
+            <div>
+              <h3 style="color: #fff; font-size: 1.1rem; margin-bottom: 0.25rem;">Ficha del Lead</h3>
+              <p style="font-size: 0.85rem; max-width: 250px;">Selecciona un lead de la lista de la izquierda para ver su información y actualizar su estado.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Configuración local
+    let currentComercialId = sessionStorage.getItem('comercial_id') || '';
+    let currentComercialPin = sessionStorage.getItem('comercial_pin') || '';
+    let currentComercialName = sessionStorage.getItem('comercial_name') || '';
+
+    let allLeads = [];
+    let selectedLeadId = null;
+    let activeTab = 'leads';
+
+    // Headers de autenticación
+    function getAuthHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'x-comercial-id': currentComercialId,
+        'x-comercial-pin': currentComercialPin
+      };
+    }
+
+    let currentAccessUrl = '';
+
+    // Inicializar
+    window.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      currentAccessUrl = urlParams.get('c') || '';
+
+      if (currentComercialId && currentComercialPin) {
+        showDashboard();
+      } else {
+        await initLoginScreen();
+      }
+      lucide.createIcons();
+    });
+
+    async function initLoginScreen() {
+      showLogin();
+      const emailGroup = document.getElementById('group-login-email');
+      const loginWelcome = document.getElementById('login-welcome-text');
+
+      if (currentAccessUrl) {
+        try {
+          const response = await fetch(`/api/comercial/auth/agent-by-url/${currentAccessUrl}`);
+          if (!response.ok) {
+            throw new Error('URL de acceso no válida.');
+          }
+          const res = await response.json();
+          emailGroup.style.display = 'none';
+          loginWelcome.innerHTML = `Bienvenido, <strong>${res.agent.name}</strong><br><span style="font-size: 0.75rem; opacity: 0.7;">Email: ${res.agent.email}</span>`;
+          document.getElementById('login-pin').focus();
+        } catch (err) {
+          console.error('Error cargando agente por URL:', err);
+          emailGroup.style.display = 'flex';
+          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.0</span>`;
+        }
+      } else {
+        emailGroup.style.display = 'flex';
+        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-size: 0.7rem; opacity: 0.7;">v1.0.0</span>`;
+      }
+    }
+
+    function showLogin() {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app-screen').style.display = 'none';
+    }
+
+    function showDashboard() {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'flex';
+      document.getElementById('header-comercial-name').innerText = currentComercialName;
+      
+      // Cargar datos
+      loadDashboardData();
+    }
+
+    // Login Handler
+    async function handleLogin(e) {
+      e.preventDefault();
+      const pin = document.getElementById('login-pin').value;
+      const errorAlert = document.getElementById('login-error-alert');
+      errorAlert.style.display = 'none';
+
+      const payload = { pin };
+      if (currentAccessUrl) {
+        payload.access_url = currentAccessUrl;
+      } else {
+        payload.email = document.getElementById('login-email').value;
+      }
+
+      try {
+        const response = await fetch('/api/comercial/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Credenciales inválidas');
+        }
+
+        const data = await response.json();
+        
+        // Guardar sesión
+        sessionStorage.setItem('comercial_id', data.comercial_id);
+        sessionStorage.setItem('comercial_pin', pin);
+        sessionStorage.setItem('comercial_name', data.name);
+        
+        currentComercialId = data.comercial_id;
+        currentComercialPin = pin;
+        currentComercialName = data.name;
+
+        showDashboard();
+      } catch (err) {
+        console.error(err);
+        errorAlert.innerText = err.message;
+        errorAlert.style.display = 'block';
+      }
+    }
+
+    // Logout Handler
+    function handleLogout() {
+      sessionStorage.removeItem('comercial_id');
+      sessionStorage.removeItem('comercial_pin');
+      sessionStorage.removeItem('comercial_name');
+      currentComercialId = '';
+      currentComercialPin = '';
+      currentComercialName = '';
+      showLogin();
+    }
+
+    // Cambiar pestañas principales
+    function switchMainTab(tabName) {
+      activeTab = tabName;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
+
+      // Activar correspondiente
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.innerText.toLowerCase().includes(tabName === 'leads' ? 'leads' : 'comisiones'));
+      if (activeBtn) activeBtn.classList.add('active');
+      
+      document.getElementById(`panel-${tabName}`).classList.add('active');
+    }
+
+    // Cargar toda la información
+    async function loadDashboardData() {
+      try {
+        // Cargar Leads
+        const leadsRes = await fetch('/api/comercial/leads', { headers: getAuthHeaders() });
+        const leadsData = await leadsRes.json();
+        allLeads = leadsData.leads || [];
+
+        // Cargar Comisiones y Pagos
+        const comRes = await fetch('/api/comercial/commissions', { headers: getAuthHeaders() });
+        const comData = await comRes.json();
+
+        // Renderizar todo
+        renderMetrics(comData.metrics);
+        renderLeadsTable();
+        renderCommissionsAndPayouts(comData.commissions, comData.payouts);
+
+      } catch (err) {
+        console.error('Error al cargar datos del comercial:', err);
+      }
+    }
+
+    // Renderizar métricas del dashboard
+    function renderMetrics(metrics) {
+      if (!metrics) return;
+
+      const totalLeads = allLeads.length;
+      const pendingLeads = allLeads.filter(l => l.classification === 'pendiente_contacto' || !l.classification || l.classification === 'no_contactado').length;
+      const contactedLeads = allLeads.filter(l => l.classification === 'contactado' || l.classification === 'en_negociacion').length;
+      const convertedLeads = allLeads.filter(l => l.classification === 'contratado').length;
+
+      const rate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
+
+      document.getElementById('metric-total-leads').innerText = totalLeads;
+      document.getElementById('metric-leads-breakdown').innerText = `${pendingLeads} Pendientes | ${contactedLeads} En gestión`;
+      
+      document.getElementById('metric-converted-leads').innerText = convertedLeads;
+      document.getElementById('metric-conversion-rate').innerText = `Tasa de conversión: ${rate}%`;
+
+      document.getElementById('metric-total-earned').innerText = `${Number(metrics.totalEarned).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+      document.getElementById('metric-payout-received').innerText = `Cobrado histórico: ${Number(metrics.totalPaid).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+
+      document.getElementById('metric-pending-balance').innerText = `${Number(metrics.totalPending).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+
+      // Proyección mensual
+      const projFooter = document.getElementById('metric-recurring-projection');
+      if (metrics.estimatedMonthlyRecurring > 0) {
+        projFooter.innerText = `MRR Proyectado: +${Number(metrics.estimatedMonthlyRecurring).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €/mes`;
+      } else {
+        projFooter.innerText = `Saldo pendiente de liquidación`;
+      }
+    }
+
+    // Renderizar tabla de Leads
+    function renderLeadsTable() {
+      const tbody = document.getElementById('leads-tbody');
+      tbody.innerHTML = '';
+
+      if (allLeads.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem;">No tienes leads asignados actualmente.</td></tr>`;
+        return;
+      }
+
+      const sectorLabels = {
+        peluqueria: 'Peluquería / Estética',
+        dental: 'Clínica Dental',
+        medica: 'Clínica Médica',
+        fisioterapia: 'Fisioterapia',
+        abogados: 'Bufete de Abogados',
+        psicologia: 'Centro de Psicología',
+        taller: 'Taller Mecánico',
+        veterinaria: 'Clínica Veterinaria',
+        spa: 'Spa y Bienestar',
+        gimnasio: 'Gimnasio / Entrenador',
+        academia: 'Academia de Estudios',
+        inmobiliaria: 'Inmobiliaria'
+      };
+
+      const classLabels = {
+        no_contactado: 'No Contactado',
+        pendiente_contacto: 'Pendiente de contacto',
+        contactado: 'Contactado',
+        en_negociacion: 'En negociación',
+        contratado: 'Contratado ✓',
+        no_interesado: 'No Interesado',
+        descartado: 'Descartado'
+      };
+
+      allLeads.forEach(lead => {
+        const row = document.createElement('tr');
+        row.style.cursor = 'pointer';
+        row.onclick = () => selectLead(lead.id);
+
+        const currentClass = lead.classification || 'no_contactado';
+        const sectorText = sectorLabels[lead.sector] || lead.sector || '-';
+        const classText = classLabels[currentClass] || currentClass;
+
+        row.innerHTML = `
+          <td style="font-weight: 600; color: #fff;">${lead.business_name}</td>
+          <td>
+            <div style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 0.15rem;">
+              <span>${lead.phone || '-'}</span>
+              <span style="color: var(--text-muted); font-size: 0.75rem;">${lead.email || '-'}</span>
+            </div>
+          </td>
+          <td>${sectorText}</td>
+          <td>
+            <span class="badge-status badge-${currentClass}">
+              ${classText}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+              <i data-lucide="eye" style="width: 12px; height: 12px; display:inline-block; vertical-align: middle;"></i> Ver
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+      lucide.createIcons();
+    }
+
+    // Renderizar tablas de Comisiones y Payouts
+    function renderCommissionsAndPayouts(commissions, payouts) {
+      const comTbody = document.getElementById('commissions-tbody');
+      comTbody.innerHTML = '';
+
+      if (!commissions || commissions.length === 0) {
+        comTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No hay comisiones devengadas todavía.</td></tr>`;
+      } else {
+        commissions.forEach(com => {
+          const row = document.createElement('tr');
+          const dateStr = new Date(com.created_at).toLocaleDateString('es-ES');
+          const leadName = com.prospects?.business_name || com.tenants?.business_name || 'Desconocido';
+          
+          let detail = '';
+          if (com.type === 'percentage') {
+            const plan = com.tenants?.subscription_plan || 'Plan SaaS';
+            detail = `Recurrente (${plan})`;
+          } else {
+            detail = 'Importe Fijo Único';
+          }
+
+          const statusBadge = com.status === 'paid' 
+            ? '<span class="badge-status badge-contratado">Pagado ✓</span>' 
+            : '<span class="badge-status badge-pendiente_contacto" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2);">Pendiente</span>';
+
+          row.innerHTML = `
+            <td>${dateStr}</td>
+            <td style="font-weight: 500; color: #fff;">${leadName}</td>
+            <td style="font-size: 0.8rem; color: var(--text-muted);">${detail}</td>
+            <td style="font-weight: 600;">${Number(com.amount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+            <td>${statusBadge}</td>
+          `;
+          comTbody.appendChild(row);
+        });
+      }
+
+      const payTbody = document.getElementById('payouts-tbody');
+      payTbody.innerHTML = '';
+
+      if (!payouts || payouts.length === 0) {
+        payTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">No se han emitido pagos a tu cuenta.</td></tr>`;
+      } else {
+        payouts.forEach(pay => {
+          const row = document.createElement('tr');
+          const dateStr = new Date(pay.created_at).toLocaleDateString('es-ES');
+          const methodText = pay.payment_method === 'stripe' ? 'Transferencia Stripe Connect 💳' : 'Pago Manual (Transferencia/Efectivo) 💸';
+          const notesText = pay.notes || 'Liquidación del saldo pendiente';
+
+          row.innerHTML = `
+            <td>${dateStr}</td>
+            <td style="font-weight: 600; color: var(--success);">${Number(pay.amount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+            <td style="font-size: 0.8rem;">${methodText}</td>
+            <td style="font-size: 0.8rem; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${notesText}">${notesText}</td>
+          `;
+          payTbody.appendChild(row);
+        });
+      }
+      lucide.createIcons();
+    }
+
+    // Seleccionar Lead para ver detalle
+    async function selectLead(leadId) {
+      selectedLeadId = leadId;
+      const lead = allLeads.find(l => l.id === leadId);
+      if (!lead) return;
+
+      document.getElementById('no-detail-placeholder').style.display = 'none';
+      const detailCard = document.getElementById('detail-card');
+      detailCard.style.display = 'flex';
+
+      // Cargar datos en ficha
+      document.getElementById('detail-business-name').innerText = lead.business_name;
+      
+      const sectorLabels = {
+        peluqueria: 'Peluquería / Estética',
+        dental: 'Clínica Dental',
+        medica: 'Clínica Médica',
+        fisioterapia: 'Fisioterapia',
+        abogados: 'Bufete de Abogados',
+        psicologia: 'Centro de Psicología',
+        taller: 'Taller Mecánico',
+        veterinaria: 'Clínica Veterinaria',
+        spa: 'Spa y Bienestar',
+        gimnasio: 'Gimnasio / Entrenador',
+        academia: 'Academia de Estudios',
+        inmobiliaria: 'Inmobiliaria'
+      };
+      
+      document.getElementById('detail-sector').innerText = sectorLabels[lead.sector] || lead.sector || '-';
+      document.getElementById('detail-email').innerText = lead.email && lead.email !== 'No disponible' ? lead.email : '-';
+      document.getElementById('detail-phone').innerText = lead.phone || '-';
+      
+      const webEl = document.getElementById('detail-web');
+      if (lead.website && lead.website !== 'No disponible') {
+        webEl.innerText = lead.website;
+        webEl.href = lead.website.startsWith('http') ? lead.website : 'https://' + lead.website;
+        webEl.style.display = 'inline';
+      } else {
+        webEl.style.display = 'none';
+      }
+
+      document.getElementById('detail-address').innerText = lead.address || '-';
+      document.getElementById('detail-address').title = lead.address || '';
+      
+      // Cargar clasificación
+      document.getElementById('detail-status-select').value = lead.classification || 'pendiente_contacto';
+
+      // Limpiar formulario de notas
+      document.getElementById('note-text').value = '';
+
+      // Cargar timeline de actividades
+      loadLeadActivities();
+    }
+
+    function closeDetailCard() {
+      document.getElementById('detail-card').style.display = 'none';
+      document.getElementById('no-detail-placeholder').style.display = 'flex';
+      selectedLeadId = null;
+    }
+
+    // Cargar actividades del lead seleccionado
+    async function loadLeadActivities() {
+      if (!selectedLeadId) return;
+
+      try {
+        const res = await fetch(`/api/comercial/leads/${selectedLeadId}/activities`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        const activities = data.activities || [];
+
+        const container = document.getElementById('detail-activities-container');
+        container.innerHTML = '';
+
+        if (activities.length === 0) {
+          container.innerHTML = `<p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">Sin actividades registradas.</p>`;
+          return;
+        }
+
+        const classLabels = {
+          no_contactado: 'No Contactado',
+          pendiente_contacto: 'Pendiente de contacto',
+          contactado: 'Contactado',
+          en_negociacion: 'En negociación',
+          contratado: 'Contratado ✓',
+          no_interesado: 'No Interesado',
+          descartado: 'Descartado'
+        };
+
+        activities.forEach(act => {
+          const item = document.createElement('div');
+          item.className = 'timeline-item';
+
+          const dateStr = new Date(act.created_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+          let headerText = '';
+          
+          if (act.action === 'status_change') {
+            headerText = `Cambio de Fase: ${classLabels[act.from_status] || act.from_status} ➜ ${classLabels[act.to_status] || act.to_status}`;
+          } else {
+            headerText = 'Comentario / Acción';
+          }
+
+          item.innerHTML = `
+            <div class="timeline-header">
+              <span style="font-weight: 600; color: var(--primary-hover);">${headerText}</span>
+              <span>${dateStr}</span>
+            </div>
+            <div class="timeline-content">${act.notes}</div>
+          `;
+          container.appendChild(item);
+        });
+
+      } catch (err) {
+        console.error('Error al cargar actividades del lead:', err);
+      }
+    }
+
+    // Cambiar clasificación comercial del lead
+    async function updateLeadClassification() {
+      if (!selectedLeadId) return;
+
+      const classification = document.getElementById('detail-status-select').value;
+      
+      try {
+        const response = await fetch(`/api/comercial/leads/${selectedLeadId}`, {
+          method: 'PATCH',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ 
+            classification,
+            notes: `Cambio de fase comercial a: ${classification}`
+          })
+        });
+
+        if (!response.ok) throw new Error('Error al actualizar el estado.');
+
+        // Recargar datos locales
+        await loadDashboardData();
+        
+        // Actualizar ficha
+        loadLeadActivities();
+
+      } catch (err) {
+        console.error(err);
+        alert('No se pudo actualizar el estado del lead.');
+      }
+    }
+
+    // Añadir nota al lead
+    async function addLeadNote(e) {
+      e.preventDefault();
+      if (!selectedLeadId) return;
+
+      const notes = document.getElementById('note-text').value;
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch(`/api/comercial/leads/${selectedLeadId}`, {
+          method: 'PATCH',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ notes })
+        });
+
+        if (!response.ok) throw new Error('Error al guardar la nota.');
+
+        document.getElementById('note-text').value = '';
+        
+        // Recargar ficha
+        loadLeadActivities();
+        loadDashboardData();
+
+      } catch (err) {
+        console.error(err);
+        alert('No se pudo guardar la nota.');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
