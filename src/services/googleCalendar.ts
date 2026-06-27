@@ -456,8 +456,15 @@ export async function bookAppointment(
     },
   };
 
-  if (email && email.trim() !== '' && email.includes('@')) {
-    event.attendees = [{ email: email }];
+  const cleanEmail = email ? email.trim().toLowerCase() : '';
+  const isPlaceholderEmail = cleanEmail.includes('ejemplo.com') || 
+                             cleanEmail.includes('no_proporcionado') || 
+                             cleanEmail.includes('no-proporcionado') ||
+                             cleanEmail.includes('no_disponible') ||
+                             cleanEmail.includes('no-disponible');
+
+  if (cleanEmail !== '' && cleanEmail.includes('@') && !isPlaceholderEmail) {
+    event.attendees = [{ email: cleanEmail }];
   }
 
   const response = await calendar.events.insert({
@@ -537,8 +544,15 @@ export async function updateAppointment(
     },
   };
 
-  if (email && email.trim() !== '' && email.includes('@')) {
-    event.attendees = [{ email: email }];
+  const cleanEmail = email ? email.trim().toLowerCase() : '';
+  const isPlaceholderEmail = cleanEmail.includes('ejemplo.com') || 
+                             cleanEmail.includes('no_proporcionado') || 
+                             cleanEmail.includes('no-proporcionado') ||
+                             cleanEmail.includes('no_disponible') ||
+                             cleanEmail.includes('no-disponible');
+
+  if (cleanEmail !== '' && cleanEmail.includes('@') && !isPlaceholderEmail) {
+    event.attendees = [{ email: cleanEmail }];
   }
 
   const response = await calendar.events.patch({
