@@ -2451,6 +2451,24 @@ app.delete('/api/tenants/:tenant_id/call-logs', async (req, res): Promise<void> 
   }
 });
 
+// 5D. Desconectar Google Calendar de un inquilino
+app.post('/api/tenants/:tenant_id/disconnect-calendar', async (req, res): Promise<void> => {
+  const { tenant_id } = req.params;
+  try {
+    const { error } = await supabase
+      .from('tenants')
+      .update({ google_refresh_token: null })
+      .eq('id', tenant_id);
+
+    if (error) throw error;
+
+    res.json({ status: 'success', message: 'Google Calendar desconectado exitosamente.' });
+  } catch (err: any) {
+    console.error('Error al desconectar Google Calendar:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --- DYNAMIC VOICES CATALOG ENDPOINTS ---
 const DEFAULT_PREMIUM_VOICES = [
   {

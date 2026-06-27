@@ -2247,7 +2247,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.4</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.5</span>
         </div>
       </header>
 
@@ -2756,9 +2756,14 @@
                     <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
                     <span style="font-size: 0.9rem; font-weight: 500;">Google Calendar: Desconectado</span>
                   </div>
-                  <button class="btn btn-outline" id="btn-auth-link" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px;">
-                    Conectar
-                  </button>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button class="btn btn-outline" id="btn-auth-link" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px;">
+                      Conectar
+                    </button>
+                    <button class="btn btn-secondary" id="btn-disconnect-calendar" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;">
+                      Desconectar
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -6407,21 +6412,65 @@
       // Estado Google Calendar
       const calendarStatusBox = document.getElementById('calendar-status');
       const btnAuthLink = document.getElementById('btn-auth-link');
+      const btnDisconnectCalendar = document.getElementById('btn-disconnect-calendar');
       calendarStatusBox.style.display = 'flex';
       
       if (currentTenant.google_refresh_token) {
         calendarStatusBox.className = 'status-box connected';
         calendarStatusBox.querySelector('span').innerText = 'Google Calendar: Conectado 🟢';
         btnAuthLink.innerText = 'Reautorizar';
+        if (btnDisconnectCalendar) {
+          btnDisconnectCalendar.style.display = 'inline-flex';
+          btnDisconnectCalendar.style.alignItems = 'center';
+        }
       } else {
         calendarStatusBox.className = 'status-box disconnected';
         calendarStatusBox.querySelector('span').innerText = 'Google Calendar: Desconectado 🔴';
         btnAuthLink.innerText = 'Conectar';
+        if (btnDisconnectCalendar) {
+          btnDisconnectCalendar.style.display = 'none';
+        }
       }
 
       btnAuthLink.onclick = () => {
         window.location.href = `/auth?tenant_id=${currentTenant.id}`;
       };
+
+      if (btnDisconnectCalendar) {
+        btnDisconnectCalendar.onclick = async () => {
+          if (confirm('¿Estás seguro de que deseas desconectar tu cuenta de Google Calendar? El asistente de voz dejará de sincronizar las citas en tu agenda hasta que vuelvas a conectarla.')) {
+            try {
+              btnDisconnectCalendar.disabled = true;
+              btnDisconnectCalendar.innerText = 'Desconectando...';
+              
+              const res = await fetch(`/api/tenants/${currentTenant.id}/disconnect-calendar`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              });
+              
+              if (!res.ok) {
+                throw new Error('Error al desconectar el calendario');
+              }
+              
+              showToast('Google Calendar desconectado exitosamente.', 'success');
+              
+              // Recargar datos actualizados
+              await loadTenantData(currentTenant.id);
+              initializeClientDashboard();
+            } catch (error) {
+              console.error(error);
+              showToast('Hubo un error al intentar desconectar la cuenta.', 'error');
+            } finally {
+              if (btnDisconnectCalendar) {
+                btnDisconnectCalendar.disabled = false;
+                btnDisconnectCalendar.innerText = 'Desconectar';
+              }
+            }
+          }
+        };
+      }
 
       // Cargar citas e historial de llamadas
       fetchAppointments(currentTenant.id);
