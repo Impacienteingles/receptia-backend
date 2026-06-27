@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import fs from 'fs';
+const pdf = require('pdf-parse');
 import webhookRouter from './routes/webhook';
 import prospectingRouter from './routes/prospecting';
 import pmsRouter from './routes/pms';
@@ -35,6 +37,7 @@ import path from 'path';
 // Middlewares
 app.use(cors());
 app.use(express.json({
+  limit: '15mb',
   verify: (req: any, res, buf) => {
     req.rawBody = buf;
   }
@@ -2466,6 +2469,44 @@ app.post('/api/tenants/:tenant_id/disconnect-calendar', async (req, res): Promis
   } catch (err: any) {
     console.error('Error al desconectar Google Calendar:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// 5E. Subir y procesar PDF de Base de Conocimientos
+app.post('/api/upload-pdf', async (req, res): Promise<void> => {
+  const { filename, base64 } = req.body;
+  if (!base64) {
+    res.status(400).json({ error: 'No se ha proporcionado el archivo base64.' });
+    return;
+  }
+
+  try {
+    const base64Data = base64.replace(/^data:application\/pdf;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    // Extraer texto del PDF
+    const parsedData = await pdf(buffer);
+    
+    // Carpeta destino para guardar el PDF
+    const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const uniqueFilename = `${Date.now()}_${filename.replace(/\s+/g, '_')}`;
+    const filePath = path.join(uploadsDir, uniqueFilename);
+    fs.writeFileSync(filePath, buffer);
+
+    const publicUrl = `/uploads/${uniqueFilename}`;
+
+    res.json({
+      status: 'success',
+      text: parsedData.text,
+      url: publicUrl
+    });
+  } catch (err: any) {
+    console.error('Error al procesar el PDF:', err);
+    res.status(500).json({ error: 'No se pudo procesar el archivo PDF. Asegúrate de que no esté protegido o dañado.' });
   }
 });
 

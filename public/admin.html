@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.14">
-  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.14">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.15">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.15">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1555,7 +1555,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.14</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.15</span>
       </div>
     </aside>
 
@@ -1578,7 +1578,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.14</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.15</span>
         </div>
       </header>
 
@@ -1982,13 +1982,31 @@
 
               <!-- 4. Knowledge Base (Base de Conocimientos) -->
               <div class="form-group full-width">
-                <label for="knowledge-base-url">URL Web del Negocio (Base de Conocimientos):</label>
-                <input type="text" id="knowledge-base-url" placeholder="ej. https://clinicacarlosromero.com" oninput="saveDraftToLocalStorage()">
+                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                  Subir Documento de Base de Conocimiento (PDF):
+                </label>
+                <div style="display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); padding: 1rem; border-radius: 8px;">
+                  <input type="file" id="kb-pdf-file" accept="application/pdf" style="display: none;" onchange="handleKBPdfUpload(this)">
+                  <button type="button" class="btn btn-secondary" onclick="document.getElementById('kb-pdf-file').click()" style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+                    <i data-lucide="upload-cloud"></i> Seleccionar PDF
+                  </button>
+                  <span id="kb-pdf-name" style="color: var(--text-muted); font-size: 0.85rem;">Ningún archivo seleccionado</span>
+                  <button type="button" class="btn btn-secondary" id="btn-remove-pdf" onclick="removeKBPdf()" style="display: none; padding: 0.35rem 0.6rem; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
+                    <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                  </button>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">Sube un archivo PDF (hasta 5MB) con información adicional. El sistema extraerá el texto y lo inyectará directamente en la base de conocimientos abajo.</p>
               </div>
 
               <div class="form-group full-width">
-                <label for="knowledge-base-content">Información de Entrenamiento Adicional (Preguntas frecuentes, horarios especiales, detalles de tratamientos):</label>
-                <textarea id="knowledge-base-content" rows="4" placeholder="ej. ¿Ofrecen parking gratuito? Sí, en el parking de la plaza de Gracia. ¿Hacen implantes? Sí, el Dr. Romero realiza implantes los martes por la mañana..." oninput="saveDraftToLocalStorage()"></textarea>
+                <label for="knowledge-base-url">URL Web o Ruta de la Base de Conocimientos:</label>
+                <input type="text" id="knowledge-base-url" placeholder="ej. https://clinicacarlosromero.com o autogenerado por PDF" oninput="saveDraftToLocalStorage()">
+              </div>
+
+              <div class="form-group full-width">
+                <label for="knowledge-base-content">Información de Entrenamiento Adicional (Preguntas frecuentes, texto extraído del PDF, detalles):</label>
+                <textarea id="knowledge-base-content" rows="4" placeholder="ej. ¿Ofrecen parking gratuito? Sí, en el parking de la plaza de Gracia..." oninput="saveDraftToLocalStorage()"></textarea>
               </div>
 
               <!-- Aceptación de Términos y Privacidad (RGPD) -->
@@ -4606,6 +4624,12 @@
         document.getElementById('enable-multi-professional').checked = false;
         document.getElementById('knowledge-base-url').value = '';
         document.getElementById('knowledge-base-content').value = '';
+        const kbPdfName = document.getElementById('kb-pdf-name');
+        const btnRemovePdf = document.getElementById('btn-remove-pdf');
+        if (kbPdfName) kbPdfName.innerText = 'Ningún archivo seleccionado';
+        if (btnRemovePdf) btnRemovePdf.style.display = 'none';
+        const fileInput = document.getElementById('kb-pdf-file');
+        if (fileInput) fileInput.value = '';
         document.getElementById('professionals-list-builder').innerHTML = '';
         toggleMultiProfessionalInput();
         
@@ -4717,7 +4741,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.7.14 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.7.15 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -7154,8 +7178,24 @@
       document.getElementById('whatsapp-reminders-enabled').checked = !!tenant.whatsapp_reminders_enabled;
       document.getElementById('email-notifications-enabled').checked = tenant.email_notifications_enabled !== false;
       document.getElementById('enable-multi-professional').checked = !!tenant.enable_multi_professional;
-      document.getElementById('knowledge-base-url').value = tenant.knowledge_base_url || '';
+      const kbUrlVal = tenant.knowledge_base_url || '';
+      document.getElementById('knowledge-base-url').value = kbUrlVal;
       document.getElementById('knowledge-base-content').value = tenant.knowledge_base_content || '';
+      
+      const kbPdfName = document.getElementById('kb-pdf-name');
+      const btnRemovePdf = document.getElementById('btn-remove-pdf');
+      if (kbUrlVal && kbUrlVal.toLowerCase().endsWith('.pdf')) {
+        if (kbPdfName) {
+          const parts = kbUrlVal.split('/');
+          const filename = parts[parts.length - 1];
+          const cleanName = filename.replace(/^\d+_\d+_/, '').replace(/^\d+_/, '');
+          kbPdfName.innerHTML = `<a href="${kbUrlVal}" target="_blank" style="color: var(--primary-light); text-decoration: underline;">${cleanName}</a>`;
+        }
+        if (btnRemovePdf) btnRemovePdf.style.display = 'inline-flex';
+      } else {
+        if (kbPdfName) kbPdfName.innerText = 'Ningún archivo seleccionado';
+        if (btnRemovePdf) btnRemovePdf.style.display = 'none';
+      }
       toggleMultiProfessionalInput();
 
       // Rellenar profesionales
@@ -7178,6 +7218,85 @@
       // Mostrar el modal
       document.getElementById('edit-client-modal').style.display = 'flex';
       lucide.createIcons();
+    }
+
+    // Función para manejar la subida del PDF de Base de Conocimiento
+    async function handleKBPdfUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      if (file.type !== 'application/pdf') {
+        showCustomAlert('Por favor, selecciona un archivo en formato PDF.', 'Formato incorrecto', 'error');
+        input.value = '';
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        showCustomAlert('El archivo PDF supera el límite de 5MB.', 'Archivo demasiado grande', 'error');
+        input.value = '';
+        return;
+      }
+
+      const kbPdfName = document.getElementById('kb-pdf-name');
+      const btnRemovePdf = document.getElementById('btn-remove-pdf');
+
+      try {
+        kbPdfName.innerText = 'Subiendo y procesando...';
+        if (btnRemovePdf) btnRemovePdf.style.display = 'none';
+
+        // Leer el archivo como Base64
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+          const base64String = reader.result;
+          
+          try {
+            const res = await fetch('/api/upload-pdf', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                filename: file.name,
+                base64: base64String
+              })
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data.error || 'Error al procesar el archivo.');
+            }
+
+            document.getElementById('knowledge-base-url').value = data.url;
+            document.getElementById('knowledge-base-content').value = data.text;
+
+            kbPdfName.innerHTML = `<a href="${data.url}" target="_blank" style="color: var(--primary-light); text-decoration: underline;">${file.name}</a>`;
+            if (btnRemovePdf) btnRemovePdf.style.display = 'inline-flex';
+            
+            showToast('PDF procesado y texto extraído con éxito.', 'success');
+          } catch (uploadErr) {
+            console.error(uploadErr);
+            showCustomAlert(uploadErr.message || 'No se pudo subir o procesar el archivo PDF.', 'Error de procesamiento', 'error');
+            kbPdfName.innerText = 'Error al subir archivo';
+            input.value = '';
+          }
+        };
+      } catch (err) {
+        console.error(err);
+        kbPdfName.innerText = 'Error al leer archivo';
+        input.value = '';
+      }
+    }
+
+    // Función para remover el PDF cargado
+    function removeKBPdf() {
+      document.getElementById('knowledge-base-url').value = '';
+      document.getElementById('knowledge-base-content').value = '';
+      document.getElementById('kb-pdf-file').value = '';
+      document.getElementById('kb-pdf-name').innerText = 'Ningún archivo seleccionado';
+      const btnRemovePdf = document.getElementById('btn-remove-pdf');
+      if (btnRemovePdf) btnRemovePdf.style.display = 'none';
+      showToast('Base de conocimientos PDF eliminada.', 'info');
     }
 
     // Cerrar el modal de edición de clientes y devolver el formulario a su sitio
