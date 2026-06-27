@@ -81,12 +81,21 @@ No intentes dar citas ni responder preguntas sobre precios o servicios. Limítat
 `;
   }
 
-  const today = new Intl.DateTimeFormat('en-CA', {
+  const todayISO = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Europe/Madrid',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
   }).format(new Date());
+
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'Europe/Madrid',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
+  const todayFormatted = new Intl.DateTimeFormat('es-ES', options).format(new Date());
 
   const specialtiesList = tenant.specialties && tenant.specialties.length > 0
     ? tenant.specialties.join(', ')
@@ -192,7 +201,7 @@ Este establecimiento requiere un depósito de fianza obligatorio de ${depositAmo
 
   return `
 # CONTEXTO TEMPORAL
-La fecha actual de hoy es: ${today}. Úsala como referencia para calcular fechas relativas como "mañana", "el próximo martes", "la semana que viene", etc.
+La fecha actual de hoy es: ${todayFormatted} (en formato YYYY-MM-DD: ${todayISO}). Úsala como referencia para calcular fechas relativas como "mañana" (que corresponde al día posterior de la fecha de hoy), "el próximo martes", "la semana que viene", etc.
 ${vacationSection}
 ${depositSection}
 # PERSONA Y ROL

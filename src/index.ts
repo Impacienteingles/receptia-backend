@@ -3737,6 +3737,78 @@ async function runDatabaseMigrations() {
   }
 }
 
+// Función para resincronizar todos los agentes a medianoche para mantener la fecha del sistema actualizada en el prompt de Retell
+async function syncAllAgentsWithRetell() {
+  console.log('🏁 [Cron Job Diario] Iniciando resincronización de todos los agentes de Retell para actualizar fecha actual...');
+  try {
+    const { data: tenants, error } = await supabase.from('tenants').select('*');
+    if (error) {
+      console.error('❌ [Cron Job Diario] Error al obtener inquilinos de Supabase:', error.message);
+      return;
+    }
+
+    if (!tenants || tenants.length === 0) {
+      console.log('ℹ️ [Cron Job Diario] No hay inquilinos registrados.');
+      return;
+    }
+
+    const webhookBaseUrl = 'https://corandar.onrender.com';
+    for (const tenant of tenants) {
+      if (!tenant.retell_agent_id) continue;
+      try {
+        await syncTenantWithRetell(tenant, webhookBaseUrl);
+        console.log(`✅ [Cron Job Diario] Agente ${tenant.retell_agent_id} de ${tenant.email} sincronizado con la fecha de hoy.`);
+      } catch (err: any) {
+        console.error(`❌ [Cron Job Diario] Error al sincronizar ${tenant.email}:`, err.message);
+      }
+    }
+    console.log('🎉 [Cron Job Diario] Resincronización diaria de agentes completada con éxito.');
+  } catch (err: any) {
+    console.error('❌ [Cron Job Diario] Error general en el job de sincronización:', err.message);
+  }
+}
+
+// Programar la ejecución diaria a las 00:00:00 hora de España
+function scheduleDailyAgentSync() {
+  const getMsUntilMidnight = (): number => {
+    const now = new Date();
+    // Obtener la hora actual en la zona horaria de Madrid (España)
+    const formatter = new Intl.DateTimeFormat('es-ES', {
+      timeZone: 'Europe/Madrid',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    
+    const parts = formatter.formatToParts(now);
+    const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+    const minute = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+    const second = parseInt(parts.find(p => p.type === 'second')?.value || '0', 10);
+
+    const msSinceMidnight = ((hour * 60 + minute) * 60 + second) * 1000;
+    const msInADay = 24 * 60 * 60 * 1000;
+    
+    return msInADay - msSinceMidnight;
+  };
+
+  const msUntilMidnight = getMsUntilMidnight();
+  console.log(`⏰ [Scheduler] Siguiente sincronización diaria programada en ${Math.round(msUntilMidnight / 1000 / 60)} minutos (a medianoche hora España).`);
+
+  // Programar a medianoche
+  setTimeout(async () => {
+    await syncAllAgentsWithRetell();
+    // Programar intervalo recurrente cada 24 horas
+    setInterval(syncAllAgentsWithRetell, 24 * 60 * 60 * 1000);
+  }, msUntilMidnight);
+
+  // Ejecutar una primera sincronización al arrancar en segundo plano para asegurar consistencia tras despliegues o reinicios
+  setTimeout(() => {
+    console.log('🚀 [Scheduler] Iniciando sincronización de agentes inicial en segundo plano...');
+    syncAllAgentsWithRetell().catch(err => console.error('Error en sincronización diaria inicial:', err));
+  }, 10000); // 10 segundos después del arranque
+}
+
 // Arrancar el servidor
 app.listen(PORT, () => {
   console.log(`\n========================================`);
@@ -3752,4 +3824,7 @@ app.listen(PORT, () => {
   autoStartActiveSessions().catch(err => {
     console.error('[WhatsApp Web Boot] Error al arrancar sesiones de WhatsApp:', err.message);
   });
+
+  // Arrancar scheduler de sincronización diaria de fecha en prompts de agentes
+  scheduleDailyAgentSync();
 });
