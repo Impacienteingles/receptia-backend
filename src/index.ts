@@ -2481,13 +2481,13 @@ app.post('/api/upload-pdf', async (req, res): Promise<void> => {
   }
 
   try {
-    const base64Data = base64.replace(/^data:application\/pdf;base64,/, '');
+    const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
     const buffer = Buffer.from(base64Data, 'base64');
 
     // Extraer texto del PDF usando la clase PDFParse de mehmet-kozan/pdf-parse
-    const parser = new pdf.PDFParse({});
-    await parser.load(buffer);
-    const pdfText = await parser.getText();
+    const parser = new pdf.PDFParse({ data: new Uint8Array(buffer) });
+    const textResult = await parser.getText();
+    const pdfText = textResult.text;
     await parser.destroy();
     
     // Carpeta destino para guardar el PDF
