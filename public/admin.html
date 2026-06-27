@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.16">
-  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.16">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.17">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.17">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1555,7 +1555,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.16</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.17</span>
       </div>
     </aside>
 
@@ -1578,7 +1578,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.16</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.17</span>
         </div>
       </header>
 
@@ -1738,25 +1738,7 @@
                 </div>
               </div>
 
-              <!-- CONOCIMIENTO DE LA IA -->
-              <div class="section-divider">
-                <i data-lucide="brain"></i> Base de Conocimientos de la IA
-              </div>
 
-              <div class="form-group full-width">
-                <label for="business-description">Información / Descripción General del Negocio (Inyectada en el prompt):</label>
-                <textarea id="business-description" rows="3" required></textarea>
-              </div>
-
-              <div class="form-group full-width">
-                <label for="pricing-details">Tarifas y Precios (para que los informe la IA de viva voz):</label>
-                <textarea id="pricing-details" rows="3" required></textarea>
-              </div>
-
-              <div class="form-group full-width">
-                <label for="custom-instructions">Reglas y Comportamiento Específico para la IA (Instrucciones personalizadas):</label>
-                <textarea id="custom-instructions" rows="3"></textarea>
-              </div>
 
               <!-- CONFIGURACIÓN DE CONTRATACIÓN Y SEGURIDAD -->
               <div class="section-divider">
@@ -1981,6 +1963,10 @@
               </div>
 
               <!-- 4. Knowledge Base (Base de Conocimientos) -->
+              <div class="section-divider">
+                <i data-lucide="brain"></i> Base de Conocimientos y Entrenamiento de la IA
+              </div>
+
               <div class="form-group full-width">
                 <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                   <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--primary);"></i>
@@ -2007,6 +1993,21 @@
               <div class="form-group full-width">
                 <label for="knowledge-base-content">Información de Entrenamiento Adicional (Preguntas frecuentes, texto extraído del PDF, detalles):</label>
                 <textarea id="knowledge-base-content" rows="4" placeholder="ej. ¿Ofrecen parking gratuito? Sí, en el parking de la plaza de Gracia..." oninput="saveDraftToLocalStorage()"></textarea>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="business-description">Información / Descripción General del Negocio (Inyectada en el prompt):</label>
+                <textarea id="business-description" rows="3" required placeholder="Describe tu negocio e información general útil para el agente..."></textarea>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="pricing-details">Tarifas y Precios (para que los informe la IA de viva voz):</label>
+                <textarea id="pricing-details" rows="3" required placeholder="Precios y detalles de los servicios principales..."></textarea>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="custom-instructions">Reglas y Comportamiento Específico para la IA (Instrucciones personalizadas):</label>
+                <textarea id="custom-instructions" rows="3" placeholder="Instrucciones específicas sobre el tono, cómo contestar o reglas obligatorias..."></textarea>
               </div>
 
               <!-- Aceptación de Términos y Privacidad (RGPD) -->
@@ -4741,7 +4742,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.7.16 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.7.17 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -10592,6 +10593,45 @@
 
     window.syncAllAgentsMassive = syncAllAgentsMassive;
     window.saveGlobalKnowledge = saveGlobalKnowledge;
+
+    // Cerrar ventanas emergentes (modales) al hacer clic fuera de ellas (en el fondo oscuro)
+    window.addEventListener('click', (event) => {
+      if (event.target && event.target.classList && event.target.classList.contains('modal')) {
+        const modalId = event.target.id;
+        
+        // El modal de progreso es un modal de carga y no se debe cerrar de forma fortuita
+        if (modalId === 'progress-modal') return;
+
+        // Si es el modal de edición del cliente, llamamos a su función dedicada para recolocar el formulario
+        if (modalId === 'edit-client-modal') {
+          closeEditClientModal();
+          return;
+        }
+
+        // Si es el modal de llamada de prueba WebRTC
+        if (modalId === 'webrtc-call-modal') {
+          if (typeof closeWebRTCCallModal === 'function') {
+            closeWebRTCCallModal();
+          } else {
+            event.target.style.display = 'none';
+          }
+          return;
+        }
+
+        // Si es la previsualización de correo
+        if (modalId === 'email-preview-modal') {
+          if (typeof closeEmailPreviewModal === 'function') {
+            closeEmailPreviewModal();
+          } else {
+            event.target.style.display = 'none';
+          }
+          return;
+        }
+
+        // Cerrar por defecto cualquier otro modal
+        event.target.style.display = 'none';
+      }
+    });
   </script>
 
   <!-- Carga del SDK de Retell y lógica de WebRTC -->

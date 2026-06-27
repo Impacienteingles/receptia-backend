@@ -2484,8 +2484,11 @@ app.post('/api/upload-pdf', async (req, res): Promise<void> => {
     const base64Data = base64.replace(/^data:application\/pdf;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
 
-    // Extraer texto del PDF
-    const parsedData = await pdf(buffer);
+    // Extraer texto del PDF usando la clase PDFParse de mehmet-kozan/pdf-parse
+    const parser = new pdf.PDFParse({});
+    await parser.load(buffer);
+    const pdfText = await parser.getText();
+    await parser.destroy();
     
     // Carpeta destino para guardar el PDF
     const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
@@ -2501,7 +2504,7 @@ app.post('/api/upload-pdf', async (req, res): Promise<void> => {
 
     res.json({
       status: 'success',
-      text: parsedData.text,
+      text: pdfText,
       url: publicUrl
     });
   } catch (err: any) {
