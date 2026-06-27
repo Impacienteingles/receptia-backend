@@ -383,7 +383,9 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
 
         <!-- Tarjeta Ficha de Corandar -->
         <a href="https://corandar.com" class="corandar-card" target="_blank">
-          <div class="corandar-card-icon">🏢</div>
+          <div style="background-color: #ffffff; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: 110px; min-width: 110px; height: 34px; box-sizing: border-box; border: 1px solid #e5e7eb;">
+            <img src="https://receptia.corandar.com/corandar_logo.png" alt="Logo Corandar" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+          </div>
           <div style="text-align: left;">
             <div class="corandar-card-title">Desarrollado por Corandar</div>
             <div class="corandar-card-desc">Visite nuestra web oficial para conocer más sobre nuestras soluciones de IA y automatización.</div>
