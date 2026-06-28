@@ -2674,59 +2674,74 @@
         </div>
 
         <!-- VISTA: CAMPAÑAS OUTBOUND -->
-        <div id="client-view-campaigns" class="client-view">
-          <div class="card" style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
-              <h2 class="card-title" style="margin: 0; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
-                <i data-lucide="megaphone" style="color: var(--primary);"></i>
-                Campañas Outbound de Reactivación 🎙️
-              </h2>
-              <button class="btn" onclick="openCreateCampaignModal()" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
-                <i data-lucide="plus"></i> Nueva Campaña
-              </button>
+        <div id="client-view-campaigns" class="client-view" style="position: relative;">
+          <!-- Bloqueo Flotante: En fase de desarrollo -->
+          <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(11, 15, 25, 0.45); border-radius: 12px; padding: 2rem; text-align: center;">
+            <div style="background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(139, 92, 246, 0.35); padding: 2rem 2.5rem; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); backdrop-filter: blur(6px); max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 1rem; border-radius: 16px;">
+              <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(139, 92, 246, 0.12); border: 1px dashed rgba(139, 92, 246, 0.4); display: flex; align-items: center; justify-content: center; color: #a78bfa; margin-bottom: 0.25rem;">
+                <i data-lucide="megaphone" style="width: 24px; height: 24px;"></i>
+              </div>
+              <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 700; color: #fff;">Campañas Outbound</h3>
+              <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Esta funcionalidad se encuentra actualmente en **fase de pruebas y desarrollo**. Permite automatizar llamadas salientes de la IA para confirmación de citas y reactivación de clientes.</p>
+              <span style="font-family: monospace; font-size: 0.75rem; font-weight: 600; color: #a78bfa; background: rgba(139, 92, 246, 0.15); padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.25); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem;">Fase de Desarrollo</span>
             </div>
+          </div>
 
-            <!-- Dashboard Stats Summary for Campaigns -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
-              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
-                <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Total Campañas</span>
-                <span id="campaigns-stat-total" style="font-size: 1.5rem; font-weight: 700; color: #fff;">0</span>
+          <!-- Contenido Desenfocado de la Pestaña -->
+          <div style="filter: blur(4px); pointer-events: none; width: 100%; display: flex; flex-direction: column; gap: 1.5rem; opacity: 0.3; user-select: none;">
+            <div class="card" style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                <h2 class="card-title" style="margin: 0; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="megaphone" style="color: var(--primary);"></i>
+                  Campañas Outbound de Reactivación 🎙️
+                </h2>
+                <button class="btn" style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary); color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
+                  <i data-lucide="plus"></i> Nueva Campaña
+                </button>
               </div>
-              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
-                <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Llamadas Realizadas</span>
-                <span id="campaigns-stat-calls" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-light);">0</span>
-              </div>
-              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
-                <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Citas Agendadas</span>
-                <span id="campaigns-stat-bookings" style="font-size: 1.5rem; font-weight: 700; color: var(--success);">0</span>
-              </div>
-              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
-                <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Conversión</span>
-                <span id="campaigns-stat-rate" style="font-size: 1.5rem; font-weight: 700; color: #fbbf24;">0%</span>
-              </div>
-            </div>
 
-            <!-- Campaigns List Table -->
-            <div style="overflow-x: auto;">
-              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-                <thead>
-                  <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
-                    <th style="padding: 0.75rem 1rem;">Nombre de Campaña</th>
-                    <th style="padding: 0.75rem 1rem;">Fecha Creación</th>
-                    <th style="padding: 0.75rem 1rem; text-align: center;">Estado</th>
-                    <th style="padding: 0.75rem 1rem; text-align: center;">Progreso Llamadas</th>
-                    <th style="padding: 0.75rem 1rem; text-align: center;">Citas</th>
-                    <th style="padding: 0.75rem 1rem; text-align: right;">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="campaigns-table-body">
-                  <tr>
-                    <td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-muted);">
-                      No se han encontrado campañas.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <!-- Dashboard Stats Summary for Campaigns -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
+                  <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Total Campañas</span>
+                  <span style="font-size: 1.5rem; font-weight: 700; color: #fff;">0</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
+                  <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Llamadas Realizadas</span>
+                  <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary-light);">0</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
+                  <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Citas Agendadas</span>
+                  <span style="font-size: 1.5rem; font-weight: 700; color: var(--success);">0</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 10px; text-align: center;">
+                  <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Conversión</span>
+                  <span style="font-size: 1.5rem; font-weight: 700; color: #fbbf24;">0%</span>
+                </div>
+              </div>
+
+              <!-- Campaigns List Table -->
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                  <thead>
+                    <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                      <th style="padding: 0.75rem 1rem;">Nombre de Campaña</th>
+                      <th style="padding: 0.75rem 1rem;">Fecha Creación</th>
+                      <th style="padding: 0.75rem 1rem; text-align: center;">Estado</th>
+                      <th style="padding: 0.75rem 1rem; text-align: center;">Progreso Llamadas</th>
+                      <th style="padding: 0.75rem 1rem; text-align: center;">Citas</th>
+                      <th style="padding: 0.75rem 1rem; text-align: right;">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="campaigns-table-body">
+                    <tr>
+                      <td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                        No se han encontrado campañas.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
