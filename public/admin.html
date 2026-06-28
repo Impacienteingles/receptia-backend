@@ -4075,8 +4075,12 @@
           iconDiv.style.color = 'var(--primary)';
         }
         
-        iconDiv.innerHTML = `<i data-lucide="${icon}" style="width: 24px; height: 24px;"></i>`;
-        lucide.createIcons({ attrs: { 'data-lucide': icon } });
+        let lucideIcon = icon;
+        if (icon === 'success') lucideIcon = 'check-circle';
+        if (icon === 'error') lucideIcon = 'alert-triangle';
+        
+        iconDiv.innerHTML = `<i data-lucide="${lucideIcon}" style="width: 24px; height: 24px;"></i>`;
+        lucide.createIcons({ attrs: { 'data-lucide': lucideIcon } });
 
         modal.style.display = 'flex';
 
@@ -11614,7 +11618,7 @@
 
         closeProgressModal();
         if (res.ok) {
-          showCustomAlert('Ajustes Guardados', 'Las reglas del sistema de referidos fueron actualizadas con éxito.', 'success');
+          showCustomAlert('Las reglas del sistema de referidos fueron actualizadas con éxito.', 'Ajustes Guardados', 'success');
         } else {
           const data = await res.json();
           showCustomAlert('Error al Guardar', data.error || 'Ocurrió un error inesperado.', 'error');
