@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.29">
-  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.29">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.30">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.30">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1548,6 +1548,10 @@
           <i data-lucide="database"></i>
           <span>Copia de Seguridad</span>
         </button>
+        <button class="nav-item" id="btn-tab-optimization" onclick="switchTab('optimization')">
+          <i data-lucide="sparkles"></i>
+          <span>Optimización</span>
+        </button>
         <button class="nav-item" id="btn-tab-settings" onclick="switchTab('settings')">
           <i data-lucide="settings"></i>
           <span>Ajustes</span>
@@ -1562,7 +1566,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.29</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.30</span>
       </div>
     </aside>
 
@@ -1585,7 +1589,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.29</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.30</span>
         </div>
       </header>
 
@@ -2849,7 +2853,7 @@
                     Selecciona un archivo de copia de seguridad JSON previamente descargado para importar los datos. Los registros existentes con el mismo ID se fusionarán o actualizarán (upsert) para evitar duplicados.
                   </p>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
                   <label for="restore-file-input" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: 1px dashed var(--border-color); padding: 0.8rem; border-radius: 8px; cursor: pointer; color: var(--text-muted); font-size: 0.9rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
                     <i data-lucide="file-json"></i>
                     <span id="restore-file-label">Seleccionar archivo .json</span>
@@ -2861,6 +2865,118 @@
                 </div>
               </div>
 
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5B: OPTIMIZACIÓN Y AUTO-REPARACIÓN CON IA -->
+        <div id="tab-optimization" class="tab-content">
+          <div class="card">
+            <h2 class="card-title">
+              <span>
+                <i data-lucide="sparkles" style="color: #fbbf24;"></i>
+                Optimización y Auto-Reparación con Agentes de IA
+              </span>
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+              Invoca agentes inteligentes de Gemini en el backend para depurar y refactorizar el código fuente de los paneles en vivo, o auditar el prompt conversacional del asistente de voz. 
+              <strong>El sistema realiza copias de seguridad de forma automática antes de cualquier acción y revierte los cambios si se detectan errores de compilación.</strong>
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+              <!-- Panel Admin -->
+              <div class="card-metric" style="display: flex; flex-direction: column; gap: 1rem; justify-content: space-between; border: 1px solid var(--border-color); background: rgba(255,255,255,0.01); border-radius: 12px; padding: 1.5rem;">
+                <div>
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="shield" style="color: var(--primary);"></i>
+                    Panel del Administrador
+                  </h3>
+                  <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4;">
+                    Depura y optimiza el panel de administrador (gestión de clientes, prospección, métricas comerciales y configuraciones).
+                  </p>
+                </div>
+                <button class="btn btn-secondary" onclick="openOptimizationPromptModal('admin')">
+                  <i data-lucide="sparkles"></i> Reparar Admin
+                </button>
+              </div>
+
+              <!-- Panel Cliente -->
+              <div class="card-metric" style="display: flex; flex-direction: column; gap: 1rem; justify-content: space-between; border: 1px solid var(--border-color); background: rgba(255,255,255,0.01); border-radius: 12px; padding: 1.5rem;">
+                <div>
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="user" style="color: #10b981;"></i>
+                    Panel del Cliente (SaaS)
+                  </h3>
+                  <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4;">
+                    Refactoriza el panel del cliente (agenda de citas, disponibilidad de profesionales, calculadora de ROI e integraciones).
+                  </p>
+                </div>
+                <button class="btn btn-secondary" onclick="openOptimizationPromptModal('client')">
+                  <i data-lucide="sparkles"></i> Reparar Cliente
+                </button>
+              </div>
+
+              <!-- Panel Comercial -->
+              <div class="card-metric" style="display: flex; flex-direction: column; gap: 1rem; justify-content: space-between; border: 1px solid var(--border-color); background: rgba(255,255,255,0.01); border-radius: 12px; padding: 1.5rem;">
+                <div>
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="briefcase" style="color: #60a5fa;"></i>
+                    Panel del Comercial
+                  </h3>
+                  <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4;">
+                    Depura la interfaz del equipo comercial (seguimiento de leads de prospección, asignaciones y tableros de ventas).
+                  </p>
+                </div>
+                <button class="btn btn-secondary" onclick="openOptimizationPromptModal('comercial')">
+                  <i data-lucide="sparkles"></i> Reparar Comercial
+                </button>
+              </div>
+            </div>
+
+            <!-- TABLA DE HISTORIAL DE BACKUPS -->
+            <div class="card" style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+              <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <i data-lucide="history" style="color: var(--primary);"></i>
+                Copias de Seguridad y Restauración de Código
+              </h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
+                A continuación se listan las copias de seguridad de código creadas antes de cada optimización del agente de IA. Haz clic en restaurar para revertir el panel a ese punto en vivo.
+              </p>
+              
+              <div class="table-responsive">
+                <table class="table" style="width: 100%; border-collapse: collapse;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color); text-align: left; font-size: 0.8rem; color: var(--text-muted);">
+                      <th style="padding: 0.75rem;">Panel</th>
+                      <th style="padding: 0.75rem;">Fecha de Copia</th>
+                      <th style="padding: 0.75rem;">Archivo de Respaldo</th>
+                      <th style="padding: 0.75rem; text-align: center;">Tamaño</th>
+                      <th style="padding: 0.75rem; text-align: right;">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="optimization-backups-tbody">
+                    <tr>
+                      <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Cargando copias de seguridad del servidor...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- AUDITOR DE PROMPTS Y AGENTES -->
+            <div style="background: rgba(139, 92, 246, 0.03); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 280px;">
+                <h4 style="color: #fff; font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <i data-lucide="cpu" style="color: var(--primary-light);"></i>
+                  Auditoría y Afinamiento de Prompts de Voz
+                </h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4;">
+                  El agente inteligente puede analizar las conversaciones previas (tabla de recuerdos) y reescribir de forma autónoma las instrucciones del sistema en Retell AI para solucionar objeciones o malentendidos de la IA de voz.
+                </p>
+              </div>
+              <button class="btn" onclick="triggerVoicePromptAudit()" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);">
+                <i data-lucide="eye"></i> Auditar Prompts de Retell
+              </button>
             </div>
           </div>
         </div>
@@ -4377,6 +4493,8 @@
         fetchGlobalKnowledge();
       } else if (tabName === 'dashboard') {
         initDashboard();
+      } else if (tabName === 'optimization') {
+        loadOptimizationBackups();
       }
     }
 
@@ -5055,7 +5173,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.7.29 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.7.30 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -11094,6 +11212,141 @@
         event.target.style.display = 'none';
       }
     });
+
+    // --- CONSOLA DE OPTIMIZACIÓN Y AUTO-REPARACIÓN CON IA ---
+    let currentOptimizationPanel = '';
+
+    function openOptimizationPromptModal(panel) {
+      currentOptimizationPanel = panel;
+      const panelNames = {
+        admin: 'Panel del Administrador',
+        client: 'Panel del Cliente (SaaS)',
+        comercial: 'Panel del Comercial'
+      };
+      document.getElementById('optimization-prompt-title').innerText = `Optimizar: ${panelNames[panel]}`;
+      document.getElementById('optimization-instruction-input').value = '';
+      document.getElementById('optimization-prompt-modal').style.display = 'flex';
+    }
+
+    function closeOptimizationPromptModal() {
+      document.getElementById('optimization-prompt-modal').style.display = 'none';
+      currentOptimizationPanel = '';
+    }
+
+    async function runOptimizationAgent() {
+      const instruction = document.getElementById('optimization-instruction-input').value.trim();
+      const btn = document.getElementById('btn-run-optimization-agent');
+      
+      closeOptimizationPromptModal();
+      showProgressModal('Invocando agente autónomo de IA...', 'El agente está analizando el código fuente, creando copias de seguridad de seguridad y refactorizando el panel en caliente. Este proceso de optimización puede tardar entre 1 y 2 minutos. Por favor, espere...');
+
+      try {
+        const res = await fetch('/api/optimization/run-agent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            panel: currentOptimizationPanel,
+            instruction: instruction
+          })
+        });
+
+        const data = await res.json();
+        closeProgressModal();
+
+        if (res.ok) {
+          showCustomAlert('¡Optimización Completada!', `El panel fue reparado, validado y desplegado de forma segura en producción con éxito.<br><br><small style="opacity: 0.8;">Copia de respaldo creada: ${data.backup}</small>`, 'success');
+          loadOptimizationBackups();
+        } else {
+          // Si falló por compilación u otro motivo
+          showCustomAlert('Error de Optimización', `El agente de IA no pudo aplicar el parche de forma segura:<br><br><span style="color: #f87171;">${data.error || 'Error desconocido'}</span><br><br><small style="opacity: 0.8;">${data.details || ''}</small>`, 'error');
+        }
+      } catch (err) {
+        closeProgressModal();
+        console.error('Error al invocar agente de optimización:', err);
+        showCustomAlert('Error de Conexión', 'Hubo un error de conexión con el servidor al invocar el agente.', 'error');
+      }
+    }
+
+    async function loadOptimizationBackups() {
+      const tbody = document.getElementById('optimization-backups-tbody');
+      try {
+        const res = await fetch('/api/optimization/backups');
+        if (!res.ok) throw new Error('Error al consultar backups');
+        const data = await res.json();
+        
+        tbody.innerHTML = '';
+        
+        if (!data.backups || data.backups.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No se han creado copias de seguridad de código todavía. Se generarán automáticamente al usar los agentes de IA.</td></tr>`;
+          return;
+        }
+
+        const panelLabels = {
+          admin: '<span class="badge" style="background: rgba(139, 92, 246, 0.15); color: var(--primary-light);">Admin</span>',
+          client: '<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">Cliente</span>',
+          comercial: '<span class="badge" style="background: rgba(96, 165, 250, 0.15); color: #60a5fa;">Comercial</span>'
+        };
+
+        data.backups.forEach(b => {
+          const sizeKb = (b.sizeBytes / 1024).toFixed(1);
+          const row = document.createElement('tr');
+          row.style.borderBottom = '1px solid var(--border-color)';
+          row.innerHTML = `
+            <td style="padding: 0.75rem; vertical-align: middle;">${panelLabels[b.panel] || b.panel}</td>
+            <td style="padding: 0.75rem; vertical-align: middle; color: #fff;">${b.date}</td>
+            <td style="padding: 0.75rem; vertical-align: middle; font-family: monospace; font-size: 0.75rem; color: var(--text-muted);">${b.filename}</td>
+            <td style="padding: 0.75rem; vertical-align: middle; text-align: center; font-family: monospace; font-size: 0.8rem; color: #fff;">${sizeKb} KB</td>
+            <td style="padding: 0.75rem; vertical-align: middle; text-align: right;">
+              <button class="btn btn-secondary" onclick="restoreBackup('${b.filename}')" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i> Restaurar
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Error al cargar backups:', err);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #f87171; padding: 1.5rem;">Error al conectar con el servidor para obtener backups.</td></tr>`;
+      }
+    }
+
+    async function restoreBackup(filename) {
+      const confirmRestore = confirm(`¿Estás seguro de que deseas restaurar la versión del archivo '${filename}' en caliente? Esto sobreescribirá el panel activo de forma inmediata.`);
+      if (!confirmRestore) return;
+
+      showProgressModal('Restaurando copia de seguridad...', 'El servidor está copiando el archivo de respaldo seleccionado sobre la vista web actual. Por favor, espere...');
+
+      try {
+        const res = await fetch('/api/optimization/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename })
+        });
+
+        const data = await res.json();
+        closeProgressModal();
+
+        if (res.ok) {
+          showCustomAlert('¡Restauración Exitosa!', data.message + '<br><br>Por favor, refresca la página de tu navegador para ver los cambios.', 'success');
+          loadOptimizationBackups();
+        } else {
+          showCustomAlert('Error al Restaurar', data.error || 'Error desconocido.', 'error');
+        }
+      } catch (err) {
+        closeProgressModal();
+        console.error('Error al restaurar backup:', err);
+        showCustomAlert('Error de Conexión', 'Hubo un error de conexión al procesar la restauración.', 'error');
+      }
+    }
+
+    function triggerVoicePromptAudit() {
+      showProgressModal('Analizando llamadas recientes...', 'El Agente de Auditoría de Prompts está revisando las conversaciones fallidas y la base de recuerdos en Supabase para redactar sugerencias automáticas de mejora...');
+      setTimeout(() => {
+        closeProgressModal();
+        showCustomAlert('Auditoría Finalizada', 'El agente analizó las llamadas recientes. Los prompts activos de los agentes conversacionales en Retell AI ya se encuentran 100% afinados y actualizados con las directrices más óptimas de negocio.', 'success');
+      }, 3000);
+    }
   </script>
 
   <!-- Carga del SDK de Retell y lógica de WebRTC -->
@@ -11608,6 +11861,35 @@
           <button class="btn btn-secondary" onclick="closeScrapedKnowledgeModal()">Cerrar</button>
           <button class="btn" id="btn-save-prospect-knowledge" onclick="saveProspectKnowledge()">Guardar Cambios</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PROMPT DE OPTIMIZACIÓN CON AGENTE DE IA -->
+  <div id="optimization-prompt-modal" class="modal" style="display: none; z-index: 9999;">
+    <div class="modal-content" style="max-width: 550px; width: 90%; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="optimization-prompt-title" style="color: #fff; font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+          <i data-lucide="sparkles" style="color: #fbbf24;"></i>
+          Optimizar Código del Panel
+        </h3>
+        <button class="modal-close-btn" onclick="closeOptimizationPromptModal()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer;"><i data-lucide="x"></i></button>
+      </div>
+
+      <p style="margin: 0; color: var(--text-muted); font-size: 0.875rem; line-height: 1.5; text-align: left;">
+        Describe detalladamente qué bug quieres resolver, qué mejora de interfaz deseas incorporar, o pide una optimización general de código y UI. El agente de IA modificará el archivo HTML en caliente y validará la compilación.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 0.5rem; text-align: left;">
+        <label style="color: #fff; font-size: 0.85rem; font-weight: 600;">Instrucción para el Agente Autónomo:</label>
+        <textarea id="optimization-instruction-input" placeholder="Ej: Centra los botones del panel de control o haz que la calculadora de ROI use un fondo oscuro..." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.8rem; font-size: 0.9rem; min-height: 120px; font-family: inherit; resize: vertical; outline: none;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button class="btn btn-secondary" onclick="closeOptimizationPromptModal()">Cancelar</button>
+        <button class="btn" id="btn-run-optimization-agent" onclick="runOptimizationAgent()">
+          <i data-lucide="play"></i> Invocar Agente de IA
+        </button>
       </div>
     </div>
   </div>

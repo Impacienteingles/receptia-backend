@@ -9,6 +9,7 @@ import pmsRouter from './routes/pms';
 import campaignsRouter from './routes/campaigns';
 import comercialesRouter from './routes/comerciales';
 import comercialPanelRouter from './routes/comercial-panel';
+import optimizationRouter from './routes/optimization';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
 import { supabase, getSettingVal, clearSettingsCache } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName } from './services/retell';
@@ -3593,6 +3594,7 @@ app.use('/api/integrations/pms', pmsRouter);
 app.use('/api/campaigns', campaignsRouter);
 app.use('/api/admin/comerciales', comercialesRouter);
 app.use('/api/comercial', comercialPanelRouter);
+app.use('/api/optimization', optimizationRouter);
 
 
 
