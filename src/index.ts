@@ -3831,8 +3831,34 @@ async function syncAllAgentsWithRetell() {
       }
     }
     console.log('🎉 [Cron Job Diario] Resincronización diaria de agentes completada con éxito.');
+    
+    // Purgar recuerdos antiguos (> 7 días)
+    await purgeOldCallerMemories();
   } catch (err: any) {
     console.error('❌ [Cron Job Diario] Error general en el job de sincronización:', err.message);
+  }
+}
+
+// Función para eliminar recuerdos de llamadas que tengan más de 7 días de antigüedad
+async function purgeOldCallerMemories() {
+  console.log('🧹 [Cron Job Diario] Iniciando purga de recuerdos de caller_memories antiguos (> 7 días)...');
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const limitISO = sevenDaysAgo.toISOString();
+
+    const { count, error } = await supabase
+      .from('caller_memories')
+      .delete({ count: 'exact' })
+      .lt('created_at', limitISO);
+
+    if (error) {
+      console.error('❌ [Cron Job Diario] Error al purgar recuerdos antiguos:', error.message);
+    } else {
+      console.log(`✅ [Cron Job Diario] Purga de recuerdos completada. Se eliminaron ${count || 0} registros antiguos.`);
+    }
+  } catch (err: any) {
+    console.error('❌ [Cron Job Diario] Error general en el job de purga de recuerdos:', err.message);
   }
 }
 

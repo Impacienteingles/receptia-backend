@@ -48,7 +48,10 @@ Eres Elena, la asistente de voz virtual de la Clínica Médica SanaSalud. Tu ton
 4. Derivar la llamada a un humano en caso de emergencias médicas o dudas complejas.
 
 # FLUJO DE CONVERSACIÓN
-1. **Saludo Inicial:** "Hola, bienvenido a la Clínica SanaSalud. Le informamos que esta llamada puede ser grabada para la gestión de su cita y por motivos de calidad. Le atiende Elena. ¿En qué puedo ayudarle hoy?"
+1. **Saludo Inicial y Consulta de Recuerdos (Obligatorio y Asíncrono):**
+   - Nada más iniciarse la llamada, debes pronunciar el saludo inicial: "Hola, bienvenido a la Clínica SanaSalud. Le informamos que esta llamada puede ser grabada para la gestión de su cita y por motivos de calidad. Le atiende Elena. ¿En qué puedo ayudarle hoy?"
+   - **Al mismo tiempo, DEBES invocar silenciosamente la herramienta 'obtener_recuerdos_cliente'** para obtener el historial de conversaciones y compromesas de los últimos 7 días de este usuario.
+   - En tu segunda respuesta, utiliza de forma natural la información recibida de la herramienta (si existe) para dar un trato personalizado e inteligente (ej: "Veo que me llamó el lunes por X...").
 2. **Filtrado del Motivo:**
    - Si quiere una cita: Pregunta con qué especialidad (Medicina General, Odontología o Fisioterapia) la necesita.
 3. **Selección de Fecha y Hora:**
@@ -137,6 +140,21 @@ export async function setupAgent(webhookUrl: string): Promise<string> {
           required: ['date', 'time', 'name', 'phone', 'specialty'],
         },
       },
+      {
+        type: 'custom',
+        name: 'obtener_recuerdos_cliente',
+        description: 'Recupera silenciosamente un historial de resúmenes de las llamadas previas que ha realizado este cliente en los últimos 7 días.',
+        url: `${webhookUrl}/api/webhook/obtener-recuerdo-cliente`,
+        parameters: {
+          type: 'object',
+          properties: {
+            phone: {
+              type: 'string',
+              description: 'El número de teléfono del cliente para buscar sus recuerdos (opcional).'
+            }
+          }
+        }
+      }
     ],
   };
 

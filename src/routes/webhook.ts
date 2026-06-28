@@ -229,6 +229,98 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
 });
 
 /**
+ * Endpoint para que la IA de Retell AI consulte silenciosamente los recuerdos de conversaciones previas
+ * de los últimos 7 días asociados a este número de teléfono.
+ */
+router.post('/obtener-recuerdo-cliente', async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log('[Webhook Recuerdos] Recibida consulta de recuerdos...');
+    
+    // Retell AI envía metadatos de la llamada en req.body
+    const args = req.body.args || {};
+    
+    // Resolver el teléfono del llamante desde varios posibles campos de Retell
+    let phone = args.phone || req.body.caller_phone || req.body.user_phone_number || req.body.from_number || '';
+    
+    if (!phone && req.body.call) {
+      phone = req.body.call.user_phone_number || req.body.call.from_number || '';
+    }
+
+    if (!phone) {
+      console.warn('[Webhook Recuerdos] No se pudo identificar el número de teléfono del cliente.');
+      res.json({
+        status: 'success',
+        memories: 'No hay conversaciones previas en los últimos 7 días con este número.'
+      });
+      return;
+    }
+
+    // Limpiar número de teléfono (quitar sufijos como |retell:callId si existieran)
+    const cleanPhone = String(phone).split('|')[0].trim();
+    
+    // Resolver tenant_id
+    const tenantId = await resolveTenantId(req);
+
+    console.log(`[Webhook Recuerdos] Buscando recuerdos de los últimos 7 días para el teléfono: ${cleanPhone} (Tenant: ${tenantId})`);
+
+    // Calcular la fecha límite de hace 7 días
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const dateLimitISO = sevenDaysAgo.toISOString();
+
+    const { data: memories, error } = await supabase
+      .from('caller_memories')
+      .select('summary, created_at')
+      .eq('tenant_id', tenantId)
+      .eq('phone_number', cleanPhone)
+      .gte('created_at', dateLimitISO)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[Webhook Recuerdos ERROR] Error al consultar recuerdos en Supabase:', error.message);
+      res.json({
+        status: 'success',
+        memories: 'No hay conversaciones previas en los últimos 7 días con este número.'
+      });
+      return;
+    }
+
+    if (!memories || memories.length === 0) {
+      console.log(`[Webhook Recuerdos] No se encontraron recuerdos recientes para: ${cleanPhone}`);
+      res.json({
+        status: 'success',
+        memories: 'No hay conversaciones previas en los últimos 7 días con este número.'
+      });
+      return;
+    }
+
+    // Formatear los recuerdos en un resumen legible para el LLM
+    const formattedMemories = memories.map((m: any, idx: number) => {
+      const dateStr = new Date(m.created_at).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      return `[Llamada ${idx + 1} - Fecha: ${dateStr}]: ${m.summary}`;
+    }).join('\n');
+
+    console.log(`[Webhook Recuerdos] Recuerdos encontrados y formateados:\n${formattedMemories}`);
+
+    res.json({
+      status: 'success',
+      memories: formattedMemories
+    });
+  } catch (err: any) {
+    console.error('[Webhook Recuerdos ERROR] Error general en endpoint:', err.message);
+    res.json({
+      status: 'success',
+      memories: 'No hay conversaciones previas en los últimos 7 días con este número.'
+    });
+  }
+});
+
+/**
  * Resuelve el nombre humano del asistente virtual en base a su voice_id para usarlo en el calendario.
  */
 function resolveAgentName(voiceId: string): string {
@@ -817,6 +909,34 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
                 intent_tag: intentTag
               });
             console.log(`✅ Registro de llamada guardado para el cliente: ${tenant.id}`);
+          }
+
+          // Guardar el recuerdo en caller_memories para la memoria de la IA de 7 días
+          if (summary && callerPhone && callerPhone !== 'Desconocido') {
+            const cleanPhone = String(callerPhone).split('|')[0].trim();
+            try {
+              const { data: existingMemory } = await supabase
+                .from('caller_memories')
+                .select('id')
+                .eq('tenant_id', tenant.id)
+                .eq('phone_number', cleanPhone)
+                .eq('summary', summary)
+                .limit(1)
+                .maybeSingle();
+
+              if (!existingMemory) {
+                await supabase
+                  .from('caller_memories')
+                  .insert({
+                    tenant_id: tenant.id,
+                    phone_number: cleanPhone,
+                    summary: summary
+                  });
+                console.log(`🧠 Recuerdo de conversación guardado para ${cleanPhone}`);
+              }
+            } catch (memErr: any) {
+              console.error('[Webhook] Error al guardar recuerdo en caller_memories:', memErr.message);
+            }
           }
 
           // Sincronizar estado de recipiente de campaña saliente (Fase 3)
