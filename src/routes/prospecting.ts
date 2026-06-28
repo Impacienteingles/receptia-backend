@@ -163,6 +163,7 @@ router.post('/search', async (req: Request, res: Response): Promise<void> => {
           address: lead.address,
           sector: lead.sector,
           specialties: lead.specialties,
+          scraped_knowledge: lead.scraped_knowledge,
           status: 'extracted'
         })
         .select('*')
@@ -298,6 +299,11 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
       if (baseTenant?.custom_instructions && baseTenant?.business_name) {
         const regex = new RegExp(baseTenant.business_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'gi');
         customInstructions = customInstructions.replace(regex, businessName);
+      }
+
+      // Si el prospecto tiene conocimiento extraído de la web, inyectarlo al prompt del agente de voz
+      if (prospect.scraped_knowledge) {
+        customInstructions += `\n\n# CONOCIMIENTO ADICIONAL SOBRE EL NEGOCIO (EXTRAÍDO DE SU WEB):\n${prospect.scraped_knowledge}`;
       }
 
       // Generar base de conocimientos y descripciones ricas

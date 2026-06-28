@@ -9,6 +9,7 @@ interface ProspectLead {
   address: string;
   sector: string;
   specialties: string[];
+  scraped_knowledge?: string;
 }
 
 /**
@@ -60,14 +61,18 @@ export async function scrapeProspects(city: string, country: string, sector: str
         }
       }
 
-      // 2. Extraer información del sitio web (email y especialidades) si tiene web
+      // 2. Extraer información del sitio web (email, especialidades y conocimiento) si tiene web
       let email = '';
       let specialties: string[] = [];
+      let scrapedKnowledge = '';
 
       if (website) {
         const scraped = await scrapeWebsiteDetails(website, sector);
         email = scraped.email;
         specialties = scraped.specialties;
+        scrapedKnowledge = await extractKnowledgeFromWeb(scraped.htmlText, sector, place.name);
+      } else {
+        scrapedKnowledge = generateFallbackKnowledge(place.name, sector);
       }
 
       // 3. Si no se encontró especialidades, usar las genéricas del sector
@@ -87,7 +92,8 @@ export async function scrapeProspects(city: string, country: string, sector: str
         website: website || 'No disponible',
         address: place.formatted_address || place.vicinity || 'No disponible',
         sector,
-        specialties
+        specialties,
+        scraped_knowledge: scrapedKnowledge
       });
     }
 
@@ -101,9 +107,10 @@ export async function scrapeProspects(city: string, country: string, sector: str
 /**
  * Realiza un crawling básico y ligero de un sitio web para extraer emails y especialidades usando regex.
  */
-async function scrapeWebsiteDetails(url: string, sector: string): Promise<{ email: string; specialties: string[] }> {
+async function scrapeWebsiteDetails(url: string, sector: string): Promise<{ email: string; specialties: string[]; htmlText: string }> {
   let email = '';
   let specialties: string[] = [];
+  let htmlText = '';
 
   try {
     console.log(`[Scraper] Analizando sitio web: ${url}...`);
@@ -115,20 +122,26 @@ async function scrapeWebsiteDetails(url: string, sector: string): Promise<{ emai
     });
 
     const html = response.data;
-    if (typeof html !== 'string') return { email, specialties };
+    if (typeof html !== 'string') return { email, specialties, htmlText };
 
-    // 1. Extraer Email mediante mailto y regex sobre texto plano
+    // 1. Limpiar el HTML para la extracción de texto plano legible
+    htmlText = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // remover scripts
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')   // remover estilos
+      .replace(/<[^>]*>/g, ' ')                                           // remover tags HTML
+      .replace(/\s+/g, ' ')                                               // colapsar espacios múltiples
+      .trim();
+
+    // 2. Extraer Email mediante mailto y regex sobre texto plano
     const mailtoRegex = /href="mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"/i;
     const mailtoMatch = html.match(mailtoRegex);
     
     if (mailtoMatch && mailtoMatch[1]) {
       email = mailtoMatch[1].trim().toLowerCase();
     } else {
-      // Intentar regex sobre texto plano
       const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
       const matches = html.match(emailRegex);
       if (matches && matches.length > 0) {
-        // Descartar correos genéricos como png, jpg, gif o de librerías
         const validEmails = matches.filter(e => {
           const lower = e.toLowerCase();
           return !lower.endsWith('.png') && !lower.endsWith('.jpg') && !lower.endsWith('.jpeg') && !lower.endsWith('.gif') && !lower.endsWith('.js') && !lower.endsWith('.css');
@@ -139,20 +152,18 @@ async function scrapeWebsiteDetails(url: string, sector: string): Promise<{ emai
       }
     }
 
-    // 2. Extraer especialidades buscando keywords relevantes del sector en el texto
-    const cleanText = html.replace(/<[^>]*>/g, ' ').toLowerCase();
+    // 3. Extraer especialidades buscando keywords en minúscula
+    const cleanTextLower = htmlText.toLowerCase();
     const keywords = getSectorKeywords(sector);
     
-    specialties = keywords.filter(kw => cleanText.includes(kw.toLowerCase()));
-    
-    // Limitar especialidades a máximo 4
+    specialties = keywords.filter(kw => cleanTextLower.includes(kw.toLowerCase()));
     specialties = specialties.slice(0, 4);
 
   } catch (err: any) {
     console.log(`[Scraper WARNING] No se pudo hacer scrape a la web ${url}: ${err.message}`);
   }
 
-  return { email, specialties };
+  return { email, specialties, htmlText };
 }
 
 /**
@@ -277,9 +288,81 @@ function getSimulatedLeads(city: string, country: string, sector: string): Prosp
       website: `https://www.${domain}`,
       address: `Calle Mayor ${10 + index * 5}, ${city}, ${country}`,
       sector: normalizedSector,
-      specialties
+      specialties,
+      scraped_knowledge: generateFallbackKnowledge(`${name} ${city}`, sector)
     });
   });
 
   return leads;
+}
+
+/**
+ * Llama a la API de Gemini para estructurar la información clave extraída de la web del prospecto
+ */
+async function extractKnowledgeFromWeb(cleanText: string, sector: string, businessName: string): Promise<string> {
+  const apiKey = await getSettingVal('GEMINI_API_KEY');
+  if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY') {
+    console.log('[Scraper] GEMINI_API_KEY no configurado para extracción de conocimiento. Usando fallback...');
+    return generateFallbackKnowledge(businessName, sector);
+  }
+
+  // Limitar el texto a los primeros 6000 caracteres para evitar excesos
+  const truncatedText = (cleanText || '').substring(0, 6000);
+  if (!truncatedText.trim()) {
+    return generateFallbackKnowledge(businessName, sector);
+  }
+
+  try {
+    const modelUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const systemPrompt = `Eres un asistente experto en estructuración de información de negocios locales. Tu objetivo es procesar el texto plano de un sitio web y extraer información de forma sumamente limpia, detallada y estructurada para entrenar a un agente de voz telefónico. 
+Debes estructurar los siguientes bloques redactándolos en formato markdown legible en español:
+### Horario Comercial
+(Especifica de forma muy clara los días y horas de apertura detallados)
+
+### Servicios y Tratamientos
+(Lista completa de servicios, tratamientos o productos ofrecidos con sus precios si se mencionan)
+
+### Información del Negocio
+(Dirección, especialidad principal y cualquier pauta importante para los clientes como métodos de pago, fianza, reservas o políticas)`;
+
+    const payload = {
+      contents: [{
+        role: 'user',
+        parts: [{ text: `Texto del sitio web de la empresa "${businessName}" (Sector: ${sector}):\n\n${truncatedText}` }]
+      }],
+      systemInstruction: {
+        parts: [{ text: systemPrompt }]
+      }
+    };
+
+    console.log(`[Scraper LLM] Extrayendo conocimiento estructurado de la web para: "${businessName}"...`);
+    const res = await axios.post(modelUrl, payload);
+    const textResponse = res.data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (textResponse) {
+      return textResponse.trim();
+    }
+  } catch (err: any) {
+    console.error('[Scraper LLM Error] Error al extraer conocimiento con Gemini:', err.message);
+  }
+
+  return generateFallbackKnowledge(businessName, sector);
+}
+
+/**
+ * Genera el conocimiento estructurado base si no hay web o falla la API de IA
+ */
+function generateFallbackKnowledge(businessName: string, sector: string): string {
+  const list = getSectorKeywords(sector);
+  return `### Horario Comercial
+- Lunes a Viernes: 09:00 a 20:00
+- Sábado: 09:00 a 14:00
+- Domingo: Cerrado
+
+### Servicios y Tratamientos
+${list.map(s => `- ${s}`).join('\n')}
+
+### Información del Negocio
+- Nombre: ${businessName}
+- Sector: ${sector.toUpperCase()}
+- Nota: Datos autogenerados por defecto para pruebas comerciales.`;
 }
