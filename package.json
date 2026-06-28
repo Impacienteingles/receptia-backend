@@ -1,11 +1,11 @@
 {
   "name": "receptia",
-  "version": "1.5.39",
+  "version": "1.5.40",
   "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/public && cp -r public/* dist/public/ && cp -r public/* dist/ 2>/dev/null || true",
     "start": "node dist/index.js",
     "setup-agent": "ts-node scripts/setup-agent.ts",
     "bootstrap": "ts-node scripts/bootstrap.ts",
