@@ -2159,6 +2159,71 @@ app.put('/api/admin/plans/:id', async (req, res): Promise<void> => {
   }
 });
 
+// Endpoint de Estadísticas Agregadas para el Dashboard de Administración
+app.get('/api/admin/dashboard-stats', async (req, res): Promise<void> => {
+  try {
+    // 1. Obtener total de llamadas e intenciones de la tabla call_logs
+    const { data: calls, error: callsErr } = await supabase
+      .from('call_logs')
+      .select('intent_tag, call_duration');
+    
+    if (callsErr && callsErr.code !== '42P01') throw callsErr;
+
+    const totalCalls = calls ? calls.length : 0;
+    let totalSeconds = 0;
+    const intentCounts: { [key: string]: number } = {};
+
+    (calls || []).forEach(c => {
+      totalSeconds += (c.call_duration || 0);
+      let tag = c.intent_tag || 'Consulta General';
+      if (tag.endsWith('_hidden')) tag = tag.replace('_hidden', '');
+      intentCounts[tag] = (intentCounts[tag] || 0) + 1;
+    });
+
+    const totalMinutes = Math.round(totalSeconds / 60);
+
+    // 2. Obtener estadísticas de prospectos (leads)
+    const { data: prospects, error: prospectsErr } = await supabase
+      .from('prospects')
+      .select('classification');
+
+    if (prospectsErr && prospectsErr.code !== '42P01') throw prospectsErr;
+
+    const totalLeads = prospects ? prospects.length : 0;
+    const leadsByStatus: { [key: string]: number } = {};
+    (prospects || []).forEach(p => {
+      const status = p.classification || 'sin_clasificar';
+      leadsByStatus[status] = (leadsByStatus[status] || 0) + 1;
+    });
+
+    // 3. Obtener comerciales activos
+    const { data: comerciales, error: comErr } = await supabase
+      .from('comerciales')
+      .select('id');
+
+    if (comErr && comErr.code !== '42P01') throw comErr;
+    const totalComerciales = comerciales ? comerciales.length : 0;
+
+    res.json({
+      calls: {
+        total: totalCalls,
+        minutes: totalMinutes,
+        intents: intentCounts
+      },
+      prospects: {
+        total: totalLeads,
+        byStatus: leadsByStatus
+      },
+      comerciales: {
+        total: totalComerciales
+      }
+    });
+  } catch (err: any) {
+    console.error('Error al generar estadísticas de dashboard:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 2. Gestión de Transacciones Manuales (Contabilidad)
 app.get('/api/admin/transactions', async (req, res): Promise<void> => {
   try {
