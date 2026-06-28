@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia - Panel de Control del Cliente</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.10">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.10">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.11">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.11">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -8237,9 +8237,11 @@ ${cleanAudio}`;
           <td><span class="badge-accent">${app.specialty}</span></td>
           <td style="font-weight: 600; color: var(--primary-hover);">${timeString}</td>
           <td>${statusBadge}</td>
-          <td>
-            <button class="btn btn-secondary" onclick="openEditModal('${app.id}')" style="padding: 0.25rem 0.4rem; border-radius: 6px;"><i data-lucide="edit-2" style="width: 12px; height: 12px;"></i></button>
-            <button class="btn btn-secondary" onclick="openDeleteModal('${app.id}')" style="padding: 0.25rem 0.4rem; color: var(--error); margin-left: 0.25rem; border-radius: 6px;"><i data-lucide="trash-2" style="width: 12px; height: 12px;"></i></button>
+          <td style="white-space: nowrap;">
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <button class="btn btn-secondary" onclick="openEditModal('${app.id}')" style="padding: 0.35rem 0.5rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px;"><i data-lucide="edit-2" style="width: 14px; height: 14px;"></i></button>
+              <button class="btn btn-secondary" onclick="openDeleteModal('${app.id}')" style="padding: 0.35rem 0.5rem; display: inline-flex; align-items: center; justify-content: center; color: var(--error); border-radius: 6px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+            </div>
           </td>
         `;
         selectedDayTbody.appendChild(row);
