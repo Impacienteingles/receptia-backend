@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.32">
-  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.32">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.33">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.33">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1378,6 +1378,42 @@
         column-count: 1;
       }
     }
+
+    /* Estilos Premium para las Pestañas de Promociones (Tabs) */
+    .promo-tabs-header {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.35rem;
+      display: inline-flex;
+      gap: 0.35rem;
+      margin-bottom: 1.75rem;
+    }
+    .promo-tabs-header .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.6rem 1.25rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Outfit', sans-serif;
+    }
+    .promo-tabs-header .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .promo-tabs-header .tab-btn.active {
+      background: var(--primary);
+      color: #ffffff !important;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -1570,7 +1606,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.32</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.33</span>
       </div>
     </aside>
 
@@ -1593,7 +1629,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.32</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.33</span>
         </div>
       </header>
 
@@ -2886,11 +2922,20 @@
               Activa promociones de referidos, configura modalidades de comisiones recurrentes o fijas, audita la trazabilidad de clientes apadrinados y reconcilia los apuntes contables.
             </p>
 
-            <!-- SUBPESTAÑAS INTERNAS -->
-            <div class="tabs-header" style="display: flex; border-bottom: 1px solid var(--border-color); gap: 1rem; margin-bottom: 1.5rem;">
-              <button class="tab-btn active" id="btn-promo-subtab-config" onclick="switchPromoSubtab('config')" style="background: none; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;">Configuración de Promoción</button>
-              <button class="tab-btn" id="btn-promo-subtab-tracking" onclick="switchPromoSubtab('tracking')" style="background: none; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;">Trazabilidad de Referidos</button>
-              <button class="tab-btn" id="btn-promo-subtab-accounting" onclick="switchPromoSubtab('accounting')" style="background: none; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;">Contabilidad de Referidos</button>
+            <!-- SUBPESTAÑAS INTERNAS (DISEÑO PREMIUM DE PESTAÑAS) -->
+            <div class="promo-tabs-header">
+              <button class="tab-btn active" id="btn-promo-subtab-config" onclick="switchPromoSubtab('config')">
+                <i data-lucide="sliders" style="width: 16px; height: 16px;"></i>
+                Configuración de Promoción
+              </button>
+              <button class="tab-btn" id="btn-promo-subtab-tracking" onclick="switchPromoSubtab('tracking')">
+                <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                Trazabilidad de Referidos
+              </button>
+              <button class="tab-btn" id="btn-promo-subtab-accounting" onclick="switchPromoSubtab('accounting')">
+                <i data-lucide="receipt" style="width: 16px; height: 16px;"></i>
+                Contabilidad de Referidos
+              </button>
             </div>
 
             <!-- SUBTAB 1: CONFIGURACIÓN -->
@@ -4089,6 +4134,31 @@
           resolve(true);
         };
       });
+    }
+
+    function showProgressModal(title, text) {
+      const modal = document.getElementById('progress-modal');
+      const modalTitle = document.getElementById('modal-title');
+      const progressStepsList = document.getElementById('progress-steps-list');
+      const progressBar = document.getElementById('progress-bar');
+      const successBox = document.getElementById('success-box');
+      const btnErrorClose = document.getElementById('btn-error-close');
+      const modalSpinner = document.getElementById('modal-spinner');
+
+      if (modalTitle) modalTitle.innerText = title;
+      if (progressStepsList) {
+        progressStepsList.innerHTML = `<li><span style="color: var(--primary-light); font-weight: 500;">${text}</span></li>`;
+      }
+      if (progressBar) progressBar.style.width = '50%';
+      if (successBox) successBox.style.display = 'none';
+      if (btnErrorClose) btnErrorClose.style.display = 'none';
+      if (modalSpinner) modalSpinner.style.display = 'inline-block';
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeProgressModal() {
+      const modal = document.getElementById('progress-modal');
+      if (modal) modal.style.display = 'none';
     }
 
     function showCustomConfirm(message, title = 'Confirmar', icon = 'help-circle') {
@@ -5378,7 +5448,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.7.32 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.7.33 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
