@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { supabase, getSettingVal } from '../services/supabase';
+import { supabase, getSettingVal, clearSettingsCache } from '../services/supabase';
 
 const router = Router();
 
@@ -7,9 +7,10 @@ const router = Router();
  * Helper para guardar un ajuste de forma segura en la tabla settings
  */
 async function saveSetting(key: string, value: string): Promise<void> {
-  await supabase
+  const { error } = await supabase
     .from('settings')
     .upsert({ key, value });
+  if (error) throw error;
 }
 
 /**
@@ -50,6 +51,9 @@ router.post('/config', async (req: Request, res: Response) => {
     await saveSetting('referrals_promo_enabled', enabled ? 'true' : 'false');
     await saveSetting('referrals_commission_type', commissionType);
     await saveSetting('referrals_commission_value', String(commissionValue));
+
+    // Limpiar caché de configuraciones del backend para efecto inmediato
+    clearSettingsCache();
 
     console.log(`[Referrals Config] Configuración actualizada: Enabled=${enabled}, Type=${commissionType}, Value=${commissionValue}`);
     res.json({ status: 'success', message: 'Configuración de referidos guardada con éxito.' });
