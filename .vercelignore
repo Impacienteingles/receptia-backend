@@ -12,8 +12,9 @@ package-lock.json
 z-informe-app-receptia.md
 migration_v*.sql
 check-catalog-detailed.js
-*.png
-*.jpg
-*.mp3
-*.docx
-*.rtf
+/*.png
+/*.jpg
+/*.mp3
+/*.docx
+/*.rtf
+/scratch/
