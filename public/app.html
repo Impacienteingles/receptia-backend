@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia - Panel de Control del Cliente</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.12">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.12">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.13">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.13">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -2217,6 +2217,10 @@
           <i data-lucide="megaphone"></i>
           <span>Campañas Outbound</span>
         </button>
+        <button class="nav-item" id="btn-tab-referrals" onclick="switchTab('referrals')" style="display: none; background: #dc2626 !important; color: #ffffff !important; font-weight: 600; margin-bottom: 0.5rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; box-shadow: 0 4px 6px rgba(220, 38, 38, 0.25);">
+          <i data-lucide="gift" style="color: #ffffff !important;"></i>
+          <span style="color: #ffffff !important;">Referidos (Promo)</span>
+        </button>
         <button class="nav-item" id="btn-tab-settings" onclick="switchTab('settings')">
           <i data-lucide="settings"></i>
           <span>Ajustes</span>
@@ -2707,6 +2711,120 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA: REFERIDOS (CLIENTE) -->
+        <div id="client-view-referrals" class="client-view">
+          <div class="card" style="flex: 1;">
+            <h2 class="card-title" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i data-lucide="gift" style="color: #ef4444;"></i>
+              Programa de Recomendación y Referidos
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+              Recomienda Receptia a otros negocios. Por cada referido que se registre y contrate un plan de pago, acumularás saldo a favor que se aplicará automáticamente como descuento en tu próxima factura.
+            </p>
+
+            <!-- METRICAS DE REFERIDOS -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+              <div class="card-metric" style="padding: 1.25rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.01); border-radius: 8px;">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Comisiones Acumuladas Totales</span>
+                <strong id="client-promo-earned" style="font-size: 1.5rem; color: #fff; font-family: monospace;">0.00 €</strong>
+              </div>
+              <div class="card-metric" style="padding: 1.25rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.01); border-radius: 8px;">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Próximo Descuento Disponible</span>
+                <strong id="client-promo-pending" style="font-size: 1.5rem; color: #fbbf24; font-family: monospace;">0.00 €</strong>
+              </div>
+              <div class="card-metric" style="padding: 1.25rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.01); border-radius: 8px;">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Descuentos Aplicados Históricos</span>
+                <strong id="client-promo-applied" style="font-size: 1.5rem; color: #10b981; font-family: monospace;">0.00 €</strong>
+              </div>
+              <div class="card-metric" style="padding: 1.25rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.01); border-radius: 8px;" id="client-promo-projection-card">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Proyección Mensual Estimada</span>
+                <strong id="client-promo-projection" style="font-size: 1.5rem; color: var(--primary-light); font-family: monospace;">0.00 €</strong>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: start;">
+              <!-- FORMULARIO DE RECOMENDACIÓN -->
+              <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin: 0; font-family: 'Outfit'; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                  <i data-lucide="user-plus" style="color: var(--primary);"></i>
+                  Recomendar un Negocio
+                </h3>
+                
+                <form id="client-referral-form" onsubmit="submitClientReferral(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+                  <div class="form-group">
+                    <label for="ref-company" style="font-size: 0.8rem; color: var(--text-muted);">Nombre del Establecimiento / Empresa:</label>
+                    <input type="text" id="ref-company" placeholder="ej. Clínica Dental López" required style="padding: 0.5rem; width: 100%;">
+                  </div>
+                  <div class="form-group">
+                    <label for="ref-name" style="font-size: 0.8rem; color: var(--text-muted);">Nombre del Contacto:</label>
+                    <input type="text" id="ref-name" placeholder="ej. Dr. Carlos López" required style="padding: 0.5rem; width: 100%;">
+                  </div>
+                  <div class="form-group">
+                    <label for="ref-email" style="font-size: 0.8rem; color: var(--text-muted);">Correo Electrónico:</label>
+                    <input type="email" id="ref-email" placeholder="ej. contacto@clinicalopez.com" required style="padding: 0.5rem; width: 100%;">
+                  </div>
+                  <div class="form-group">
+                    <label for="ref-phone" style="font-size: 0.8rem; color: var(--text-muted);">Número de Teléfono:</label>
+                    <input type="tel" id="ref-phone" placeholder="ej. +34 600 000 000" required style="padding: 0.5rem; width: 100%;">
+                  </div>
+
+                  <button type="submit" class="btn" style="width: 100%; font-weight: 600; padding: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <i data-lucide="send"></i> Registrar y Apadrinar
+                  </button>
+                </form>
+              </div>
+
+              <!-- TABLA DE MIS REFERIDOS -->
+              <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem 0; font-family: 'Outfit';">
+                    <i data-lucide="users" style="color: var(--primary);"></i>
+                    Tus Negocios Recomendados
+                  </h3>
+                  <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                      <thead>
+                        <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                          <th style="padding: 0.5rem;">Negocio</th>
+                          <th style="padding: 0.5rem;">Contacto</th>
+                          <th style="padding: 0.5rem; text-align: center;">Modalidad</th>
+                          <th style="padding: 0.5rem; text-align: center;">Estado</th>
+                          <th style="padding: 0.5rem; text-align: right;">Comisión</th>
+                        </tr>
+                      </thead>
+                      <tbody id="client-referrals-tbody">
+                        <!-- Cargado dinámicamente -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- HISTORIAL DE DESCUENTOS -->
+                <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem 0; font-family: 'Outfit';">
+                    <i data-lucide="receipt" style="color: #10b981;"></i>
+                    Historial de Descuentos Aplicados
+                  </h3>
+                  <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                      <thead>
+                        <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                          <th style="padding: 0.5rem;">Fecha</th>
+                          <th style="padding: 0.5rem;">Referencia de Factura</th>
+                          <th style="padding: 0.5rem; text-align: right;">Importe Descontado</th>
+                        </tr>
+                      </thead>
+                      <tbody id="client-payouts-tbody">
+                        <!-- Cargado dinámicamente -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -5531,6 +5649,8 @@
         fetchAppointments(currentTenant.id);
       } else if (tabId === 'campaigns') {
         fetchCampaigns();
+      } else if (tabId === 'referrals') {
+        fetchClientReferralsData();
       }
 
       if (tabId === 'settings' && currentTenant && !!currentTenant.whatsapp_reminders_enabled) {
@@ -6488,6 +6608,9 @@
 
       // Renderizar iconos de Lucide dinámicos
       lucide.createIcons();
+      
+      // Verificar estado de la promoción de referidos
+      checkReferralsPromoStatus();
     }
 
     // Alternar el bloqueo de acceso al administrador
@@ -8767,7 +8890,181 @@ ${cleanAudio}`;
       }
     }
 
+    // --- SISTEMA DE REFERIDOS Y PROMOCIONES (CLIENTE) ---
+    async function checkReferralsPromoStatus() {
+      try {
+        const res = await fetch('/api/referrals/config');
+        if (!res.ok) throw new Error('Error al obtener config');
+        const config = await res.json();
+        
+        const btnTab = document.getElementById('btn-tab-referrals');
+        if (btnTab) {
+          if (config.enabled) {
+            btnTab.style.display = 'flex';
+          } else {
+            btnTab.style.display = 'none';
+          }
+        }
+      } catch (err) {
+        console.error('[Referidos] Error al verificar estado de la promoción:', err);
+      }
+    }
 
+    async function fetchClientReferralsData() {
+      if (!currentTenant || !currentTenant.id) return;
+      
+      const referralsTbody = document.getElementById('client-referrals-tbody');
+      const payoutsTbody = document.getElementById('client-payouts-tbody');
+      
+      if (referralsTbody) {
+        referralsTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1rem;">Cargando tus negocios recomendados...</td></tr>`;
+      }
+      if (payoutsTbody) {
+        payoutsTbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1rem;">Cargando historial de descuentos...</td></tr>`;
+      }
+
+      try {
+        const res = await fetch(`/api/referrals/my-referrals?tenant_id=${currentTenant.id}`);
+        if (!res.ok) throw new Error('Error al consultar referidos');
+        const data = await res.json();
+
+        // 1. Rellenar Métricas
+        document.getElementById('client-promo-earned').innerText = `${data.metrics.totalEarned.toFixed(2)} €`;
+        document.getElementById('client-promo-pending').innerText = `${data.metrics.pendingBalance.toFixed(2)} €`;
+        document.getElementById('client-promo-applied').innerText = `${data.metrics.appliedBalance.toFixed(2)} €`;
+        document.getElementById('client-promo-projection').innerText = `${data.metrics.monthlyEstimation.toFixed(2)} €`;
+
+        // 2. Renderizar Tabla de Recomendados
+        if (referralsTbody) {
+          referralsTbody.innerHTML = '';
+          if (!data.referrals || data.referrals.length === 0) {
+            referralsTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Aún no has registrado ningún referido. ¡Recomienda Receptia hoy mismo!</td></tr>`;
+          } else {
+            data.referrals.forEach(ref => {
+              let statusBadge = '';
+              if (ref.status === 'pending') {
+                statusBadge = '<span class="badge" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24;">Pendiente</span>';
+              } else if (ref.status === 'subscribed') {
+                statusBadge = '<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">Activo</span>';
+              } else {
+                statusBadge = '<span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">Cancelado</span>';
+              }
+
+              const modalLabel = ref.commission_type === 'fixed' ? 'Fijo' : 'Recurrente';
+              const valueLabel = ref.commission_type === 'fixed' ? `${ref.commission_value}€` : `${ref.commission_value}%`;
+
+              const refComms = data.commissions.filter(c => c.referral_id === ref.id);
+              const totalRefEarned = refComms.reduce((acc, curr) => acc + Number(curr.amount), 0);
+
+              const tr = document.createElement('tr');
+              tr.style.borderBottom = '1px solid var(--border-color)';
+              tr.innerHTML = `
+                <td style="padding: 0.75rem; vertical-align: middle; color: #fff; font-weight: 500;">${ref.referred_company || 'Establecimiento'}</td>
+                <td style="padding: 0.75rem; vertical-align: middle;">
+                  <span style="color: #fff; display: block; font-size: 0.85rem;">${ref.referred_name}</span>
+                  <span style="color: var(--text-muted); display: block; font-size: 0.7rem;">${ref.referred_email}</span>
+                </td>
+                <td style="padding: 0.75rem; vertical-align: middle; text-align: center; font-size: 0.8rem;">
+                  <span>${modalLabel}</span><br>
+                  <small style="color: var(--text-muted); font-size: 0.7rem;">(${valueLabel})</small>
+                </td>
+                <td style="padding: 0.75rem; vertical-align: middle; text-align: center;">${statusBadge}</td>
+                <td style="padding: 0.75rem; vertical-align: middle; text-align: right; font-family: monospace; font-size: 0.85rem; font-weight: 600; color: #fff;">${totalRefEarned.toFixed(2)} €</td>
+              `;
+              referralsTbody.appendChild(tr);
+            });
+          }
+        }
+
+        // 3. Renderizar Historial de Descuentos Aplicados
+        if (payoutsTbody) {
+          payoutsTbody.innerHTML = '';
+          const appliedCommissions = data.commissions.filter(c => c.status === 'applied');
+          
+          if (appliedCommissions.length === 0) {
+            payoutsTbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1rem;">No se han aplicado descuentos por comisiones en tus facturas todavía.</td></tr>`;
+          } else {
+            const consolidatedApplied = {};
+            appliedCommissions.forEach(c => {
+              const invId = c.applied_invoice_id || 'Factura';
+              const dateStr = new Date(c.created_at).toLocaleDateString('es-ES');
+              if (!consolidatedApplied[invId]) {
+                consolidatedApplied[invId] = { date: dateStr, amount: 0, invoice_id: invId };
+              }
+              consolidatedApplied[invId].amount += Number(c.amount);
+            });
+
+            Object.values(consolidatedApplied).forEach(p => {
+              const tr = document.createElement('tr');
+              tr.style.borderBottom = '1px solid var(--border-color)';
+              tr.innerHTML = `
+                <td style="padding: 0.75rem; vertical-align: middle; color: #fff;">${p.date}</td>
+                <td style="padding: 0.75rem; vertical-align: middle; color: var(--text-muted); font-family: monospace; font-size: 0.75rem;">${p.invoice_id}</td>
+                <td style="padding: 0.75rem; vertical-align: middle; text-align: right; font-family: monospace; color: #10b981; font-weight: 600; font-size: 0.85rem;">-${p.amount.toFixed(2)} €</td>
+              `;
+              payoutsTbody.appendChild(tr);
+            });
+          }
+        }
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Error al cargar datos de referidos del cliente:', err);
+        if (referralsTbody) {
+          referralsTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--error); padding: 1.5rem;">Error de conexión con el servidor.</td></tr>`;
+        }
+      }
+    }
+
+    async function submitClientReferral(event) {
+      event.preventDefault();
+      if (!currentTenant || !currentTenant.id) return;
+
+      const companyInput = document.getElementById('ref-company');
+      const nameInput = document.getElementById('ref-name');
+      const emailInput = document.getElementById('ref-email');
+      const phoneInput = document.getElementById('ref-phone');
+
+      const data = {
+        referrer_tenant_id: currentTenant.id,
+        referred_company: companyInput.value.trim(),
+        referred_name: nameInput.value.trim(),
+        referred_email: emailInput.value.trim().toLowerCase(),
+        referred_phone: phoneInput.value.trim()
+      };
+
+      if (currentTenant.email.trim().toLowerCase() === data.referred_email) {
+        showCustomAlert('Registro Inválido', 'No puedes registrar tu propio correo como referido.', 'error');
+        return;
+      }
+
+      showProgressModal('Registrando Referido...', 'El servidor está procesando el registro y asociando tu código de apadrinamiento...');
+
+      try {
+        const res = await fetch('/api/referrals/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        closeProgressModal();
+
+        if (res.ok) {
+          showCustomAlert('¡Referido Registrado!', 'El negocio recomendado fue registrado con éxito. Te notificaremos cuando se suscriba a un plan de pago.', 'success');
+          companyInput.value = '';
+          nameInput.value = '';
+          emailInput.value = '';
+          phoneInput.value = '';
+          fetchClientReferralsData();
+        } else {
+          const errData = await res.json();
+          showCustomAlert('Error de Registro', errData.error || 'Ocurrió un error inesperado al apadrinar.', 'error');
+        }
+      } catch (err) {
+        closeProgressModal();
+        console.error('Error al registrar referido:', err);
+        showCustomAlert('Error de Conexión', 'Hubo un error al comunicar con el servidor.', 'error');
+      }
+    }
   </script>
 
   <!-- MODAL DEL CENTRO DE AYUDA -->

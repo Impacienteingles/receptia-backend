@@ -10,6 +10,7 @@ import campaignsRouter from './routes/campaigns';
 import comercialesRouter from './routes/comerciales';
 import comercialPanelRouter from './routes/comercial-panel';
 import optimizationRouter from './routes/optimization';
+import referralsRouter from './routes/referrals';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
 import { supabase, getSettingVal, clearSettingsCache } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName } from './services/retell';
@@ -1780,7 +1781,174 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
                 }
               }
             } catch (recErr: any) {
-              console.error('[Stripe Webhook Error] Error al generar comisión recurrente:', recErr.message);
+              console.error('[Stripe Webhook Error] Error al generar comisión recurrente de comercial:', recErr.message);
+            }
+
+            // ==========================================
+            // PROCESAMIENTO DEL SISTEMA DE REFERIDOS (COMISIONES Y DESCUENTOS)
+            // ==========================================
+            try {
+              const invoiceAmount = (invoice.amount_paid || 0) / 100;
+              const currentPeriod = new Date().toISOString().substring(0, 7); // 'YYYY-MM'
+
+              // 1. Verificar si el pagador es un Nuevo Referido o Referido recurrente
+              const { data: referral } = await supabase
+                .from('referrals')
+                .select('*')
+                .eq('referred_email', tenant.email.trim().toLowerCase())
+                .limit(1)
+                .maybeSingle();
+
+              if (referral) {
+                let commissionAmount = 0;
+                let shouldGenerateCommission = false;
+
+                // Caso A: Primer pago del referido (Suscripción completada)
+                if (referral.status === 'pending') {
+                  console.log(`[Referidos] Convertido referido pendiente a activo: ${tenant.email}`);
+                  
+                  // Actualizar estado a subscribed
+                  await supabase
+                    .from('referrals')
+                    .update({
+                      status: 'subscribed',
+                      referred_tenant_id: tenant.id
+                    })
+                    .eq('id', referral.id);
+
+                  shouldGenerateCommission = true;
+                  if (referral.commission_type === 'fixed') {
+                    commissionAmount = Number(referral.commission_value);
+                  } else {
+                    commissionAmount = invoiceAmount * (Number(referral.commission_value) / 100);
+                  }
+                }
+                // Caso B: Pagos recurrentes del referido (Modalidad porcentaje)
+                else if (referral.status === 'subscribed' && referral.commission_type === 'percentage') {
+                  // Validar que no se haya cobrado comisión ya en este período
+                  const { data: existingComm } = await supabase
+                    .from('referral_commissions')
+                    .select('id')
+                    .eq('referral_id', referral.id)
+                    .eq('period', currentPeriod)
+                    .maybeSingle();
+
+                  if (!existingComm && invoiceAmount > 0) {
+                    shouldGenerateCommission = true;
+                    commissionAmount = invoiceAmount * (Number(referral.commission_value) / 100);
+                  }
+                }
+
+                if (shouldGenerateCommission && commissionAmount > 0) {
+                  // Guardar el devengo en referral_commissions
+                  await supabase
+                    .from('referral_commissions')
+                    .insert({
+                      referral_id: referral.id,
+                      referrer_tenant_id: referral.referrer_tenant_id,
+                      amount: commissionAmount,
+                      period: referral.commission_type === 'percentage' ? currentPeriod : null,
+                      status: 'pending'
+                    });
+
+                  console.log(`[Referidos] Generada comisión de referidos: ${commissionAmount}€ para referidor ${referral.referrer_tenant_id}`);
+
+                  // Obtener datos del referidor
+                  const { data: referrerTenant } = await supabase
+                    .from('tenants')
+                    .select('id, business_name, stripe_customer_id')
+                    .eq('id', referral.referrer_tenant_id)
+                    .single();
+
+                  // Registrar la transacción contable (Gasto contable / Devengo de pasivo)
+                  await supabase
+                    .from('accounting_transactions')
+                    .insert({
+                      type: 'expense',
+                      concept: `Devengo Comisión Referido: ${tenant.business_name} (Referidor: ${referrerTenant?.business_name || 'Desconocido'})`,
+                      amount: commissionAmount,
+                      date: todayStr
+                    });
+
+                  // Si el referidor tiene Stripe, abonar saldo a favor (Customer Balance) de inmediato
+                  if (referrerTenant && referrerTenant.stripe_customer_id) {
+                    try {
+                      const stripe = await getStripeClient();
+                      await stripe.customers.createBalanceTransaction(referrerTenant.stripe_customer_id, {
+                        amount: -Math.round(commissionAmount * 100), // Negativo = Descuento/Saldo a favor
+                        currency: 'eur',
+                        description: `Comisión por Referido: ${tenant.business_name}`
+                      });
+                      console.log(`[Referidos] Abonado saldo a favor de ${commissionAmount}€ en Stripe para ${referrerTenant.business_name}`);
+                    } catch (stripeErr: any) {
+                      console.error('[Referidos Stripe Error] Error al abonar balance en Stripe:', stripeErr.message);
+                    }
+                  }
+                }
+              }
+
+              // 2. Verificar si el pagador es un Referidor y consumió saldo de descuento
+              if (invoice.starting_balance && invoice.starting_balance < 0) {
+                const startingBal = Number(invoice.starting_balance);
+                const endingBal = Number(invoice.ending_balance || 0);
+                
+                if (endingBal > startingBal) {
+                  const appliedDiscount = (endingBal - startingBal) / 100;
+                  console.log(`[Referidos] Detectado descuento por referidos aplicado en factura Stripe: ${appliedDiscount}€ para ${tenant.business_name}`);
+
+                  // Obtener todas las comisiones pendientes del referidor ordenadas FIFO (más antiguas primero)
+                  const { data: pendingCommissions } = await supabase
+                    .from('referral_commissions')
+                    .select('*')
+                    .eq('referrer_tenant_id', tenant.id)
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: true });
+
+                  if (pendingCommissions && pendingCommissions.length > 0) {
+                    let remainingDiscount = appliedDiscount;
+                    
+                    for (const comm of pendingCommissions) {
+                      if (remainingDiscount <= 0) break;
+                      
+                      const commAmount = Number(comm.amount);
+                      if (commAmount <= remainingDiscount) {
+                        await supabase
+                          .from('referral_commissions')
+                          .update({
+                            status: 'applied',
+                            applied_invoice_id: invoice.id || invoice.number
+                          })
+                          .eq('id', comm.id);
+
+                        remainingDiscount -= commAmount;
+                      } else {
+                        await supabase
+                          .from('referral_commissions')
+                          .update({
+                            status: 'applied',
+                            applied_invoice_id: invoice.id || invoice.number
+                          })
+                          .eq('id', comm.id);
+
+                        remainingDiscount = 0;
+                      }
+                    }
+                  }
+
+                  // Registrar el ajuste contable (Descuento contable aplicado)
+                  await supabase
+                    .from('accounting_transactions')
+                    .insert({
+                      type: 'expense',
+                      concept: `Descuento por Referidos Aplicado: Factura ${invoice.number || ''} - Inquilino ${tenant.business_name}`,
+                      amount: appliedDiscount,
+                      date: todayStr
+                    });
+                }
+              }
+
+            } catch (referralErr: any) {
+              console.error('[Stripe Webhook Error] Error al procesar lógica de referidos:', referralErr.message);
             }
           }
         }
@@ -3595,6 +3763,7 @@ app.use('/api/campaigns', campaignsRouter);
 app.use('/api/admin/comerciales', comercialesRouter);
 app.use('/api/comercial', comercialPanelRouter);
 app.use('/api/optimization', optimizationRouter);
+app.use('/api/referrals', referralsRouter);
 
 
 
