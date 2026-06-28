@@ -232,7 +232,7 @@ router.get('/admin/all', async (req: Request, res: Response) => {
       .from('referrals')
       .select(`
         *,
-        referrer:tenants!referrals_referrer_tenant_id_fkey(business_name, email)
+        referrer:tenants!referrer_tenant_id(business_name, email)
       `)
       .order('created_at', { ascending: false });
 
