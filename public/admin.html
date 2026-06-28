@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.18">
-  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.18">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.19">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.19">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1555,7 +1555,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.18</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.19</span>
       </div>
     </aside>
 
@@ -1578,7 +1578,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.18</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.19</span>
         </div>
       </header>
 
@@ -1981,6 +1981,16 @@
                   <button type="button" class="btn btn-secondary" id="btn-remove-pdf" onclick="removeKBPdf()" style="display: none; padding: 0.35rem 0.6rem; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
                     <i data-lucide="x" style="width: 14px; height: 14px;"></i>
                   </button>
+                </div>
+                <!-- Barra de Progreso de Subida de PDF -->
+                <div id="kb-pdf-progress-container" style="display: none; margin-top: 0.75rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                    <span id="kb-pdf-progress-label" style="font-size: 0.75rem; color: var(--primary-light);">Subiendo documento PDF...</span>
+                    <span id="kb-pdf-progress-percent" style="font-size: 0.75rem; font-weight: bold; color: var(--primary-light);">0%</span>
+                  </div>
+                  <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; border: 1px solid var(--border-color);">
+                    <div id="kb-pdf-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%); transition: width 0.3s ease; border-radius: 3px;"></div>
+                  </div>
                 </div>
                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">Sube un archivo PDF (hasta 5MB) con información adicional. El sistema extraerá el texto y lo inyectará directamente en la base de conocimientos abajo.</p>
               </div>
@@ -4631,6 +4641,8 @@
         if (btnRemovePdf) btnRemovePdf.style.display = 'none';
         const fileInput = document.getElementById('kb-pdf-file');
         if (fileInput) fileInput.value = '';
+        const progressContainer = document.getElementById('kb-pdf-progress-container');
+        if (progressContainer) progressContainer.style.display = 'none';
         document.getElementById('professionals-list-builder').innerHTML = '';
         toggleMultiProfessionalInput();
         
@@ -4742,7 +4754,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.7.18 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.7.19 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -7195,8 +7207,9 @@
         if (btnRemovePdf) btnRemovePdf.style.display = 'inline-flex';
       } else {
         if (kbPdfName) kbPdfName.innerText = 'Ningún archivo seleccionado';
-        if (btnRemovePdf) btnRemovePdf.style.display = 'none';
       }
+      const progressContainer = document.getElementById('kb-pdf-progress-container');
+      if (progressContainer) progressContainer.style.display = 'none';
       toggleMultiProfessionalInput();
 
       // Rellenar profesionales
@@ -7221,7 +7234,7 @@
       lucide.createIcons();
     }
 
-    // Función para manejar la subida del PDF de Base de Conocimiento
+    // Función para manejar la subida del PDF de Base de Conocimiento con progreso visual
     async function handleKBPdfUpload(input) {
       const file = input.files[0];
       if (!file) return;
@@ -7251,36 +7264,92 @@
         reader.onload = async () => {
           const base64String = reader.result;
           
-          try {
-            const res = await fetch('/api/upload-pdf', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                filename: file.name,
-                base64: base64String
-              })
-            });
+          const progressContainer = document.getElementById('kb-pdf-progress-container');
+          const progressBar = document.getElementById('kb-pdf-progress-bar');
+          const progressPercent = document.getElementById('kb-pdf-progress-percent');
+          const progressLabel = document.getElementById('kb-pdf-progress-label');
 
-            const data = await res.json();
-            if (!res.ok) {
-              throw new Error(data.error || 'Error al procesar el archivo.');
+          if (progressContainer) progressContainer.style.display = 'block';
+          if (progressBar) progressBar.style.width = '0%';
+          if (progressPercent) progressPercent.innerText = '0%';
+          if (progressLabel) progressLabel.innerText = 'Subiendo documento PDF...';
+
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', '/api/upload-pdf', true);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+
+          // Escuchar el progreso de la subida (Upload)
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const percent = Math.round((e.loaded / e.total) * 75);
+              if (progressBar) progressBar.style.width = `${percent}%`;
+              if (progressPercent) progressPercent.innerText = `${percent}%`;
             }
+          };
 
-            document.getElementById('knowledge-base-url').value = data.url;
-            document.getElementById('knowledge-base-content').value = data.text;
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const data = JSON.parse(xhr.responseText);
+                
+                // Completar la barra de progreso
+                if (progressBar) progressBar.style.width = '100%';
+                if (progressPercent) progressPercent.innerText = '100%';
+                if (progressLabel) progressLabel.innerText = '¡PDF subido y procesado con éxito!';
 
-            kbPdfName.innerHTML = `<a href="${data.url}" target="_blank" style="color: var(--primary-light); text-decoration: underline;">${file.name}</a>`;
-            if (btnRemovePdf) btnRemovePdf.style.display = 'inline-flex';
-            
-            showToast('PDF procesado y texto extraído con éxito.', 'success');
-          } catch (uploadErr) {
-            console.error(uploadErr);
-            showCustomAlert(uploadErr.message || 'No se pudo subir o procesar el archivo PDF.', 'Error de procesamiento', 'error');
+                setTimeout(() => {
+                  if (progressContainer) progressContainer.style.display = 'none';
+                }, 2000);
+
+                document.getElementById('knowledge-base-url').value = data.url;
+                document.getElementById('knowledge-base-content').value = data.text;
+
+                kbPdfName.innerHTML = `<a href="${data.url}" target="_blank" style="color: var(--primary-light); text-decoration: underline;">${file.name}</a>`;
+                if (btnRemovePdf) btnRemovePdf.style.display = 'inline-flex';
+                
+                showCustomAlert('PDF procesado y texto extraído con éxito.', 'PDF Procesado', 'success');
+              } catch (err) {
+                console.error(err);
+                handleError('Error al leer la respuesta del servidor.');
+              }
+            } else {
+              try {
+                const errData = JSON.parse(xhr.responseText);
+                handleError(errData.error || 'Error del servidor al subir el archivo.');
+              } catch (e) {
+                handleError('Error en el servidor al procesar el archivo PDF.');
+              }
+            }
+          };
+
+          xhr.onerror = () => {
+            handleError('Error de red o conexión al subir el archivo.');
+          };
+
+          function handleError(message) {
+            if (progressContainer) progressContainer.style.display = 'none';
+            showCustomAlert(message, 'Error de procesamiento', 'error');
             kbPdfName.innerText = 'Error al subir archivo';
             input.value = '';
           }
+
+          // Simular progreso del backend (de 75% a 95%) mientras procesa el texto
+          let backendProgress = 75;
+          const backendTimer = setInterval(() => {
+            if (xhr.readyState < 4 && backendProgress < 95) {
+              backendProgress += 2;
+              if (progressBar) progressBar.style.width = `${backendProgress}%`;
+              if (progressPercent) progressPercent.innerText = `${backendProgress}%`;
+              if (progressLabel) progressLabel.innerText = 'Analizando y extrayendo texto del documento...';
+            } else {
+              clearInterval(backendTimer);
+            }
+          }, 300);
+
+          xhr.send(JSON.stringify({
+            filename: file.name,
+            base64: base64String
+          }));
         };
       } catch (err) {
         console.error(err);
@@ -7297,7 +7366,7 @@
       document.getElementById('kb-pdf-name').innerText = 'Ningún archivo seleccionado';
       const btnRemovePdf = document.getElementById('btn-remove-pdf');
       if (btnRemovePdf) btnRemovePdf.style.display = 'none';
-      showToast('Base de conocimientos PDF eliminada.', 'info');
+      showCustomAlert('Base de conocimientos PDF eliminada.', 'PDF Eliminado', 'info');
     }
 
     // Cerrar el modal de edición de clientes y devolver el formulario a su sitio
