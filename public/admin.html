@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.27">
-  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.27">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.28">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.28">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1123,12 +1123,15 @@
 
     /* Estilos para el select de clasificación comercial */
     .select-classification {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
       display: inline-block;
       margin: 0 auto;
       text-align: center;
       text-align-last: center;
       border-radius: 6px;
-      padding: 0.2rem 0.3rem;
+      padding: 0.2rem 0.6rem;
       font-size: 0.75rem;
       cursor: pointer;
       outline: none;
@@ -1559,7 +1562,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.27</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.28</span>
       </div>
     </aside>
 
@@ -1582,7 +1585,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.27</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.28</span>
         </div>
       </header>
 
@@ -5052,7 +5055,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.7.27 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.7.28 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -8437,9 +8440,9 @@
         }
 
         const classificationSelect = `
-          <select onchange="changeProspectClassification('${p.id}', this)" class="select-classification status-${currentClass}" style="text-align: center; text-align-last: center; min-width: 140px; max-width: 150px;">
+          <select onchange="changeProspectClassification('${p.id}', this)" class="select-classification status-${currentClass}" style="-webkit-appearance: none; -moz-appearance: none; appearance: none; text-align: center; text-align-last: center; min-width: 140px; max-width: 150px;">
             <option value="no_contactado" ${currentClass === 'no_contactado' ? 'selected' : ''}>No contactado</option>
-            <option value="pendiente_contacto" ${currentClass === 'pendiente_contacto' ? 'selected' : ''}>Contacto Pte.</option>
+            <option value="pendiente_contacto" ${currentClass === 'pendiente_contacto' ? 'selected' : ''}>Pte. de contacto</option>
             <option value="contactado" ${currentClass === 'contactado' ? 'selected' : ''}>Contactado</option>
             <option value="en_negociacion" ${currentClass === 'en_negociacion' ? 'selected' : ''}>En negociación</option>
             <option value="contratado" ${currentClass === 'contratado' ? 'selected' : 'disabled'}>${contratadoLabel}</option>
@@ -8448,7 +8451,7 @@
         `;
 
         // Select de Comercial asignado
-        let comercialSelect = `<select onchange="assignProspectComercial('${p.id}', this)" class="select-classification" style="display: inline-block; margin: 0 auto; width: auto; min-width: 125px; max-width: 135px; text-align: center; text-align-last: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: #fff; padding: 0.2rem 0.3rem; border-radius: 6px; font-size: 0.75rem;">`;
+        let comercialSelect = `<select onchange="assignProspectComercial('${p.id}', this)" class="select-classification" style="-webkit-appearance: none; -moz-appearance: none; appearance: none; display: inline-block; margin: 0 auto; width: auto; min-width: 125px; max-width: 135px; text-align: center; text-align-last: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: #fff; padding: 0.2rem 0.3rem; border-radius: 6px; font-size: 0.75rem;">`;
         comercialSelect += `<option value="">Sin Asignar</option>`;
         (allComerciales || []).forEach(c => {
           comercialSelect += `<option value="${c.id}" ${p.comercial_id === c.id ? 'selected' : ''}>${c.name}</option>`;
@@ -10406,7 +10409,7 @@
         const p = allProspects.find(item => item.id === prospectId);
         if (p) p.comercial_id = comercialId;
         
-        showCustomAlert('Agente comercial asignado correctamente.', 'Comercial Asignado', 'success');
+        console.log(`[Prospecting] Comercial ${comercialId} asignado con éxito al prospecto ${prospectId} de forma silenciosa.`);
       } catch (err) {
         console.error(err);
         showCustomAlert('No se pudo asignar el agente comercial.', 'Error', 'error');
@@ -10702,7 +10705,7 @@
         } else {
           const classLabels = {
             no_contactado: 'No Contactado',
-            pendiente_contacto: 'Contacto Pte.',
+            pendiente_contacto: 'Pte. de contacto',
             contactado: 'Contactado',
             en_negociacion: 'En negociación',
             contratado: 'Contratado ✓',
