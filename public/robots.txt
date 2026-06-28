@@ -1,0 +1,6 @@
+# robots.txt para Receptia
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://receptia.corandar.com/sitemap-index.xml

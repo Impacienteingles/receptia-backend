@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Privacidad - Receptia</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.1.41">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.1.41">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b0f19;
+      color: #e5e7eb;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: rgba(17, 24, 39, 0.8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1.5rem 2rem;
+      text-align: center;
+    }
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      background: linear-gradient(135deg, #a78bfa 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .container {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+    }
+    h1 {
+      color: #fff;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 0.75rem;
+    }
+    h2 {
+      color: #fff;
+      font-size: 1.35rem;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+    p, li {
+      color: #9ca3af;
+      font-size: 0.95rem;
+    }
+    ul {
+      padding-left: 1.5rem;
+    }
+    li {
+      margin-bottom: 0.5rem;
+    }
+    .highlight-box {
+      background: rgba(139, 92, 246, 0.05);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    .highlight-box p {
+      color: #e2e8f0;
+      margin: 0;
+    }
+    footer {
+      text-align: center;
+      padding: 3rem 0;
+      color: #6b7280;
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 4rem;
+    }
+    a {
+      color: #a78bfa;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo-text">Receptia</a>
+  </header>
+  
+  <div class="container">
+    <h1>Política de Privacidad</h1>
+    <p>Última actualización: 23 de junio de 2026</p>
+    
+    <p>En <strong>Receptia</strong> (desarrollado por <strong>Corandar</strong>), nos tomamos muy en serio la privacidad de tus datos. Esta Política de Privacidad describe cómo recopilamos, utilizamos, almacenamos y protegemos la información cuando utilizas nuestra plataforma de recepcionista virtual por Inteligencia Artificial y te conectas con los servicios de Google.</p>
+    
+    <div class="highlight-box">
+      <h2>Divulgación del Uso de Datos de Google API</h2>
+      <p>El uso y la transferencia por parte de Receptia a cualquier otra aplicación de la información recibida a través de las APIs de Google se adherirá a la <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank">Política de datos del usuario de los servicios de las APIs de Google</a>, incluidos los requisitos de <strong>Uso Limitado (Limited Use requirements)</strong>.</p>
+      <p style="margin-top: 0.75rem; font-style: italic;">
+        "Receptia's use and transfer to any other app of information received from Google APIs will adhere to Google API Services User Data Policy, including the Limited Use requirements."
+      </p>
+    </div>
+    
+    <h2>1. Información que Recopilamos</h2>
+    <p>Para prestar nuestros servicios, recopilamos la siguiente información:</p>
+    <ul>
+      <li><strong>Información de la Cuenta:</strong> Nombre de tu negocio, correo electrónico y contraseña/PIN de acceso.</li>
+      <li><strong>Ajustes del Asistente:</strong> Instrucciones personalizadas, listado de especialidades, tarifas de servicios y ID del agente de voz.</li>
+      <li><strong>Datos de Google Calendar:</strong> Cuando vinculas tu cuenta de Google mediante OAuth2, accedemos a tus calendarios con el fin de consultar la disponibilidad de huecos libres y crear eventos correspondientes a las citas telefónicas agendadas.</li>
+      <li><strong>Historial de Llamadas:</strong> Duración de la llamada, número de teléfono del llamante, grabación de audio, transcripción del diálogo y resúmenes de la conversación creados por la IA.</li>
+    </ul>
+    
+    <h2>2. Cómo Utilizamos los Datos de Google Calendar</h2>
+    <p>El acceso a Google Calendar se limita estrictamente a las operaciones necesarias para automatizar tu agenda:</p>
+    <ul>
+      <li><strong>Lectura de Disponibilidad:</strong> La IA lee los eventos de tu Google Calendar en la fecha consultada por el paciente/cliente telefónico para saber qué horas están libres. No guardamos ni almacenamos la información de tus otros eventos en nuestros servidores.</li>
+      <li><strong>Escritura de Citas:</strong> Cuando un usuario confirma una cita por teléfono con el asistente de voz, creamos un evento en tu Google Calendar con el nombre del cliente, número de teléfono y correo electrónico.</li>
+      <li><strong>Seguridad del Acceso:</strong> Almacenamos el token de actualización (refresh token) cifrado de forma segura en nuestra base de datos para poder realizar estas acciones en segundo plano. En cualquier momento puedes revocar el acceso a Receptia desde tu panel de seguridad de Google.</li>
+    </ul>
+    
+    <h2>3. Compartición de Datos con Terceros</h2>
+    <p>No vendemos, alquilamos ni compartimos tus datos personales ni la información de tus calendarios de Google con terceras partes para fines publicitarios. Únicamente transferimos datos a proveedores esenciales de infraestructura bajo estrictas políticas de privacidad:</p>
+    <ul>
+      <li><strong>Supabase:</strong> Para el alojamiento de bases de datos seguro.</li>
+      <li><strong>Retell AI / ElevenLabs / Cartesia:</strong> Proveedores de síntesis de voz y procesamiento de lenguaje natural de llamadas telefónicas.</li>
+      <li><strong>Stripe:</strong> Pasarela de pago segura para el cobro del servicio.</li>
+    </ul>
+    
+    <h2>4. Retención de Datos</h2>
+    <p>Conservaremos tus datos personales e historial de llamadas únicamente mientras mantengas activa tu cuenta en Receptia. Si decides dar de baja tu cuenta, eliminaremos permanentemente todos tus datos personales, logs y tokens de integración de Google de nuestros servidores.</p>
+    
+    <h2>5. Tus Derechos</h2>
+    <p>De acuerdo con el Reglamento General de Protección de Datos (RGPD) de la Unión Europea, tienes derecho a acceder, rectificar, limitar o solicitar la eliminación de tus datos personales enviando un correo a <a href="mailto:hola@corandar.com">hola@corandar.com</a>.</p>
+    
+    <h2>6. Contacto</h2>
+    <p>Si tienes alguna pregunta sobre nuestra Política de Privacidad o sobre cómo tratamos tus datos de Google Calendar, ponte en contacto con nosotros en:</p>
+    <p><strong>Corandar</strong><br>
+    Email: <a href="mailto:hola@corandar.com">hola@corandar.com</a><br>
+    Web: <a href="https://corandar.com">https://corandar.com</a></p>
+  </div>
+  
+  <footer>
+    <p>&copy; 2026 Corandar. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>
