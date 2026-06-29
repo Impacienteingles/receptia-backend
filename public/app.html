@@ -2028,7 +2028,7 @@
 
     async function loadLandingPlans() {
       try {
-        const res = await fetch('/api/plans');
+        const res = await fetch('/api/plans?_t=' + Date.now());
         if (!res.ok) throw new Error('Error al obtener planes');
         const data = await res.json();
         const plans = data.plans || [];
@@ -2272,7 +2272,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.27</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.28</span>
         </div>
       </header>
 
@@ -5896,7 +5896,7 @@
 
     async function fetchPlans() {
       try {
-        const response = await fetch('/api/admin/plans');
+        const response = await fetch('/api/admin/plans?_t=' + Date.now());
         if (!response.ok) throw new Error('Error al cargar las tarifas.');
         const resData = await response.json();
         if (resData.plans && resData.plans.length > 0) {
@@ -6466,6 +6466,26 @@
           document.getElementById('lbl-sub-end').innerText = new Date(currentTenant.contract_end_date).toLocaleDateString('es-ES');
         } else if (divSubEnd) {
           divSubEnd.style.display = 'none';
+        }
+
+        // Toggle de botón Stripe Portal
+        const btnStripePortal = document.getElementById('btn-stripe-portal');
+        if (btnStripePortal) {
+          if (currentTenant.stripe_customer_id) {
+            btnStripePortal.style.display = 'block';
+          } else {
+            btnStripePortal.style.display = 'none';
+          }
+        }
+
+        // Toggle de botón Cancelar Suscripción
+        const btnCancelSubscription = document.getElementById('btn-cancel-subscription');
+        if (btnCancelSubscription) {
+          if (currentTenant.subscription_status === 'active' || currentTenant.subscription_status === 'trial') {
+            btnCancelSubscription.style.display = 'block';
+          } else {
+            btnCancelSubscription.style.display = 'none';
+          }
         }
 
         // Mostrar/ocultar fila de descarga de contrato y estado de firma
