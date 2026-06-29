@@ -98,9 +98,14 @@ async function run() {
             .replace(/href="\/sectores\/asesorias-abogados"/g, 'href="sectores/asesorias-abogados"')
             .replace(/href="\/sectores\/clinicas-dentales"/g, 'href="sectores/clinicas-dentales"')
             .replace(/href="\/sectores\/peluquerias"/g, 'href="sectores/peluquerias"')
+            .replace(/href="\/comparar\/ringover"/g, 'href="comparar/ringover"')
+            .replace(/href="\/comparar\/contestador"/g, 'href="comparar/contestador"')
+            .replace(/href="\/comparar\/asistente-humano"/g, 'href="comparar/asistente-humano"')
+            .replace(/href="\/mobile\/index\.html"/g, 'href="mobile/index.html"')
             .replace(/href="https:\/\/app\.receptia\.corandar\.com[^"]*"/g, 'href="https://receptia.corandar.com/app.html"')
             .replace(/href="[^"]*app\.html"/g, 'href="https://receptia.corandar.com/app.html"')
             .replace(/href="[^"]*admin\.html"/g, 'href="https://receptia.corandar.com/admin.html"')
+            .replace(/href="\/" id="logo-receptia-link"/g, 'href="/receptia/" id="logo-receptia-link"')
             
             // Reescribir físicamente todos los enlaces del menú y logos para resolver de forma absoluta en el clon
             .replace(/href="\.\.\/\.\.\/#features"/g, 'href="/receptia/#features"')

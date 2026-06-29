@@ -31,7 +31,7 @@ async function run() {
 
     try {
       console.log('Creando commit...');
-      execSync('git commit -m "fix: update mobile header menu opacity, add downloads links to secondary pages navigation, resolve APK 404 on Webempresa"', { stdio: 'inherit' });
+      execSync('git commit -m "fix: update comparative page headers with logo, fix Arabic text on pricing, resolve Webempresa routing 404 for comparisons and iOS guide"', { stdio: 'inherit' });
     } catch (e) {
       console.log('ℹ️ No hay cambios para commit o el commit ya fue creado.');
     }
