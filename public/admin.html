@@ -1981,9 +1981,9 @@
                   <option value="Plan Inicial Mensual">Plan Inicial Mensual (79€/mes)</option>
                   <option value="Plan Estándar Mensual">Plan Estándar Mensual (149€/mes)</option>
                   <option value="Plan Premium Mensual">Plan Premium Mensual (249€/mes)</option>
-                  <option value="Plan Inicial Anual">Plan Inicial Anual (900€/año)</option>
-                  <option value="Plan Estándar Anual">Plan Estándar Anual (1290€/año)</option>
-                  <option value="Plan Premium Anual">Plan Premium Anual (2290€/año)</option>
+                  <option value="Plan Inicial Anual">Plan Inicial Anual (900€/año - 75€/mes)</option>
+                  <option value="Plan Estándar Anual">Plan Estándar Anual (1668€/año - 139€/mes)</option>
+                  <option value="Plan Premium Anual">Plan Premium Anual (2748€/año - 229€/mes)</option>
                 </select>
               </div>
 
@@ -4628,10 +4628,10 @@
           priceAmount.value = '900.00';
           billingCycle.value = 'annually';
         } else if (planName === 'Plan Estándar Anual') {
-          priceAmount.value = '1290.00';
+          priceAmount.value = '1668.00';
           billingCycle.value = 'annually';
         } else if (planName === 'Plan Premium Anual' || planName === 'Plan Anual Premium') {
-          priceAmount.value = '2290.00';
+          priceAmount.value = '2748.00';
           billingCycle.value = 'annually';
         }
       }
@@ -4821,10 +4821,13 @@
             // Sumar al MRR según el plan
             let price = 0;
             const planName = (t.subscription_plan || '').toLowerCase();
+            const isAnual = planName.includes('anual');
             if (planName.includes('premium')) {
-              price = planName.includes('anual') ? 2290 / 12 : 249;
+              price = isAnual ? 229 : 249;
+            } else if (planName.includes('inicial')) {
+              price = isAnual ? 75 : 79;
             } else {
-              price = planName.includes('anual') ? 1290 / 12 : 149;
+              price = isAnual ? 139 : 149;
             }
             totalMrr += price;
           } else if (t.subscription_status === 'trial') {
@@ -6499,7 +6502,10 @@
         
         card.innerHTML += `
           <h3 class="plan-name">${plan.name}</h3>
-          <div class="plan-price">${Number(plan.price).toLocaleString('es-ES')}€ <span>/ ${plan.cycle === 'annually' ? 'año' : 'mes'}</span></div>
+          <div class="plan-price" style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem;">
+            <div>${plan.cycle === 'annually' ? Math.round(plan.price / 12) : Number(plan.price).toLocaleString('es-ES')}€ <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted);">/ mes</span></div>
+            ${plan.cycle === 'annually' ? `<span style="font-size: 0.75rem; font-weight: 500; color: var(--success); margin-top: 0.15rem;">Facturado anualmente (${Number(plan.price).toLocaleString('es-ES')}€)</span>` : ''}
+          </div>
           <ul class="plan-features">
             ${featuresHtml}
           </ul>

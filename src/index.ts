@@ -2375,63 +2375,110 @@ app.post('/api/payments/checkout-success', async (req, res): Promise<void> => {
   }
 });
 
+const NEW_DEFAULT_PLANS = [
+  {
+    id: 'inicial_mensual',
+    name: 'Plan Inicial Mensual',
+    price: 79.00,
+    cycle: 'monthly',
+    features: [
+      'Recepcionista de voz 24/7',
+      'Google Calendar',
+      'Voz estándar en español',
+      'Confirmaciones por WhatsApp',
+      'RGPD nativo',
+      'Soporte por email'
+    ],
+    description: 'Para autónomos y profesionales que empiezan.'
+  },
+  {
+    id: 'estandar_mensual',
+    name: 'Plan Estándar Mensual',
+    price: 149.00,
+    cycle: 'monthly',
+    features: [
+      'Todo lo de Inicial',
+      'Recordatorios automáticos por WhatsApp',
+      'Modo vacaciones',
+      'Sincronización con software médico (Gesden, Dentrix)',
+      'Multi-profesional',
+      'Fianza anti no-show',
+      'Soporte prioritario'
+    ],
+    description: 'Para clínicas y negocios en pleno crecimiento.'
+  },
+  {
+    id: 'premium_mensual',
+    name: 'Plan Premium Mensual',
+    price: 249.00,
+    cycle: 'monthly',
+    features: [
+      'Todo lo de Estándar',
+      'Voz clonada (instant voice cloning)',
+      'Campañas outbound automatizadas',
+      'Análisis conversacional avanzado',
+      'Múltiples números',
+      'Account manager dedicado',
+      'API y webhooks personalizados'
+    ],
+    description: 'Para empresas con varios centros o alto volumen.'
+  },
+  {
+    id: 'inicial_anual',
+    name: 'Plan Inicial Anual',
+    price: 900.00,
+    cycle: 'annually',
+    features: [
+      'Recepcionista de voz 24/7',
+      'Google Calendar',
+      'Voz estándar en español',
+      'Confirmaciones por WhatsApp',
+      'RGPD nativo',
+      'Soporte por email'
+    ],
+    description: 'Ahorras 48€/año'
+  },
+  {
+    id: 'estandar_anual',
+    name: 'Plan Estándar Anual',
+    price: 1668.00,
+    cycle: 'annually',
+    features: [
+      'Todo lo de Inicial',
+      'Recordatorios automáticos por WhatsApp',
+      'Modo vacaciones',
+      'Sincronización con software médico (Gesden, Dentrix)',
+      'Multi-profesional',
+      'Fianza anti no-show',
+      'Soporte prioritario'
+    ],
+    description: 'Ahorras 120€/año'
+  },
+  {
+    id: 'premium_anual',
+    name: 'Plan Premium Anual',
+    price: 2748.00,
+    cycle: 'annually',
+    features: [
+      'Todo lo de Estándar',
+      'Voz clonada (instant voice cloning)',
+      'Campañas outbound automatizadas',
+      'Análisis conversacional avanzado',
+      'Múltiples números',
+      'Account manager dedicado',
+      'API y webhooks personalizados'
+    ],
+    description: 'Ahorras 240€/año'
+  }
+];
+
 // Ruta pública para listar planes en la landing page
 app.get('/api/plans', async (req, res): Promise<void> => {
   try {
     const { data: plans, error } = await supabase.from('plans').select('*').order('price', { ascending: true });
     if (error) {
       if (error.code === '42P01') {
-        const defaultPlans = [
-          {
-            id: 'inicial_mensual',
-            name: 'Plan Inicial Mensual',
-            price: 79.00,
-            cycle: 'monthly',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 100 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
-            description: 'Plan inicial para autónomos y profesionales que empiezan.'
-          },
-          {
-            id: 'estandar_mensual',
-            name: 'Plan Estándar Mensual',
-            price: 149.00,
-            cycle: 'monthly',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
-            description: 'Plan estándar para medianos y pequeños comercios.'
-          },
-          {
-            id: 'premium_mensual',
-            name: 'Plan Premium Mensual',
-            price: 249.00,
-            cycle: 'monthly',
-            features: ['Todo lo del Plan Estándar', 'Conexión SIP Zadarma avanzada', 'Soporte de Voz ElevenLabs de alta calidad', 'Prompt e instrucciones optimizadas', 'Hasta 500 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
-            description: 'Más Popular'
-          },
-          {
-            id: 'inicial_anual',
-            name: 'Plan Inicial Anual',
-            price: 900.00,
-            cycle: 'annually',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 100 minutos incluidos / mes', 'Minuto adicional a 0.35€/min', 'Ahorras 48€/año'],
-            description: 'Ahorras 48€/año'
-          },
-          {
-            id: 'estandar_anual',
-            name: 'Plan Estándar Anual',
-            price: 1290.00,
-            cycle: 'annually',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.35€/min', 'Ahorro de casi 3 meses de suscripción'],
-            description: 'Ahorro de casi 3 meses de suscripción'
-          },
-          {
-            id: 'premium_anual',
-            name: 'Plan Premium Anual',
-            price: 2290.00,
-            cycle: 'annually',
-            features: ['Todo lo del Plan Premium', 'Soporte VIP priorizado 24/7', 'Ahorro de 2 meses de suscripción', 'Minutos ilimitados controlados'],
-            description: 'Ahorro de 2 meses de suscripción'
-          }
-        ];
-        res.json({ plans: defaultPlans });
+        res.json({ plans: NEW_DEFAULT_PLANS });
         return;
       }
       throw error;
@@ -2449,57 +2496,7 @@ app.get('/api/admin/plans', async (req, res): Promise<void> => {
     const { data: plans, error } = await supabase.from('plans').select('*').order('price', { ascending: true });
     if (error) {
       if (error.code === '42P01') {
-        const defaultPlans = [
-          {
-            id: 'inicial_mensual',
-            name: 'Plan Inicial Mensual',
-            price: 79.00,
-            cycle: 'monthly',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 100 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
-            description: 'Plan inicial para autónomos y profesionales que empiezan.'
-          },
-          {
-            id: 'estandar_mensual',
-            name: 'Plan Estándar Mensual',
-            price: 149.00,
-            cycle: 'monthly',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
-            description: 'Plan estándar para medianos y pequeños comercios.'
-          },
-          {
-            id: 'premium_mensual',
-            name: 'Plan Premium Mensual',
-            price: 249.00,
-            cycle: 'monthly',
-            features: ['Todo lo del Plan Estándar', 'Conexión SIP Zadarma avanzada', 'Soporte de Voz ElevenLabs de alta calidad', 'Prompt e instrucciones optimizadas', 'Hasta 500 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
-            description: 'Más Popular'
-          },
-          {
-            id: 'inicial_anual',
-            name: 'Plan Inicial Anual',
-            price: 900.00,
-            cycle: 'annually',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 100 minutos incluidos / mes', 'Minuto adicional a 0.35€/min', 'Ahorras 48€/año'],
-            description: 'Ahorras 48€/año'
-          },
-          {
-            id: 'estandar_anual',
-            name: 'Plan Estándar Anual',
-            price: 1290.00,
-            cycle: 'annually',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.35€/min', 'Ahorro de casi 3 meses de suscripción'],
-            description: 'Ahorro de casi 3 meses de suscripción'
-          },
-          {
-            id: 'premium_anual',
-            name: 'Plan Premium Anual',
-            price: 2290.00,
-            cycle: 'annually',
-            features: ['Todo lo del Plan Premium', 'Soporte VIP priorizado 24/7', 'Ahorro de 2 meses de suscripción', 'Minutos ilimitados controlados'],
-            description: 'Ahorro de 2 meses de suscripción'
-          }
-        ];
-        res.json({ plans: defaultPlans, migration_required: true });
+        res.json({ plans: NEW_DEFAULT_PLANS, migration_required: true });
         return;
       }
       throw error;
@@ -2507,6 +2504,21 @@ app.get('/api/admin/plans', async (req, res): Promise<void> => {
     res.json({ plans, migration_required: false });
   } catch (err: any) {
     console.error('Error al listar planes:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Ruta temporal para actualizar planes en Supabase
+app.get('/api/debug/update-plans', async (req, res): Promise<void> => {
+  try {
+    for (const plan of NEW_DEFAULT_PLANS) {
+      await supabase
+        .from('plans')
+        .upsert(plan)
+        .eq('id', plan.id);
+    }
+    res.json({ success: true, message: 'Plans updated in Supabase successfully' });
+  } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
