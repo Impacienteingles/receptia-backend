@@ -1615,6 +1615,60 @@ app.post('/api/payments/create-portal-session', async (req, res): Promise<void> 
   }
 });
 
+// 4. Cancelar suscripción del cliente
+app.post('/api/payments/cancel-subscription', async (req, res): Promise<void> => {
+  const { tenant_id } = req.body;
+  if (!tenant_id) {
+    res.status(400).json({ error: 'Falta el parámetro obligatorio tenant_id.' });
+    return;
+  }
+
+  try {
+    // Obtener detalles del inquilino
+    const { data: tenant, error: tErr } = await supabase.from('tenants').select('*').eq('id', tenant_id).single();
+    if (tErr || !tenant) {
+      res.status(404).json({ error: 'Cliente no encontrado.' });
+      return;
+    }
+
+    // Si tiene suscripción activa en Stripe, intentar cancelarla en Stripe
+    if (tenant.stripe_customer_id) {
+      try {
+        const stripe = await getStripeClient();
+        const subscriptions = await stripe.subscriptions.list({
+          customer: tenant.stripe_customer_id,
+          status: 'active',
+          limit: 1
+        });
+        
+        if (subscriptions.data.length > 0) {
+          await stripe.subscriptions.cancel(subscriptions.data[0].id);
+          console.log(`[Stripe] Cancelada suscripción ${subscriptions.data[0].id} para el cliente ${tenant_id}`);
+        }
+      } catch (stripeErr: any) {
+        console.warn('⚠️ No se pudo cancelar la suscripción en Stripe (puede que ya estuviera cancelada):', stripeErr.message);
+      }
+    }
+
+    // Actualizar el inquilino en la base de datos a estado cancelado
+    const todayStr = new Date().toISOString().split('T')[0];
+    const { error: updErr } = await supabase
+      .from('tenants')
+      .update({
+        subscription_status: 'cancelled',
+        contract_end_date: todayStr
+      })
+      .eq('id', tenant_id);
+
+    if (updErr) throw updErr;
+
+    res.json({ status: 'success', message: 'Suscripción cancelada correctamente.' });
+  } catch (err: any) {
+    console.error('Error al cancelar la suscripción:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 3. Webhook de Stripe para notificaciones asíncronas en la nube
 app.post('/api/payments/webhook', async (req, res): Promise<void> => {
   const sig = req.headers['stripe-signature'];

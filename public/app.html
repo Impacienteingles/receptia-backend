@@ -2272,7 +2272,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.25</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.27</span>
         </div>
       </header>
 
@@ -2660,6 +2660,9 @@
             </button>
             <button id="btn-stripe-portal" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem; display: none; border-color: #8b5cf6; color: #a78bfa;" onclick="openStripePortal()">
               <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> Gestionar Facturación (Stripe)
+            </button>
+            <button id="btn-cancel-subscription" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem; border-color: var(--error); color: var(--error); display: none;" onclick="requestCancelSubscription()">
+              <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i> Cancelar Suscripción
             </button>
           </div>
         </div>
@@ -6106,28 +6109,11 @@
           return;
         }
 
-        // Fallback para PayPal (Simulado)
-        const response = await fetch('/api/payments/checkout-success', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            tenant_id: tenantId,
-            plan_id: activePaymentPlan.id,
-            gateway: selectedPaymentGateway
-          })
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || 'Error procesando el pago en el servidor.');
-        }
-
-        showToast(`Pago procesado con éxito. ¡Plan ${data.plan} activado!`);
-        closeCheckoutModal();
-        document.getElementById('subscription-expired-overlay').style.display = 'none';
-        loadTenantData(tenantId);
+        // Fallback para PayPal (Simulado) - Deshabilitado por seguridad
+        showToast('El pago por PayPal no está disponible actualmente. Por favor, utiliza Tarjeta (Stripe).', 'warning');
+        btnConfirm.disabled = false;
+        document.getElementById('btn-confirm-payment-text').innerText = originalText;
+        return;
       } catch (err) {
         showToast(err.message, 'error');
       } finally {
@@ -6158,6 +6144,42 @@
         window.location.href = data.url;
       } catch (err) {
         showToast(err.message, 'error');
+      }
+    }
+
+    async function requestCancelSubscription() {
+      const confirmCancel = confirm("¿Estás seguro de que deseas cancelar tu suscripción? Se detendrán los cobros recurrentes y el servicio de IA.");
+      if (!confirmCancel) return;
+
+      const btnCancel = document.getElementById('btn-cancel-subscription');
+      const originalText = btnCancel.innerHTML;
+      btnCancel.disabled = true;
+      btnCancel.innerHTML = '<span class="loading-spinner"></span> Cancelando...';
+
+      try {
+        const response = await fetch('/api/payments/cancel-subscription', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            tenant_id: tenantId
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al cancelar la suscripción.');
+        }
+
+        showToast('Suscripción cancelada correctamente.');
+        loadTenantData(tenantId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btnCancel.disabled = false;
+        btnCancel.innerHTML = originalText;
+        lucide.createIcons();
       }
     }
 
@@ -7325,6 +7347,16 @@
               btnStripePortal.style.display = 'block';
             } else {
               btnStripePortal.style.display = 'none';
+            }
+          }
+
+          // Toggle de botón Cancelar Suscripción
+          const btnCancelSubscription = document.getElementById('btn-cancel-subscription');
+          if (btnCancelSubscription) {
+            if (currentTenant.subscription_status === 'active' || currentTenant.subscription_status === 'trial') {
+              btnCancelSubscription.style.display = 'block';
+            } else {
+              btnCancelSubscription.style.display = 'none';
             }
           }
         }
@@ -8544,8 +8576,8 @@ ${cleanAudio}`;
             <button id="btn-tab-stripe" class="btn" style="flex: 1; font-size: 0.9rem;" onclick="switchPaymentGateway('stripe')">
               <i data-lucide="credit-card"></i> Tarjeta (Stripe)
             </button>
-            <button id="btn-tab-paypal" class="btn btn-secondary" style="flex: 1; font-size: 0.9rem;" onclick="switchPaymentGateway('paypal')">
-              <i data-lucide="wallet"></i> PayPal
+            <button id="btn-tab-paypal" class="btn btn-secondary" style="flex: 1; font-size: 0.9rem; opacity: 0.5; cursor: not-allowed;" onclick="showToast('El pago por PayPal no está disponible actualmente. Por favor, utiliza Tarjeta (Stripe).', 'warning')">
+              <i data-lucide="wallet"></i> PayPal (No Disp.)
             </button>
           </div>
 
