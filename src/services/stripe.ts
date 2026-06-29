@@ -146,10 +146,7 @@ export async function createStripeCheckoutSession(
         plan_id: planId,
       },
       trial_period_days: 7,
-      billing_mode: {
-        type: 'classic'
-      }
-    } as any,
+    },
   });
 
   if (!session.url) {
