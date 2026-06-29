@@ -3222,7 +3222,7 @@ app.get('/api/retell-agents', async (req, res): Promise<void> => {
     console.log('[Catalog API] Listando agentes de Retell AI (V2)...');
     const response = await axios.post('https://api.retellai.com/v2/list-agents', {
       filter_criteria: {
-        channel: { op: 'eq', value: 'voice' }
+        channel: { op: 'eq', value: 'voice', type: 'string' }
       }
     }, {
       headers: {
