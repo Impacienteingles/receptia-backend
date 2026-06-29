@@ -2272,7 +2272,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.28</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.30</span>
         </div>
       </header>
 
@@ -6020,8 +6020,8 @@
               ${featuresList}
             </ul>
 
-            <button class="btn" onclick="openCheckoutSimulator('${plan.id}')" style="width: 100%; font-size: 0.85rem; padding: 0.55rem; height: auto;">
-              <i data-lucide="credit-card"></i> Pagar con Stripe / PayPal
+            <button class="btn" onclick="redirectToStripeCheckout('${plan.id}', this)" style="width: 100%; font-size: 0.85rem; padding: 0.55rem; height: auto;">
+              <i data-lucide="credit-card"></i> Pagar con Stripe
             </button>
           `;
 
@@ -6040,17 +6040,38 @@
       document.getElementById('plans-modal').style.display = 'none';
     }
 
-    function openCheckoutSimulator(planId) {
-      closePlansModal();
-      const plan = allPlans.find(p => p.id === planId);
-      if (!plan) return;
-      activePaymentPlan = plan;
-      document.getElementById('simulator-plan-name').innerText = plan.name;
-      const cycleLabel = plan.cycle === 'annually' ? 'año' : 'mes';
-      document.getElementById('simulator-plan-price').innerText = `${plan.price}€ / ${cycleLabel}`;
-      switchPaymentGateway('stripe');
-      document.getElementById('checkout-simulator-modal').style.display = 'flex';
-      lucide.createIcons();
+    async function redirectToStripeCheckout(planId, btn) {
+      if (!planId) return;
+      
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-spinner"></span> Redirigiendo...';
+      
+      try {
+        const response = await fetch('/api/payments/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            tenant_id: tenantId,
+            plan_id: planId
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al conectar con Stripe.');
+        }
+
+        // Redirigir a la pasarela de Stripe directamente
+        window.location.href = data.url;
+      } catch (err) {
+        showToast(err.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        lucide.createIcons();
+      }
     }
 
     function closeCheckoutModal() {
@@ -6231,10 +6252,25 @@
         }
       }
 
-      if (status === 'paused' || status === 'cancelled') {
+      if (status === 'paused') {
         accessBlocked = true;
         document.getElementById('expired-overlay-title').innerText = 'Suscripción Inactiva o Suspendida';
-        document.getElementById('expired-overlay-message').innerText = `Tu suscripción a Receptia se encuentra actualmente ${status === 'paused' ? 'pausada' : 'cancelada'}. Para poder reactivar tu agente de voz IA y recuperar el acceso a la gestión de citas, selecciona una tarifa a continuación.`;
+        document.getElementById('expired-overlay-message').innerText = `Tu suscripción a Receptia se encuentra actualmente pausada. Para poder reactivar tu agente de voz IA y recuperar el acceso a la gestión de citas, selecciona una tarifa a continuación.`;
+      } else if (status === 'cancelled') {
+        let isEnded = true;
+        if (currentTenant.contract_end_date) {
+          const endDate = new Date(currentTenant.contract_end_date);
+          endDate.setHours(23, 59, 59, 999);
+          const now = new Date();
+          if (endDate >= now) {
+            isEnded = false;
+          }
+        }
+        if (isEnded) {
+          accessBlocked = true;
+          document.getElementById('expired-overlay-title').innerText = 'Suscripción Cancelada';
+          document.getElementById('expired-overlay-message').innerText = `Tu suscripción a Receptia se encuentra actualmente cancelada y tu período de acceso ha finalizado. Para poder reactivar tu agente de voz IA y recuperar el acceso a la gestión de citas, selecciona una tarifa a continuación.`;
+        }
       } else if (isTrial && trialEnds) {
         const trialEndDate = new Date(trialEnds);
         const today = new Date();
