@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import nodemailer from 'nodemailer';
 const pdf = require('pdf-parse');
 import webhookRouter from './routes/webhook';
 import prospectingRouter from './routes/prospecting';
@@ -3755,6 +3756,86 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
   }
 });
 
+// Endpoint público para capturar contactos desde la Landing Page
+app.post('/api/lead', async (req, res): Promise<void> => {
+  const { name, company, email, phone, sector, message } = req.body;
+
+  if (!company || !name || !email || !sector) {
+    res.status(400).json({ error: 'Faltan campos obligatorios para el registro del lead.' });
+    return;
+  }
+
+  try {
+    // 1. Guardar el prospecto en la base de datos de Supabase
+    const { error: dbError } = await supabase
+      .from('prospects')
+      .insert({
+        business_name: company,
+        contact_name: name,
+        email: email,
+        phone: phone || null,
+        sector: sector,
+        notes: message || null,
+        classification: 'no_contactado',
+        status: 'extracted'
+      });
+
+    if (dbError) {
+      console.error('[Landing Contact API] Error al guardar lead en Supabase:', dbError.message);
+    } else {
+      console.log(`[Landing Contact API] Lead de contacto guardado en Supabase: ${company} (${name})`);
+    }
+
+    // 2. Intentar enviar notificación de correo a receptia@corandar.com vía Nodemailer usando Gmail
+    if (process.env.GOOGLE_EMAIL && process.env.GOOGLE_PASSWORD) {
+      try {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.GOOGLE_EMAIL,
+            pass: process.env.GOOGLE_PASSWORD
+          }
+        });
+
+        const mailOptions = {
+          from: `"Receptia Landing Page" <${process.env.GOOGLE_EMAIL}>`,
+          to: 'receptia@corandar.com',
+          subject: `Nuevo Lead de Contacto: ${company}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+              <h2 style="color: #8b5cf6; margin-top: 0;">Nuevo Lead desde la Landing Page</h2>
+              <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+              <p><strong>Nombre del Contacto:</strong> ${name}</p>
+              <p><strong>Negocio / Empresa:</strong> ${company}</p>
+              <p><strong>Email Profesional:</strong> <a href="mailto:${email}">${email}</a></p>
+              <p><strong>Teléfono:</strong> ${phone || 'No provisto'}</p>
+              <p><strong>Sector:</strong> ${sector}</p>
+              <p><strong>Mensaje / Caso:</strong></p>
+              <blockquote style="background: #f9f9f9; border-left: 5px solid #8b5cf6; padding: 12px 18px; margin: 15px 0; font-style: italic; color: #444;">
+                ${message ? message.replace(/\n/g, '<br>') : 'Sin mensaje adicional.'}
+              </blockquote>
+              <hr style="border: 0; border-top: 1px solid #eee; margin-top: 25px; margin-bottom: 15px;">
+              <p style="font-size: 0.8rem; color: #888; text-align: center;">Este es un mensaje automático del servidor de Receptia SaaS.</p>
+            </div>
+          `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`[Landing Contact API] Notificación de email enviada con éxito a receptia@corandar.com`);
+      } catch (mailErr: any) {
+        console.error('[Landing Contact API] Error al enviar email de contacto:', mailErr.message);
+      }
+    } else {
+      console.warn('[Landing Contact API] GOOGLE_EMAIL y GOOGLE_PASSWORD no configurados. Omisión de envío de correo.');
+    }
+
+    res.json({ success: true, message: 'Lead capturado y notificado con éxito.' });
+  } catch (err: any) {
+    console.error('[Landing Contact API] Excepción no controlada:', err.message);
+    res.status(500).json({ error: 'Error interno del servidor al procesar el contacto.' });
+  }
+});
+
 // Registrar rutas de webhook
 app.use('/api/webhook', webhookRouter);
 app.use('/api/admin/prospects', prospectingRouter);
@@ -3882,6 +3963,13 @@ async function runDatabaseMigrations() {
       ALTER TABLE prospects 
       ADD COLUMN IF NOT EXISTS opened_at TIMESTAMP WITH TIME ZONE,
       ADD COLUMN IF NOT EXISTS opened_count INT DEFAULT 0;
+    `);
+
+    // Asegurar columnas para contacto de landing en prospects si no existen
+    await clientInstance.query(`
+      ALTER TABLE prospects 
+      ADD COLUMN IF NOT EXISTS notes TEXT,
+      ADD COLUMN IF NOT EXISTS contact_name VARCHAR;
     `);
 
     // Asegurar columna block_admin_access en tenants si no existe
