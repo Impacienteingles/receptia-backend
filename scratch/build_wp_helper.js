@@ -90,6 +90,14 @@ if (isset($_GET['action']) && $_GET['action'] === 'upload') {
                 @copy($apkSource, $apkDestFile);
                 @chmod($apkDestFile, 0644);
             }
+            
+            // 3.7. Limpiar la caché de WP Rocket y WordPress si están disponibles
+            if (function_exists('rocket_clean_domain')) {
+                @rocket_clean_domain();
+            }
+            if (function_exists('wp_cache_flush')) {
+                @wp_cache_flush();
+            }
         } else {
             $zipErrors = 'Falló la extracción física del zip.';
         }

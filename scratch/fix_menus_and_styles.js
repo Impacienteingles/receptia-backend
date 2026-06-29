@@ -112,7 +112,7 @@ function processFile(filePath) {
     const faqDesktopLink = 'href="../../#faq" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"> FAQ </a>';
     const downloadDesktopLink = '\n        <a href="../../#download-app" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"> Descargas </a>';
     
-    if (content.includes(faqDesktopLink) && !content.includes('href="../../#download-app"')) {
+    if (content.includes(faqDesktopLink) && !content.includes('class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"> Descargas </a>')) {
       content = content.replace(faqDesktopLink, faqDesktopLink + downloadDesktopLink);
     }
 
@@ -120,7 +120,7 @@ function processFile(filePath) {
     const faqMobileLink = 'href="../../#faq" class="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"> FAQ </a>';
     const downloadMobileLink = '<a href="../../#download-app" class="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"> Descargas </a>';
     
-    if (content.includes(faqMobileLink) && !content.includes('href="../../#download-app"')) {
+    if (content.includes(faqMobileLink) && !content.includes('class="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"> Descargas </a>')) {
       content = content.replace(faqMobileLink, faqMobileLink + downloadMobileLink);
     }
   }
