@@ -3785,77 +3785,104 @@ app.post('/api/lead', async (req, res): Promise<void> => {
       console.log(`[Landing Contact API] Lead de contacto guardado en Supabase: ${company} (${name})`);
     }
 
-    // 2. Intentar enviar notificación de correo a receptia@corandar.com vía Nodemailer
-    let transporter = null;
-    let mailFrom = '';
+    // 2. Intentar enviar notificación de correo a receptia@corandar.com
+    const resendApiKey = await getSettingVal('RESEND_API_KEY') || process.env.RESEND_API_KEY;
+    const resendFrom = await getSettingVal('RESEND_FROM_EMAIL') || process.env.RESEND_FROM_EMAIL || 'Receptia Demos <onboarding@resend.dev>';
     const receiverEmail = process.env.CONTACT_RECEIVER_EMAIL || 'receptia@corandar.com';
 
-    if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      // Configuración SMTP Modular (e.g. Webempresa, etc.) con timeouts de 5s para evitar cuelgues
-      transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        },
-        connectionTimeout: 5000,
-        greetingTimeout: 5000,
-        socketTimeout: 5000
-      });
-      mailFrom = process.env.SMTP_USER;
-      console.log(`[Landing Contact API] Utilizando transporte SMTP modular (${process.env.SMTP_HOST})`);
-    } else if (process.env.GOOGLE_EMAIL && process.env.GOOGLE_PASSWORD) {
-      // Fallback a Gmail con timeouts de 5s
-      transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.GOOGLE_EMAIL,
-          pass: process.env.GOOGLE_PASSWORD
-        },
-        connectionTimeout: 5000,
-        greetingTimeout: 5000,
-        socketTimeout: 5000
-      });
-      mailFrom = process.env.GOOGLE_EMAIL;
-      console.log('[Landing Contact API] Utilizando transporte Gmail (Fallback)');
-    }
- 
-    if (transporter && mailFrom) {
-      const mailOptions = {
-        from: `"Receptia Landing Page" <${mailFrom}>`,
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+        <h2 style="color: #8b5cf6; margin-top: 0;">Nuevo Lead desde la Landing Page</h2>
+        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+        <p><strong>Nombre del Contacto:</strong> ${name}</p>
+        <p><strong>Negocio / Empresa:</strong> ${company}</p>
+        <p><strong>Email Profesional:</strong> <a href="mailto:${email}">${email}</a></p>
+        <p><strong>Teléfono:</strong> ${phone || 'No provisto'}</p>
+        <p><strong>Sector:</strong> ${sector}</p>
+        <p><strong>Mensaje / Caso:</strong></p>
+        <blockquote style="background: #f9f9f9; border-left: 5px solid #8b5cf6; padding: 12px 18px; margin: 15px 0; font-style: italic; color: #444;">
+          ${message ? message.replace(/\n/g, '<br>') : 'Sin mensaje adicional.'}
+        </blockquote>
+        <hr style="border: 0; border-top: 1px solid #eee; margin-top: 25px; margin-bottom: 15px;">
+        <p style="font-size: 0.8rem; color: #888; text-align: center;">Este es un mensaje automático del servidor de Receptia SaaS.</p>
+      </div>
+    `;
+
+    if (resendApiKey && resendApiKey !== 'YOUR_RESEND_API_KEY') {
+      console.log('[Landing Contact API] Utilizando la API HTTP de Resend para enviar notificación...');
+      axios.post('https://api.resend.com/emails', {
+        from: resendFrom,
         to: receiverEmail,
         subject: `Nuevo Lead de Contacto: ${company}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #8b5cf6; margin-top: 0;">Nuevo Lead desde la Landing Page</h2>
-            <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
-            <p><strong>Nombre del Contacto:</strong> ${name}</p>
-            <p><strong>Negocio / Empresa:</strong> ${company}</p>
-            <p><strong>Email Profesional:</strong> <a href="mailto:${email}">${email}</a></p>
-            <p><strong>Teléfono:</strong> ${phone || 'No provisto'}</p>
-            <p><strong>Sector:</strong> ${sector}</p>
-            <p><strong>Mensaje / Caso:</strong></p>
-            <blockquote style="background: #f9f9f9; border-left: 5px solid #8b5cf6; padding: 12px 18px; margin: 15px 0; font-style: italic; color: #444;">
-              ${message ? message.replace(/\n/g, '<br>') : 'Sin mensaje adicional.'}
-            </blockquote>
-            <hr style="border: 0; border-top: 1px solid #eee; margin-top: 25px; margin-bottom: 15px;">
-            <p style="font-size: 0.8rem; color: #888; text-align: center;">Este es un mensaje automático del servidor de Receptia SaaS.</p>
-          </div>
-        `
-      };
- 
-      // Enviar el correo en segundo plano (asíncronamente) para no bloquear al usuario en la landing
-      transporter.sendMail(mailOptions)
-        .then(() => {
-          console.log(`[Landing Contact API] Notificación de email enviada con éxito a ${receiverEmail}`);
-        })
-        .catch((mailErr: any) => {
-          console.error('[Landing Contact API] Error al enviar email de contacto:', mailErr.message);
-        });
+        html: htmlContent
+      }, {
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(resendRes => {
+        console.log(`[Landing Contact API] ✅ Notificación enviada con éxito vía Resend HTTP API. ID: ${resendRes.data?.id}`);
+      })
+      .catch(resendErr => {
+        console.error('[Landing Contact API] ❌ Error al enviar vía Resend HTTP API:', resendErr.response?.data || resendErr.message);
+      });
     } else {
-      console.warn('[Landing Contact API] Ningún transporte de correo configurado. Omisión de envío de correo.');
+      console.log('[Landing Contact API] Resend no configurado en los Ajustes. Intentando SMTP fallback...');
+      let transporter = null;
+      let mailFrom = '';
+
+      if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS) {
+        // Configuración SMTP Modular (e.g. Webempresa, etc.) con timeouts de 5s para evitar cuelgues
+        transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+          },
+          connectionTimeout: 5000,
+          greetingTimeout: 5000,
+          socketTimeout: 5000
+        });
+        mailFrom = process.env.SMTP_USER;
+        console.log(`[Landing Contact API] Utilizando transporte SMTP modular (${process.env.SMTP_HOST})`);
+      } else if (process.env.GOOGLE_EMAIL && process.env.GOOGLE_PASSWORD) {
+        // Fallback a Gmail con timeouts de 5s
+        transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.GOOGLE_EMAIL,
+            pass: process.env.GOOGLE_PASSWORD
+          },
+          connectionTimeout: 5000,
+          greetingTimeout: 5000,
+          socketTimeout: 5000
+        });
+        mailFrom = process.env.GOOGLE_EMAIL;
+        console.log('[Landing Contact API] Utilizando transporte Gmail (Fallback)');
+      }
+
+      if (transporter && mailFrom) {
+        const mailOptions = {
+          from: `"Receptia Landing Page" <${mailFrom}>`,
+          to: receiverEmail,
+          subject: `Nuevo Lead de Contacto: ${company}`,
+          html: htmlContent
+        };
+
+        // Enviar el correo en segundo plano (asíncronamente) para no bloquear al usuario en la landing
+        transporter.sendMail(mailOptions)
+          .then(() => {
+            console.log(`[Landing Contact API] Notificación de email enviada con éxito a ${receiverEmail}`);
+          })
+          .catch((mailErr: any) => {
+            console.error('[Landing Contact API] Error al enviar email de contacto:', mailErr.message);
+          });
+      } else {
+        console.warn('[Landing Contact API] Ningún transporte de correo configurado. Omisión de envío de correo.');
+      }
     }
  
     res.json({ success: true, message: 'Lead capturado y notificado con éxito.' });
