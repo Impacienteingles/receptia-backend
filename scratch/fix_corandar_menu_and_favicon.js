@@ -40,20 +40,19 @@ function processHtmlFile(filePath) {
   // C) Modify #corandar-top-bar to add mobile toggle and menu
   const topBar = $('#corandar-top-bar');
   if (topBar.length > 0) {
-    // Check if the toggle is already there to avoid duplicate injection
+    // 1. Update top bar classes
+    topBar.attr('class', 'hidden bg-[#090d16]/95 border-b border-white/5');
+
+    // 2. Find inner container and add py-2 and layout styling
+    const innerContainer = topBar.find('.max-w-7xl');
+    innerContainer.addClass('py-2 flex items-center justify-between');
+
+    // 3. Update nav class to hide on mobile
+    const nav = innerContainer.find('nav');
+    nav.attr('class', 'hidden sm:flex items-center gap-4 sm:gap-6 text-[11px] sm:text-xs font-semibold text-gray-400');
+
+    // 4. Ensure toggle button is present
     if ($('#corandar-menu-toggle').length === 0) {
-      // 1. Update top bar classes
-      topBar.attr('class', 'hidden bg-[#090d16]/95 border-b border-white/5');
-
-      // 2. Find inner container and add py-2 and layout styling
-      const innerContainer = topBar.find('.max-w-7xl');
-      innerContainer.addClass('py-2 flex items-center justify-between');
-
-      // 3. Update nav class to hide on mobile
-      const nav = innerContainer.find('nav');
-      nav.attr('class', 'hidden sm:flex items-center gap-4 sm:gap-6 text-[11px] sm:text-xs font-semibold text-gray-400');
-
-      // 4. Append mobile toggle button to inner container
       innerContainer.append(`
       <!-- Botón Hamburguesa de Corandar en móviles -->
       <button id="corandar-menu-toggle" type="button" class="sm:hidden p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors" aria-label="Menú Corandar" aria-expanded="false" aria-controls="corandar-mobile-menu">
@@ -62,32 +61,46 @@ function processHtmlFile(filePath) {
         </svg>
       </button>
       `);
+      changed = true;
+    }
 
-      // 5. Append mobile menu as sibling to inner container
+    // 5. Build the inner HTML for the horizontal mobile menu
+    const horizontalMenuHtml = `
+      <nav class="flex flex-row flex-wrap justify-end items-center py-2.5 px-4 gap-y-1.5 gap-x-2 text-xs font-semibold text-gray-400">
+        <a href="https://corandar.com" class="hover:text-white transition-colors">Home</a>
+        <span class="text-white/10 text-[9px] select-none">|</span>
+        <a href="https://corandar.com/app-store-style-2/" class="hover:text-white transition-colors">App Store</a>
+        <span class="text-white/10 text-[9px] select-none">|</span>
+        <a href="https://corandar.com/shop/" class="hover:text-white transition-colors">Shop</a>
+        <span class="text-white/10 text-[9px] select-none">|</span>
+        <a href="https://corandar.com/blog/" class="hover:text-white transition-colors">Blog</a>
+        <span class="text-white/10 text-[9px] select-none">|</span>
+        <a href="https://corandar.com/contact/" class="hover:text-white transition-colors">Contacto</a>
+        <span class="text-white/10 text-[9px] select-none">|</span>
+        <a href="https://corandar.com/sire-md/" class="hover:text-white transition-colors">Sire MD</a>
+        <span class="text-white/10 text-[9px] select-none">|</span>
+        <a href="https://corandar.com/sugerir-aplicacion/" class="hover:text-white transition-colors">Sugerencias</a>
+      </nav>
+    `;
+
+    // 6. Ensure mobile menu container is present, and set its inner HTML
+    let mobileMenu = $('#corandar-mobile-menu');
+    if (mobileMenu.length === 0) {
       topBar.append(`
     <!-- Desplegable Móvil de Corandar -->
     <div id="corandar-mobile-menu" class="hidden sm:hidden border-t border-white/5 bg-[#090d16]/98">
-      <nav class="flex flex-col py-2 px-4 gap-2 text-sm font-medium text-gray-400 text-right">
-        <a href="https://corandar.com" class="py-2 hover:text-white transition-colors">Home</a>
-        <a href="https://corandar.com/app-store-style-2/" class="py-2 hover:text-white transition-colors">App Store</a>
-        <a href="https://corandar.com/shop/" class="py-2 hover:text-white transition-colors">Shop</a>
-        <a href="https://corandar.com/blog/" class="py-2 hover:text-white transition-colors">Blog</a>
-        <a href="https://corandar.com/contact/" class="py-2 hover:text-white transition-colors">Contacto</a>
-        <a href="https://corandar.com/sire-md/" class="py-2 hover:text-white transition-colors">Sire MD</a>
-        <a href="https://corandar.com/sugerir-aplicacion/" class="py-2 hover:text-white transition-colors">Sugerencias</a>
-      </nav>
+      ${horizontalMenuHtml}
     </div>
       `);
-
       changed = true;
-      console.log(`- Added Corandar mobile toggle & menu to ${path.relative(publicDir, filePath)}`);
+      console.log(`- Added Corandar mobile toggle & horizontal menu to ${path.relative(publicDir, filePath)}`);
     } else {
-      // If it already exists, ensure the nav has text-right class for alignment
-      const existingMobileMenuNav = $('#corandar-mobile-menu nav');
-      if (existingMobileMenuNav.length > 0 && !existingMobileMenuNav.hasClass('text-right')) {
-        existingMobileMenuNav.addClass('text-right');
+      // Overwrite the existing content to use the new horizontal layout
+      const currentHtml = mobileMenu.html() || '';
+      if (!currentHtml.includes('flex-row') || !currentHtml.includes('|')) {
+        mobileMenu.html(horizontalMenuHtml);
         changed = true;
-        console.log(`- Set existing Corandar mobile menu alignment to text-right in ${path.relative(publicDir, filePath)}`);
+        console.log(`- Updated Corandar mobile menu to horizontal layout in ${path.relative(publicDir, filePath)}`);
       }
     }
   }

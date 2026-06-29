@@ -31,7 +31,7 @@ async function run() {
 
     try {
       console.log('Creando commit...');
-      execSync('git commit -m "fix: align Corandar mobile menu options to the right"', { stdio: 'inherit' });
+      execSync('git commit -m "fix: change Corandar mobile menu layout to horizontal with pipe separator"', { stdio: 'inherit' });
     } catch (e) {
       console.log('ℹ️ No hay cambios para commit o el commit ya fue creado.');
     }
