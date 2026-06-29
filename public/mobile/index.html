@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Receptia Mobile</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Receptia">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Icons -->
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  
+  <!-- CSS Stylesheets -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              900: '#4c1d95',
+            },
+            surface: {
+              100: '#1e293b',
+              200: '#0f172a',
+              300: '#070a13',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons & Chart.js -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    /* Estilos nativos para simular App */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      background-color: #070a13;
+      color: #f1f5f9;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    /* Ocultar scrollbars */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* Animación de transiciones entre pestañas */
+    .view-fade {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Área segura inferior para iPhones con notch */
+    .safe-bottom {
+      padding-bottom: cubic-bezier(0.1, 0.76, 0.55, 0.94);
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+    .safe-top {
+      padding-top: env(safe-area-inset-top, 12px);
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col justify-between overflow-hidden">
+
+  <!-- ================= GUÍA INTERACTIVA DE INSTALACIÓN IOS ================= -->
+  <div id="ios-pwa-guide" class="fixed inset-0 z-50 flex flex-col justify-between bg-surface-300 px-6 py-12 safe-top safe-bottom hidden">
+    <div class="flex flex-col items-center mt-6">
+      <div class="flex items-center gap-2.5 mb-2">
+        <img src="/logo.png" alt="Receptia Logo" class="h-10 w-auto">
+        <span class="font-outfit font-extrabold text-2xl text-white tracking-tight">Receptia</span>
+      </div>
+      <p class="text-xs text-brand-400 font-semibold tracking-widest uppercase">Instalación en tu iPhone / iPad</p>
+    </div>
+
+    <div class="w-full max-w-md mx-auto space-y-8">
+      <div class="text-center space-y-2">
+        <h2 class="text-xl font-bold text-white">Lleva Receptia en tu Pantalla de Inicio</h2>
+        <p class="text-xs text-gray-400 leading-relaxed font-medium">Sigue estos 3 sencillos pasos para instalar la aplicación móvil en tu dispositivo Apple sin pasar por la App Store:</p>
+      </div>
+
+      <!-- Pasos Visuales -->
+      <div class="space-y-5">
+        <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+          <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold font-outfit text-sm flex-shrink-0">1</div>
+          <div class="text-xs leading-normal">
+            Pulsa el botón de <strong class="text-white">Compartir</strong> de Safari (el icono del cuadrado con la flecha hacia arriba <i data-lucide="share" class="w-4 h-4 inline-block text-brand-400 -mt-1 mx-0.5"></i> en la barra inferior del navegador).
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+          <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold font-outfit text-sm flex-shrink-0">2</div>
+          <div class="text-xs leading-normal">
+            Desplázate hacia abajo y selecciona la opción de <strong class="text-white">"Añadir a la pantalla de inicio"</strong> (<i data-lucide="plus-square" class="w-4 h-4 inline-block text-brand-400 -mt-1 mx-0.5"></i>).
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+          <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold font-outfit text-sm flex-shrink-0">3</div>
+          <div class="text-xs leading-normal">
+            Pulsa el botón de <strong class="text-white">"Añadir"</strong> en la esquina superior derecha y ¡listo! Ya tendrás el icono en tu escritorio.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center text-[10px] text-gray-500">
+      Al añadirla, Receptia se ejecutará a pantalla completa como una app nativa.
+    </div>
+  </div>
+
+  <!-- ================= PANTALLA DE LOGIN ================= -->
+  <div id="login-screen" class="fixed inset-0 z-50 flex flex-col justify-between bg-surface-300 px-6 py-12 safe-top safe-bottom">
+    <div class="flex flex-col items-center mt-12">
+      <div class="flex items-center gap-2.5 mb-2">
+        <img src="/logo.png" alt="Receptia Logo" class="h-10 w-auto">
+        <span class="font-outfit font-extrabold text-2xl text-white tracking-tight">Receptia</span>
+      </div>
+      <p class="text-xs text-brand-400 font-semibold tracking-widest uppercase">Panel Móvil Cliente</p>
+    </div>
+
+    <div class="w-full max-w-md mx-auto space-y-6">
+      <div class="text-center">
+        <h2 class="text-xl font-bold text-white mb-1">Iniciar Sesión</h2>
+        <p class="text-xs text-gray-400">Ingresa las credenciales de tu panel de Receptia</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Email del Negocio</label>
+          <input type="email" id="login-email" class="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:bg-white/[0.08] transition-all text-sm" placeholder="ejemplo@negocio.com">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">PIN de Acceso</label>
+          <input type="password" id="login-pin" maxlength="6" inputmode="numeric" pattern="[0-9]*" class="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:bg-white/[0.08] transition-all text-center text-lg tracking-widest" placeholder="••••••">
+        </div>
+        
+        <!-- Casilla recordar datos y enlace de PIN -->
+        <div class="flex items-center justify-between text-xs px-1 pt-1">
+          <label class="flex items-center gap-2 text-gray-400 cursor-pointer select-none">
+            <input type="checkbox" id="login-remember" checked class="w-4 h-4 rounded border-white/10 bg-white/5 text-brand-500 focus:ring-brand-500 focus:ring-opacity-25 focus:ring-2 focus:ring-offset-0 accent-brand-500">
+            <span>Recordar datos de acceso</span>
+          </label>
+          <a href="#" onclick="openRecoverModal(event)" class="text-brand-400 hover:text-brand-300 font-medium transition-colors">¿Olvidaste tu PIN?</a>
+        </div>
+      </div>
+
+      <button id="btn-login" class="w-full py-4 bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white font-semibold rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+        <span>Acceder al Panel</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <div class="text-center text-[10px] text-gray-500">
+      Receptia Mobile v1.1.0 · © 2026 Corandar S.L.
+    </div>
+  </div>
+
+  <!-- ================= CABECERA DE LA APP ================= -->
+  <header class="bg-surface-200/90 backdrop-blur-md border-b border-white/5 px-6 pt-12 pb-4 safe-top flex items-center justify-between z-40">
+    <div class="flex items-center gap-2">
+      <img src="/logo.png" alt="Logo" class="h-7 w-auto">
+      <span class="font-outfit font-bold text-lg text-white tracking-tight" id="header-business-name">Receptia</span>
+    </div>
+    <button id="btn-logout" class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+      <i data-lucide="log-out" class="w-5 h-5"></i>
+    </button>
+  </header>
+
+  <!-- ================= CONTENIDO DE LAS VISTAS ================= -->
+  <main class="flex-grow overflow-y-auto px-6 py-6" id="app-viewport">
+    
+    <!-- VISTA 1: DASHBOARD (INICIO) -->
+    <div id="view-dashboard" class="view-fade space-y-6">
+      <!-- Tarjeta Resumen Financiero -->
+      <div class="bg-gradient-to-br from-brand-600 to-brand-900 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <div class="absolute right-0 bottom-0 opacity-10 translate-x-4 translate-y-4">
+          <i data-lucide="trending-up" class="w-40 h-40"></i>
+        </div>
+        <p class="text-xs text-brand-100/80 font-medium uppercase tracking-wider mb-1">Ingresos Estimados del Mes</p>
+        <div class="flex items-baseline gap-2 mb-4">
+          <span class="text-3xl font-extrabold text-white font-outfit" id="dash-total-revenue">0.00€</span>
+          <span class="text-xs text-brand-200 font-semibold" id="dash-confirmed-count">0 citas</span>
+        </div>
+        
+        <!-- Indicador de Citas con Importe Variable -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3 flex items-start gap-2.5">
+          <i data-lucide="alert-circle" class="w-4.5 h-4.5 text-brand-400 mt-0.5 flex-shrink-0"></i>
+          <p class="text-[11px] text-brand-100 leading-relaxed">
+            <span class="font-semibold text-white" id="dash-variable-count">0 citas</span> tienen importes variables no definidos (se cobrarán en persona y no se suman al total).
+          </p>
+        </div>
+      </div>
+
+      <!-- Métricas Rápidas -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-surface-100 rounded-2xl p-4 border border-white/5">
+          <div class="text-brand-400 mb-2">
+            <i data-lucide="calendar" class="w-5 h-5"></i>
+          </div>
+          <p class="text-[10px] text-gray-400 uppercase font-semibold">Citas para Hoy</p>
+          <p class="text-xl font-bold text-white mt-0.5" id="dash-today-count">0</p>
+        </div>
+        <div class="bg-surface-100 rounded-2xl p-4 border border-white/5">
+          <div class="text-emerald-400 mb-2">
+            <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+          </div>
+          <p class="text-[10px] text-gray-400 uppercase font-semibold">Ingresos Hoy</p>
+          <p class="text-xl font-bold text-white mt-0.5" id="dash-today-revenue">0.00€</p>
+        </div>
+      </div>
+
+      <!-- Gráfico de Citas e Ingresos -->
+      <div class="bg-surface-100 rounded-2xl p-4 border border-white/5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Tendencia de Ingresos</h3>
+          <span class="text-[10px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full">Próximos 7 días</span>
+        </div>
+        <div class="h-44 w-full flex items-center justify-center">
+          <canvas id="revenueChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- VISTA 2: CALENDARIO -->
+    <div id="view-calendar" class="view-fade hidden space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-white font-outfit">Calendario de Citas</h2>
+        <div class="flex items-center gap-1">
+          <button id="cal-btn-prev" class="p-2 text-gray-400 hover:text-white"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+          <span class="text-sm font-semibold text-gray-200" id="cal-month-label">Junio 2026</span>
+          <button id="cal-btn-next" class="p-2 text-gray-400 hover:text-white"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+        </div>
+      </div>
+
+      <!-- Rejilla del Calendario -->
+      <div class="bg-surface-100 rounded-2xl p-4 border border-white/5">
+        <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 uppercase mb-2">
+          <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+        </div>
+        <div class="grid grid-cols-7 gap-1" id="cal-days-grid">
+          <!-- Generado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Detalle de Citas del Día Seleccionado -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider" id="cal-selected-day-label">Citas del 29 de Junio</h3>
+        <div class="space-y-3.5" id="cal-selected-day-list">
+          <!-- Listado dinámico -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VISTA 3: CITAS -->
+    <div id="view-appointments" class="view-fade hidden space-y-4">
+      <h2 class="text-lg font-bold text-white font-outfit">Listado de Citas</h2>
+      
+      <!-- Buscador -->
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">
+          <i data-lucide="search" class="w-4 h-4"></i>
+        </span>
+        <input type="text" id="app-search-input" class="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-100 border border-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 text-sm" placeholder="Buscar cliente o servicio...">
+      </div>
+
+      <!-- Lista de Citas -->
+      <div class="space-y-3" id="app-list-container">
+        <!-- Renderizado dinámico -->
+      </div>
+    </div>
+
+    <!-- VISTA 4: AJUSTES (TARIFAS) -->
+    <div id="view-settings" class="view-fade hidden space-y-6">
+      <div class="space-y-1">
+        <h2 class="text-lg font-bold text-white font-outfit">Configuración de Tarifas</h2>
+        <p class="text-xs text-gray-400">Asigna precios a tus servicios/especialidades para calcular tus ingresos estimados.</p>
+      </div>
+
+      <!-- Formulario para Añadir/Editar Tarifas -->
+      <div class="bg-surface-100 rounded-2xl p-4 border border-white/5 space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Servicio / Especialidad</label>
+            <select id="rate-service-select" class="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-brand-500 text-xs">
+              <!-- Cargado dinámicamente -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Precio (€)</label>
+            <input type="number" id="rate-price-input" min="0" placeholder="Ej: 50" class="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 text-xs">
+          </div>
+        </div>
+        <button id="btn-save-rate" class="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Asignar Precio</span>
+        </button>
+      </div>
+
+      <!-- Listado de Tarifas Guardadas -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Tarifas del Negocio</h3>
+        <div class="space-y-2.5" id="rates-list-container">
+          <!-- Cargado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Información de Versión de la App -->
+      <div class="pt-6 border-t border-white/5 text-center text-[10px] text-gray-500 space-y-1">
+        <p class="font-semibold text-gray-400">Receptia Mobile</p>
+        <p>Versión Semántica: v1.1.0</p>
+        <p>© 2026 Corandar S.L. · Todos los derechos reservados</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= MENÚ INFERIOR DE NAVEGACIÓN ================= -->
+  <nav class="bg-surface-200/95 backdrop-blur-md border-t border-white/5 flex justify-around items-center py-2 safe-bottom z-40">
+    <button class="nav-tab flex flex-col items-center gap-1 py-1.5 text-brand-400" id="tab-dashboard" onclick="switchTab('dashboard')">
+      <i data-lucide="layout-grid" class="w-5 h-5"></i>
+      <span class="text-[9px] font-medium">Inicio</span>
+    </button>
+    <button class="nav-tab flex flex-col items-center gap-1 py-1.5 text-gray-400" id="tab-calendar" onclick="switchTab('calendar')">
+      <i data-lucide="calendar" class="w-5 h-5"></i>
+      <span class="text-[9px] font-medium">Calendario</span>
+    </button>
+    <button class="nav-tab flex flex-col items-center gap-1 py-1.5 text-gray-400" id="tab-appointments" onclick="switchTab('appointments')">
+      <i data-lucide="clock" class="w-5 h-5"></i>
+      <span class="text-[9px] font-medium">Citas</span>
+    </button>
+    <button class="nav-tab flex flex-col items-center gap-1 py-1.5 text-gray-400" id="tab-settings" onclick="switchTab('settings')">
+      <i data-lucide="sliders" class="w-5 h-5"></i>
+      <span class="text-[9px] font-medium">Tarifas</span>
+    </button>
+  </nav>
+
+  <!-- ================= MODAL RECUPERAR PIN ================= -->
+  <div id="recover-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-6 hidden" onclick="closeRecoverModal()">
+    <div class="bg-surface-100 border border-white/10 rounded-2xl p-6 w-full max-w-sm space-y-4 text-left" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs font-bold text-white font-outfit uppercase tracking-wider">Recuperar PIN de Acceso</h3>
+        <button onclick="closeRecoverModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <p class="text-xs text-gray-400 leading-relaxed">
+        Para recuperar tu PIN de acceso, por favor ponte en contacto con el soporte de Receptia enviando un correo a <a href="mailto:hola@receptia.corandar.com" class="text-brand-400 underline font-medium">hola@receptia.corandar.com</a> o contactándonos a través de tu gestor de cuenta. Te enviaremos tu PIN de inmediato.
+      </p>
+      <button onclick="closeRecoverModal()" class="w-full py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold rounded-xl text-xs transition-all">Entendido</button>
+    </div>
+  </div>
+
+  <!-- JavaScript Log -->
+  <script src="app.js"></script>
+</body>
+</html>
