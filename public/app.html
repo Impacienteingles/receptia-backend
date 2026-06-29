@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia - Panel de Control del Cliente</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.21">
-  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.21">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1.3.23">
+  <link rel="icon" type="image/png" href="/favicon.png?v=1.3.23">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -2265,7 +2265,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.21</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.23</span>
         </div>
       </header>
 
@@ -5831,7 +5831,56 @@
     }
 
     // Suscripciones y Tarifas Globales
-    let allPlans = [];
+    let allPlans = [
+      {
+        id: 'inicial_mensual',
+        name: 'Plan Inicial Mensual',
+        price: 79.00,
+        cycle: 'monthly',
+        features: ['100 minutos/mes incluidos', 'Atención 24/7 de llamadas', 'Minuto adicional a 0.35€', 'Integración con calendario', 'WhatsApp de confirmación opcional'],
+        description: 'Ideal para autónomos y pequeñas consultas que empiezan.'
+      },
+      {
+        id: 'estandar_mensual',
+        name: 'Plan Estándar Mensual',
+        price: 149.00,
+        cycle: 'monthly',
+        features: ['200 minutos/mes incluidos', 'Atención 24/7 de llamadas', 'Minuto adicional a 0.35€', 'Integración con calendario', 'WhatsApp de confirmación incluido', 'Panel de administración completo'],
+        description: 'Recomendado para la mayoría de centros médicos y peluquerías.'
+      },
+      {
+        id: 'premium_mensual',
+        name: 'Plan Premium Mensual',
+        price: 249.00,
+        cycle: 'monthly',
+        features: ['500 minutos/mes incluidos', 'Atención 24/7 de llamadas', 'Minuto adicional a 0.35€', 'Integración con calendario', 'WhatsApp de confirmación incluido', 'Prioridad de soporte y respuestas ultra rápidas', 'Campañas automáticas salientes ilimitadas'],
+        description: 'Para negocios con un volumen alto de llamadas.'
+      },
+      {
+        id: 'inicial_anual',
+        name: 'Plan Inicial Anual',
+        price: 900.00,
+        cycle: 'annually',
+        features: ['100 minutos/mes incluidos', 'Atención 24/7 de llamadas', 'Minuto adicional a 0.35€', 'Integración con calendario', 'WhatsApp de confirmación opcional', 'Ahorras 48€/año'],
+        description: 'Ideal para autónomos y pequeñas consultas que empiezan.'
+      },
+      {
+        id: 'estandar_anual',
+        name: 'Plan Estándar Anual',
+        price: 1290.00,
+        cycle: 'annually',
+        features: ['200 minutos/mes incluidos', 'Atención 24/7 de llamadas', 'Minuto adicional a 0.35€', 'Integración con calendario', 'WhatsApp de confirmación incluido', 'Panel de administración completo', 'Ahorro de casi 3 meses de suscripción'],
+        description: 'Recomendado para la mayoría de centros médicos y peluquerías.'
+      },
+      {
+        id: 'premium_anual',
+        name: 'Plan Premium Anual',
+        price: 2290.00,
+        cycle: 'annually',
+        features: ['500 minutos/mes incluidos', 'Atención 24/7 de llamadas', 'Minuto adicional a 0.35€', 'Integración con calendario', 'WhatsApp de confirmación incluido', 'Prioridad de soporte y respuestas ultra rápidas', 'Campañas automáticas salientes ilimitadas', 'Ahorro de 2 meses de suscripción'],
+        description: 'Para negocios con un volumen alto de llamadas.'
+      }
+    ];
     let activePaymentPlan = null;
     let selectedPaymentGateway = 'stripe';
 
@@ -5840,10 +5889,13 @@
         const response = await fetch('/api/admin/plans');
         if (!response.ok) throw new Error('Error al cargar las tarifas.');
         const resData = await response.json();
-        allPlans = resData.plans || [];
+        if (resData.plans && resData.plans.length > 0) {
+          allPlans = resData.plans;
+        }
         renderPricingGrids();
       } catch (err) {
-        console.error('Error al cargar tarifas:', err);
+        console.error('Error al cargar tarifas, usando locales:', err);
+        renderPricingGrids();
       }
     }
 
@@ -8429,8 +8481,8 @@ ${cleanAudio}`;
     `;
 
     const plansModalHtml = `
-      <div id="plans-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 999;">
-        <div class="modal-card" style="max-width: 900px; width: 90%; padding: 2.5rem; border-radius: 20px; max-height: 90vh; overflow-y: auto;">
+      <div id="plans-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 18, 30, 0.9); backdrop-filter: blur(12px); align-items: center; justify-content: center; z-index: 999;">
+        <div class="modal-card" style="max-width: 900px; width: 90%; padding: 2.5rem; border-radius: 20px; max-height: 90vh; overflow-y: auto; background: #111827; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
           <div class="modal-header">
             <h2 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem; color: #fff;"><i data-lucide="sparkles" style="color: var(--primary);"></i> Planes y Tarifas de Receptia</h2>
             <button class="btn-close" onclick="closePlansModal()">&times;</button>
@@ -8450,8 +8502,8 @@ ${cleanAudio}`;
     `;
 
     const checkoutModalHtml = `
-      <div id="checkout-simulator-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 1100;">
-        <div class="modal-card" style="max-width: 500px; width: 90%; padding: 2rem; border-radius: 16px; background: #111827; border: 1px solid var(--border-color);">
+      <div id="checkout-simulator-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 18, 30, 0.9); backdrop-filter: blur(12px); align-items: center; justify-content: center; z-index: 1100;">
+        <div class="modal-card" style="max-width: 500px; width: 90%; padding: 2rem; border-radius: 16px; background: #111827; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
           <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
             <h2 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem; color: #fff;">
               <i data-lucide="shield-check" style="color: var(--success);"></i>
@@ -8524,14 +8576,14 @@ ${cleanAudio}`;
       </div>
     `;
 
-    document.write(expiredOverlayHtml);
-    document.write(plansModalHtml);
-    document.write(checkoutModalHtml);
+    document.body.insertAdjacentHTML('beforeend', expiredOverlayHtml);
+    document.body.insertAdjacentHTML('beforeend', plansModalHtml);
+    document.body.insertAdjacentHTML('beforeend', checkoutModalHtml);
 
     // =====================================================================
     // OVERLAY DE SERVICIO SUSPENDIDO
     // =====================================================================
-    document.write(`
+    document.body.insertAdjacentHTML('beforeend', `
       <div id="suspended-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:99999; align-items:center; justify-content:center; padding:2rem; flex-direction:column; gap:2rem; text-align:center;">
         <div style="max-width:460px; display:flex; flex-direction:column; gap:1.5rem; align-items:center;">
           <div style="width:80px; height:80px; background:rgba(239,68,68,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid rgba(239,68,68,0.3);">

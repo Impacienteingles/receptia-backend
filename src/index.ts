@@ -2306,11 +2306,19 @@ app.get('/api/plans', async (req, res): Promise<void> => {
       if (error.code === '42P01') {
         const defaultPlans = [
           {
+            id: 'inicial_mensual',
+            name: 'Plan Inicial Mensual',
+            price: 79.00,
+            cycle: 'monthly',
+            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 100 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
+            description: 'Plan inicial para autónomos y profesionales que empiezan.'
+          },
+          {
             id: 'estandar_mensual',
             name: 'Plan Estándar Mensual',
             price: 149.00,
             cycle: 'monthly',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.20€/min'],
+            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
             description: 'Plan estándar para medianos y pequeños comercios.'
           },
           {
@@ -2318,15 +2326,23 @@ app.get('/api/plans', async (req, res): Promise<void> => {
             name: 'Plan Premium Mensual',
             price: 249.00,
             cycle: 'monthly',
-            features: ['Todo lo del Plan Estándar', 'Conexión SIP Zadarma avanzada', 'Soporte de Voz ElevenLabs de alta calidad', 'Prompt e instrucciones optimizadas', 'Hasta 500 minutos incluidos / mes', 'Minuto adicional a 0.20€/min'],
+            features: ['Todo lo del Plan Estándar', 'Conexión SIP Zadarma avanzada', 'Soporte de Voz ElevenLabs de alta calidad', 'Prompt e instrucciones optimizadas', 'Hasta 500 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
             description: 'Más Popular'
+          },
+          {
+            id: 'inicial_anual',
+            name: 'Plan Inicial Anual',
+            price: 900.00,
+            cycle: 'annually',
+            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 100 minutos incluidos / mes', 'Minuto adicional a 0.35€/min', 'Ahorras 48€/año'],
+            description: 'Ahorras 48€/año'
           },
           {
             id: 'estandar_anual',
             name: 'Plan Estándar Anual',
             price: 1290.00,
             cycle: 'annually',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.20€/min', 'Ahorro de casi 3 meses de suscripción'],
+            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.35€/min', 'Ahorro de casi 3 meses de suscripción'],
             description: 'Ahorro de casi 3 meses de suscripción'
           },
           {
@@ -2358,11 +2374,19 @@ app.get('/api/admin/plans', async (req, res): Promise<void> => {
       if (error.code === '42P01') {
         const defaultPlans = [
           {
+            id: 'inicial_mensual',
+            name: 'Plan Inicial Mensual',
+            price: 79.00,
+            cycle: 'monthly',
+            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 100 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
+            description: 'Plan inicial para autónomos y profesionales que empiezan.'
+          },
+          {
             id: 'estandar_mensual',
             name: 'Plan Estándar Mensual',
             price: 149.00,
             cycle: 'monthly',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.20€/min'],
+            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
             description: 'Plan estándar para medianos y pequeños comercios.'
           },
           {
@@ -2370,15 +2394,23 @@ app.get('/api/admin/plans', async (req, res): Promise<void> => {
             name: 'Plan Premium Mensual',
             price: 249.00,
             cycle: 'monthly',
-            features: ['Todo lo del Plan Estándar', 'Conexión SIP Zadarma avanzada', 'Soporte de Voz ElevenLabs de alta calidad', 'Prompt e instrucciones optimizadas', 'Hasta 500 minutos incluidos / mes', 'Minuto adicional a 0.20€/min'],
+            features: ['Todo lo del Plan Estándar', 'Conexión SIP Zadarma avanzada', 'Soporte de Voz ElevenLabs de alta calidad', 'Prompt e instrucciones optimizadas', 'Hasta 500 minutos incluidos / mes', 'Minuto adicional a 0.35€/min'],
             description: 'Más Popular'
+          },
+          {
+            id: 'inicial_anual',
+            name: 'Plan Inicial Anual',
+            price: 900.00,
+            cycle: 'annually',
+            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 100 minutos incluidos / mes', 'Minuto adicional a 0.35€/min', 'Ahorras 48€/año'],
+            description: 'Ahorras 48€/año'
           },
           {
             id: 'estandar_anual',
             name: 'Plan Estándar Anual',
             price: 1290.00,
             cycle: 'annually',
-            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.20€/min', 'Ahorro de casi 3 meses de suscripción'],
+            features: ['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.35€/min', 'Ahorro de casi 3 meses de suscripción'],
             description: 'Ahorro de casi 3 meses de suscripción'
           },
           {
@@ -2670,7 +2702,7 @@ app.post('/api/admin/contracts/generate', async (req, res): Promise<void> => {
           {
             parts: [
               {
-                text: `Eres un redactor legal experto. Genera un contrato de prestación de servicios para el SaaS Corandar en base a la siguiente solicitud de indicaciones. Genera únicamente el contrato formal bien redactado en español, sin preámbulos, comentarios, ni etiquetas markdown adicionales. Asegúrate de incluir una cláusula explícita sobre el "Cobro por Uso Adicional" en la que se detalle que, para los planes que no tengan minutos ilimitados (como el Plan Estándar), cualquier consumo de minutos que exceda el límite del plan se facturará a razón de 0.20€ por minuto adicional. Indicaciones: ${prompt}`
+                text: `Eres un redactor legal experto. Genera un contrato de prestación de servicios para el SaaS Corandar en base a la siguiente solicitud de indicaciones. Genera únicamente el contrato formal bien redactado en español, sin preámbulos, comentarios, ni etiquetas markdown adicionales. Asegúrate de incluir una cláusula explícita sobre el "Cobro por Uso Adicional" en la que se detalle que, para los planes que no tengan minutos ilimitados (como el Plan Estándar), cualquier consumo de minutos que exceda el límite del plan se facturará a razón de 0.35€ por minuto adicional. Indicaciones: ${prompt}`
               }
             ]
           }

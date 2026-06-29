@@ -26,8 +26,10 @@ export async function getStripeClient(): Promise<Stripe> {
  * Mapea el ID de plan interno a la clave del ajuste dinámico donde se guarda su ID de precio en Stripe.
  */
 const PLAN_PRICE_KEY_MAP: Record<string, string> = {
+  inicial_mensual: 'STRIPE_PRICE_INICIAL_MENSUAL',
   estandar_mensual: 'STRIPE_PRICE_ESTANDAR_MENSUAL',
   premium_mensual: 'STRIPE_PRICE_PREMIUM_MENSUAL',
+  inicial_anual: 'STRIPE_PRICE_INICIAL_ANUAL',
   estandar_anual: 'STRIPE_PRICE_ESTANDAR_ANUAL',
   premium_anual: 'STRIPE_PRICE_PREMIUM_ANUAL',
   // Fallbacks para IDs antiguos
@@ -246,8 +248,10 @@ export async function processMeteredBillingForCall(tenantId: string, durationSec
     }
 
     // 5. Determinar el límite contratado en base al Price ID del plan principal en la suscripción
+    const inicialMensualPrice = await getSettingVal('STRIPE_PRICE_INICIAL_MENSUAL');
     const estandarMensualPrice = await getSettingVal('STRIPE_PRICE_ESTANDAR_MENSUAL');
     const premiumMensualPrice = await getSettingVal('STRIPE_PRICE_PREMIUM_MENSUAL');
+    const inicialAnualPrice = await getSettingVal('STRIPE_PRICE_INICIAL_ANUAL');
     const estandarAnualPrice = await getSettingVal('STRIPE_PRICE_ESTANDAR_ANUAL');
     const premiumAnualPrice = await getSettingVal('STRIPE_PRICE_PREMIUM_ANUAL');
 
@@ -256,8 +260,10 @@ export async function processMeteredBillingForCall(tenantId: string, durationSec
 
     for (const item of subscription.items.data) {
       const priceId = item.price.id;
+      if (priceId === inicialMensualPrice) { limit = 100; planLabel = 'Inicial Mensual'; break; }
       if (priceId === estandarMensualPrice) { limit = 200; planLabel = 'Estándar Mensual'; break; }
       if (priceId === premiumMensualPrice) { limit = 500; planLabel = 'Premium Mensual'; break; }
+      if (priceId === inicialAnualPrice) { limit = 1200; planLabel = 'Inicial Anual'; break; }
       if (priceId === estandarAnualPrice) { limit = 2400; planLabel = 'Estándar Anual'; break; }
       if (priceId === premiumAnualPrice) { limit = 6000; planLabel = 'Premium Anual'; break; }
     }

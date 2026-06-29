@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receptia SaaS - Consola de Administración</title>
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.39">
-  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.39">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.7.40">
+  <link rel="icon" type="image/png" href="/favicon.png?v=2.7.40">
   <script>
     (function() {
       const theme = localStorage.getItem('theme') || 'dark';
@@ -1414,7 +1414,15 @@
       font-weight: 600;
       box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
     }
-  </style>
+  
+  /* Menu hamburguesa móvil opaco premium */
+  .mobile-menu {
+    background-color: #0b0f19 !important; /* Fondo oscuro opaco */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+    padding: 1rem 0;
+  }
+</style>
 </head>
 <body>
 
@@ -1606,7 +1614,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.39</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.40</span>
       </div>
     </aside>
 
@@ -1629,7 +1637,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.39</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.40</span>
         </div>
       </header>
 
@@ -1970,8 +1978,10 @@
               <div class="form-group">
                 <label for="subscription-plan">Plan Contratado:</label>
                 <select id="subscription-plan" onchange="autoFillPlanPrice()">
+                  <option value="Plan Inicial Mensual">Plan Inicial Mensual (79€/mes)</option>
                   <option value="Plan Estándar Mensual">Plan Estándar Mensual (149€/mes)</option>
                   <option value="Plan Premium Mensual">Plan Premium Mensual (249€/mes)</option>
+                  <option value="Plan Inicial Anual">Plan Inicial Anual (900€/año)</option>
                   <option value="Plan Estándar Anual">Plan Estándar Anual (1290€/año)</option>
                   <option value="Plan Premium Anual">Plan Premium Anual (2290€/año)</option>
                 </select>
@@ -4464,7 +4474,7 @@
       if (planNameLower.includes("ilimitado") || planNameLower.includes("premium anual")) {
         additionalUsageText = "El plan contratado incluye minutos ilimitados controlados, sujetos a la política de uso razonable del servicio.";
       } else {
-        additionalUsageText = "El plan contratado incluye un límite mensual de minutos. Los minutos de llamada adicionales consumidos en exceso del límite del plan se facturarán a razón de 0.20 € por minuto adicional consumido.";
+        additionalUsageText = "El plan contratado incluye un límite mensual de minutos. Los minutos de llamada adicionales consumidos en exceso del límite del plan se facturarán a razón de 0.35 € por minuto adicional consumido.";
       }
 
       let compiledText = preprocessContractTemplate(selectedTemplate.content)
@@ -4512,8 +4522,8 @@
         .replace(/\[Tarifa Adicional\]/gi, additionalUsageText);
 
       // Asegurar cláusula de uso adicional si no existe en el texto y no es ilimitado
-      if (!compiledText.includes("0,20") && !compiledText.includes("0.20") && !planNameLower.includes("ilimitado") && !planNameLower.includes("premium anual")) {
-        compiledText += "\n\n### ANEXO: POLÍTICA DE COBRO POR USO ADICIONAL\nLas partes acuerdan que el plan contratado (" + planVal + ") tiene un límite de minutos mensuales establecido. Cualquier consumo de minutos telefónicos que exceda dicho límite se facturará de forma adicional a razón de **0.20€ por minuto adicional** consumido, que se liquidará mensualmente.";
+      if (!compiledText.includes("0,35") && !compiledText.includes("0.35") && !planNameLower.includes("ilimitado") && !planNameLower.includes("premium anual")) {
+        compiledText += "\n\n### ANEXO: POLÍTICA DE COBRO POR USO ADICIONAL\nLas partes acuerdan que el plan contratado (" + planVal + ") tiene un límite de minutos mensuales establecido. Cualquier consumo de minutos telefónicos que exceda dicho límite se facturará de forma adicional a razón de **0.35€ por minuto adicional** consumido, que se liquidará mensualmente.";
       }
 
       // 6. Sequential replacements (Corandar first, then Client)
@@ -4597,12 +4607,18 @@
         priceAmount.value = foundPlan.price.toFixed(2);
         billingCycle.value = foundPlan.cycle;
       } else {
-        if (planName === 'Plan Estándar Mensual' || planName === 'Plan Mensual Estándar') {
+        if (planName === 'Plan Inicial Mensual') {
+          priceAmount.value = '79.00';
+          billingCycle.value = 'monthly';
+        } else if (planName === 'Plan Estándar Mensual' || planName === 'Plan Mensual Estándar') {
           priceAmount.value = '149.00';
           billingCycle.value = 'monthly';
         } else if (planName === 'Plan Premium Mensual' || planName === 'Plan Mensual Premium') {
           priceAmount.value = '249.00';
           billingCycle.value = 'monthly';
+        } else if (planName === 'Plan Inicial Anual') {
+          priceAmount.value = '900.00';
+          billingCycle.value = 'annually';
         } else if (planName === 'Plan Estándar Anual') {
           priceAmount.value = '1290.00';
           billingCycle.value = 'annually';
@@ -4817,8 +4833,8 @@
         document.getElementById('dash-calls').textContent = stats.calls.total;
         document.getElementById('dash-minutes').textContent = `${stats.calls.minutes} min`;
         
-        // Calcular ahorro ROI de clientes: 1.50€ fijo + 0.20€ por minuto de llamada
-        const totalRoi = (stats.calls.total * 1.50) + (stats.calls.minutes * 0.20);
+        // Calcular ahorro ROI de clientes: 1.50€ fijo + 0.35€ por minuto de llamada
+        const totalRoi = (stats.calls.total * 1.50) + (stats.calls.minutes * 0.35);
         document.getElementById('dash-roi').textContent = `${totalRoi.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
 
         // 4. Pintar datos de las tarjetas de resumen
@@ -5448,7 +5464,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
-      doc.text(`Versión: 2.7.39 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Versión: 2.7.40 (Canal Estable)`, leftMargin + 8, y + 21);
       doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
 
       doc.setFont('helvetica', 'normal');
@@ -5597,7 +5613,7 @@
             [
               'Planes Estándar y Premium: Configura el precio de suscripción mensual o anual.',
               'Límites de Minutos: Cada plan incluye un límite de minutos de llamada incluidos al mes (ej. 200 minutos).',
-              'Coste de Minuto Adicional: Define la tarifa por exceso (normalmente 0.20€ por minuto) para facturar de forma automatizada por el uso extra.',
+              'Coste de Minuto Adicional: Define la tarifa por exceso (normalmente 0.35€ por minuto) para facturar de forma automatizada por el uso extra.',
               'Anexos de Contratos: Al crear un plan, el sistema le asocia una plantilla de contrato legal que el cliente debe firmar.'
             ]
           ]
@@ -9777,7 +9793,7 @@
           if (planNameLower.includes("ilimitado") || planNameLower.includes("premium anual")) {
             additionalUsageText = "El plan contratado incluye minutos ilimitados controlados, sujetos a la política de uso razonable del servicio.";
           } else {
-            additionalUsageText = "El plan contratado incluye un límite mensual de minutos. Los minutos de llamada adicionales consumidos en exceso del límite del plan se facturarán a razón de 0.20 € por minuto adicional consumido.";
+            additionalUsageText = "El plan contratado incluye un límite mensual de minutos. Los minutos de llamada adicionales consumidos en exceso del límite del plan se facturarán a razón de 0.35 € por minuto adicional consumido.";
           }
 
           let compiledText = preprocessContractTemplate(selectedContract.content)
@@ -9825,8 +9841,8 @@
             .replace(/\[Tarifa Adicional\]/gi, additionalUsageText);
 
           // Asegurar cláusula de uso adicional si no existe en el texto y no es ilimitado
-          if (!compiledText.includes("0,20") && !compiledText.includes("0.20") && !planNameLower.includes("ilimitado") && !planNameLower.includes("premium anual")) {
-            compiledText += "\n\n### ANEXO: POLÍTICA DE COBRO POR USO ADICIONAL\nLas partes acueran que el plan contratado (" + planVal + ") tiene un límite de minutos mensuales establecido. Cualquier consumo de minutos telefónicos que exceda dicho límite se facturará de forma adicional a razón de **0.20€ por minuto adicional** consumido, que se liquidará mensualmente.";
+          if (!compiledText.includes("0,35") && !compiledText.includes("0.35") && !planNameLower.includes("ilimitado") && !planNameLower.includes("premium anual")) {
+            compiledText += "\n\n### ANEXO: POLÍTICA DE COBRO POR USO ADICIONAL\nLas partes acueran que el plan contratado (" + planVal + ") tiene un límite de minutos mensuales establecido. Cualquier consumo de minutos telefónicos que exceda dicho límite se facturará de forma adicional a razón de **0.35€ por minuto adicional** consumido, que se liquidará mensualmente.";
           }
 
           // 6. Sequential replacements (Corandar first, then Client)
