@@ -3786,20 +3786,42 @@ app.post('/api/lead', async (req, res): Promise<void> => {
       console.log(`[Landing Contact API] Lead de contacto guardado en Supabase: ${company} (${name})`);
     }
 
-    // 2. Intentar enviar notificación de correo a receptia@corandar.com vía Nodemailer usando Gmail
-    if (process.env.GOOGLE_EMAIL && process.env.GOOGLE_PASSWORD) {
-      try {
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: process.env.GOOGLE_EMAIL,
-            pass: process.env.GOOGLE_PASSWORD
-          }
-        });
+    // 2. Intentar enviar notificación de correo a receptia@corandar.com vía Nodemailer
+    let transporter = null;
+    let mailFrom = '';
+    const receiverEmail = process.env.CONTACT_RECEIVER_EMAIL || 'receptia@corandar.com';
 
+    if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      // Configuración SMTP Modular (e.g. Webempresa, etc.)
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT),
+        secure: process.env.SMTP_SECURE === 'true', // true para puerto 465, false para otros
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      });
+      mailFrom = process.env.SMTP_USER;
+      console.log(`[Landing Contact API] Utilizando transporte SMTP modular (${process.env.SMTP_HOST})`);
+    } else if (process.env.GOOGLE_EMAIL && process.env.GOOGLE_PASSWORD) {
+      // Fallback a Gmail
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GOOGLE_EMAIL,
+          pass: process.env.GOOGLE_PASSWORD
+        }
+      });
+      mailFrom = process.env.GOOGLE_EMAIL;
+      console.log('[Landing Contact API] Utilizando transporte Gmail (Fallback)');
+    }
+
+    if (transporter && mailFrom) {
+      try {
         const mailOptions = {
-          from: `"Receptia Landing Page" <${process.env.GOOGLE_EMAIL}>`,
-          to: 'receptia@corandar.com',
+          from: `"Receptia Landing Page" <${mailFrom}>`,
+          to: receiverEmail,
           subject: `Nuevo Lead de Contacto: ${company}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
@@ -3821,12 +3843,12 @@ app.post('/api/lead', async (req, res): Promise<void> => {
         };
 
         await transporter.sendMail(mailOptions);
-        console.log(`[Landing Contact API] Notificación de email enviada con éxito a receptia@corandar.com`);
+        console.log(`[Landing Contact API] Notificación de email enviada con éxito a ${receiverEmail}`);
       } catch (mailErr: any) {
         console.error('[Landing Contact API] Error al enviar email de contacto:', mailErr.message);
       }
     } else {
-      console.warn('[Landing Contact API] GOOGLE_EMAIL y GOOGLE_PASSWORD no configurados. Omisión de envío de correo.');
+      console.warn('[Landing Contact API] Ningún transporte de correo configurado. Omisión de envío de correo.');
     }
 
     res.json({ success: true, message: 'Lead capturado y notificado con éxito.' });
