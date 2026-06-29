@@ -3766,16 +3766,15 @@ app.post('/api/lead', async (req, res): Promise<void> => {
   }
 
   try {
-    // 1. Guardar el prospecto en la base de datos de Supabase
+    // 1. Guardar el prospecto en la base de datos de Supabase usando columnas existentes
     const { error: dbError } = await supabase
       .from('prospects')
       .insert({
-        business_name: company,
-        contact_name: name,
+        business_name: `${company} (Contacto: ${name})`,
         email: email,
         phone: phone || null,
         sector: sector,
-        notes: message || null,
+        commercial_notes: `Nombre del Contacto: ${name}\nMensaje: ${message || 'Sin mensaje adicional.'}`,
         classification: 'no_contactado',
         status: 'extracted'
       });
