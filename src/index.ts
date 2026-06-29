@@ -961,30 +961,6 @@ app.delete('/api/admin/tenants/:id', async (req, res): Promise<void> => {
   }
 });
 
-app.get('/api/debug/reactivate-tenant', async (req, res): Promise<void> => {
-  try {
-    const tenantId = '780def41-1ea0-4c5b-abf6-c155388e3c98';
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 30);
-    const futureDateStr = futureDate.toISOString().split('T')[0];
-
-    const { data, error } = await supabase
-      .from('tenants')
-      .update({
-        subscription_status: 'active',
-        contract_end_date: futureDateStr
-      })
-      .eq('id', tenantId)
-      .select('*')
-      .single();
-
-    if (error) throw error;
-    res.json({ success: true, tenant: data });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // =====================================================================
 // 6. Super-Admin: Crear y aprovisionar un Agente de Voz IA dinámicamente con barra de progreso
 // =====================================================================
