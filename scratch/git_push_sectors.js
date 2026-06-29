@@ -26,12 +26,12 @@ async function run() {
 
     // Comandos git
     console.log('Agregando cambios locales...');
-    execSync('git add public/index.html public/sectores/ public/comparar/ public/mobile/ public/descargas/ public/walkthrough.md receptia-app/ task.md src/index.ts public/mockup-*.jpg public/.htaccess', { stdio: 'inherit' });
-    execSync('git add -f scratch/build_wp_helper.js scratch/build_landing_package.js scratch/git_push_sectors.js scratch/fix_menus_and_styles.js', { stdio: 'inherit' });
+    execSync('git add public/index.html public/sectores/ public/comparar/ public/mobile/ public/descargas/ public/walkthrough.md receptia-app/ task.md src/index.ts public/mockup-*.jpg public/.htaccess public/favicon.ico public/favicon.png public/favicon.svg public/corandar-logo.png public/corandar_logo.png', { stdio: 'inherit' });
+    execSync('git add -f scratch/build_wp_helper.js scratch/build_landing_package.js scratch/git_push_sectors.js scratch/fix_menus_and_styles.js scratch/fix_corandar_menu_and_favicon.js', { stdio: 'inherit' });
 
     try {
       console.log('Creando commit...');
-      execSync('git commit -m "fix: update comparative page headers with logo, fix Arabic text on pricing, resolve Webempresa routing 404 for comparisons and iOS guide"', { stdio: 'inherit' });
+      execSync('git commit -m "fix: add Corandar mobile hamburger menu, download high-res Corandar logo, fix favicon and table logo paths"', { stdio: 'inherit' });
     } catch (e) {
       console.log('ℹ️ No hay cambios para commit o el commit ya fue creado.');
     }
