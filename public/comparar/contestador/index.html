@@ -50,7 +50,15 @@
       background-color: #ffffff;
       transform: translateY(-1px);
     }
-  </style>
+  
+  /* Menu hamburguesa móvil opaco premium */
+  .mobile-menu {
+    background-color: #0b0f19 !important; /* Fondo oscuro opaco */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+    padding: 1rem 0;
+  }
+</style>
 </head>
 <body>
   
@@ -93,6 +101,30 @@
           <a href="https://receptia.corandar.com/app.html" class="text-sm font-medium text-gray-300 hover:text-white px-4 py-2 transition-colors"> Iniciar sesión </a>
           <a href="/#contact" class="btn-primary text-sm py-2.5 px-5 hover:btn-primary-hover"> Probar gratis </a>
         </div>
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-toggle" type="button" class="lg:hidden p-2 text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu">
+          <svg id="icon-menu" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          <svg id="icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <!-- Mobile menu -->
+      <div id="mobile-menu" class="mobile-menu lg:hidden">
+        <nav class="py-4 space-y-1 border-t border-white/5" aria-label="Navegación móvil">
+          <a href="/#features" class="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"> Funciones </a>
+          <a href="/#sectors" class="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"> Sectores </a>
+          <a href="/#demo" class="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"> Escúchala </a>
+          <a href="/#pricing" class="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"> Precios </a>
+          <a href="/#faq" class="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"> FAQ </a>
+          <a href="#download-app" class="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"> Descargas </a>
+          <div class="pt-4 space-y-2 border-t border-white/5">
+            <a href="https://receptia.corandar.com/app.html" class="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"> Iniciar sesión </a>
+            <a href="/#contact" class="block btn-primary text-center hover:btn-primary-hover"> Probar gratis </a>
+          </div>
+        </nav>
       </div>
     </div>
   </header>
@@ -324,12 +356,29 @@
     </div>
   </footer>
 
-  <script type="module">
+    <script type="module">
     const isClon = window.location.hostname === 'corandar.com' || window.location.hostname === 'www.corandar.com' || window.location.pathname.includes('/receptia');
-    if (isClon) {
-      document.getElementById('site-header').classList.add('is-corandar-clon');
-      document.getElementById('corandar-top-bar').classList.remove('hidden');
+    const header = document.getElementById('site-header');
+    const corandarTopBar = document.getElementById('corandar-top-bar');
+
+    if (isClon && header) {
+      header.classList.add('is-corandar-clon');
+      if (corandarTopBar) corandarTopBar.classList.remove('hidden');
+      
+      // Ajustar enlaces de anclas de Receptia en la home clonada de forma explícita
+      document.querySelectorAll('a[href^="#features"], a[href^="#sectors"], a[href^="#demo"], a[href^="#pricing"], a[href^="#faq"], a[href^="#contact"], a[href^="#download-app"]').forEach(el => {
+        const anchor = el.getAttribute('href');
+        if (anchor.startsWith('#')) {
+          el.setAttribute('href', '/receptia/' + anchor);
+        }
+      });
+      const logoLnk = document.getElementById('logo-receptia-link');
+      if (logoLnk) logoLnk.setAttribute('href', '/receptia/');
     }
+
+    var e=document.getElementById(`site-header`),t=()=>{window.scrollY>20?(e?.classList.add(`glass`,`border-white/5`),e?.classList.remove(`border-transparent`)):(e?.classList.remove(`glass`,`border-white/5`),e?.classList.add(`border-transparent`))};window.addEventListener(`scroll`,t,{passive:!0}),t();
+    var n=document.getElementById(`mobile-menu-toggle`),r=document.getElementById(`mobile-menu`),i=document.getElementById(`icon-menu`),a=document.getElementById(`icon-close`);
+    n?.addEventListener(`click`,()=>{let e=r?.classList.toggle(`open`);i?.classList.toggle(`hidden`,e),a?.classList.toggle(`hidden`,!e),n.setAttribute(`aria-expanded`,String(e))}),r?.querySelectorAll(`a`).forEach(e=>{e.addEventListener(`click`,()=>{r.classList.remove(`open`),i?.classList.remove(`hidden`),a?.classList.add(`hidden`),n?.setAttribute(`aria-expanded`,`false`)})});
   </script>
 </body>
 </html>
