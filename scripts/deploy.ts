@@ -211,7 +211,7 @@ async function runDeploy() {
 
     // Sincronizar las variables de entorno con la URL final real
     console.log('⚙️ Sincronizando variables de entorno en Render con la URL final...');
-    await renderClient.put(`/services/${serviceId}/env-vars`, [
+    const envVars = [
       { key: 'PORT', value: '3000' },
       { key: 'RETELL_API_KEY', value: RETELL_API_KEY },
       { key: 'GOOGLE_CLIENT_ID', value: '624764332114-fa1l7t3tn1bmlj02nic97430b3biov97.apps.googleusercontent.com' },
@@ -219,7 +219,16 @@ async function runDeploy() {
       { key: 'GOOGLE_REDIRECT_URI', value: `${serviceUrl}/oauth2callback` },
       { key: 'SUPABASE_URL', value: SUPABASE_URL },
       { key: 'SUPABASE_SERVICE_ROLE_KEY', value: SUPABASE_SERVICE_ROLE_KEY },
-    ]);
+    ];
+
+    if (process.env.SMTP_HOST) envVars.push({ key: 'SMTP_HOST', value: process.env.SMTP_HOST });
+    if (process.env.SMTP_PORT) envVars.push({ key: 'SMTP_PORT', value: process.env.SMTP_PORT });
+    if (process.env.SMTP_SECURE) envVars.push({ key: 'SMTP_SECURE', value: process.env.SMTP_SECURE });
+    if (process.env.SMTP_USER) envVars.push({ key: 'SMTP_USER', value: process.env.SMTP_USER });
+    if (process.env.SMTP_PASS) envVars.push({ key: 'SMTP_PASS', value: process.env.SMTP_PASS });
+    if (process.env.CONTACT_RECEIVER_EMAIL) envVars.push({ key: 'CONTACT_RECEIVER_EMAIL', value: process.env.CONTACT_RECEIVER_EMAIL });
+
+    await renderClient.put(`/services/${serviceId}/env-vars`, envVars);
     console.log('✅ Variables de entorno actualizadas.');
 
     // Forzar un nuevo despliegue con la última versión del código y env vars
