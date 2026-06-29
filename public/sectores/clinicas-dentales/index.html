@@ -37,21 +37,17 @@ Iniciar sesión
 </a> <a href="../../#contact" class="block btn-primary text-center hover:btn-primary-hover">
 Probar gratis
 </a> </div> </nav> </div> </div> </header> <script type="module">
-  // Detección dinámica del entorno de ejecución (clon integrado o landing pura)
-  const isClon = window.location.hostname.includes('corandar.com') || window.location.pathname.includes('/receptia');
+  // Detección dinámica del entorno de ejecución (excluye subdominio oficial de Vercel)
+  const isClon = window.location.hostname === 'corandar.com' || window.location.hostname === 'www.corandar.com' || window.location.pathname.includes('/receptia');
   const header = document.getElementById('site-header');
   const corandarTopBar = document.getElementById('corandar-top-bar');
-  const logoReceptia = document.getElementById('logo-receptia-link');
-  const logoCorandar = document.getElementById('logo-corandar-link');
 
   if (isClon && header) {
     header.classList.add('is-corandar-clon');
     if (corandarTopBar) corandarTopBar.classList.remove('hidden');
-    if (logoReceptia) logoReceptia.classList.add('hidden');
-    if (logoCorandar) {
-      logoCorandar.classList.remove('hidden');
-      logoCorandar.classList.add('flex');
-    }
+  } else if (header) {
+    header.classList.remove('is-corandar-clon');
+    if (corandarTopBar) corandarTopBar.classList.add('hidden');
   }
 
   var e=document.getElementById(`site-header`),t=()=>{window.scrollY>20?(e?.classList.add(`glass`,`border-white/5`),e?.classList.remove(`border-transparent`)):(e?.classList.remove(`glass`,`border-white/5`),e?.classList.add(`border-transparent`))};window.addEventListener(`scroll`,t,{passive:!0}),t();var n=document.getElementById(`mobile-menu-toggle`),r=document.getElementById(`mobile-menu`),i=document.getElementById(`icon-menu`),a=document.getElementById(`icon-close`);n?.addEventListener(`click`,()=>{let e=r?.classList.toggle(`open`);i?.classList.toggle(`hidden`,e),a?.classList.toggle(`hidden`,!e),n.setAttribute(`aria-expanded`,String(e))}),r?.querySelectorAll(`a`).forEach(e=>{e.addEventListener(`click`,()=>{r.classList.remove(`open`),i?.classList.remove(`hidden`),a?.classList.add(`hidden`),n?.setAttribute(`aria-expanded`,`false`)})});</script> <main id="main" class="pt-32 pb-20"> <!-- Sector hero --> <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"> <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm mb-6"> <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path> </svg> <span class="text-gray-300">Para clínicas dentales y centros médicos</span> </div> <h1 class="text-4xl md:text-6xl font-bold mb-6 max-w-4xl mx-auto">
