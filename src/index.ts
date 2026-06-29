@@ -15,7 +15,7 @@ import referralsRouter from './routes/referrals';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
 import { supabase, getSettingVal, clearSettingsCache } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName } from './services/retell';
-import { createStripeCheckoutSession, createStripePortalSession, getStripeClient } from './services/stripe';
+import { createStripeCheckoutSession, createStripePortalSession, getStripeClient, createStripeAddonCheckoutSession } from './services/stripe';
 import axios from 'axios';
 import { sendWhatsAppMessage } from './services/whatsapp';
 import { processChatbotMessage } from './services/chatbot';
@@ -961,6 +961,95 @@ app.delete('/api/admin/tenants/:id', async (req, res): Promise<void> => {
   }
 });
 
+app.post('/api/admin/tenants/:id/refund', async (req, res): Promise<void> => {
+  const { id } = req.params;
+  try {
+    const { data: tenant, error: getError } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (getError) throw getError;
+    if (!tenant) {
+      res.status(404).json({ error: 'Inquilino no encontrado.' });
+      return;
+    }
+
+    if (!tenant.stripe_customer_id) {
+      res.status(400).json({ error: 'El cliente no tiene un ID de cliente de Stripe asociado.' });
+      return;
+    }
+
+    const stripe = await getStripeClient();
+
+    // 1. Encontrar la última transacción cobrada (charge) exitosa
+    const charges = await stripe.charges.list({
+      customer: tenant.stripe_customer_id,
+      limit: 10
+    });
+
+    const refundableCharge = charges.data.find(c => c.paid && !c.refunded && c.status === 'succeeded');
+
+    if (!refundableCharge) {
+      res.status(400).json({ error: 'No se encontró ningún cargo reembolsable en Stripe para este cliente.' });
+      return;
+    }
+
+    // 2. Ejecutar reembolso en Stripe
+    const refund = await stripe.refunds.create({
+      charge: refundableCharge.id
+    });
+
+    console.log(`[Stripe] Reembolso emitido para la carga ${refundableCharge.id}. ID Reembolso: ${refund.id}`);
+
+    // 3. Cancelar la suscripción activa si existe
+    try {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: tenant.stripe_customer_id,
+        status: 'active',
+        limit: 1
+      });
+      if (subscriptions.data.length > 0) {
+        await stripe.subscriptions.cancel(subscriptions.data[0].id);
+        console.log(`[Stripe] Suscripción ${subscriptions.data[0].id} cancelada automáticamente.`);
+      }
+    } catch (stripeErr: any) {
+      console.warn('⚠️ No se pudo cancelar la suscripción en Stripe (puede que ya estuviera cancelada):', stripeErr.message);
+    }
+
+    // 4. Actualizar estado del inquilino en base de datos a cancelado/reembolsado
+    const todayStr = new Date().toISOString().split('T')[0];
+    await supabase
+      .from('tenants')
+      .update({
+        subscription_status: 'cancelled',
+        contract_end_date: todayStr
+      })
+      .eq('id', id);
+
+    // 5. Registrar transacción negativa (gasto) en contabilidad
+    const amountRefunded = refundableCharge.amount / 100;
+    await supabase
+      .from('accounting_transactions')
+      .insert({
+        type: 'expense',
+        concept: `Reembolso Garantía 14 días: ${tenant.business_name} - Cargo ${refundableCharge.id}`,
+        amount: amountRefunded,
+        date: todayStr
+      });
+
+    res.json({
+      success: true,
+      message: `Reembolso de ${amountRefunded}€ procesado y suscripción cancelada.`,
+      refund_id: refund.id
+    });
+  } catch (err: any) {
+    console.error('Error al procesar reembolso:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // =====================================================================
 // 6. Super-Admin: Crear y aprovisionar un Agente de Voz IA dinámicamente con barra de progreso
 // =====================================================================
@@ -1597,6 +1686,24 @@ app.post('/api/payments/create-checkout-session', async (req, res): Promise<void
   }
 });
 
+// 1b. Crear sesión de Stripe Checkout para compra de minutos adicionales
+app.post('/api/payments/create-addon-checkout-session', async (req, res): Promise<void> => {
+  const { tenant_id, pack } = req.body;
+  if (!tenant_id || !pack) {
+    res.status(400).json({ error: 'Faltan parámetros obligatorios (tenant_id, pack).' });
+    return;
+  }
+
+  try {
+    const origin = getRequestOrigin(req);
+    const checkoutUrl = await createStripeAddonCheckoutSession(tenant_id, Number(pack), origin);
+    res.json({ url: checkoutUrl });
+  } catch (err: any) {
+    console.error('Error al crear checkout session de Addon de minutos:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 2. Crear sesión del portal de Stripe para autogestión de clientes
 app.post('/api/payments/create-portal-session', async (req, res): Promise<void> => {
   const { tenant_id } = req.body;
@@ -1669,6 +1776,49 @@ app.post('/api/payments/cancel-subscription', async (req, res): Promise<void> =>
   }
 });
 
+// 5. Obtener historial de facturas del cliente desde Stripe
+app.get('/api/payments/invoices', async (req, res): Promise<void> => {
+  const { tenant_id } = req.query;
+  if (!tenant_id) {
+    res.status(400).json({ error: 'Falta el parámetro obligatorio tenant_id.' });
+    return;
+  }
+
+  try {
+    const { data: tenant, error: tErr } = await supabase
+      .from('tenants')
+      .select('stripe_customer_id')
+      .eq('id', tenant_id)
+      .single();
+
+    if (tErr || !tenant || !tenant.stripe_customer_id) {
+      res.json({ invoices: [] });
+      return;
+    }
+
+    const stripe = await getStripeClient();
+    const invoiceList = await stripe.invoices.list({
+      customer: tenant.stripe_customer_id,
+      limit: 20
+    });
+
+    const formattedInvoices = invoiceList.data.map(inv => ({
+      id: inv.id,
+      number: inv.number || 'Borrador',
+      amount: inv.amount_paid / 100,
+      status: inv.status,
+      pdf_url: inv.invoice_pdf || inv.hosted_invoice_url,
+      hosted_url: inv.hosted_invoice_url,
+      date: new Date(inv.created * 1000).toISOString().split('T')[0]
+    }));
+
+    res.json({ invoices: formattedInvoices });
+  } catch (err: any) {
+    console.error('Error al listar facturas de Stripe:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 3. Webhook de Stripe para notificaciones asíncronas en la nube
 app.post('/api/payments/webhook', async (req, res): Promise<void> => {
   const sig = req.headers['stripe-signature'];
@@ -1703,7 +1853,45 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
         const planId = session.metadata?.plan_id;
         const type = session.metadata?.type;
 
-        if (type === 'no_show_deposit') {
+        if (type === 'minutes_addon') {
+          const minutes = Number(session.metadata?.minutes || 0);
+          const amount = Number(session.metadata?.amount || 0);
+          console.log(`🔔 Recibido pago de minutos extra para Tenant: ${tenantId}. Pack: +${minutes} min (Importe: ${amount}€)`);
+
+          if (tenantId && minutes > 0) {
+            try {
+              // 1. Obtener inquilino
+              const { data: tenant } = await supabase
+                .from('tenants')
+                .select('business_name, addon_minutes')
+                .eq('id', tenantId)
+                .single();
+
+              const currentAddon = tenant?.addon_minutes || 0;
+              const newAddon = currentAddon + minutes;
+
+              // 2. Actualizar addon_minutes en tenants
+              await supabase
+                .from('tenants')
+                .update({ addon_minutes: newAddon })
+                .eq('id', tenantId);
+
+              // 3. Registrar transacción contable
+              await supabase
+                .from('accounting_transactions')
+                .insert({
+                  type: 'income',
+                  concept: `Compra Pack Minutos Extra: ${tenant?.business_name || tenantId} (+${minutes} min)`,
+                  amount: amount,
+                  date: new Date().toISOString().split('T')[0]
+                });
+
+              console.log(`✅ Adquirido pack de minutos con éxito para el inquilino ${tenantId}. Total acumulado: ${newAddon} min.`);
+            } catch (err: any) {
+              console.error('[Stripe Webhook Error] Error al procesar pack de minutos extra:', err.message);
+            }
+          }
+        } else if (type === 'no_show_deposit') {
           const appointmentId = session.metadata?.appointment_id;
           console.log(`🔔 Recibido pago de fianza para la cita ${appointmentId} (Tenant: ${tenantId})...`);
 
@@ -4265,6 +4453,12 @@ async function runDatabaseMigrations() {
     // Crear índice para búsquedas rápidas por sesión si no existe
     await clientInstance.query(`
       CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(tenant_id, session_id);
+    `);
+
+    // Asegurar columna addon_minutes en tenants si no existe
+    await clientInstance.query(`
+      ALTER TABLE tenants 
+      ADD COLUMN IF NOT EXISTS addon_minutes INTEGER DEFAULT 0;
     `);
 
     // 3. Notificar a PostgREST

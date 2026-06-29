@@ -372,3 +372,56 @@ export async function createNoShowDepositSession(
   return session.url;
 }
 
+/**
+ * Crea una sesión de Stripe Checkout para comprar minutos adicionales (pago único).
+ */
+export async function createStripeAddonCheckoutSession(
+  tenantId: string,
+  packAmount: number,
+  originUrl: string
+): Promise<string> {
+  const stripe = await getStripeClient();
+
+  // 1. Obtener o crear el cliente
+  const customerId = await getOrCreateCustomer(tenantId);
+
+  // 2. Definir precio e información de producto
+  const priceInCents = packAmount === 50 ? 1500 : 2500;
+  const packName = `Pack de +${packAmount} Minutos Extra`;
+
+  console.log(`🚀 Creando Checkout Session para comprar minutos adicionales (${packName}, ${priceInCents} céntimos)...`);
+
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: packName,
+            description: `Añade ${packAmount} minutos de conversación de voz de IA a tu cuenta de Receptia. Válidos hasta consumo.`,
+          },
+          unit_amount: priceInCents,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: 'payment', // Pago único
+    success_url: `${originUrl}/?tenant_id=${tenantId}&checkout=success`,
+    cancel_url: `${originUrl}/?tenant_id=${tenantId}&checkout=cancel`,
+    metadata: {
+      type: 'minutes_addon',
+      tenant_id: tenantId,
+      minutes: String(packAmount),
+      amount: String(priceInCents / 100),
+    },
+  });
+
+  if (!session.url) {
+    throw new Error('No se pudo generar la URL de redirección en la sesión de Stripe Checkout para el Addon.');
+  }
+
+  return session.url;
+}
+

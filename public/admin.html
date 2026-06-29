@@ -2552,12 +2552,13 @@
                       <th>Ciclo</th>
                       <th>Fecha de Alta</th>
                       <th>Estado de Pago</th>
+                      <th>Acción</th>
                     </tr>
                   </thead>
                   <tbody id="accounting-tbody">
                     <tr>
-                      <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
-                        No hay cobros recurrentes activos.
+                      <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                         No hay cobros recurrentes activos.
                       </td>
                     </tr>
                   </tbody>
@@ -7719,6 +7720,34 @@
       }
     }
 
+    async function refundTenantSubscription(tenantId, tenantName) {
+      const isConfirmed = confirm('¿Estás seguro de que deseas realizar un reembolso completo de la suscripción a "' + tenantName + '"?\n\nEsta acción revertirá el último pago en Stripe, cancelará la suscripción y registrará un gasto en la contabilidad.');
+      if (!isConfirmed) return;
+
+      try {
+        const response = await fetch(`/api/admin/tenants/${tenantId}/refund`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const resData = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(resData.error || 'Error al emitir el reembolso.');
+        }
+
+        await fetchTenants();
+        if (typeof fetchTransactions === 'function') {
+          await fetchTransactions();
+        }
+        await showCustomAlert('Se ha procesado el reembolso completo con éxito para "' + tenantName + '" y se ha cancelado su suscripción en Stripe y registrado el gasto.', 'Reembolso Procesado', 'success');
+      } catch (err) {
+        await showCustomAlert('Error: ' + err.message, 'Error', 'error');
+      }
+    }
+
 
     // Cargar los datos de un cliente existente al formulario para edición (bajo demanda si no está en memoria)
     async function loadTenantToEdit(tenantId) {
@@ -9686,13 +9715,20 @@
       tbody.innerHTML = '';
 
       if (activeTenants.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay cobros recurrentes activos.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay cobros recurrentes activos.</td></tr>`;
         return;
       }
 
       activeTenants.forEach(tenant => {
         const price = Number(tenant.price_amount) || 0;
         const row = document.createElement('tr');
+        
+        const actionBtn = tenant.stripe_customer_id 
+          ? `<button class="btn btn-secondary" onclick="refundTenantSubscription('${tenant.id}', '${tenant.business_name}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); display: flex; align-items: center; gap: 0.25rem;">
+               <i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i> Reembolsar
+             </button>`
+          : `<span style="font-size: 0.8rem; color: var(--text-muted);">Manual</span>`;
+
         row.innerHTML = `
           <td style="font-weight: 600; color: #fff;">${tenant.business_name}</td>
           <td>${tenant.subscription_plan || 'Estándar'}</td>
@@ -9700,9 +9736,11 @@
           <td>${tenant.billing_cycle === 'annually' ? 'Anual' : 'Mensual'}</td>
           <td>${new Date(tenant.contract_start_date).toLocaleDateString('es-ES')}</td>
           <td><span class="badge badge-success">Pagado / Recurrente 🟢</span></td>
+          <td>${actionBtn}</td>
         `;
         tbody.appendChild(row);
       });
+      lucide.createIcons();
     }
 
     // ========================================================
