@@ -430,6 +430,34 @@
       color: var(--primary-hover);
     }
 
+    #btn-change-plan {
+      border-color: var(--primary);
+      color: var(--primary);
+      transition: all 0.2s ease;
+    }
+    #btn-change-plan:hover {
+      background: var(--primary) !important;
+      color: #000 !important;
+    }
+    #btn-stripe-portal {
+      border-color: #8b5cf6 !important;
+      color: #a78bfa !important;
+      transition: all 0.2s ease;
+    }
+    #btn-stripe-portal:hover {
+      background: #8b5cf6 !important;
+      color: #000 !important;
+    }
+    #btn-cancel-subscription {
+      border-color: var(--error) !important;
+      color: var(--error) !important;
+      transition: all 0.2s ease;
+    }
+    #btn-cancel-subscription:hover {
+      background: var(--error) !important;
+      color: #000 !important;
+    }
+
     .btn-danger {
       background: linear-gradient(135deg, var(--error) 0%, #b91c1c 100%);
       box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
@@ -1741,7 +1769,7 @@
               <li><i data-lucide="check"></i> Integración con Google Calendar</li>
               <li><i data-lucide="check"></i> Panel de control de cliente</li>
               <li><i data-lucide="check"></i> Hasta 200 minutos incluidos / mes</li>
-              <li><i data-lucide="check"></i> Minuto adicional a 0.20€/min</li>
+              <li><i data-lucide="check"></i> Minuto adicional a 0.35€/min</li>
             </ul>
             <button class="btn" onclick="openSubscribeModal('estandar_mensual', 'Plan Estándar Mensual', 149, 'mes')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
           </div>
@@ -1760,7 +1788,7 @@
               <li><i data-lucide="check"></i> Soporte de Voz ElevenLabs de alta calidad</li>
               <li><i data-lucide="check"></i> Prompt e instrucciones optimizadas</li>
               <li><i data-lucide="check"></i> Hasta 500 minutos incluidos / mes</li>
-              <li><i data-lucide="check"></i> Minuto adicional a 0.20€/min</li>
+              <li><i data-lucide="check"></i> Minuto adicional a 0.35€/min</li>
             </ul>
             <button class="btn" onclick="openSubscribeModal('premium_mensual', 'Plan Premium Mensual', 249, 'mes')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
           </div>
@@ -1783,7 +1811,7 @@
               <li><i data-lucide="check"></i> Integración con Google Calendar</li>
               <li><i data-lucide="check"></i> Panel de control de cliente</li>
               <li><i data-lucide="check"></i> Hasta 200 minutos incluidos / mes</li>
-              <li><i data-lucide="check"></i> Minuto adicional a 0.20€/min</li>
+              <li><i data-lucide="check"></i> Minuto adicional a 0.35€/min</li>
               <li><i data-lucide="check"></i> Ahorro de casi 3 meses de suscripción</li>
             </ul>
             <button class="btn" onclick="openSubscribeModal('estandar_anual', 'Plan Estándar Anual', 1290, 'año')" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem;">Suscribirse al Plan</button>
@@ -2272,7 +2300,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.30</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.31</span>
         </div>
       </header>
 
@@ -2634,7 +2662,7 @@
                 </div>
                 <div id="lbl-usage-extra-cost" style="font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
                   <span>Uso adicional:</span>
-                  <span id="lbl-usage-extra-cost-val" style="font-weight: 600; color: #fbbf24;">0.20€/min</span>
+                  <span id="lbl-usage-extra-cost-val" style="font-weight: 600; color: #fbbf24;">0.35€/min</span>
                 </div>
               </div>
 
@@ -2655,13 +2683,13 @@
                 </div>
               </div>
             </div>
-            <button class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem;" onclick="openPlansModal()">
+            <button id="btn-change-plan" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem;" onclick="openPlansModal()">
               <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Cambiar o Mejorar Plan
             </button>
-            <button id="btn-stripe-portal" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem; display: none; border-color: #8b5cf6; color: #a78bfa;" onclick="openStripePortal()">
+            <button id="btn-stripe-portal" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem; display: none;" onclick="openStripePortal()">
               <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> Gestionar Facturación (Stripe)
             </button>
-            <button id="btn-cancel-subscription" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem; border-color: var(--error); color: var(--error); display: none;" onclick="requestCancelSubscription()">
+            <button id="btn-cancel-subscription" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem; display: none;" onclick="requestCancelSubscription()">
               <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i> Cancelar Suscripción
             </button>
           </div>
@@ -7794,7 +7822,7 @@
         if (totalMinutes > limit) {
           barUsageProgress.style.background = 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)';
           const extraMinutes = totalMinutes - limit;
-          const extraCost = (extraMinutes * 0.20).toFixed(2);
+          const extraCost = (extraMinutes * 0.35).toFixed(2);
           
           lblUsageMinutes.innerHTML = `<span style="color: #ef4444; font-weight: 700;">${totalMinutes}</span> / ${limit} min`;
           
@@ -7805,13 +7833,13 @@
               <strong style="color: #ef4444;">+${extraCost} €</strong>
             </div>
             <div style="font-size: 0.75rem; color: var(--text-muted); text-align: right; margin-top: 0.1rem;">
-              Facturado a 0.20€/min adicional
+              Facturado a 0.35€/min adicional
             </div>
           `;
         } else {
           barUsageProgress.style.background = 'linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%)';
           lblUsageExtraCost.style.display = 'flex';
-          lblUsageExtraCost.innerHTML = `<span>Uso adicional:</span> <span style="font-weight: 600; color: #fbbf24;">0.20€/min</span>`;
+          lblUsageExtraCost.innerHTML = `<span>Uso adicional:</span> <span style="font-weight: 600; color: #fbbf24;">0.35€/min</span>`;
         }
       }
     }
