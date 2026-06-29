@@ -231,7 +231,93 @@ Al enviar este formulario aceptas recibir comunicaciones sobre Receptia. Cumplim
 </div> </div> <!-- Right: form --> <div class="lg:col-span-3"> <form id="lead-form" class="card space-y-4" novalidate> <div class="grid sm:grid-cols-2 gap-4"> <div> <label for="name" class="block text-sm font-medium text-gray-300 mb-1.5">Nombre</label> <input type="text" id="name" name="name" required autocomplete="name" class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:bg-white/[0.07] transition-colors" placeholder="María López"> </div> <div> <label for="company" class="block text-sm font-medium text-gray-300 mb-1.5">Negocio</label> <input type="text" id="company" name="company" required autocomplete="organization" class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:bg-white/[0.07] transition-colors" placeholder="Clínica dental Sonríe"> </div> </div> <div> <label for="email" class="block text-sm font-medium text-gray-300 mb-1.5">Email profesional</label> <input type="email" id="email" name="email" required autocomplete="email" class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:bg-white/[0.07] transition-colors" placeholder="maria@tuclinica.es"> </div> <div> <label for="phone" class="block text-sm font-medium text-gray-300 mb-1.5">Teléfono (opcional)</label> <input type="tel" id="phone" name="phone" autocomplete="tel" class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:bg-white/[0.07] transition-colors" placeholder="+34 600 000 000"> </div> <div> <label for="sector" class="block text-sm font-medium text-gray-300 mb-1.5">Sector</label> <select id="sector" name="sector" required class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-brand-500 focus:bg-white/[0.07] transition-colors"> <option value="">Selecciona tu sector…</option> <option value="clinica-dental">Clínica dental</option> <option value="clinica-general">Clínica / Centro médico</option> <option value="peluqueria">Peluquería / Estética</option> <option value="fisioterapia">Fisioterapia</option> <option value="veterinaria">Veterinaria</option> <option value="asesoria">Asesoría / Gestoría</option> <option value="abogado">Abogado</option> <option value="otro">Otro</option> </select> </div> <div> <label for="message" class="block text-sm font-medium text-gray-300 mb-1.5">
 Cuéntanos brevemente tu caso <span class="text-gray-500">(opcional)</span> </label> <textarea id="message" name="message" rows="3" class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:bg-white/[0.07] transition-colors resize-none" placeholder="¿Cuántas llamadas recibes al día? ¿Qué software usas?"></textarea> </div> <button type="submit" id="submit-btn" class="w-full btn-primary py-4 text-base hover:btn-primary-hover"> <span id="submit-text">Empezar 7 días gratis</span> <svg id="submit-spinner" class="w-5 h-5 animate-spin hidden" fill="none" viewBox="0 0 24 24"> <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> <svg id="submit-arrow" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path> </svg> </button> <div id="form-success" class="hidden text-center py-4 px-6 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300"> <strong class="block text-base mb-1">¡Gracias!</strong> <span class="text-sm">Te contactaremos en menos de 24h para ayudarte con la configuración.</span> </div> <div id="form-error" class="hidden text-center py-4 px-6 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
 Algo ha ido mal. Por favor, inténtalo de nuevo o escríbenos a hola@receptia.corandar.com.
-</div> </form> </div> </div> </div> </section> <script type="module">var e=document.getElementById(`lead-form`),t=document.getElementById(`submit-btn`),n=document.getElementById(`submit-text`),r=document.getElementById(`submit-spinner`),i=document.getElementById(`submit-arrow`),a=document.getElementById(`form-success`),o=document.getElementById(`form-error`);e?.addEventListener(`submit`,async s=>{if(s.preventDefault(),!e)return;t?.setAttribute(`disabled`,`true`),n&&(n.textContent=`Enviando…`),r?.classList.remove(`hidden`),i?.classList.add(`hidden`),a?.classList.add(`hidden`),o?.classList.add(`hidden`);let c=Object.fromEntries(new FormData(e).entries());try{let t=window.__RECEPTIA_LEAD_ENDPOINT__||`/api/lead`,n=await fetch(t,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify(c)}).catch(()=>null);(!n||!n.ok)&&(await new Promise(e=>setTimeout(e,800)),console.log(`[Receptia] Lead capturado (simulado):`,c)),a?.classList.remove(`hidden`),e.reset()}catch(e){console.error(`Error al enviar:`,e),o?.classList.remove(`hidden`)}finally{t?.removeAttribute(`disabled`),n&&(n.textContent=`Empezar 7 días gratis`),r?.classList.add(`hidden`),i?.classList.remove(`hidden`)}});</script> </main> <footer class="relative mt-32 border-t border-white/5 bg-surface-1/50"> <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16"> <div class="grid grid-cols-2 md:grid-cols-6 gap-8 lg:gap-12"> <!-- Brand block --> <div class="col-span-2"> <a href="/" class="flex items-center gap-2 mb-4"> <img src="/logo.png" alt="Receptia" class="h-8 w-auto" width="120" height="36"> <span class="font-outfit font-extrabold text-lg md:text-xl text-white tracking-tight" style="font-family: 'Outfit', sans-serif; font-weight: 800; letter-spacing: -0.02em;">Receptia</span> </a> <p class="text-sm text-gray-400 max-w-xs leading-relaxed mb-4">
+</div> </form> </div> </div> </div> </section> 
+
+  <!-- ================= SECCIÓN DE DESCARGA APP MÓVIL ================= -->
+  <section id="download-app" class="py-20 lg:py-28 bg-surface-1/20 border-t border-white/5 relative overflow-hidden" aria-labelledby="download-title">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-12 gap-12 items-center">
+        <!-- Text block -->
+        <div class="lg:col-span-7 space-y-6 text-left">
+          <p class="text-sm font-semibold text-brand-400 uppercase tracking-wider">Receptia en tu móvil</p>
+          <h2 id="download-title" class="text-3xl md:text-5xl font-bold leading-tight">
+            Controla tu agenda e ingresos <br class="hidden md:block">
+            <span class="gradient-text">desde cualquier lugar</span>
+          </h2>
+          <p class="text-base text-gray-400 leading-relaxed max-w-2xl">
+            Lleva el control de tu negocio en tu bolsillo. Con la nueva app móvil de Receptia (v1.0.0) para propietarios e inquilinos, visualiza en tiempo real las citas del calendario, los servicios de tus clientes y la estimación de ingresos del mes de forma rápida y sencilla.
+          </p>
+          
+          <!-- Botones de descarga directos con iconos y estilos premium -->
+          <div class="flex flex-wrap gap-4 pt-2">
+            <!-- Botón Apple App Store (Enlace a la PWA interactiva) -->
+            <a href="/mobile/index.html" target="_blank" rel="noopener" class="flex items-center gap-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 px-6 py-3.5 rounded-xl transition-all duration-200 group hover:scale-[1.02]" title="Guía de instalación PWA para iPhone / iPad">
+              <svg class="w-6 h-6 text-white group-hover:text-brand-400 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.22.67-2.94 1.5-.64.74-1.2 1.88-1.05 3 .96.07 2.11-.53 2.88-1.33z"/>
+              </svg>
+              <div class="text-left">
+                <p class="text-[9px] uppercase tracking-wider text-gray-400 font-semibold leading-none mb-0.5">Descargar en la</p>
+                <p class="text-sm font-bold text-white font-outfit leading-none">App Store</p>
+              </div>
+            </a>
+            
+            <!-- Botón Google Play Store (Descarga directa del APK de Android) -->
+            <a href="/descargas/receptia-v1.0.0.apk" class="flex items-center gap-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 px-6 py-3.5 rounded-xl transition-all duration-200 group hover:scale-[1.02]" title="Descarga directa de APK de Android">
+              <svg class="w-6 h-6 text-white group-hover:text-brand-400 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5 3.25A1.25 1.25 0 0 0 3.75 4.5v15A1.25 1.25 0 0 0 5 20.75h14A1.25 1.25 0 0 0 20.25 19.5v-15A1.25 1.25 0 0 0 19 3.25H5zm2.75 3.25h8.5a.75.75 0 0 1 .75.75v5h-10v-5a.75.75 0 0 1 .75-.75zM12 18a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+              </svg>
+              <div class="text-left">
+                <p class="text-[9px] uppercase tracking-wider text-gray-400 font-semibold leading-none mb-0.5">Descargar para</p>
+                <p class="text-sm font-bold text-white font-outfit leading-none">Android APK</p>
+              </div>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Mockup Visual -->
+        <div class="lg:col-span-5 flex justify-center relative">
+          <div class="w-64 h-[460px] bg-slate-900 rounded-[40px] border-[6px] border-white/10 shadow-2xl relative overflow-hidden flex flex-col justify-between p-4">
+            <div class="w-20 h-4 bg-white/10 rounded-full mx-auto mb-2"></div>
+            <!-- Mockup App UI inside cell -->
+            <div class="flex-grow rounded-2xl bg-slate-950 p-3.5 space-y-3.5 flex flex-col justify-between text-left text-xs relative overflow-hidden">
+              <div class="space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-white font-outfit">Receptia App</span>
+                  <span class="text-[8px] bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded font-semibold">v1.0.0</span>
+                </div>
+                <div class="bg-gradient-to-br from-brand-600 to-brand-900 rounded-xl p-3 text-white space-y-1">
+                  <p class="text-[9px] text-brand-100 uppercase tracking-wider">Ingresos Estimados</p>
+                  <p class="text-lg font-bold font-outfit">1.450,00€</p>
+                </div>
+                <div class="space-y-1.5">
+                  <div class="bg-white/5 p-2 rounded-lg flex items-center justify-between border border-white/5">
+                    <div>
+                      <p class="text-[9px] font-bold text-white leading-none">María Gómez</p>
+                      <p class="text-[8px] text-gray-400 mt-0.5">Fisioterapia</p>
+                    </div>
+                    <span class="text-[9px] font-bold text-brand-400">40,00€</span>
+                  </div>
+                  <div class="bg-white/5 p-2 rounded-lg flex items-center justify-between border border-white/5">
+                    <div>
+                      <p class="text-[9px] font-bold text-white leading-none">Carlos Ruiz</p>
+                      <p class="text-[8px] text-gray-400 mt-0.5">Odontología</p>
+                    </div>
+                    <span class="text-[9px] font-bold text-brand-400">35,00€</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex justify-around items-center pt-2 border-t border-white/5 text-gray-500 text-[8px] font-medium">
+                <span class="text-brand-400 flex flex-col items-center gap-0.5"><i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>Inicio</span>
+                <span class="flex flex-col items-center gap-0.5"><i data-lucide="calendar" class="w-3.5 h-3.5"></i>Citas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<script type="module">var e=document.getElementById(`lead-form`),t=document.getElementById(`submit-btn`),n=document.getElementById(`submit-text`),r=document.getElementById(`submit-spinner`),i=document.getElementById(`submit-arrow`),a=document.getElementById(`form-success`),o=document.getElementById(`form-error`);e?.addEventListener(`submit`,async s=>{if(s.preventDefault(),!e)return;t?.setAttribute(`disabled`,`true`),n&&(n.textContent=`Enviando…`),r?.classList.remove(`hidden`),i?.classList.add(`hidden`),a?.classList.add(`hidden`),o?.classList.add(`hidden`);let c=Object.fromEntries(new FormData(e).entries());try{let t=window.__RECEPTIA_LEAD_ENDPOINT__||`/api/lead`,n=await fetch(t,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify(c)}).catch(()=>null);(!n||!n.ok)&&(await new Promise(e=>setTimeout(e,800)),console.log(`[Receptia] Lead capturado (simulado):`,c)),a?.classList.remove(`hidden`),e.reset()}catch(e){console.error(`Error al enviar:`,e),o?.classList.remove(`hidden`)}finally{t?.removeAttribute(`disabled`),n&&(n.textContent=`Empezar 7 días gratis`),r?.classList.add(`hidden`),i?.classList.remove(`hidden`)}});</script> </main> <footer class="relative mt-32 border-t border-white/5 bg-surface-1/50"> <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16"> <div class="grid grid-cols-2 md:grid-cols-6 gap-8 lg:gap-12"> <!-- Brand block --> <div class="col-span-2"> <a href="/" class="flex items-center gap-2 mb-4"> <img src="/logo.png" alt="Receptia" class="h-8 w-auto" width="120" height="36"> <span class="font-outfit font-extrabold text-lg md:text-xl text-white tracking-tight" style="font-family: 'Outfit', sans-serif; font-weight: 800; letter-spacing: -0.02em;">Receptia</span> </a> <p class="text-sm text-gray-400 max-w-xs leading-relaxed mb-4">
 La recepcionista virtual de voz con IA para clínicas, peluquerías, dentistas y asesorías en España. Construido por Corandar.
 </p> <p class="text-xs text-gray-500"> <span class="inline-flex items-center gap-1.5"> <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
 Todos los sistemas operativos
