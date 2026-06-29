@@ -54,6 +54,20 @@ Probar gratis
   if (isClon && header) {
     header.classList.add('is-corandar-clon');
     if (corandarTopBar) corandarTopBar.classList.remove('hidden');
+
+    // Corregir enlaces del menú de Receptia dinámicamente para que apunten a /receptia/#ancla en el clon
+    document.querySelectorAll('a[href*="#features"], a[href*="#sectors"], a[href*="#demo"], a[href*="#pricing"], a[href*="#faq"], a[href*="#contact"]').forEach(el => {
+      const href = el.getAttribute('href');
+      const hashIndex = href.indexOf('#');
+      if (hashIndex !== -1) {
+        const anchor = href.substring(hashIndex);
+        el.setAttribute('href', '/receptia/' + anchor);
+      }
+    });
+
+    // Logo de Receptia inferior dinámico
+    const logoLnk = document.getElementById('logo-receptia-link');
+    if (logoLnk) logoLnk.setAttribute('href', '/receptia/');
   } else if (header) {
     header.classList.remove('is-corandar-clon');
     if (corandarTopBar) corandarTopBar.classList.add('hidden');
