@@ -1,35 +1,38 @@
-# Walkthrough: Versión 1.1.0 de Receptia Mobile e Integración del Footer Completo en Comparativas
+# Walkthrough: Versión 1.1.1 de Receptia Mobile, Iconos Oficiales en iOS/Android y Espaciado de Tablas de 30px
 
-He implementado los requerimientos de recordar sesión, recuperación de PIN y el cambio a llamadas absolutas para evitar fallos de login, además de rediseñar los márgenes y footers de las páginas comparativas.
+He implementado de forma definitiva el logotipo de la aplicación en todas las plataformas y configurado exactamente 30px de margen vertical (superior e inferior) en las tablas comparativas.
 
 ## Cambios Realizados y Despliegue
 
-### 1. Actualización Semántica de la App Móvil a la Versión 1.1.0
-*   **API Base URL Absoluta**: He modificado `public/mobile/app.js` para realizar todas las llamadas de la API a `https://receptia.corandar.com` de forma absoluta. Esto soluciona de raíz el fallo de login cuando la app se ejecutaba en el clon de Webempresa, ya que Apache (WordPress/Corandar.com) no tiene el backend de Express para procesar `/api/auth/login`.
-*   **Casilla de Verificación "Recordar datos de acceso"**:
-    *   Añadido un checkbox estilizado en el formulario de login.
-    *   Si está marcado, guarda de forma persistente las credenciales (`email`, `pin` y `tenant_id`) en `localStorage`.
-    *   Si no está marcado, guarda los datos únicamente en `sessionStorage` para la pestaña actual de navegación y limpia cualquier rastro de `localStorage`.
-*   **¿Olvidaste tu PIN?**:
-    *   Añadido un enlace en la pantalla de login que abre un modal modal premium instruyendo al usuario para contactar al soporte de Receptia vía correo electrónico o WhatsApp.
-*   **Incremento Gradle**: Modificado `receptia-app/app/build.gradle.kts` subiendo `versionCode = 2` y `versionName = "1.1.0"`. Se ha compilado el APK y copiado a `/public/descargas/receptia-v1.1.0.apk`.
+### 1. Logotipo Oficial de Receptia en las Apps Móviles
+*   **Android (APK v1.1.1)**:
+    *   He creado el script `scratch/build_android_icons.js` que toma `public/favicon.png` de alta resolución y lo redimensiona usando la herramienta de procesamiento de imágenes nativa de macOS `sips` a todos los tamaños requeridos por el estándar de Android:
+        *   `mipmap-mdpi`: 48x48 px
+        *   `mipmap-hdpi`: 72x72 px
+        *   `mipmap-xhdpi`: 96x96 px
+        *   `mipmap-xxhdpi`: 144x144 px
+        *   `mipmap-xxxhdpi`: 192x192 px
+    *   He sustituido todos los iconos de la plantilla genérica (`ic_launcher.webp` e `ic_launcher_round.webp`) por el logotipo oficial de Receptia en formato `.png` en cada uno de los directorios del proyecto nativo Android.
+    *   He incrementado la versión en Gradle a `versionCode = 3` y `versionName = "1.1.1"` (versionado semántico de la app móvil) y compilado el APK a `/public/descargas/receptia-v1.1.1.apk`.
+*   **iOS (PWA Standalone)**:
+    *   He copiado el favicon de Receptia localmente dentro de la carpeta `public/mobile/` como `icon-192.png` e `icon-512.png` de forma relativa.
+    *   He modificado `public/mobile/manifest.json` y `public/mobile/index.html` para usar estas rutas relativas locales en lugar de rutas absolutas `/favicon.png`, asegurando que el icono de Receptia cargue de forma impecable tanto en Vercel como en el clon de Webempresa.
 
-### 2. Optimización Visual de las Comparativas y Footer Completo
-*   **Mapeo de Footer**: He replicado el footer completo de la home (con sitemap estructurado de Producto, Sectores, Comparativas y Empresa) en las tres páginas de comparativas:
+### 2. Espaciado Exacto de 30px en las Tablas Comparativas
+*   He añadido `style="margin-top: 30px; margin-bottom: 30px;"` de forma explícita inline en el contenedor de las tablas comparativas en las tres páginas físicas de comparación:
     *   `/public/comparar/ringover/index.html` (Ringover ✅)
     *   `/public/comparar/contestador/index.html` (Contestador ✅)
     *   `/public/comparar/asistente-humano/index.html` (Asistente Humano ✅)
-*   **Separación y Márgenes de la Tabla**: Se ha aumentado el margen vertical en el contenedor de las tablas comparativas a `my-12 md:my-16` para otorgar un aspecto desahogado y premium.
-*   **Padding superior**: Aumentado a `pt-40 md:pt-48` en el contenedor `<main>` para evitar que el header fixed tape la cabecera del artículo.
+*   Esto garantiza un espaciado exacto de 30 px por encima y por debajo de las tablas, cumpliendo literalmente la especificación de diseño en ambas plataformas.
 
 ---
 
-## Verificación de Salud en Producción (v1.1.0)
+## Verificación de Salud en Producción (v1.1.1)
 *   **Vercel (Landing Oficial)**:
     *   Comparativa Ringover: `https://receptia.corandar.com/comparar/ringover/` (Disponible ✅)
     *   Comparativa Asistente Humano: `https://receptia.corandar.com/comparar/asistente-humano/` (Disponible ✅)
-    *   Descarga APK v1.1.0: `https://receptia.corandar.com/descargas/receptia-v1.1.0.apk` (Disponible ✅)
+    *   Descarga APK v1.1.1: `https://receptia.corandar.com/descargas/receptia-v1.1.1.apk` (Disponible ✅)
 *   **Webempresa (Clon Corandar)**:
     *   Comparativa Ringover: `https://corandar.com/receptia/comparar/ringover/` (Disponible ✅)
     *   Comparativa Asistente Humano: `https://corandar.com/receptia/comparar/asistente-humano/` (Disponible ✅)
-    *   Descarga APK v1.1.0: `https://corandar.com/receptia/descargas/receptia-v1.1.0.apk` (Disponible ✅)
+    *   Descarga APK v1.1.1: `https://corandar.com/receptia/descargas/receptia-v1.1.1.apk` (Disponible ✅)

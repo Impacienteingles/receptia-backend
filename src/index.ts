@@ -212,6 +212,104 @@ app.post('/api/auth/login', async (req, res): Promise<void> => {
   }
 });
 
+// Endpoint para recuperación automática de PIN mediante envío de correo SMTP
+app.post('/api/auth/recover-pin', async (req, res): Promise<void> => {
+  const { email } = req.body;
+  if (!email) {
+    res.status(400).json({ error: 'El correo electrónico es obligatorio.' });
+    return;
+  }
+
+  try {
+    const { data: tenant, error } = await supabase
+      .from('tenants')
+      .select('id, admin_pin, business_name')
+      .eq('email', email.trim().toLowerCase())
+      .eq('is_archived', false)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!tenant) {
+      res.status(404).json({ error: 'El correo electrónico introducido no está registrado o la cuenta está inactiva.' });
+      return;
+    }
+
+    if (!tenant.admin_pin) {
+      res.status(400).json({ error: 'Esta cuenta aún no tiene un PIN configurado en el sistema.' });
+      return;
+    }
+
+    // Configurar transporte SMTP modular de Nodemailer reutilizando las variables del .env
+    let transporter = null;
+    let mailFrom = '';
+
+    if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 5000
+      });
+      mailFrom = process.env.SMTP_USER;
+    } else if (process.env.GOOGLE_EMAIL && process.env.GOOGLE_PASSWORD) {
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GOOGLE_EMAIL,
+          pass: process.env.GOOGLE_PASSWORD
+        },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 5000
+      });
+      mailFrom = process.env.GOOGLE_EMAIL;
+    }
+
+    if (transporter && mailFrom) {
+      const mailOptions = {
+        from: `"Soporte Receptia" <${mailFrom}>`,
+        to: email.trim().toLowerCase(),
+        subject: `Recuperación de PIN - Receptia`,
+        html: `
+          <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <h2 style="color: #7c3aed; margin: 0; font-size: 24px;">Receptia Mobile</h2>
+              <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Recuperación de credenciales</p>
+            </div>
+            <div style="font-size: 16px; color: #1e293b; line-height: 1.6; margin-bottom: 24px;">
+              <p>Hola, <strong>${tenant.business_name}</strong>:</p>
+              <p>Hemos recibido una solicitud para recuperar tu PIN de acceso al panel de cliente de Receptia Mobile.</p>
+              <div style="text-align: center; background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin: 24px 0;">
+                <p style="font-size: 13px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">Tu PIN de acceso es:</p>
+                <p style="font-size: 36px; font-weight: bold; color: #1e293b; letter-spacing: 0.1em; margin: 8px 0 0 0;">${tenant.admin_pin}</p>
+              </div>
+              <p style="font-size: 14px; color: #64748b;">Si no has solicitado esta recuperación, por favor te sugerimos cambiar tu PIN desde el panel de control o ponerte en contacto con soporte.</p>
+            </div>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin-bottom: 20px;" />
+            <div style="text-align: center; font-size: 12px; color: #94a3b8;">
+              <p>© 2026 Receptia. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true, message: 'Tu PIN de acceso ha sido enviado automáticamente a tu correo electrónico registrado.' });
+    } else {
+      res.status(500).json({ error: 'El servicio de envío de correos no está configurado en el servidor.' });
+    }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 2. Registrar o actualizar un inquilino
 app.post('/api/tenants', async (req, res): Promise<void> => {
   const { 

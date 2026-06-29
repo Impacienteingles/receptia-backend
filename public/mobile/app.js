@@ -237,11 +237,62 @@ async function refreshAppointments() {
 // Lógica de recuperación de PIN
 window.openRecoverModal = function(e) {
   if (e) e.preventDefault();
+  document.getElementById('recover-email').value = '';
+  const msgDiv = document.getElementById('recover-message');
+  msgDiv.classList.add('hidden');
+  msgDiv.innerHTML = '';
   document.getElementById('recover-modal').classList.remove('hidden');
 };
 
 window.closeRecoverModal = function() {
   document.getElementById('recover-modal').classList.add('hidden');
+};
+
+window.submitRecoverPin = async function() {
+  const email = document.getElementById('recover-email').value.trim();
+  const msgDiv = document.getElementById('recover-message');
+  const btn = document.getElementById('btn-submit-recover');
+  
+  if (!email) {
+    msgDiv.className = 'text-xs p-3 rounded-xl border border-red-500/20 bg-red-500/5 text-red-400';
+    msgDiv.innerHTML = 'Por favor, introduce tu dirección de correo electrónico.';
+    msgDiv.classList.remove('hidden');
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = `<span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>Enviando...</span>`;
+  msgDiv.classList.add('hidden');
+  
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/auth/recover-pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    
+    const data = await res.json();
+    if (res.ok && data.success) {
+      msgDiv.className = 'text-xs p-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-400';
+      msgDiv.innerHTML = data.message || 'Tu PIN ha sido enviado a tu correo.';
+      msgDiv.classList.remove('hidden');
+      setTimeout(() => {
+        closeRecoverModal();
+      }, 4000);
+    } else {
+      msgDiv.className = 'text-xs p-3 rounded-xl border border-red-500/20 bg-red-500/5 text-red-400';
+      msgDiv.innerHTML = data.error || 'No se pudo recuperar el PIN.';
+      msgDiv.classList.remove('hidden');
+    }
+  } catch (err) {
+    console.error(err);
+    msgDiv.className = 'text-xs p-3 rounded-xl border border-red-500/20 bg-red-500/5 text-red-400';
+    msgDiv.innerHTML = 'Error de red al intentar recuperar el PIN.';
+    msgDiv.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>Enviar PIN</span>';
+  }
 };
 
 // ================= ALGORITMO INTELIGENTE DE TARIFAS =================

@@ -369,9 +369,19 @@
         <button onclick="closeRecoverModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
       <p class="text-xs text-gray-400 leading-relaxed">
-        Para recuperar tu PIN de acceso, por favor ponte en contacto con el soporte de Receptia enviando un correo a <a href="mailto:hola@receptia.corandar.com" class="text-brand-400 underline font-medium">hola@receptia.corandar.com</a> o contactándonos a través de tu gestor de cuenta. Te enviaremos tu PIN de inmediato.
+        Introduce el correo electrónico de tu cuenta para recibir de forma automática tu PIN de acceso al instante por email.
       </p>
-      <button onclick="closeRecoverModal()" class="w-full py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold rounded-xl text-xs transition-all">Entendido</button>
+      <div class="space-y-1">
+        <label class="block text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Correo electrónico</label>
+        <input type="email" id="recover-email" placeholder="ejemplo@correo.com" class="w-full bg-surface-200 border border-white/10 px-4 py-3 rounded-xl text-white text-xs placeholder:text-gray-600 focus:outline-none focus:border-brand-500/50">
+      </div>
+      <div id="recover-message" class="text-xs p-3 rounded-xl border hidden"></div>
+      <div class="flex gap-3 pt-2">
+        <button onclick="closeRecoverModal()" class="flex-1 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold rounded-xl text-xs transition-all">Cancelar</button>
+        <button id="btn-submit-recover" onclick="submitRecoverPin()" class="flex-1 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2">
+          <span>Enviar PIN</span>
+        </button>
+      </div>
     </div>
   </div>
 
