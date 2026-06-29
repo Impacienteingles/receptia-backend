@@ -1608,6 +1608,18 @@ app.post('/api/payments/create-portal-session', async (req, res): Promise<void> 
   }
 });
 
+// Ruta de diagnóstico temporal para verificar las cabeceras de proxy de Vercel
+app.get('/api/payments/test-origin', (req, res): void => {
+  res.json({
+    origin: getRequestOrigin(req),
+    headers: req.headers,
+    get_origin: req.get('origin'),
+    get_referer: req.get('referer'),
+    get_x_forwarded_host: req.get('x-forwarded-host'),
+    get_host: req.get('host')
+  });
+});
+
 // 3. Webhook de Stripe para notificaciones asíncronas en la nube
 app.post('/api/payments/webhook', async (req, res): Promise<void> => {
   const sig = req.headers['stripe-signature'];
