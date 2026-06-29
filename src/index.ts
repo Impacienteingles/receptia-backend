@@ -2508,20 +2508,6 @@ app.get('/api/admin/plans', async (req, res): Promise<void> => {
   }
 });
 
-// Ruta temporal para actualizar planes en Supabase
-app.get('/api/debug/update-plans', async (req, res): Promise<void> => {
-  try {
-    for (const plan of NEW_DEFAULT_PLANS) {
-      await supabase
-        .from('plans')
-        .upsert(plan)
-        .eq('id', plan.id);
-    }
-    res.json({ success: true, message: 'Plans updated in Supabase successfully' });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 app.put('/api/admin/plans/:id', async (req, res): Promise<void> => {
   const { id } = req.params;
