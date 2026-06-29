@@ -67,7 +67,7 @@ function processHtmlFile(filePath) {
       topBar.append(`
     <!-- Desplegable Móvil de Corandar -->
     <div id="corandar-mobile-menu" class="hidden sm:hidden border-t border-white/5 bg-[#090d16]/98">
-      <nav class="flex flex-col py-2 px-4 gap-2 text-sm font-medium text-gray-400">
+      <nav class="flex flex-col py-2 px-4 gap-2 text-sm font-medium text-gray-400 text-right">
         <a href="https://corandar.com" class="py-2 hover:text-white transition-colors">Home</a>
         <a href="https://corandar.com/app-store-style-2/" class="py-2 hover:text-white transition-colors">App Store</a>
         <a href="https://corandar.com/shop/" class="py-2 hover:text-white transition-colors">Shop</a>
@@ -81,6 +81,14 @@ function processHtmlFile(filePath) {
 
       changed = true;
       console.log(`- Added Corandar mobile toggle & menu to ${path.relative(publicDir, filePath)}`);
+    } else {
+      // If it already exists, ensure the nav has text-right class for alignment
+      const existingMobileMenuNav = $('#corandar-mobile-menu nav');
+      if (existingMobileMenuNav.length > 0 && !existingMobileMenuNav.hasClass('text-right')) {
+        existingMobileMenuNav.addClass('text-right');
+        changed = true;
+        console.log(`- Set existing Corandar mobile menu alignment to text-right in ${path.relative(publicDir, filePath)}`);
+      }
     }
   }
 
