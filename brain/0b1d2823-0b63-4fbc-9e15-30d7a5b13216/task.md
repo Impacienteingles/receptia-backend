@@ -1,13 +1,14 @@
 - [x] Definir `showProgressModal` y `closeProgressModal` en `public/admin.html`
 - [x] Definir `showProgressModal` y `closeProgressModal` en `public/app.html` (para evitar ReferenceError al registrar referido)
 - [x] Ajustar estilos de tabs de promociones activos/inactivos en `public/admin.html`
-- [x] Incrementar versión en `public/admin.html` a `v2.7.36`
-- [x] Incrementar versión en `public/app.html` a `v1.3.18`
-- [x] Incrementar versión en `package.json` a `1.5.63`
+- [x] Incrementar versión en `public/admin.html` a `v2.7.37`
+- [x] Incrementar versión en `public/app.html` a `v1.3.19`
+- [x] Incrementar versión en `package.json` a `1.5.64`
 - [x] Apuntar botones de "Iniciar Sesión" en la landing page (`public/index.html`) a `/app.html`
 - [x] Envolver "Corandar S.L." en el footer de la landing con enlace a `https://corandar.com`
-- [x] Implementar endpoint `POST /api/lead` en `src/index.ts` que guarda en Supabase y notifica vía Nodemailer a `receptia@corandar.com`
+- [x] Implementar endpoint `POST /api/lead` en `src/index.ts` compatible con Supabase utilizando columnas ya existentes (como `commercial_notes` y `business_name` concatenado) para evitar dependencias de la contraseña de Supabase
 - [x] Forzar la apertura directa del modal de Login de cliente al entrar a `/app.html` sin sesión activa, ocultando completamente la landing page antigua
 - [x] Diseñar e integrar una cabecera de marca con logo de Receptia dentro del modal de login de cliente y aplicar un degradado de fondo premium
+- [x] Modificar `scripts/deploy.ts` para inyectar y persistir de manera segura y nativa las variables de entorno de SMTP en Render durante cada despliegue
 - [x] Compilar y validar el proyecto localmente (`npm run build`)
 - [x] Desplegar en Vercel, GitHub y Render
