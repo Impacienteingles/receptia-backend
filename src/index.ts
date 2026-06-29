@@ -1550,6 +1550,28 @@ app.post('/api/admin/restore', async (req, res): Promise<void> => {
 // INTEGRACIÓN CON STRIPE BILLING (MONETIZACIÓN SAAS)
 // ========================================================
 
+// Helper para obtener el origen del cliente (evita redirigir a onrender.com)
+function getRequestOrigin(req: any): string {
+  let origin = req.get('origin');
+  if (!origin) {
+    const referer = req.get('referer');
+    if (referer) {
+      try {
+        const urlObj = new URL(referer);
+        origin = urlObj.origin;
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+  if (!origin) {
+    const host = req.get('host') || '';
+    const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
+    origin = `${protocol}://${host}`;
+  }
+  return origin;
+}
+
 // 1. Crear sesión de Stripe Checkout
 app.post('/api/payments/create-checkout-session', async (req, res): Promise<void> => {
   const { tenant_id, plan_id } = req.body;
@@ -1559,10 +1581,7 @@ app.post('/api/payments/create-checkout-session', async (req, res): Promise<void
   }
 
   try {
-    const host = req.get('host') || '';
-    const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
-    const origin = `${protocol}://${host}`;
-    
+    const origin = getRequestOrigin(req);
     const checkoutUrl = await createStripeCheckoutSession(tenant_id, plan_id, origin);
     res.json({ url: checkoutUrl });
   } catch (err: any) {
@@ -1580,10 +1599,7 @@ app.post('/api/payments/create-portal-session', async (req, res): Promise<void> 
   }
 
   try {
-    const host = req.get('host') || '';
-    const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
-    const origin = `${protocol}://${host}`;
-
+    const origin = getRequestOrigin(req);
     const portalUrl = await createStripePortalSession(tenant_id, origin);
     res.json({ url: portalUrl });
   } catch (err: any) {
