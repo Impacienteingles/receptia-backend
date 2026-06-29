@@ -1552,6 +1552,13 @@ app.post('/api/admin/restore', async (req, res): Promise<void> => {
 
 // Helper para obtener el origen del cliente (evita redirigir a onrender.com)
 function getRequestOrigin(req: any): string {
+  // Priorizar x-forwarded-host si viene de un proxy como Vercel
+  const forwardedHost = req.get('x-forwarded-host');
+  if (forwardedHost) {
+    const protocol = req.get('x-forwarded-proto') || 'https';
+    return `${protocol}://${forwardedHost}`;
+  }
+
   let origin = req.get('origin');
   if (!origin) {
     const referer = req.get('referer');
