@@ -1,30 +1,21 @@
-# Walkthrough: Sistema de Referidos Completo en Receptia (Hotfix de Modales y Pestañas Premium)
+# Walkthrough: Sistema de Referidos y Mejoras en la Landing Page de Receptia
 
-Se ha desarrollado e integrado con éxito el **Sistema de Referidos y Promociones** en Receptia. Esta actualización conecta la trazabilidad de clientes apadrinados, las comisiones configurables, el abono automático al balance de Stripe y los apuntes de contabilidad en tiempo real.
+Se han desarrollado e integrado con éxito los cambios en el **Sistema de Referidos** y la **Landing Page** de Receptia.
 
 ## Cambios Realizados
 
-### 1. Base de Datos (Supabase)
-*   **[migration_v7_referral_system.sql](file:///Users/juanpablo/Desktop/APPS/Receptia/migration_v7_referral_system.sql)**:
-    *   Tabla `referrals` y `referral_commissions` creadas e indexadas.
+### 1. Landing Page (`public/index.html`)
+*   **Formulario de Contacto**: Conectado directamente al backend en el endpoint `/api/lead` para almacenar los leads de forma real.
+*   **Iniciar sesión**: Redirigido el botón en el menú (escritorio y móvil) para apuntar directamente a `/app.html` (el panel del cliente), permitiendo un acceso rápido y directo a la consola del usuario.
+*   **Footer**: Enlazado el texto `Corandar S.L.` con la web corporativa `https://corandar.com`.
 
-### 2. Backend y Rutas REST
-*   **[src/routes/referrals.ts](file:///Users/juanpablo/Desktop/APPS/Receptia/src/routes/referrals.ts)**:
-    *   Endpoints para consultar y editar la configuración global de referidos.
-    *   Endpoint de registro seguro de referidos, validando auto-referidos y duplicados.
-    *   Endpoints de estadísticas y desgloses contables para el panel del cliente y de administración.
-    *   **Invalidación de Caché**: Limpieza inmediata de la caché de ajustes en el servidor (`clearSettingsCache()`) tras guardar configuración para que los cambios se reflejen de inmediato en la UI.
-*   **[src/index.ts](file:///Users/juanpablo/Desktop/APPS/Receptia/src/index.ts)**:
-    *   Registrado el router Express en la ruta `/api/referrals`.
-    *   Webhook de Stripe (`invoice.payment_succeeded`) automatizado para comisiones y balances FIFO.
+### 2. Backend (`src/index.ts`)
+*   **Endpoint `/api/lead`**:
+    *   Registra al prospecto en la base de datos de Supabase.
+    *   Envía de forma automatizada un email maquetado a `receptia@corandar.com` a través de Nodemailer con las credenciales configuradas en el entorno.
+*   **Migración de Base de Datos**: Asegurada la creación automática de las columnas `notes` y `contact_name` en la tabla `prospects` de Supabase al iniciar el servidor.
 
-### 3. Panel de Administrador (`public/admin.html`)
-*   **v2.7.33**:
-    *   Añadida la pestaña **Promociones** en la barra de navegación lateral.
-    *   **Pestañas Premium**: Maquetada la cabecera de subapartados (`.promo-tabs-header`) con estilo premium tipo píldora, transiciones suaves y con iconos de Lucide asignados.
-    *   **Hotfix de Progreso**: Implementadas las funciones globales `showProgressModal(title, text)` y `closeProgressModal()` para controlar el modal de carga y evitar el ReferenceError al guardar.
-
-### 4. Panel de Cliente (`public/app.html`)
-*   **v1.3.15**:
-    *   Agregada la opción **Referidos (Promo)** destacada con fondo rojo llamativo en la barra lateral.
-    *   **Hotfix de Progreso**: Implementada la función helper dummy de `showProgressModal` para evitar ReferenceErrors al registrar leads recomendados.
+### 3. Versionado del Proyecto (v1.5.61)
+*   **package.json**: Versión bumped a `1.5.61`.
+*   **admin.html**: Versión bumped a `v2.7.34`.
+*   **app.html**: Versión bumped a `v1.3.16`.
