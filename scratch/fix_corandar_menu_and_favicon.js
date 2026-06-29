@@ -66,19 +66,19 @@ function processHtmlFile(filePath) {
 
     // 5. Build the inner HTML for the horizontal mobile menu
     const horizontalMenuHtml = `
-      <nav class="flex flex-row flex-wrap justify-end items-center py-2.5 px-4 gap-y-1.5 gap-x-2 text-xs font-semibold text-gray-400">
+      <nav class="flex flex-row flex-wrap justify-center items-center py-3 px-4 gap-y-2 text-sm font-semibold text-gray-400">
         <a href="https://corandar.com" class="hover:text-white transition-colors">Home</a>
-        <span class="text-white/10 text-[9px] select-none">|</span>
+        <span class="text-white/15 select-none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <a href="https://corandar.com/app-store-style-2/" class="hover:text-white transition-colors">App Store</a>
-        <span class="text-white/10 text-[9px] select-none">|</span>
+        <span class="text-white/15 select-none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <a href="https://corandar.com/shop/" class="hover:text-white transition-colors">Shop</a>
-        <span class="text-white/10 text-[9px] select-none">|</span>
+        <span class="text-white/15 select-none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <a href="https://corandar.com/blog/" class="hover:text-white transition-colors">Blog</a>
-        <span class="text-white/10 text-[9px] select-none">|</span>
+        <span class="text-white/15 select-none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <a href="https://corandar.com/contact/" class="hover:text-white transition-colors">Contacto</a>
-        <span class="text-white/10 text-[9px] select-none">|</span>
+        <span class="text-white/15 select-none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <a href="https://corandar.com/sire-md/" class="hover:text-white transition-colors">Sire MD</a>
-        <span class="text-white/10 text-[9px] select-none">|</span>
+        <span class="text-white/15 select-none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <a href="https://corandar.com/sugerir-aplicacion/" class="hover:text-white transition-colors">Sugerencias</a>
       </nav>
     `;
@@ -95,13 +95,10 @@ function processHtmlFile(filePath) {
       changed = true;
       console.log(`- Added Corandar mobile toggle & horizontal menu to ${path.relative(publicDir, filePath)}`);
     } else {
-      // Overwrite the existing content to use the new horizontal layout
-      const currentHtml = mobileMenu.html() || '';
-      if (!currentHtml.includes('flex-row') || !currentHtml.includes('|')) {
-        mobileMenu.html(horizontalMenuHtml);
-        changed = true;
-        console.log(`- Updated Corandar mobile menu to horizontal layout in ${path.relative(publicDir, filePath)}`);
-      }
+      // Overwrite the existing content to use the new centered horizontal layout
+      mobileMenu.html(horizontalMenuHtml);
+      changed = true;
+      console.log(`- Updated Corandar mobile menu to centered horizontal layout in ${path.relative(publicDir, filePath)}`);
     }
   }
 
