@@ -2574,8 +2574,11 @@ const NEW_DEFAULT_PLANS = [
       'Google Calendar',
       'Voz estándar en español',
       'Confirmaciones por WhatsApp',
-      'RGPD nativo',
-      'Soporte por email'
+      'Garantía de reembolso de 14 días',
+      'Cancela cuando quieras',
+      'Descarga de facturas PDF',
+      'Compra de minutos extra',
+      'Pago seguro con Stripe'
     ],
     description: 'Para autónomos y profesionales que empiezan.'
   },
@@ -2591,7 +2594,11 @@ const NEW_DEFAULT_PLANS = [
       'Sincronización con software médico (Gesden, Dentrix)',
       'Multi-profesional',
       'Fianza anti no-show',
-      'Soporte prioritario'
+      'Garantía de reembolso de 14 días',
+      'Cancela cuando quieras',
+      'Descarga de facturas PDF',
+      'Compra de minutos extra',
+      'Pago seguro con Stripe'
     ],
     description: 'Para clínicas y negocios en pleno crecimiento.'
   },
@@ -2606,8 +2613,11 @@ const NEW_DEFAULT_PLANS = [
       'Campañas outbound automatizadas',
       'Análisis conversacional avanzado',
       'Múltiples números',
-      'Account manager dedicado',
-      'API y webhooks personalizados'
+      'Garantía de reembolso de 14 días',
+      'Cancela cuando quieras',
+      'Descarga de facturas PDF',
+      'Compra de minutos extra',
+      'Pago seguro con Stripe'
     ],
     description: 'Para empresas con varios centros o alto volumen.'
   },
@@ -2621,8 +2631,11 @@ const NEW_DEFAULT_PLANS = [
       'Google Calendar',
       'Voz estándar en español',
       'Confirmaciones por WhatsApp',
-      'RGPD nativo',
-      'Soporte por email'
+      'Garantía de reembolso de 14 días (ahorro de 48€/año)',
+      'Cancela cuando quieras',
+      'Descarga de facturas PDF',
+      'Compra de minutos extra',
+      'Pago seguro con Stripe'
     ],
     description: 'Ahorras 48€/año'
   },
@@ -2638,7 +2651,11 @@ const NEW_DEFAULT_PLANS = [
       'Sincronización con software médico (Gesden, Dentrix)',
       'Multi-profesional',
       'Fianza anti no-show',
-      'Soporte prioritario'
+      'Garantía de reembolso de 14 días (ahorro de 120€/año)',
+      'Cancela cuando quieras',
+      'Descarga de facturas PDF',
+      'Compra de minutos extra',
+      'Pago seguro con Stripe'
     ],
     description: 'Ahorras 120€/año'
   },
@@ -2653,8 +2670,11 @@ const NEW_DEFAULT_PLANS = [
       'Campañas outbound automatizadas',
       'Análisis conversacional avanzado',
       'Múltiples números',
-      'Account manager dedicado',
-      'API y webhooks personalizados'
+      'Garantía de reembolso de 14 días (ahorro de 240€/año)',
+      'Cancela cuando quieras',
+      'Descarga de facturas PDF',
+      'Compra de minutos extra',
+      'Pago seguro con Stripe'
     ],
     description: 'Ahorras 240€/año'
   }
