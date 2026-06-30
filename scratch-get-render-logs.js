@@ -28,9 +28,7 @@ async function run() {
     if (Array.isArray(logs)) {
       logs.reverse().forEach(log => {
         const text = log.text || '';
-        if (text.includes('Bootstrap Migration')) {
-          console.log(`[${log.timestamp}] ${text}`);
-        }
+        console.log(`[${log.timestamp}] [${log.labels?.find(l=>l.name==='instance')?.value || 'no-instance'}] ${text}`);
       });
     } else {
       console.log('Logs output:', JSON.stringify(logs, null, 2));

@@ -6609,7 +6609,12 @@
         }
       }
 
-      if (status === 'paused') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('preview_expired') === 'true' || urlParams.get('trial_expired') === 'true') {
+        accessBlocked = true;
+        document.getElementById('expired-overlay-title').innerText = 'Período de Prueba Finalizado';
+        document.getElementById('expired-overlay-message').innerText = `Tu período de demostración de 7 días gratuitos ha expirado. Selecciona uno de nuestros planes para realizar el pago e iniciar tu suscripción recurrente mensual o anual.`;
+      } else if (status === 'paused') {
         accessBlocked = true;
         document.getElementById('expired-overlay-title').innerText = 'Suscripción Inactiva o Suspendida';
         document.getElementById('expired-overlay-message').innerText = `Tu suscripción a Receptia se encuentra actualmente pausada. Para poder reactivar tu agente de voz IA y recuperar el acceso a la gestión de citas, selecciona una tarifa a continuación.`;
