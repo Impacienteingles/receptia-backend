@@ -830,7 +830,10 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
       
       try {
         const retellAgentId = call?.agent_id;
-        const callerPhone = call?.user_phone_number || call?.from_number || 'Desconocido';
+        const direction = call?.direction || 'inbound';
+        const callerPhone = direction === 'outbound'
+          ? (call?.to_number || 'Desconocido')
+          : (call?.user_phone_number || call?.from_number || 'Desconocido');
         const durationSeconds = call?.duration_ms ? Math.round(call.duration_ms / 1000) : 0;
         const recordingUrl = call?.recording_url || null;
         const transcript = call?.transcript || '';

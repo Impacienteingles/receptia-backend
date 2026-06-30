@@ -1547,8 +1547,15 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
               await retellClient.post('/import-phone-number', {
                 phone_number: phone_number,
                 termination_uri: sip_server,
+                sip_trunk_auth_username: sip_username,
+                sip_trunk_auth_password: sip_password,
                 nickname: `Zadarma - ${business_name}`,
-                inbound_agent_id: agentId
+                inbound_agents: [
+                  {
+                    agent_id: agentId,
+                    weight: 1
+                  }
+                ]
               });
               addStep('11. Número custom importado y vinculado al agente.');
               finalPhoneNumber = phone_number;
@@ -1557,7 +1564,14 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
               // Si ya existe, intentar actualizarlo
               try {
                 await retellClient.patch(`/update-phone-number/${phone_number}`, {
-                  inbound_agent_id: agentId
+                  inbound_agents: [
+                    {
+                      agent_id: agentId,
+                      weight: 1
+                    }
+                  ],
+                  sip_trunk_auth_username: sip_username,
+                  sip_trunk_auth_password: sip_password
                 });
                 addStep('11. Número custom actualizado y vinculado al agente.');
                 finalPhoneNumber = phone_number;

@@ -1,3 +1,4 @@
+const axios = require('axios');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
@@ -7,6 +8,7 @@ const supabase = createClient(
 );
 
 async function run() {
+  const apiKey = process.env.RETELL_API_KEY;
   try {
     const tenantId = '62d1ed82-287c-4329-941b-50b578c15b14';
     console.log(`Querying Supabase call_logs for tenant ${tenantId}...`);
@@ -18,6 +20,13 @@ async function run() {
       .limit(5);
 
     if (error) throw error;
+
+    const response = await axios.post(`https://api.retellai.com/v2/list-calls`, {}, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`
+      }
+    });
+    console.log('Recent calls from Retell:', JSON.stringify(response.data.slice(0, 5), null, 2));
 
     console.log(`Found ${logs.length} call logs:`);
     logs.forEach(log => {
