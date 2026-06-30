@@ -2285,6 +2285,10 @@
           <i data-lucide="settings"></i>
           <span>Ajustes</span>
         </button>
+        <button class="nav-item" id="btn-tab-downloads" onclick="switchTab('downloads')">
+          <i data-lucide="download"></i>
+          <span>Descargas</span>
+        </button>
         <button type="button" class="nav-item" id="btn-download-guide" onclick="openHelpCenterModal()" style="color: var(--primary-light); background: rgba(139, 92, 246, 0.05); margin-top: 0.5rem; border: 1px dashed rgba(139, 92, 246, 0.2); cursor: pointer;">
           <i data-lucide="help-circle"></i>
           <span>Centro de Ayuda</span>
@@ -2311,7 +2315,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.54</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.55</span>
         </div>
       </header>
 
@@ -3429,6 +3433,100 @@
                 </div>
               </div>
 
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA: DESCARGAS -->
+        <div id="client-view-downloads" class="client-view">
+          <style>
+            .download-card {
+              flex: 1; 
+              text-align: center; 
+              max-width: 850px; 
+              margin: 0 auto; 
+              padding: 3rem 2rem;
+            }
+            .download-btn {
+              display: flex; 
+              align-items: center; 
+              gap: 1rem; 
+              background: rgba(255, 255, 255, 0.03); 
+              border: 1px solid rgba(255, 255, 255, 0.08); 
+              padding: 1rem 2rem; 
+              border-radius: 14px; 
+              text-decoration: none; 
+              transition: all 0.2s ease; 
+              cursor: pointer; 
+              min-width: 250px; 
+              justify-content: center;
+            }
+            .download-btn:hover {
+              background: rgba(255, 255, 255, 0.08);
+              border-color: rgba(255, 255, 255, 0.15);
+              transform: translateY(-2px);
+              box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            }
+            .download-mockup {
+              width: 200px; 
+              border-radius: 24px; 
+              overflow: hidden; 
+              border: 1px solid rgba(255, 255, 255, 0.1); 
+              box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+              transition: transform 0.3s ease;
+            }
+            .download-mockup:hover {
+              transform: scale(1.05);
+            }
+          </style>
+          <div class="card download-card">
+            <div style="margin-bottom: 2.5rem;">
+              <span style="text-transform: uppercase; letter-spacing: 0.15em; font-size: 0.8rem; font-weight: 700; color: var(--primary-light); display: block; margin-bottom: 0.75rem;">RECEPTIA EN TU MÓVIL</span>
+              <h2 style="font-size: 2.5rem; font-weight: 800; font-family: 'Outfit', sans-serif; color: #fff; line-height: 1.2; margin: 0 0 1rem 0;">
+                Controla tu agenda e ingresos <br>
+                <span style="background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">desde cualquier lugar</span>
+              </h2>
+              <p style="font-size: 1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                Lleva el control de tu negocio en tu bolsillo. Con la nueva app móvil de Receptia (v1.1.1) para propietarios e inquilinos, visualiza en tiempo real las citas del calendario, los servicios de tus clientes y la estimación de ingresos del mes de forma rápida y sencilla.
+              </p>
+            </div>
+
+            <!-- Botones de descarga directos -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; margin-bottom: 3.5rem;">
+              <!-- Botón Apple PWA -->
+              <a href="/mobile/index.html" target="_blank" rel="noopener" class="download-btn">
+                <svg style="width: 28px; height: 28px; fill: currentColor; color: #fff;" viewBox="0 0 24 24">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.22.67-2.94 1.5-.64.74-1.2 1.88-1.05 3 .96.07 2.11-.53 2.88-1.33z"></path>
+                </svg>
+                <div style="text-align: left; line-height: 1.2;">
+                  <p style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); margin: 0 0 0.15rem 0; font-weight: 600; letter-spacing: 0.05em;">Descargar en la</p>
+                  <p style="font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0; font-family: 'Outfit', sans-serif;">App Store</p>
+                </div>
+              </a>
+
+              <!-- Botón Android APK -->
+              <a href="/descargas/receptia-v1.1.1.apk" target="_blank" rel="noopener" class="download-btn">
+                <svg style="width: 28px; height: 28px; fill: currentColor; color: #fff;" viewBox="0 0 24 24">
+                  <path d="M5 3.25A1.25 1.25 0 0 0 3.75 4.5v15A1.25 1.25 0 0 0 5 20.75h14A1.25 1.25 0 0 0 20.25 19.5v-15A1.25 1.25 0 0 0 19 3.25H5zm2.75 3.25h8.5a.75.75 0 0 1 .75.75v5h-10v-5a.75.75 0 0 1 .75-.75zM12 18a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"></path>
+                </svg>
+                <div style="text-align: left; line-height: 1.2;">
+                  <p style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); margin: 0 0 0.15rem 0; font-weight: 600; letter-spacing: 0.05em;">Descargar para</p>
+                  <p style="font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0; font-family: 'Outfit', sans-serif;">Android APK</p>
+                </div>
+              </a>
+            </div>
+
+            <!-- Fila de Mockups -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2.5rem; margin-top: 1rem;">
+              <div class="download-mockup">
+                <img src="/mockup-dashboard.jpg" alt="Dashboard" style="width: 100%; height: auto; display: block;">
+              </div>
+              <div class="download-mockup">
+                <img src="/mockup-calendar.jpg" alt="Calendario" style="width: 100%; height: auto; display: block;">
+              </div>
+              <div class="download-mockup">
+                <img src="/mockup-appts.jpg" alt="Agenda" style="width: 100%; height: auto; display: block;">
+              </div>
             </div>
           </div>
         </div>
