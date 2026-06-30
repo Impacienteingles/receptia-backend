@@ -2311,7 +2311,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.52</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.53</span>
         </div>
       </header>
 
@@ -3212,7 +3212,7 @@
               </div>
 
               <!-- Clonación de Voz Express (Click & Clone) -->
-              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+              <div id="voice-clone-container" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
                   <i data-lucide="mic" style="color: var(--primary); width: 20px; height: 20px;"></i>
                   Clonación de Voz Express (Click & Clone)
@@ -5167,6 +5167,11 @@
     async function startVoiceCloningProcess() {
       if (!currentTenant) return;
       
+      if (currentTenant.voice_locked) {
+        showToast('La clonación de voz está bloqueada por el administrador.', 'error');
+        return;
+      }
+      
       const submitBtn = document.getElementById('btn-submit-voice-clone');
       const progressText = document.getElementById('voice-clone-progress-text');
       const voiceName = document.getElementById('setting-voice-clone-name').value.trim();
@@ -7005,6 +7010,71 @@
       
       // Cargar facturas de Stripe
       fetchInvoices();
+
+      // Aplicar estado de bloqueo de voz
+      applyVoiceLockState(!!currentTenant.voice_locked);
+    }
+
+    function applyVoiceLockState(isVoiceLocked) {
+      const sliderSpeed = document.getElementById('setting-personality-speed');
+      const cloneContainer = document.getElementById('voice-clone-container');
+      const cloneSubmitBtn = document.getElementById('btn-submit-voice-clone');
+      const cloneRecordBtn = document.getElementById('btn-record-voice');
+      const cloneUploadInput = document.getElementById('voice-upload-file');
+      const cloneNameInput = document.getElementById('setting-voice-clone-name');
+      const cloneRadioRecord = document.querySelector('input[name="voice-clone-source"][value="record"]');
+      const cloneRadioUpload = document.querySelector('input[name="voice-clone-source"][value="upload"]');
+      
+      // Deshabilitar controles de velocidad
+      if (sliderSpeed) {
+        sliderSpeed.disabled = isVoiceLocked;
+        sliderSpeed.style.opacity = isVoiceLocked ? '0.5' : '1';
+      }
+
+      // Deshabilitar controles del clonador
+      if (cloneSubmitBtn) cloneSubmitBtn.disabled = isVoiceLocked || cloneSubmitBtn.disabled;
+      if (cloneRecordBtn) cloneRecordBtn.disabled = isVoiceLocked;
+      if (cloneUploadInput) cloneUploadInput.disabled = isVoiceLocked;
+      if (cloneNameInput) cloneNameInput.disabled = isVoiceLocked;
+      if (cloneRadioRecord) cloneRadioRecord.disabled = isVoiceLocked;
+      if (cloneRadioUpload) cloneRadioUpload.disabled = isVoiceLocked;
+
+      // Crear aviso visual de bloqueo
+      const existingNotice = document.getElementById('voice-lock-notice');
+      if (isVoiceLocked) {
+        if (cloneContainer) {
+          cloneContainer.style.opacity = '0.6';
+          cloneContainer.style.pointerEvents = 'none';
+        }
+        if (!existingNotice && cloneContainer) {
+          const notice = document.createElement('div');
+          notice.id = 'voice-lock-notice';
+          notice.style.background = 'rgba(239, 68, 68, 0.1)';
+          notice.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+          notice.style.borderRadius = '8px';
+          notice.style.color = '#fca5a5';
+          notice.style.padding = '0.75rem 1rem';
+          notice.style.marginBottom = '1rem';
+          notice.style.fontSize = '0.85rem';
+          notice.style.display = 'flex';
+          notice.style.alignItems = 'center';
+          notice.style.gap = '0.5rem';
+          notice.innerHTML = `
+            <i data-lucide="lock" style="width: 16px; height: 16px; flex-shrink: 0; color: #f87171;"></i>
+            <span>La configuración de voz y clonación ha sido bloqueada por el administrador.</span>
+          `;
+          cloneContainer.insertBefore(notice, cloneContainer.firstChild);
+          lucide.createIcons();
+        }
+      } else {
+        if (cloneContainer) {
+          cloneContainer.style.opacity = '1';
+          cloneContainer.style.pointerEvents = 'auto';
+        }
+        if (existingNotice) {
+          existingNotice.remove();
+        }
+      }
     }
 
     // Alternar el bloqueo de acceso al administrador
