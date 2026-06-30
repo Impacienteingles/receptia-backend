@@ -9387,6 +9387,15 @@
       } catch (e) {}
     }
 
+    function normalizeCityName(str) {
+      if (!str) return '';
+      return str
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, ""); // removes accents
+    }
+
     function renderProspectsTable() {
       try {
         window.collapsedCountries = JSON.parse(localStorage.getItem('admin_collapsed_countries') || '{}');
@@ -9427,18 +9436,33 @@
         inmobiliaria: 'Inmobiliaria'
       };
 
-      // 1. Agrupar prospectos por País y Ciudad
+      // 1. Agrupar prospectos por País y Ciudad (normalizando nombres de ciudad para unificarlas)
       const grouped = {};
       allProspects.forEach(p => {
         const country = p.country ? p.country.trim() : 'España';
-        const city = p.city ? p.city.trim() : 'Sin Ciudad';
+        const rawCity = p.city ? p.city.trim() : 'Sin Ciudad';
+        const normCity = normalizeCityName(rawCity) || 'sin_ciudad';
+
         if (!grouped[country]) {
           grouped[country] = {};
         }
-        if (!grouped[country][city]) {
-          grouped[country][city] = [];
+        if (!grouped[country][normCity]) {
+          grouped[country][normCity] = {
+            label: rawCity,
+            list: []
+          };
+        } else {
+          // Si encontramos una versión con mejor formato (mayúscula al inicio, etc.), la usamos de etiqueta
+          const currentLabel = grouped[country][normCity].label;
+          if (rawCity !== currentLabel) {
+            const currentIsLower = currentLabel === currentLabel.toLowerCase();
+            const rawIsUpper = rawCity[0] === rawCity[0].toUpperCase() && rawCity[0] !== rawCity[0].toLowerCase();
+            if (currentIsLower && rawIsUpper) {
+              grouped[country][normCity].label = rawCity;
+            }
+          }
         }
-        grouped[country][city].push(p);
+        grouped[country][normCity].list.push(p);
       });
 
       // Cerrar cualquier dropdown de etiquetas al hacer click fuera
@@ -9456,8 +9480,8 @@
         
         // Calcular leads totales de este país
         let countryLeadsCount = 0;
-        Object.values(citiesGroup).forEach(list => {
-          countryLeadsCount += list.length;
+        Object.values(citiesGroup).forEach(cityData => {
+          countryLeadsCount += cityData.list.length;
         });
 
         const isCountryCollapsed = window.collapsedCountries && window.collapsedCountries[country];
@@ -9466,9 +9490,10 @@
         countryHeader.className = 'country-accordion-header';
         countryHeader.onclick = () => toggleCountryAccordion(countryHeader, country);
         countryHeader.innerHTML = `
-          <div style="display: flex; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <input type="checkbox" class="country-select-all" data-country="${country}" onclick="event.stopPropagation(); toggleSelectAllCountryProspects(this, '${country}')" style="width: 16px; height: 16px; cursor: pointer;">
             <i data-lucide="globe" style="color: var(--primary-light); width: 20px; height: 20px;"></i>
-            <span style="font-weight: 700; color: #fff; font-size: 1.1rem; margin-left: 0.75rem;">${country}</span>
+            <span style="font-weight: 700; color: #fff; font-size: 1.1rem;">${country}</span>
             <span class="country-badge-count">${countryLeadsCount} leads</span>
           </div>
           <i data-lucide="chevron-down" class="country-chevron-icon" style="transition: transform 0.2s ease; color: var(--text-muted); width: 20px; height: 20px; transform: ${isCountryCollapsed ? 'rotate(0deg)' : 'rotate(180deg)'};"></i>
@@ -9477,9 +9502,11 @@
         const countryContent = document.createElement('div');
         countryContent.className = isCountryCollapsed ? 'country-accordion-content' : 'country-accordion-content expanded';
 
-        Object.keys(citiesGroup).sort().forEach(city => {
-          const prospectsList = citiesGroup[city];
-          const cityKey = `${country}:${city}`;
+        Object.keys(citiesGroup).sort().forEach(normCity => {
+          const cityData = citiesGroup[normCity];
+          const cityLabel = cityData.label;
+          const prospectsList = cityData.list;
+          const cityKey = `${country}:${normCity}`;
           const isCityCollapsed = window.collapsedCities && window.collapsedCities[cityKey];
           
           const accordionHeader = document.createElement('div');
@@ -9489,9 +9516,10 @@
             toggleCityAccordion(accordionHeader, cityKey);
           };
           accordionHeader.innerHTML = `
-            <div style="display: flex; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <input type="checkbox" class="prospects-city-select-all" data-city-key="${cityKey}" onclick="event.stopPropagation(); toggleSelectAllCityProspects(this, '${cityKey}')" style="width: 16px; height: 16px; cursor: pointer;">
               <i data-lucide="map-pin" style="color: var(--primary); width: 20px; height: 20px;"></i>
-              <span style="font-weight: 600; color: #fff; font-size: 1.05rem; margin-left: 0.75rem;">${city}</span>
+              <span style="font-weight: 600; color: #fff; font-size: 1.05rem;">${cityLabel}</span>
               <span class="city-badge-count">${prospectsList.length} leads</span>
             </div>
             <i data-lucide="chevron-down" class="chevron-icon" style="transition: transform 0.2s ease; color: var(--text-muted); width: 20px; height: 20px; transform: ${isCityCollapsed ? 'rotate(0deg)' : 'rotate(180deg)'};"></i>
@@ -9504,7 +9532,7 @@
           controlBar.className = 'prospects-control-bar';
           controlBar.style.display = 'flex';
           controlBar.style.alignItems = 'center';
-          controlBar.style.justifyContent = 'space-between';
+          controlBar.style.justifyContent = 'flex-end';
           controlBar.style.flexWrap = 'wrap';
           controlBar.style.gap = '0.75rem';
           controlBar.style.padding = '0.75rem 1rem';
@@ -9514,11 +9542,7 @@
           controlBar.style.marginBottom = '0.75rem';
           
           controlBar.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <input type="checkbox" class="prospects-city-select-all" onclick="toggleSelectAllCityProspects(this, '${city}')" style="width: 16px; height: 16px; cursor: pointer;">
-              <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Seleccionar todos de ${city}</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-left: auto;">
               <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 0.25rem;">Ordenar por:</span>
               <button class="btn btn-secondary btn-sort" onclick="sortProspects('business_name')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; height: auto; display: inline-flex; align-items: center; gap: 0.2rem;">
                 Nombre <span id="sort-icon-business_name"></span>
@@ -9542,7 +9566,7 @@
           cardListContainer.style.display = 'flex';
           cardListContainer.style.flexDirection = 'column';
           cardListContainer.style.gap = '0.75rem';
-
+ 
           prospectsList.forEach(p => {
             // Barra de progreso y estado
             let progressPercent = 0;
@@ -9550,7 +9574,7 @@
             let statusText = 'Extraído';
             let isSpinning = false;
             let animateClass = '';
-
+ 
             if (p.status === 'extracted') {
               progressPercent = 25;
               progressColor = '#9ca3af'; // gris
@@ -9582,10 +9606,10 @@
               progressColor = '#f87171'; // rojo
               statusText = 'Fallo';
             }
-
+ 
             const spinnerHtml = isSpinning ? `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid ${progressColor}; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i>` : '';
             const tooltip = p.error_details ? `title="${p.error_details.replace(/"/g, '&quot;')}"` : '';
-
+ 
             const statusBadge = `
               <div style="display: flex; flex-direction: column; gap: 0.25rem; min-width: 140px; text-align: left;" ${tooltip}>
                 <span style="font-size: 0.75rem; font-weight: 600; color: ${progressColor}; display: flex; align-items: center;">
@@ -9596,7 +9620,7 @@
                 </div>
               </div>
             `;
-
+ 
             // Select de Clasificación comercial
             const currentClass = p.classification || 'no_contactado';
             
@@ -9607,7 +9631,7 @@
               const diffDays = (now - contractStart) / (1000 * 60 * 60 * 24);
               contratadoLabel = diffDays < 7 ? 'Contratado (Prueba)' : 'Contratado (Cliente)';
             }
-
+ 
             const classificationSelect = `
               <select onchange="changeProspectClassification('${p.id}', this)" class="select-classification status-${currentClass}" style="-webkit-appearance: none; -moz-appearance: none; appearance: none; text-align: center; text-align-last: center; min-width: 140px; max-width: 150px;">
                 <option value="no_contactado" ${currentClass === 'no_contactado' ? 'selected' : ''}>No contactado</option>
@@ -9618,7 +9642,7 @@
                 <option value="no_interesado" ${currentClass === 'no_interesado' ? 'selected' : ''}>No interesado</option>
               </select>
             `;
-
+ 
             // Select de Comercial asignado
             let comercialSelect = `<select onchange="assignProspectComercial('${p.id}', this)" class="select-classification" style="-webkit-appearance: none; -moz-appearance: none; appearance: none; display: inline-block; margin: 0 auto; width: auto; min-width: 125px; max-width: 135px; text-align: center; text-align-last: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: #fff; padding: 0.2rem 0.3rem; border-radius: 6px; font-size: 0.75rem;">`;
             comercialSelect += `<option value="">Sin Asignar</option>`;
@@ -9626,7 +9650,7 @@
               comercialSelect += `<option value="${c.id}" ${p.comercial_id === c.id ? 'selected' : ''}>${c.name}</option>`;
             });
             comercialSelect += `</select>`;
-
+ 
             // COMPONENTE DE ETIQUETAS COMERCIALES
             const pTags = Array.isArray(p.tags) ? p.tags : [];
             let tagsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 0.25rem; max-width: 250px; align-items: center;">`;
@@ -9634,7 +9658,7 @@
             pTags.forEach(t => {
               tagsHtml += `<span class="commercial-tag commercial-tag-${t}">${commercialTagNames[t] || t}</span>`;
             });
-
+ 
             // Dropdown selector de etiquetas
             let dropdownItemsHtml = '';
             Object.keys(commercialTagNames).forEach(tagKey => {
@@ -9646,7 +9670,7 @@
                 </div>
               `;
             });
-
+ 
             tagsHtml += `
               <div class="tags-dropdown-container">
                 <button class="btn btn-secondary" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('visible');" style="width: 26px; height: 26px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);" title="Editar etiquetas comerciales">
@@ -9657,7 +9681,7 @@
                 </div>
               </div>
             </div>`;
-
+ 
             // Botón principal de acción
             let actionBtn = '';
             if (p.status === 'demo_created' || p.status === 'audio_generated') {
@@ -9679,7 +9703,7 @@
                              <i data-lucide="rocket" style="width: 13px; height: 13px;"></i> Activar Demo
                            </button>`;
             }
-
+ 
             // Enlace web y conocimiento extraído
             let websiteUrl = p.website;
             if (websiteUrl && websiteUrl !== 'No disponible') {
@@ -9687,7 +9711,7 @@
                 websiteUrl = 'https://' + websiteUrl;
               }
             }
-
+ 
             const websiteLink = p.scraped_knowledge
               ? `<div style="display: flex; align-items: center; justify-content: space-between; gap: 0.35rem; width: 100%;">
                   <button class="btn btn-secondary btn-scraped-knowledge" data-prospect-id="${p.id}" onclick="openScrapedKnowledgeModal('${p.id}')" style="color: var(--primary-light); border-color: rgba(167, 139, 250, 0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.35rem 0.6rem; font-size: 0.75rem; border-radius: 6px; height: auto;" title="Ver y editar conocimiento extraído de la web">
@@ -9698,7 +9722,7 @@
               : (websiteUrl && websiteUrl !== 'No disponible'
                   ? `<a href="${websiteUrl}" target="_blank" style="color: var(--primary-light); text-decoration: none;">Visitar web ↗</a>`
                   : '<span style="color: var(--text-muted);">No disponible</span>');
-
+ 
             let emailHtml = '';
             if (p.email && p.email !== 'No disponible') {
               emailHtml = `
@@ -9714,28 +9738,28 @@
             } else {
               emailHtml = '<span style="color: var(--text-muted); font-size: 0.85rem;">-</span>';
             }
-
+ 
             const sectorStr = sectorNames[p.sector] || p.sector || 'Desconocido';
-
+ 
             // Acciones disponibles cuando existe la demo_tenant_id o demo_url
             const shareBtn = p.demo_url ? `
               <button class="btn btn-secondary" onclick="copyToClipboard('${p.demo_url}')" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; font-size: 0.75rem; border-radius: 6px;" title="Copiar enlace de demo">
                 <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
               </button>
             ` : '';
-
+ 
             const editBtn = p.demo_tenant_id ? `
               <button class="btn btn-secondary" onclick="loadTenantToEdit('${p.demo_tenant_id}')" style="color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; font-size: 0.75rem; border-radius: 6px;" title="Editar configuración de demo">
                 <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
               </button>
             ` : '';
-
+ 
             const deleteBtn = `
               <button class="btn btn-secondary" onclick="deleteProspect('${p.id}')" style="color: #f87171; border-color: rgba(248, 113, 113, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; font-size: 0.75rem; border-radius: 6px;" title="Eliminar lead de prospección">
                 <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
               </button>
             `;
-
+ 
             let openDemoBtn = '';
             if (p.demo_url) {
               openDemoBtn = `
@@ -9744,7 +9768,7 @@
                 </a>
               `;
             }
-
+ 
             // Tracking de apertura
             let trackingHtml = '<span style="color: var(--text-muted); font-size: 0.75rem;">-</span>';
             if (p.opened_count > 0) {
@@ -9764,7 +9788,7 @@
                 </span>
               `;
             }
-
+ 
             const card = document.createElement('div');
             card.className = 'prospect-card';
             if (p.is_manual) {
@@ -9779,12 +9803,12 @@
             card.style.display = 'flex';
             card.style.flexDirection = 'column';
             card.style.gap = '0.75rem';
-
+ 
             card.innerHTML = `
               <!-- Fila 1: Checkbox + Nombre, Teléfono, Comercial -->
               <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 0.6rem;">
-                  <input type="checkbox" class="prospect-select" value="${p.id}" onchange="updateBulkActionState()" style="width: 16px; height: 16px; cursor: pointer;">
+                  <input type="checkbox" class="prospect-select" value="${p.id}" onchange="updateBulkActionState(this)" style="width: 16px; height: 16px; cursor: pointer;">
                   <span style="font-weight: 600; font-size: 1.05rem; color: #fff; display: inline-flex; align-items: center; gap: 0.5rem;">
                     ${p.business_name}
                     ${p.is_manual ? `<span style="font-size: 0.65rem; padding: 0.15rem 0.4rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #ccc; border-radius: 4px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">Manual</span>` : ''}
@@ -9848,24 +9872,93 @@
             
             cardListContainer.appendChild(card);
           });
-
+ 
           accordionContent.appendChild(cardListContainer);
           countryContent.appendChild(accordionHeader);
           countryContent.appendChild(accordionContent);
         });
-
+ 
         container.appendChild(countryHeader);
         container.appendChild(countryContent);
       });
-
+ 
       lucide.createIcons();
       updateSortIcons();
     }
-
-    function toggleSelectAllCityProspects(master, city) {
-      const accordion = master.closest('.city-accordion-content');
-      const checkboxes = accordion.querySelectorAll('.prospect-select');
+ 
+    function toggleSelectAllCityProspects(master, cityKey) {
+      const accordionHeader = master.closest('.city-accordion-header');
+      const accordionContent = accordionHeader.nextElementSibling;
+      const checkboxes = accordionContent.querySelectorAll('.prospect-select');
       checkboxes.forEach(cb => cb.checked = master.checked);
+      
+      // Update country select-all state
+      const countryContent = accordionHeader.closest('.country-accordion-content');
+      if (countryContent) {
+        const countryHeader = countryContent.previousElementSibling;
+        const countrySelectAll = countryHeader.querySelector('.country-select-all');
+        if (countrySelectAll) {
+          const allChecked = Array.from(countryContent.querySelectorAll('.prospect-select')).every(cb => cb.checked);
+          const noneChecked = Array.from(countryContent.querySelectorAll('.prospect-select')).every(cb => !cb.checked);
+          countrySelectAll.checked = allChecked;
+          countrySelectAll.indeterminate = !allChecked && !noneChecked;
+        }
+      }
+    }
+
+    function toggleSelectAllCountryProspects(master, country) {
+      const countryHeader = master.closest('.country-accordion-header');
+      const countryContent = countryHeader.nextElementSibling;
+      
+      // Check/uncheck all prospect checkboxes inside this country
+      const checkboxes = countryContent.querySelectorAll('.prospect-select');
+      checkboxes.forEach(cb => cb.checked = master.checked);
+      
+      // Check/uncheck all city select-all checkboxes inside this country
+      const citySelectAlls = countryContent.querySelectorAll('.prospects-city-select-all');
+      citySelectAlls.forEach(cb => {
+        cb.checked = master.checked;
+        cb.indeterminate = false;
+      });
+    }
+
+    function updateBulkActionState(changedCheckbox) {
+      if (!changedCheckbox) return;
+      
+      const card = changedCheckbox.closest('.prospect-card');
+      if (!card) return;
+      
+      const cityContent = card.closest('.city-accordion-content');
+      if (cityContent) {
+        // 1. Update City select-all checkbox
+        const accordionHeader = cityContent.previousElementSibling;
+        if (accordionHeader && accordionHeader.classList.contains('city-accordion-header')) {
+          const citySelectAll = accordionHeader.querySelector('.prospects-city-select-all');
+          if (citySelectAll) {
+            const list = Array.from(cityContent.querySelectorAll('.prospect-select'));
+            const allChecked = list.every(cb => cb.checked);
+            const noneChecked = list.every(cb => !cb.checked);
+            citySelectAll.checked = allChecked;
+            citySelectAll.indeterminate = !allChecked && !noneChecked;
+          }
+        }
+        
+        // 2. Update Country select-all checkbox
+        const countryContent = cityContent.closest('.country-accordion-content');
+        if (countryContent) {
+          const countryHeader = countryContent.previousElementSibling;
+          if (countryHeader && countryHeader.classList.contains('country-accordion-header')) {
+            const countrySelectAll = countryHeader.querySelector('.country-select-all');
+            if (countrySelectAll) {
+              const list = Array.from(countryContent.querySelectorAll('.prospect-select'));
+              const allChecked = list.every(cb => cb.checked);
+              const noneChecked = list.every(cb => !cb.checked);
+              countrySelectAll.checked = allChecked;
+              countrySelectAll.indeterminate = !allChecked && !noneChecked;
+            }
+          }
+        }
+      }
     }
 
     function sortProspects(field) {
