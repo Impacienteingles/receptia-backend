@@ -2315,7 +2315,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.63</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.64</span>
         </div>
       </header>
 
@@ -9001,8 +9001,8 @@ ${cleanAudio}`;
 
     // Modal / Bloqueo de Suscripción Inactiva
     const expiredOverlayHtml = `
-      <div id="subscription-expired-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); backdrop-filter: blur(20px); z-index: 1000; align-items: center; justify-content: center; overflow-y: auto; padding: 2rem;">
-        <div style="background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 20px; max-width: 900px; width: 100%; padding: 3rem; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 2rem; text-align: center; position: relative; margin: 4rem auto;">
+      <div id="subscription-expired-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); backdrop-filter: blur(20px); z-index: 1000; display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding: 100px 2rem;">
+        <div style="background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 20px; max-width: 900px; width: 100%; padding: 3rem; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 2rem; text-align: center; position: relative; margin: 0 auto;">
           <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
             <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); display: flex; align-items: center; justify-content: center; color: var(--error);">
               <i data-lucide="lock" style="width: 32px; height: 32px;"></i>
