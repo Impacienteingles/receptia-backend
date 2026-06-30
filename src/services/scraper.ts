@@ -10,6 +10,7 @@ interface ProspectLead {
   sector: string;
   specialties: string[];
   scraped_knowledge?: string;
+  city?: string;
 }
 
 /**
@@ -93,7 +94,8 @@ export async function scrapeProspects(city: string, country: string, sector: str
         address: place.formatted_address || place.vicinity || 'No disponible',
         sector,
         specialties,
-        scraped_knowledge: scrapedKnowledge
+        scraped_knowledge: scrapedKnowledge,
+        city
       });
     }
 
@@ -289,7 +291,8 @@ function getSimulatedLeads(city: string, country: string, sector: string): Prosp
       address: `Calle Mayor ${10 + index * 5}, ${city}, ${country}`,
       sector: normalizedSector,
       specialties,
-      scraped_knowledge: generateFallbackKnowledge(`${name} ${city}`, sector)
+      scraped_knowledge: generateFallbackKnowledge(`${name} ${city}`, sector),
+      city
     });
   });
 

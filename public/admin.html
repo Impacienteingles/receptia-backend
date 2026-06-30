@@ -1326,6 +1326,135 @@
       color: #b91c1c;
     }
 
+    /* Estilos para Acordeón de Ciudades */
+    .city-accordion-header {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .city-accordion-header:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .city-accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+    }
+    .city-accordion-content.expanded {
+      max-height: 2000px;
+      overflow: visible;
+      margin-bottom: 1.5rem;
+    }
+    .city-badge-count {
+      font-size: 0.75rem;
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--primary-light);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-left: 0.75rem;
+    }
+
+    /* Estilos para las cápsulas de color de las etiquetas comerciales */
+    .commercial-tag {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 50px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      border: 1px solid transparent;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .commercial-tag-llamada_1 {
+      background: rgba(59, 130, 246, 0.12);
+      color: #60a5fa;
+      border-color: rgba(59, 130, 246, 0.25);
+    }
+    .commercial-tag-llamada_2 {
+      background: rgba(6, 182, 212, 0.12);
+      color: #22d3ee;
+      border-color: rgba(6, 182, 212, 0.25);
+    }
+    .commercial-tag-email_enviado {
+      background: rgba(139, 92, 246, 0.12);
+      color: #c084fc;
+      border-color: rgba(139, 92, 246, 0.25);
+    }
+    .commercial-tag-whatsapp_enviado {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+    .commercial-tag-reunion_fijada {
+      background: rgba(249, 115, 22, 0.12);
+      color: #fb923c;
+      border-color: rgba(249, 115, 22, 0.25);
+    }
+    .commercial-tag-sin_respuesta {
+      background: rgba(156, 163, 175, 0.12);
+      color: #9ca3af;
+      border-color: rgba(156, 163, 175, 0.25);
+    }
+    .commercial-tag-demo_activa {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    /* Dropdown de selección de etiquetas flotante */
+    .tags-dropdown-container {
+      position: relative;
+      display: inline-block;
+    }
+    .tags-dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      z-index: 100;
+      background: #111827;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.5rem;
+      min-width: 170px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      margin-top: 0.25rem;
+    }
+    .tags-dropdown-menu.visible {
+      display: block;
+    }
+    .tags-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.75rem;
+      color: #d1d5db;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.15s ease;
+    }
+    .tags-dropdown-item:hover {
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+    }
+    .tags-dropdown-item input[type="checkbox"] {
+      cursor: pointer;
+    }
+
     /* Sibling rule to expand main content when sidebar is collapsed */
     .sidebar.collapsed ~ .content-wrapper main {
       max-width: 95%;
@@ -1633,7 +1762,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.67</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.68</span>
       </div>
     </aside>
 
@@ -1656,7 +1785,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.67</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.68</span>
         </div>
       </header>
 
@@ -3710,31 +3839,11 @@
               </div>
             </h2>
 
-            <div style="overflow-x: auto; margin-top: 1rem;">
-              <table style="width: 100%; border-collapse: collapse; text-align: left;" class="table">
-                <thead>
-                  <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.85rem; user-select: none;">
-                    <th style="padding: 1rem 0.5rem; width: 40px; text-align: center;"><input type="checkbox" id="prospects-select-all" onclick="toggleSelectAllProspects(this)"></th>
-                    <th onclick="sortProspects('business_name')" style="padding: 1rem 0.5rem; cursor: pointer;">Nombre del Negocio <span id="sort-icon-business_name"></span></th>
-                    <th style="padding: 1rem 0.5rem; text-align: center;">Email</th>
-                    <th style="padding: 1rem 0.5rem;">Teléfono</th>
-                    <th style="padding: 1rem 0.5rem;">Sitio Web</th>
-                    <th onclick="sortProspects('sector')" style="padding: 1rem 0.5rem; cursor: pointer;">Sector <span id="sort-icon-sector"></span></th>
-                    <th style="padding: 1rem 0.5rem; text-align: center;">Comercial</th>
-                    <th onclick="sortProspects('classification')" style="padding: 1rem 0.5rem; text-align: center; cursor: pointer;">Clasificación <span id="sort-icon-classification"></span></th>
-                    <th onclick="sortProspects('status')" style="padding: 1rem 0.5rem; text-align: center; cursor: pointer;">Estado Demo <span id="sort-icon-status"></span></th>
-                    <th style="padding: 1rem 0.5rem; text-align: center;">Apertura</th>
-                    <th style="padding: 1rem 0.5rem; text-align: right;">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="prospects-tbody">
-                  <tr>
-                    <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                      Realice una búsqueda para extraer clientes potenciales.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <!-- Contenedor dinámico agrupado por ciudades -->
+            <div id="prospects-cities-container" style="margin-top: 1.5rem;">
+              <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                Realice una búsqueda para extraer clientes potenciales.
+              </div>
             </div>
           </div>
         </div>
@@ -9039,16 +9148,70 @@
       lucide.createIcons();
     }
 
+    // Nombres legibles de etiquetas comerciales
+    const commercialTagNames = {
+      llamada_1: '📞 Llamada 1',
+      llamada_2: '📞 Llamada 2',
+      email_enviado: '✉️ Email enviado',
+      whatsapp_enviado: '💬 WhatsApp enviado',
+      reunion_fijada: '🤝 Reunión fijada',
+      sin_respuesta: '❌ Sin respuesta',
+      demo_activa: '🚀 Demo activa'
+    };
+
+    async function toggleProspectTag(prospectId, tagName) {
+      const p = allProspects.find(item => item.id === prospectId);
+      if (!p) return;
+
+      const currentTags = Array.isArray(p.tags) ? [...p.tags] : [];
+      const index = currentTags.indexOf(tagName);
+      if (index > -1) {
+        currentTags.splice(index, 1);
+      } else {
+        currentTags.push(tagName);
+      }
+
+      try {
+        const response = await fetch(`/api/admin/prospects/${prospectId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ tags: currentTags })
+        });
+        if (!response.ok) throw new Error('Error al actualizar las etiquetas.');
+
+        p.tags = currentTags;
+        renderProspectsTable();
+      } catch (err) {
+        showCustomAlert(err.message, 'Error', 'error');
+      }
+    }
+
+    function toggleCityAccordion(headerEl) {
+      const content = headerEl.nextElementSibling;
+      const chevron = headerEl.querySelector('.chevron-icon');
+      
+      if (content.classList.contains('expanded')) {
+        content.classList.remove('expanded');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+      } else {
+        content.classList.add('expanded');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+      }
+    }
+
     function renderProspectsTable() {
       const countBadge = document.getElementById('prospects-count-badge');
       if (countBadge) {
         countBadge.innerText = allProspects.length;
       }
-      const tbody = document.getElementById('prospects-tbody');
-      tbody.innerHTML = '';
+      
+      const container = document.getElementById('prospects-cities-container');
+      container.innerHTML = '';
 
       if (allProspects.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No se encontraron prospectos extraídos. Realiza una búsqueda arriba.</td></tr>`;
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem;">No se encontraron prospectos extraídos. Realiza una búsqueda arriba.</div>`;
         return;
       }
 
@@ -9067,221 +9230,340 @@
         inmobiliaria: 'Inmobiliaria'
       };
 
+      // 1. Agrupar prospectos por Ciudad
+      const groupedByCity = {};
       allProspects.forEach(p => {
-        const row = document.createElement('tr');
-        row.style.borderBottom = '1px solid var(--border-color)';
-
-        // Barra de progreso y estado
-        let progressPercent = 0;
-        let progressColor = 'var(--primary)';
-        let statusText = 'Extraído';
-        let isSpinning = false;
-        let animateClass = '';
-
-        if (p.status === 'extracted') {
-          progressPercent = 25;
-          progressColor = '#9ca3af'; // gris
-          statusText = 'Extraído (25%)';
-          if (processingProspectIds.has(p.id)) {
-            animateClass = 'progress-bar-animate-extracted';
-            statusText = 'Creando Demo...';
-            isSpinning = true;
-            progressColor = '#60a5fa'; // azul
-          }
-        } else if (p.status === 'demo_created') {
-          progressPercent = 50;
-          progressColor = '#60a5fa'; // azul
-          statusText = 'Demo Creada (50%)';
-          isSpinning = true;
-          animateClass = 'progress-bar-animate-demo-created';
-        } else if (p.status === 'audio_generated') {
-          progressPercent = 75;
-          progressColor = '#c084fc'; // morado
-          statusText = 'Audio Generado (75%)';
-          isSpinning = true;
-          animateClass = 'progress-bar-animate-audio-generated';
-        } else if (p.status === 'email_sent') {
-          progressPercent = 100;
-          progressColor = '#34d399'; // verde
-          statusText = 'Completado ✓ (100%)';
-        } else if (p.status === 'failed') {
-          progressPercent = 100;
-          progressColor = '#f87171'; // rojo
-          statusText = 'Fallo';
+        const city = p.city ? p.city.trim() : 'Sin Ciudad';
+        if (!groupedByCity[city]) {
+          groupedByCity[city] = [];
         }
-
-        const spinnerHtml = isSpinning ? `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid ${progressColor}; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i>` : '';
-        const tooltip = p.error_details ? `title="${p.error_details.replace(/"/g, '&quot;')}"` : '';
-
-        const statusBadge = `
-          <div style="display: flex; flex-direction: column; gap: 0.25rem; min-width: 140px; text-align: left;" ${tooltip}>
-            <span style="font-size: 0.75rem; font-weight: 600; color: ${progressColor}; display: flex; align-items: center;">
-              ${spinnerHtml} ${statusText}
-            </span>
-            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; border: 1px solid var(--border-color);">
-              <div class="${animateClass}" style="width: ${progressPercent}%; height: 100%; background: ${progressColor}; transition: width 0.5s ease;"></div>
-            </div>
-          </div>
-        `;
-
-        // Select de Clasificación comercial
-        const currentClass = p.classification || 'no_contactado';
-        
-        let contratadoLabel = 'Contratado ✓';
-        if (currentClass === 'contratado' && p.tenants?.contract_start_date) {
-          const contractStart = new Date(p.tenants.contract_start_date);
-          const now = new Date();
-          const diffDays = (now - contractStart) / (1000 * 60 * 60 * 24);
-          contratadoLabel = diffDays < 7 ? 'Contratado (Prueba)' : 'Contratado (Cliente)';
-        }
-
-        const classificationSelect = `
-          <select onchange="changeProspectClassification('${p.id}', this)" class="select-classification status-${currentClass}" style="-webkit-appearance: none; -moz-appearance: none; appearance: none; text-align: center; text-align-last: center; min-width: 140px; max-width: 150px;">
-            <option value="no_contactado" ${currentClass === 'no_contactado' ? 'selected' : ''}>No contactado</option>
-            <option value="pendiente_contacto" ${currentClass === 'pendiente_contacto' ? 'selected' : ''}>Pte. de contacto</option>
-            <option value="contactado" ${currentClass === 'contactado' ? 'selected' : ''}>Contactado</option>
-            <option value="en_negociacion" ${currentClass === 'en_negociacion' ? 'selected' : ''}>En negociación</option>
-            <option value="contratado" ${currentClass === 'contratado' ? 'selected' : 'disabled'}>${contratadoLabel}</option>
-            <option value="no_interesado" ${currentClass === 'no_interesado' ? 'selected' : ''}>No interesado</option>
-          </select>
-        `;
-
-        // Select de Comercial asignado
-        let comercialSelect = `<select onchange="assignProspectComercial('${p.id}', this)" class="select-classification" style="-webkit-appearance: none; -moz-appearance: none; appearance: none; display: inline-block; margin: 0 auto; width: auto; min-width: 125px; max-width: 135px; text-align: center; text-align-last: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: #fff; padding: 0.2rem 0.3rem; border-radius: 6px; font-size: 0.75rem;">`;
-        comercialSelect += `<option value="">Sin Asignar</option>`;
-        (allComerciales || []).forEach(c => {
-          comercialSelect += `<option value="${c.id}" ${p.comercial_id === c.id ? 'selected' : ''}>${c.name}</option>`;
-        });
-        comercialSelect += `</select>`;
-
-        // Botón principal de acción
-        let actionBtn = '';
-        if (p.status === 'demo_created' || p.status === 'audio_generated') {
-          actionBtn = `<button class="btn btn-secondary" disabled style="opacity: 0.6; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
-                         <i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--primary); border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Procesando...
-                       </button>`;
-        } else if (p.status === 'email_sent') {
-          actionBtn = `<button class="btn btn-secondary" onclick="resendDemoEmail('${p.id}', this)" style="color: #60a5fa; border-color: rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Reenviar correo de demo">
-                         <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Reenviar
-                       </button>`;
-        } else {
-          let emailRetryBtn = '';
-          if (p.demo_url && p.audio_url) {
-            emailRetryBtn = `<button class="btn btn-secondary" onclick="resendDemoEmail('${p.id}', this)" style="color: #c084fc; border-color: rgba(192,132,252,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; margin-right: 0.35rem;" title="Enviar o configurar email de demo">
-                               <i data-lucide="mail" style="width: 13px; height: 13px;"></i> Enviar Email
-                             </button>`;
-          }
-          actionBtn = emailRetryBtn + `<button class="btn" onclick="openDemoGenerationModal('${p.id}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #fff; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Crear demo, generar audio y enviar email">
-                         <i data-lucide="rocket" style="width: 13px; height: 13px;"></i> Activar Demo
-                       </button>`;
-        }
-
-        // Enlace web y conocimiento extraído
-        let websiteUrl = p.website;
-        if (websiteUrl && websiteUrl !== 'No disponible') {
-          if (!/^https?:\/\//i.test(websiteUrl)) {
-            websiteUrl = 'https://' + websiteUrl;
-          }
-        }
-
-        const websiteLink = p.scraped_knowledge
-          ? `<div style="display: flex; align-items: center; justify-content: space-between; gap: 0.35rem; width: 100%;">
-              <button class="btn btn-secondary btn-scraped-knowledge" data-prospect-id="${p.id}" onclick="openScrapedKnowledgeModal('${p.id}')" style="color: var(--primary-light); border-color: rgba(167, 139, 250, 0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.35rem 0.6rem; font-size: 0.75rem; border-radius: 6px; height: auto;" title="Ver y editar conocimiento extraído de la web">
-                <i data-lucide="book-open" style="width: 13px; height: 13px;"></i> Conocimiento
-              </button>
-              ${websiteUrl && websiteUrl !== 'No disponible' ? `<a href="${websiteUrl}" target="_blank" style="color: var(--text-muted); opacity: 0.6; display: inline-flex; margin-left: auto;" title="Visitar sitio web original"><i data-lucide="external-link" style="width: 13px; height: 13px;"></i></a>` : ''}
-             </div>`
-          : (websiteUrl && websiteUrl !== 'No disponible'
-              ? `<a href="${websiteUrl}" target="_blank" style="color: var(--primary-light); text-decoration: none;">Visitar web ↗</a>`
-              : '<span style="color: var(--text-muted);">No disponible</span>');
-
-        let emailHtml = '';
-        if (p.email && p.email !== 'No disponible') {
-          emailHtml = `
-            <div style="display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
-              <a href="mailto:${p.email}" class="btn btn-secondary" style="color: var(--primary-light); border-color: rgba(167, 139, 250, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;" title="Enviar correo a ${p.email}">
-                <i data-lucide="mail" style="width: 14px; height: 14px;"></i>
-              </a>
-              <button class="btn btn-secondary" onclick="copyToClipboard('${p.email}')" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;" title="Copiar correo: ${p.email}">
-                <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
-              </button>
-            </div>
-          `;
-        } else {
-          emailHtml = '<span style="color: var(--text-muted); font-size: 0.85rem;">-</span>';
-        }
-
-        const sectorStr = sectorNames[p.sector] || p.sector || 'Desconocido';
-
-        // Acciones disponibles cuando existe la demo_tenant_id o demo_url
-        const shareBtn = p.demo_url ? `
-          <button class="btn btn-secondary" onclick="copyToClipboard('${p.demo_url}')" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Copiar enlace de demo">
-            <i data-lucide="copy" style="width: 13px; height: 13px;"></i>
-          </button>
-        ` : '';
-
-        const editBtn = p.demo_tenant_id ? `
-          <button class="btn btn-secondary" onclick="loadTenantToEdit('${p.demo_tenant_id}')" style="color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Editar configuración de demo">
-            <i data-lucide="edit-3" style="width: 13px; height: 13px;"></i>
-          </button>
-        ` : '';
-
-        const duplicateBtn = ''; // Botón duplicar eliminado a petición del usuario
-
-        const deleteBtn = `
-          <button class="btn btn-secondary" onclick="deleteProspect('${p.id}')" style="color: #f87171; border-color: rgba(248, 113, 113, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Eliminar lead de prospección">
-            <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
-          </button>
-        `;
-
-        // Tracking de apertura
-        let trackingHtml = '<span style="color: var(--text-muted); font-size: 0.75rem;">-</span>';
-        if (p.opened_count > 0) {
-          const dateStr = p.opened_at ? new Date(p.opened_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-          trackingHtml = `
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.15rem;" title="Última apertura: ${p.opened_at ? new Date(p.opened_at).toLocaleString('es-ES') : ''}">
-              <span style="font-size: 0.75rem; font-weight: 700; color: #34d399; display: flex; align-items: center; gap: 0.25rem;">
-                <i data-lucide="eye" style="width: 12px; height: 12px;"></i> Abierto (${p.opened_count})
-              </span>
-              <span style="font-size: 0.65rem; color: var(--text-muted);">${dateStr}</span>
-            </div>
-          `;
-        } else if (p.status === 'email_sent') {
-          trackingHtml = `
-            <span style="font-size: 0.75rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.25rem;">
-              <i data-lucide="eye-off" style="width: 12px; height: 12px;"></i> No abierto
-            </span>
-          `;
-        }
-
-        row.innerHTML = `
-          <td style="padding: 0.85rem 0.5rem; text-align: center;"><input type="checkbox" class="prospect-select" value="${p.id}"></td>
-          <td style="font-weight: 600; color: #fff; padding: 0.85rem 0.5rem;">${p.business_name}</td>
-          <td style="padding: 0.85rem 0.5rem; text-align: center;">${emailHtml}</td>
-          <td style="padding: 0.85rem 0.5rem; font-family: monospace;">${p.phone || 'No disponible'}</td>
-          <td style="padding: 0.85rem 0.5rem;">${websiteLink}</td>
-          <td style="padding: 0.85rem 0.5rem; font-weight: 500;">${sectorStr}</td>
-          <td style="padding: 0.85rem 0.5rem; text-align: center;">${comercialSelect}</td>
-          <td style="padding: 0.85rem 0.5rem; text-align: center;">${classificationSelect}</td>
-          <td style="padding: 0.85rem 0.5rem; text-align: center;">${statusBadge}</td>
-          <td style="padding: 0.85rem 0.5rem; text-align: center;">${trackingHtml}</td>
-          <td style="padding: 0.85rem 0.5rem; text-align: right; display: flex; gap: 0.3rem; justify-content: flex-end; align-items: center;">
-            ${actionBtn}
-            ${p.demo_url ? `
-              <a href="${p.demo_url}" target="_blank" class="btn btn-secondary" style="color: var(--success); border-color: rgba(52, 211, 153, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Abrir panel demo">
-                <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
-              </a>
-            ` : ''}
-            ${shareBtn}
-            ${editBtn}
-            ${duplicateBtn}
-            ${deleteBtn}
-          </td>
-        `;
-        tbody.appendChild(row);
+        groupedByCity[city].push(p);
       });
+
+      // Cerrar cualquier dropdown de etiquetas al hacer click fuera
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.tags-dropdown-container')) {
+          document.querySelectorAll('.tags-dropdown-menu').forEach(menu => {
+            menu.classList.remove('visible');
+          });
+        }
+      });
+
+      // 2. Renderizar un Acordeón por Ciudad
+      Object.keys(groupedByCity).sort().forEach(city => {
+        const prospectsList = groupedByCity[city];
+        
+        const accordionHeader = document.createElement('div');
+        accordionHeader.className = 'city-accordion-header';
+        accordionHeader.onclick = () => toggleCityAccordion(accordionHeader);
+        accordionHeader.innerHTML = `
+          <div style="display: flex; align-items: center;">
+            <i data-lucide="map-pin" style="color: var(--primary); width: 20px; height: 20px;"></i>
+            <span style="font-weight: 600; color: #fff; font-size: 1.05rem; margin-left: 0.75rem;">${city}</span>
+            <span class="city-badge-count">${prospectsList.length} leads</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon" style="transition: transform 0.2s ease; color: var(--text-muted); width: 20px; height: 20px; transform: rotate(180deg);"></i>
+        `;
+
+        const accordionContent = document.createElement('div');
+        accordionContent.className = 'city-accordion-content expanded'; // Expandido por defecto para premium feel
+
+        const tableWrapper = document.createElement('div');
+        tableWrapper.style.overflowX = 'auto';
+        tableWrapper.style.background = 'rgba(0,0,0,0.15)';
+        tableWrapper.style.border = '1px solid var(--border-color)';
+        tableWrapper.style.borderRadius = '8px';
+        tableWrapper.style.padding = '0.5rem';
+
+        const table = document.createElement('table');
+        table.className = 'table';
+        table.style.width = '100%';
+        table.style.borderCollapse = 'collapse';
+        table.style.textAlign = 'left';
+
+        table.innerHTML = `
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.85rem; user-select: none;">
+              <th style="padding: 1rem 0.5rem; width: 40px; text-align: center;"><input type="checkbox" class="prospects-city-select-all" onclick="toggleSelectAllCityProspects(this, '${city}')"></th>
+              <th onclick="sortProspects('business_name')" style="padding: 1rem 0.5rem; cursor: pointer;">Nombre del Negocio <span id="sort-icon-business_name"></span></th>
+              <th style="padding: 1rem 0.5rem; text-align: center;">Email</th>
+              <th style="padding: 1rem 0.5rem;">Teléfono</th>
+              <th style="padding: 1rem 0.5rem;">Sitio Web</th>
+              <th onclick="sortProspects('sector')" style="padding: 1rem 0.5rem; cursor: pointer;">Sector <span id="sort-icon-sector"></span></th>
+              <th style="padding: 1rem 0.5rem; text-align: center;">Comercial</th>
+              <th onclick="sortProspects('classification')" style="padding: 1rem 0.5rem; text-align: center; cursor: pointer;">Clasificación <span id="sort-icon-classification"></span></th>
+              <th style="padding: 1rem 0.5rem; text-align: center;">Etiquetas</th>
+              <th onclick="sortProspects('status')" style="padding: 1rem 0.5rem; text-align: center; cursor: pointer;">Estado Demo <span id="sort-icon-status"></span></th>
+              <th style="padding: 1rem 0.5rem; text-align: center;">Apertura</th>
+              <th style="padding: 1rem 0.5rem; text-align: right;">Acciones</th>
+            </tr>
+          </thead>
+        `;
+
+        const tbody = document.createElement('tbody');
+
+        prospectsList.forEach(p => {
+          const row = document.createElement('tr');
+          row.style.borderBottom = '1px solid var(--border-color)';
+
+          // Barra de progreso y estado
+          let progressPercent = 0;
+          let progressColor = 'var(--primary)';
+          let statusText = 'Extraído';
+          let isSpinning = false;
+          let animateClass = '';
+
+          if (p.status === 'extracted') {
+            progressPercent = 25;
+            progressColor = '#9ca3af'; // gris
+            statusText = 'Extraído (25%)';
+            if (processingProspectIds.has(p.id)) {
+              animateClass = 'progress-bar-animate-extracted';
+              statusText = 'Creando Demo...';
+              isSpinning = true;
+              progressColor = '#60a5fa'; // azul
+            }
+          } else if (p.status === 'demo_created') {
+            progressPercent = 50;
+            progressColor = '#60a5fa'; // azul
+            statusText = 'Demo Creada (50%)';
+            isSpinning = true;
+            animateClass = 'progress-bar-animate-demo-created';
+          } else if (p.status === 'audio_generated') {
+            progressPercent = 75;
+            progressColor = '#c084fc'; // morado
+            statusText = 'Audio Generado (75%)';
+            isSpinning = true;
+            animateClass = 'progress-bar-animate-audio-generated';
+          } else if (p.status === 'email_sent') {
+            progressPercent = 100;
+            progressColor = '#34d399'; // verde
+            statusText = 'Completado ✓ (100%)';
+          } else if (p.status === 'failed') {
+            progressPercent = 100;
+            progressColor = '#f87171'; // rojo
+            statusText = 'Fallo';
+          }
+
+          const spinnerHtml = isSpinning ? `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid ${progressColor}; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i>` : '';
+          const tooltip = p.error_details ? `title="${p.error_details.replace(/"/g, '&quot;')}"` : '';
+
+          const statusBadge = `
+            <div style="display: flex; flex-direction: column; gap: 0.25rem; min-width: 140px; text-align: left;" ${tooltip}>
+              <span style="font-size: 0.75rem; font-weight: 600; color: ${progressColor}; display: flex; align-items: center;">
+                ${spinnerHtml} ${statusText}
+              </span>
+              <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; border: 1px solid var(--border-color);">
+                <div class="${animateClass}" style="width: ${progressPercent}%; height: 100%; background: ${progressColor}; transition: width 0.5s ease;"></div>
+              </div>
+            </div>
+          `;
+
+          // Select de Clasificación comercial
+          const currentClass = p.classification || 'no_contactado';
+          
+          let contratadoLabel = 'Contratado ✓';
+          if (currentClass === 'contratado' && p.tenants?.contract_start_date) {
+            const contractStart = new Date(p.tenants.contract_start_date);
+            const now = new Date();
+            const diffDays = (now - contractStart) / (1000 * 60 * 60 * 24);
+            contratadoLabel = diffDays < 7 ? 'Contratado (Prueba)' : 'Contratado (Cliente)';
+          }
+
+          const classificationSelect = `
+            <select onchange="changeProspectClassification('${p.id}', this)" class="select-classification status-${currentClass}" style="-webkit-appearance: none; -moz-appearance: none; appearance: none; text-align: center; text-align-last: center; min-width: 140px; max-width: 150px;">
+              <option value="no_contactado" ${currentClass === 'no_contactado' ? 'selected' : ''}>No contactado</option>
+              <option value="pendiente_contacto" ${currentClass === 'pendiente_contacto' ? 'selected' : ''}>Pte. de contacto</option>
+              <option value="contactado" ${currentClass === 'contactado' ? 'selected' : ''}>Contactado</option>
+              <option value="en_negociacion" ${currentClass === 'en_negociacion' ? 'selected' : ''}>En negociación</option>
+              <option value="contratado" ${currentClass === 'contratado' ? 'selected' : 'disabled'}>${contratadoLabel}</option>
+              <option value="no_interesado" ${currentClass === 'no_interesado' ? 'selected' : ''}>No interesado</option>
+            </select>
+          `;
+
+          // Select de Comercial asignado
+          let comercialSelect = `<select onchange="assignProspectComercial('${p.id}', this)" class="select-classification" style="-webkit-appearance: none; -moz-appearance: none; appearance: none; display: inline-block; margin: 0 auto; width: auto; min-width: 125px; max-width: 135px; text-align: center; text-align-last: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: #fff; padding: 0.2rem 0.3rem; border-radius: 6px; font-size: 0.75rem;">`;
+          comercialSelect += `<option value="">Sin Asignar</option>`;
+          (allComerciales || []).forEach(c => {
+            comercialSelect += `<option value="${c.id}" ${p.comercial_id === c.id ? 'selected' : ''}>${c.name}</option>`;
+          });
+          comercialSelect += `</select>`;
+
+          // COMPONENTE DE ETIQUETAS COMERCIALES
+          const pTags = Array.isArray(p.tags) ? p.tags : [];
+          let tagsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 0.25rem; max-width: 250px; align-items: center;">`;
+          
+          pTags.forEach(t => {
+            tagsHtml += `<span class="commercial-tag commercial-tag-${t}">${commercialTagNames[t] || t}</span>`;
+          });
+
+          // Dropdown selector de etiquetas
+          let dropdownItemsHtml = '';
+          Object.keys(commercialTagNames).forEach(tagKey => {
+            const isChecked = pTags.includes(tagKey) ? 'checked' : '';
+            dropdownItemsHtml += `
+              <div class="tags-dropdown-item" onclick="toggleProspectTag('${p.id}', '${tagKey}'); event.stopPropagation();">
+                <input type="checkbox" ${isChecked} onclick="event.stopPropagation(); toggleProspectTag('${p.id}', '${tagKey}');">
+                <span>${commercialTagNames[tagKey]}</span>
+              </div>
+            `;
+          });
+
+          tagsHtml += `
+            <div class="tags-dropdown-container">
+              <button class="btn btn-secondary" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('visible');" style="width: 26px; height: 26px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);" title="Editar etiquetas comerciales">
+                +
+              </button>
+              <div class="tags-dropdown-menu">
+                ${dropdownItemsHtml}
+              </div>
+            </div>
+          </div>`;
+
+          // Botón principal de acción
+          let actionBtn = '';
+          if (p.status === 'demo_created' || p.status === 'audio_generated') {
+            actionBtn = `<button class="btn btn-secondary" disabled style="opacity: 0.6; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
+                           <i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--primary); border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Procesando...
+                         </button>`;
+          } else if (p.status === 'email_sent') {
+            actionBtn = `<button class="btn btn-secondary" onclick="resendDemoEmail('${p.id}', this)" style="color: #60a5fa; border-color: rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Reenviar correo de demo">
+                           <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Reenviar
+                         </button>`;
+          } else {
+            let emailRetryBtn = '';
+            if (p.demo_url && p.audio_url) {
+              emailRetryBtn = `<button class="btn btn-secondary" onclick="resendDemoEmail('${p.id}', this)" style="color: #c084fc; border-color: rgba(192,132,252,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; margin-right: 0.35rem;" title="Enviar o configurar email de demo">
+                                 <i data-lucide="mail" style="width: 13px; height: 13px;"></i> Enviar Email
+                               </button>`;
+            }
+            actionBtn = emailRetryBtn + `<button class="btn" onclick="openDemoGenerationModal('${p.id}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #fff; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Crear demo, generar audio y enviar email">
+                           <i data-lucide="rocket" style="width: 13px; height: 13px;"></i> Activar Demo
+                         </button>`;
+          }
+
+          // Enlace web y conocimiento extraído
+          let websiteUrl = p.website;
+          if (websiteUrl && websiteUrl !== 'No disponible') {
+            if (!/^https?:\/\//i.test(websiteUrl)) {
+              websiteUrl = 'https://' + websiteUrl;
+            }
+          }
+
+          const websiteLink = p.scraped_knowledge
+            ? `<div style="display: flex; align-items: center; justify-content: space-between; gap: 0.35rem; width: 100%;">
+                <button class="btn btn-secondary btn-scraped-knowledge" data-prospect-id="${p.id}" onclick="openScrapedKnowledgeModal('${p.id}')" style="color: var(--primary-light); border-color: rgba(167, 139, 250, 0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.35rem 0.6rem; font-size: 0.75rem; border-radius: 6px; height: auto;" title="Ver y editar conocimiento extraído de la web">
+                  <i data-lucide="book-open" style="width: 13px; height: 13px;"></i> Conocimiento
+                </button>
+                ${websiteUrl && websiteUrl !== 'No disponible' ? `<a href="${websiteUrl}" target="_blank" style="color: var(--text-muted); opacity: 0.6; display: inline-flex; margin-left: auto;" title="Visitar sitio web original"><i data-lucide="external-link" style="width: 13px; height: 13px;"></i></a>` : ''}
+               </div>`
+            : (websiteUrl && websiteUrl !== 'No disponible'
+                ? `<a href="${websiteUrl}" target="_blank" style="color: var(--primary-light); text-decoration: none;">Visitar web ↗</a>`
+                : '<span style="color: var(--text-muted);">No disponible</span>');
+
+          let emailHtml = '';
+          if (p.email && p.email !== 'No disponible') {
+            emailHtml = `
+              <div style="display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+                <a href="mailto:${p.email}" class="btn btn-secondary" style="color: var(--primary-light); border-color: rgba(167, 139, 250, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;" title="Enviar correo a ${p.email}">
+                  <i data-lucide="mail" style="width: 14px; height: 14px;"></i>
+                </a>
+                <button class="btn btn-secondary" onclick="copyToClipboard('${p.email}')" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 6px;" title="Copiar correo: ${p.email}">
+                  <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+                </button>
+              </div>
+            `;
+          } else {
+            emailHtml = '<span style="color: var(--text-muted); font-size: 0.85rem;">-</span>';
+          }
+
+          const sectorStr = sectorNames[p.sector] || p.sector || 'Desconocido';
+
+          // Acciones disponibles cuando existe la demo_tenant_id o demo_url
+          const shareBtn = p.demo_url ? `
+            <button class="btn btn-secondary" onclick="copyToClipboard('${p.demo_url}')" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Copiar enlace de demo">
+              <i data-lucide="copy" style="width: 13px; height: 13px;"></i>
+            </button>
+          ` : '';
+
+          const editBtn = p.demo_tenant_id ? `
+            <button class="btn btn-secondary" onclick="loadTenantToEdit('${p.demo_tenant_id}')" style="color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Editar configuración de demo">
+              <i data-lucide="edit-3" style="width: 13px; height: 13px;"></i>
+            </button>
+          ` : '';
+
+          const duplicateBtn = ''; // Botón duplicar eliminado a petición del usuario
+
+          const deleteBtn = `
+            <button class="btn btn-secondary" onclick="deleteProspect('${p.id}')" style="color: #f87171; border-color: rgba(248, 113, 113, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Eliminar lead de prospección">
+              <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+            </button>
+          `;
+
+          // Tracking de apertura
+          let trackingHtml = '<span style="color: var(--text-muted); font-size: 0.75rem;">-</span>';
+          if (p.opened_count > 0) {
+            const dateStr = p.opened_at ? new Date(p.opened_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+            trackingHtml = `
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.15rem;" title="Última apertura: ${p.opened_at ? new Date(p.opened_at).toLocaleString('es-ES') : ''}">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #34d399; display: flex; align-items: center; gap: 0.25rem;">
+                  <i data-lucide="eye" style="width: 12px; height: 12px;"></i> Abierto (${p.opened_count})
+                </span>
+                <span style="font-size: 0.65rem; color: var(--text-muted);">${dateStr}</span>
+              </div>
+            `;
+          } else if (p.status === 'email_sent') {
+            trackingHtml = `
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="eye-off" style="width: 12px; height: 12px;"></i> No abierto
+              </span>
+            `;
+          }
+
+          row.innerHTML = `
+            <td style="padding: 0.85rem 0.5rem; text-align: center;"><input type="checkbox" class="prospect-select" value="${p.id}"></td>
+            <td style="font-weight: 600; color: #fff; padding: 0.85rem 0.5rem;">${p.business_name}</td>
+            <td style="padding: 0.85rem 0.5rem; text-align: center;">${emailHtml}</td>
+            <td style="padding: 0.85rem 0.5rem; font-family: monospace;">${p.phone || 'No disponible'}</td>
+            <td style="padding: 0.85rem 0.5rem;">${websiteLink}</td>
+            <td style="padding: 0.85rem 0.5rem; font-weight: 500;">${sectorStr}</td>
+            <td style="padding: 0.85rem 0.5rem; text-align: center;">${comercialSelect}</td>
+            <td style="padding: 0.85rem 0.5rem; text-align: center;">${classificationSelect}</td>
+            <td style="padding: 0.85rem 0.5rem; text-align: center;">${tagsHtml}</td>
+            <td style="padding: 0.85rem 0.5rem; text-align: center;">${statusBadge}</td>
+            <td style="padding: 0.85rem 0.5rem; text-align: center;">${trackingHtml}</td>
+            <td style="padding: 0.85rem 0.5rem; text-align: right; display: flex; gap: 0.3rem; justify-content: flex-end; align-items: center;">
+              ${actionBtn}
+              ${p.demo_url ? `
+                <a href="${p.demo_url}" target="_blank" class="btn btn-secondary" style="color: var(--success); border-color: rgba(52, 211, 153, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Abrir panel demo">
+                  <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
+                </a>
+              ` : ''}
+              ${shareBtn}
+              ${editBtn}
+              ${duplicateBtn}
+              ${deleteBtn}
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+        tableWrapper.appendChild(table);
+        accordionContent.appendChild(tableWrapper);
+        
+        container.appendChild(accordionHeader);
+        container.appendChild(accordionContent);
+      });
+
       lucide.createIcons();
       updateSortIcons();
+    }
+
+    function toggleSelectAllCityProspects(master, city) {
+      const accordion = master.closest('.city-accordion-content');
+      const checkboxes = accordion.querySelectorAll('.prospect-select');
+      checkboxes.forEach(cb => cb.checked = master.checked);
     }
 
     function sortProspects(field) {

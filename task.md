@@ -10,3 +10,13 @@
 - `[x]` Compilar código con `npm run build` y verificar que no existan errores
 - `[x]` Empujar y desplegar la versión `v2.7.62` / `v1.5.85` en la nube de Render
 - `[x]` Corregir esquema de transferencia de llamadas predefined y sincronizar Carlos Romero
+- `[x]` Ejecutar migración SQL en la base de datos de Supabase
+- `[x]` Actualizar `src/services/scraper.ts` para soportar la ciudad en los leads
+- `[x]` Actualizar `src/routes/prospecting.ts` para persistir e interactuar con ciudad y etiquetas
+- `[x]` Modificar la interfaz en `public/admin.html`
+    - `[x]` Agregar estilos CSS para acordeones y etiquetas de color
+    - `[x]` Lógica de agrupamiento por ciudad en `renderProspectsTable`
+    - `[x]` Renderizar secciones colapsables (acordeones) por ciudad
+    - `[x]` Crear el componente visual de etiquetas y selector de acción comercial
+- `[x]` Compilar con `npm run build` para validar sintaxis de TypeScript
+- `[x]` Incrementar versiones, realizar commit y empujar despliegue a Render y Vercel
