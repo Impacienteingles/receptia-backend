@@ -9061,7 +9061,8 @@
         if (!response.ok) throw new Error(data.error || 'Error al eliminar prospectos masivos.');
 
         showCustomAlert(`Se han eliminado ${ids.length} prospectos correctamente.`, 'Eliminación Exitosa', 'success');
-        document.getElementById('prospects-select-all').checked = false;
+        const selectAllEl = document.getElementById('prospects-select-all');
+        if (selectAllEl) selectAllEl.checked = false;
         await fetchProspects();
       } catch (err) {
         showCustomAlert(err.message, 'Error', 'error');
@@ -9830,7 +9831,8 @@
         }
 
         showCustomAlert(`Pipeline de lote finalizado. Creadas: ${successCount}. Falladas: ${failCount}`, 'Pipeline Finalizado', 'success');
-        document.getElementById('prospects-select-all').checked = false;
+        const selectAllEl = document.getElementById('prospects-select-all');
+        if (selectAllEl) selectAllEl.checked = false;
         await fetchProspects();
       } else {
         // Generación individual
@@ -11366,7 +11368,8 @@
         showCustomAlert(`Se han asignado ${ids.length} prospectos a "${comercialName}" correctamente.`, 'Asignación Completada', 'success');
         
         // Reset checkbox general
-        document.getElementById('prospects-select-all').checked = false;
+        const selectAllEl = document.getElementById('prospects-select-all');
+        if (selectAllEl) selectAllEl.checked = false;
         
         // Recargar datos
         await fetchProspects();
