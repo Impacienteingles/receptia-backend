@@ -364,7 +364,8 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     text_back_message,
     chatbot_enabled,
     chatbot_welcome_message,
-    agenda_optimization_enabled
+    agenda_optimization_enabled,
+    transfer_phone_number
   } = req.body;
 
   if (!business_name || !email) {
@@ -413,6 +414,7 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (chatbot_enabled !== undefined) tenantData.chatbot_enabled = !!chatbot_enabled;
     if (chatbot_welcome_message !== undefined) tenantData.chatbot_welcome_message = chatbot_welcome_message;
     if (agenda_optimization_enabled !== undefined) tenantData.agenda_optimization_enabled = !!agenda_optimization_enabled;
+    if (transfer_phone_number !== undefined) tenantData.transfer_phone_number = transfer_phone_number;
     
     // Safely check if database contains the column to prevent query crashes
     const hasImmediateCol = existing ? ('whatsapp_immediate_notification_enabled' in existing) : false;
@@ -4493,6 +4495,12 @@ async function runDatabaseMigrations() {
     await clientInstance.query(`
       ALTER TABLE tenants 
       ADD COLUMN IF NOT EXISTS addon_minutes INTEGER DEFAULT 0;
+    `);
+
+    // Asegurar columna transfer_phone_number en tenants si no existe
+    await clientInstance.query(`
+      ALTER TABLE tenants 
+      ADD COLUMN IF NOT EXISTS transfer_phone_number TEXT;
     `);
 
     // 3. Notificar a PostgREST

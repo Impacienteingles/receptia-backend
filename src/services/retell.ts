@@ -300,167 +300,178 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
       const systemPrompt = compileSystemPrompt(tenant, globalKnowledge);
       console.log(`⚙️ Actualizando el LLM ${llmId} con el prompt personalizado y herramientas...`);
       try {
-        await retellClient.patch(`/update-retell-llm/${llmId}`, {
-          general_prompt: systemPrompt,
-          model: 'gpt-4o', // Asegurar el uso de GPT-4o para alto rendimiento y baja latencia
-          general_tools: [
-            {
-              type: 'end_call',
-              name: 'end_call',
-              description: 'Finaliza y cuelga la llamada telefónica con el usuario. Ejecútalo únicamente después de despedirte formalmente del cliente.'
-            },
-            {
-              type: 'custom',
-              name: 'consultar_disponibilidad',
-              description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
-              url: `${webhookBaseUrl}/api/webhook/get-availability?tenant_id=${tenant.id}`,
-              parameters: {
-                type: 'object',
-                properties: {
-                  date: {
-                    type: 'string',
-                    description: 'La fecha para la cual se desea consultar la disponibilidad en formato YYYY-MM-DD.',
-                  },
-                  specialty: {
-                    type: 'string',
-                    description: 'El servicio, especialidad o descripción de las personas que asistirán a la cita (ej. corte de caballero y dos niños) para calcular correctamente la duración.',
-                  }
+        const tools: any[] = [
+          {
+            type: 'end_call',
+            name: 'end_call',
+            description: 'Finaliza y cuelga la llamada telefónica con el usuario. Ejecútalo únicamente después de despedirte formalmente del cliente.'
+          },
+          {
+            type: 'custom',
+            name: 'consultar_disponibilidad',
+            description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
+            url: `${webhookBaseUrl}/api/webhook/get-availability?tenant_id=${tenant.id}`,
+            parameters: {
+              type: 'object',
+              properties: {
+                date: {
+                  type: 'string',
+                  description: 'La fecha para la cual se desea consultar la disponibilidad en formato YYYY-MM-DD.',
                 },
-                required: ['date'],
+                specialty: {
+                  type: 'string',
+                  description: 'El servicio, especialidad o descripción de las personas que asistirán a la cita (ej. corte de caballero y dos niños) para calcular correctamente la duración.',
+                }
               },
+              required: ['date'],
             },
-            {
-              type: 'custom',
-              name: 'crear_cita',
-              description: 'Reserva una cita en el calendario tras confirmar los datos con el paciente/cliente.',
-              url: `${webhookBaseUrl}/api/webhook/book-appointment?tenant_id=${tenant.id}`,
-              parameters: {
-                type: 'object',
-                properties: {
-                  date: {
-                    type: 'string',
-                    description: 'La fecha de la cita en formato YYYY-MM-DD.',
-                  },
-                  name: {
-                    type: 'string',
-                    description: 'Nombre y apellidos completos del paciente/cliente.',
-                  },
-                  specialty: {
-                    type: 'string',
-                    description: 'Servicio o especialidad solicitada.',
-                  },
-                  time: {
-                    type: 'string',
-                    description: 'La hora seleccionada por el paciente en formato HH:MM (ej. 09:30).',
-                  },
-                  phone: {
-                    type: 'string',
-                    description: 'Número de teléfono de contacto.',
-                  },
-                  email: {
-                    type: 'string',
-                    description: 'Dirección de correo electrónico del paciente/cliente.',
-                  }
+          },
+          {
+            type: 'custom',
+            name: 'crear_cita',
+            description: 'Reserva una cita en el calendario tras confirmar los datos con el paciente/cliente.',
+            url: `${webhookBaseUrl}/api/webhook/book-appointment?tenant_id=${tenant.id}`,
+            parameters: {
+              type: 'object',
+              properties: {
+                date: {
+                  type: 'string',
+                  description: 'La fecha de la cita en formato YYYY-MM-DD.',
                 },
-                required: ['date', 'time', 'name', 'phone', 'specialty'],
+                name: {
+                  type: 'string',
+                  description: 'Nombre y apellidos completos del paciente/cliente.',
+                },
+                specialty: {
+                  type: 'string',
+                  description: 'Servicio o especialidad solicitada.',
+                },
+                time: {
+                  type: 'string',
+                  description: 'La hora seleccionada por el paciente en formato HH:MM (ej. 09:30).',
+                },
+                phone: {
+                  type: 'string',
+                  description: 'Número de teléfono de contacto.',
+                },
+                email: {
+                  type: 'string',
+                  description: 'Dirección de correo electrónico del paciente/cliente.',
+                }
               },
+              required: ['date', 'time', 'name', 'phone', 'specialty'],
             },
-            {
-              type: 'custom',
-              name: 'cancelar_cita',
-              description: 'Cancela y elimina una cita existente en el calendario.',
-              url: `${webhookBaseUrl}/api/webhook/cancel-appointment?tenant_id=${tenant.id}`,
-              parameters: {
-                type: 'object',
-                properties: {
-                  date: {
-                    type: 'string',
-                    description: 'La fecha de la cita que se desea cancelar en formato YYYY-MM-DD.',
-                  },
-                  phone: {
-                    type: 'string',
-                    description: 'El número de teléfono de contacto del cliente.',
-                  },
-                  email: {
-                    type: 'string',
-                    description: 'El correo electrónico del cliente.',
-                  },
-                  time: {
-                    type: 'string',
-                    description: 'La hora de la cita que se desea cancelar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
-                  }
+          },
+          {
+            type: 'custom',
+            name: 'cancelar_cita',
+            description: 'Cancela y elimina una cita existente en el calendario.',
+            url: `${webhookBaseUrl}/api/webhook/cancel-appointment?tenant_id=${tenant.id}`,
+            parameters: {
+              type: 'object',
+              properties: {
+                date: {
+                  type: 'string',
+                  description: 'La fecha de la cita que se desea cancelar en formato YYYY-MM-DD.',
                 },
-                required: ['date', 'phone'],
+                phone: {
+                  type: 'string',
+                  description: 'El número de teléfono de contacto del cliente.',
+                },
+                email: {
+                  type: 'string',
+                  description: 'El correo electrónico del cliente.',
+                },
+                time: {
+                  type: 'string',
+                  description: 'La hora de la cita que se desea cancelar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
+                }
               },
+              required: ['date', 'phone'],
             },
-            {
-              type: 'custom',
-              name: 'reprogramar_cita',
-              description: 'Reprograma o modifica la fecha y hora de una cita existente a una nueva fecha y hora.',
-              url: `${webhookBaseUrl}/api/webhook/reschedule-appointment?tenant_id=${tenant.id}`,
-              parameters: {
-                type: 'object',
-                properties: {
-                  original_date: {
-                    type: 'string',
-                    description: 'La fecha actual original de la cita que se quiere cambiar en formato YYYY-MM-DD.',
-                  },
-                  new_date: {
-                    type: 'string',
-                    description: 'La nueva fecha deseada para la cita en formato YYYY-MM-DD.',
-                  },
-                  new_time: {
-                    type: 'string',
-                    description: 'La nueva hora deseada para la cita en formato HH:MM.',
-                  },
-                  phone: {
-                    type: 'string',
-                    description: 'El número de teléfono de contacto del cliente.',
-                  },
-                  email: {
-                    type: 'string',
-                    description: 'El correo electrónico del cliente.',
-                  },
-                  original_time: {
-                    type: 'string',
-                    description: 'La hora original de la cita que se desea cambiar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
-                  }
+          },
+          {
+            type: 'custom',
+            name: 'reprogramar_cita',
+            description: 'Reprograma o modifica la fecha y hora de una cita existente a una nueva fecha y hora.',
+            url: `${webhookBaseUrl}/api/webhook/reschedule-appointment?tenant_id=${tenant.id}`,
+            parameters: {
+              type: 'object',
+              properties: {
+                original_date: {
+                  type: 'string',
+                  description: 'La fecha actual original de la cita que se quiere cambiar en formato YYYY-MM-DD.',
                 },
-                required: ['original_date', 'new_date', 'new_time', 'phone'],
+                new_date: {
+                  type: 'string',
+                  description: 'La nueva fecha deseada para la cita en formato YYYY-MM-DD.',
+                },
+                new_time: {
+                  type: 'string',
+                  description: 'La nueva hora deseada para la cita en formato HH:MM.',
+                },
+                phone: {
+                  type: 'string',
+                  description: 'El número de teléfono de contacto del cliente.',
+                },
+                email: {
+                  type: 'string',
+                  description: 'El correo electrónico del cliente.',
+                },
+                original_time: {
+                  type: 'string',
+                  description: 'La hora original de la cita que se desea cambiar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
+                }
               },
+              required: ['original_date', 'new_date', 'new_time', 'phone'],
             },
-            {
-              type: 'custom',
-              name: 'verificar_pago',
-              description: 'Verifica si el cliente ya ha completado el pago de la fianza por Stripe para confirmar la cita.',
-              url: `${webhookBaseUrl}/api/webhook/verify-payment?tenant_id=${tenant.id}`,
-              parameters: {
-                type: 'object',
-                properties: {
-                  phone: {
-                    type: 'string',
-                    description: 'El número de teléfono del cliente (facilita el mismo número desde el que llama).'
-                  }
-                },
-                required: ['phone']
-              }
-            },
-            {
-              type: 'custom',
-              name: 'obtener_recuerdos_cliente',
-              description: 'Recupera silenciosamente un historial de resúmenes de las llamadas previas que ha realizado este cliente en los últimos 7 días.',
-              url: `${webhookBaseUrl}/api/webhook/obtener-recuerdo-cliente?tenant_id=${tenant.id}`,
-              parameters: {
-                type: 'object',
-                properties: {
-                  phone: {
-                    type: 'string',
-                    description: 'El número de teléfono del cliente para buscar sus recuerdos (opcional, el backend resolverá el número de la llamada automáticamente si no se envía).'
-                  }
+          },
+          {
+            type: 'custom',
+            name: 'verificar_pago',
+            description: 'Verifica si el cliente ya ha completado el pago de la fianza por Stripe para confirmar la cita.',
+            url: `${webhookBaseUrl}/api/webhook/verify-payment?tenant_id=${tenant.id}`,
+            parameters: {
+              type: 'object',
+              properties: {
+                phone: {
+                  type: 'string',
+                  description: 'El número de teléfono del cliente (facilita el mismo número desde el que llama).'
+                }
+              },
+              required: ['phone']
+            }
+          },
+          {
+            type: 'custom',
+            name: 'obtener_recuerdos_cliente',
+            description: 'Recupera silenciosamente un historial de resúmenes de las llamadas previas que ha realizado este cliente en los últimos 7 días.',
+            url: `${webhookBaseUrl}/api/webhook/obtener-recuerdo-cliente?tenant_id=${tenant.id}`,
+            parameters: {
+              type: 'object',
+              properties: {
+                phone: {
+                  type: 'string',
+                  description: 'El número de teléfono del cliente para buscar sus recuerdos (opcional, el backend resolverá el número de la llamada automáticamente si no se envía).'
                 }
               }
             }
-          ]
+          }
+        ];
+
+        if (tenant.transfer_phone_number && tenant.transfer_phone_number.trim() !== '') {
+          tools.push({
+            type: 'transfer_call',
+            name: 'transferir_llamada_encargado',
+            description: 'Transfiere la llamada de forma inmediata al gerente o encargado humano del negocio. Utilízalo si el cliente pide hablar con un humano, si la consulta está fuera de tu base de conocimiento, o si estás confundido y no puedes dar una respuesta correcta.',
+            number: tenant.transfer_phone_number.trim()
+          });
+        }
+
+        await retellClient.patch(`/update-retell-llm/${llmId}`, {
+          general_prompt: systemPrompt,
+          model: 'gpt-4o',
+          general_tools: tools
         });
         console.log('✅ Prompt y herramientas del LLM de Retell AI actualizados.');
       } catch (llmErr: any) {
@@ -544,167 +555,178 @@ export async function createRetellAgentForTenant(tenant: any, webhookBaseUrl: st
   const agentName = resolveAgentName(voiceId);
 
   console.log(`🤖 [Retell Service] Creando LLM personalizado para el inquilino: ${tenant.business_name}...`);
-  const llmRes = await retellClient.post('/create-retell-llm', {
-    general_prompt: systemPrompt,
-    model: 'gpt-4o',
-    general_tools: [
-      {
-        type: 'end_call',
-        name: 'end_call',
-        description: 'Finaliza y cuelga la llamada telefónica con el usuario. Ejecútalo únicamente después de despedirte formalmente del cliente.'
-      },
-      {
-        type: 'custom',
-        name: 'consultar_disponibilidad',
-        description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
-        url: `${webhookBaseUrl}/api/webhook/get-availability?tenant_id=${tenant.id}`,
-        parameters: {
-          type: 'object',
-          properties: {
-            date: {
-              type: 'string',
-              description: 'La fecha para la cual se desea consultar la disponibilidad en formato YYYY-MM-DD.',
-            },
-            specialty: {
-              type: 'string',
-              description: 'El servicio, especialidad o descripción de las personas que asistirán a la cita (ej. corte de caballero y dos niños) para calcular correctamente la duración.',
-            }
+  const tools: any[] = [
+    {
+      type: 'end_call',
+      name: 'end_call',
+      description: 'Finaliza y cuelga la llamada telefónica con el usuario. Ejecútalo únicamente después de despedirte formalmente del cliente.'
+    },
+    {
+      type: 'custom',
+      name: 'consultar_disponibilidad',
+      description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
+      url: `${webhookBaseUrl}/api/webhook/get-availability?tenant_id=${tenant.id}`,
+      parameters: {
+        type: 'object',
+        properties: {
+          date: {
+            type: 'string',
+            description: 'La fecha para la cual se desea consultar la disponibilidad en formato YYYY-MM-DD.',
           },
-          required: ['date'],
+          specialty: {
+            type: 'string',
+            description: 'El servicio, especialidad o descripción de las personas que asistirán a la cita (ej. corte de caballero y dos niños) para calcular correctamente la duración.',
+          }
         },
+        required: ['date'],
       },
-      {
-        type: 'custom',
-        name: 'crear_cita',
-        description: 'Reserva una cita en el calendario tras confirmar los datos con el paciente/cliente.',
-        url: `${webhookBaseUrl}/api/webhook/book-appointment?tenant_id=${tenant.id}`,
-        parameters: {
-          type: 'object',
-          properties: {
-            date: {
-              type: 'string',
-              description: 'La fecha de la cita en formato YYYY-MM-DD.',
-            },
-            name: {
-              type: 'string',
-              description: 'Nombre y apellidos completos del paciente/cliente.',
-            },
-            specialty: {
-              type: 'string',
-              description: 'Servicio o especialidad solicitada.',
-            },
-            time: {
-              type: 'string',
-              description: 'La hora seleccionada por el paciente en formato HH:MM (ej. 09:30).',
-            },
-            phone: {
-              type: 'string',
-              description: 'Número de teléfono de contacto.',
-            },
-            email: {
-              type: 'string',
-              description: 'Dirección de correo electrónico del paciente/cliente.',
-            }
+    },
+    {
+      type: 'custom',
+      name: 'crear_cita',
+      description: 'Reserva una cita en el calendario tras confirmar los datos con el paciente/cliente.',
+      url: `${webhookBaseUrl}/api/webhook/book-appointment?tenant_id=${tenant.id}`,
+      parameters: {
+        type: 'object',
+        properties: {
+          date: {
+            type: 'string',
+            description: 'La fecha de la cita en formato YYYY-MM-DD.',
           },
-          required: ['date', 'time', 'name', 'phone', 'specialty'],
+          name: {
+            type: 'string',
+            description: 'Nombre y apellidos completos del paciente/cliente.',
+          },
+          specialty: {
+            type: 'string',
+            description: 'Servicio o especialidad solicitada.',
+          },
+          time: {
+            type: 'string',
+            description: 'La hora seleccionada por el paciente en formato HH:MM (ej. 09:30).',
+          },
+          phone: {
+            type: 'string',
+            description: 'Número de teléfono de contacto.',
+          },
+          email: {
+            type: 'string',
+            description: 'Dirección de correo electrónico del paciente/cliente.',
+          }
         },
+        required: ['date', 'time', 'name', 'phone', 'specialty'],
       },
-      {
-        type: 'custom',
-        name: 'cancelar_cita',
-        description: 'Cancela y elimina una cita existente en el calendario.',
-        url: `${webhookBaseUrl}/api/webhook/cancel-appointment?tenant_id=${tenant.id}`,
-        parameters: {
-          type: 'object',
-          properties: {
-            date: {
-              type: 'string',
-              description: 'La fecha de la cita que se desea cancelar en formato YYYY-MM-DD.',
-            },
-            phone: {
-              type: 'string',
-              description: 'El número de teléfono de contacto del cliente.',
-            },
-            email: {
-              type: 'string',
-              description: 'El correo electrónico del cliente.',
-            },
-            time: {
-              type: 'string',
-              description: 'La hora de la cita que se desea cancelar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
-            }
+    },
+    {
+      type: 'custom',
+      name: 'cancelar_cita',
+      description: 'Cancela y elimina una cita existente en el calendario.',
+      url: `${webhookBaseUrl}/api/webhook/cancel-appointment?tenant_id=${tenant.id}`,
+      parameters: {
+        type: 'object',
+        properties: {
+          date: {
+            type: 'string',
+            description: 'La fecha de la cita que se desea cancelar en formato YYYY-MM-DD.',
           },
-          required: ['date', 'phone'],
+          phone: {
+            type: 'string',
+            description: 'El número de teléfono de contacto del cliente.',
+          },
+          email: {
+            type: 'string',
+            description: 'El correo electrónico del cliente.',
+          },
+          time: {
+            type: 'string',
+            description: 'La hora de la cita que se desea cancelar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
+          }
         },
+        required: ['date', 'phone'],
       },
-      {
-        type: 'custom',
-        name: 'reprogramar_cita',
-        description: 'Reprograma o modifica la fecha y hora de una cita existente a una nueva fecha y hora.',
-        url: `${webhookBaseUrl}/api/webhook/reschedule-appointment?tenant_id=${tenant.id}`,
-        parameters: {
-          type: 'object',
-          properties: {
-            original_date: {
-              type: 'string',
-              description: 'La fecha actual original de la cita que se quiere cambiar en formato YYYY-MM-DD.',
-            },
-            new_date: {
-              type: 'string',
-              description: 'La nueva fecha deseada para la cita en formato YYYY-MM-DD.',
-            },
-            new_time: {
-              type: 'string',
-              description: 'La nueva hora deseada para la cita en formato HH:MM.',
-            },
-            phone: {
-              type: 'string',
-              description: 'El número de teléfono de contacto del cliente.',
-            },
-            email: {
-              type: 'string',
-              description: 'El correo electrónico del cliente.',
-            },
-            original_time: {
-              type: 'string',
-              description: 'La hora original de la cita que se desea cambiar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
-            }
+    },
+    {
+      type: 'custom',
+      name: 'reprogramar_cita',
+      description: 'Reprograma o modifica la fecha y hora de una cita existente a una nueva fecha y hora.',
+      url: `${webhookBaseUrl}/api/webhook/reschedule-appointment?tenant_id=${tenant.id}`,
+      parameters: {
+        type: 'object',
+        properties: {
+          original_date: {
+            type: 'string',
+            description: 'La fecha actual original de la cita que se quiere cambiar en formato YYYY-MM-DD.',
           },
-          required: ['original_date', 'new_date', 'new_time', 'phone'],
+          new_date: {
+            type: 'string',
+            description: 'La nueva fecha deseada para la cita en formato YYYY-MM-DD.',
+          },
+          new_time: {
+            type: 'string',
+            description: 'La nueva hora deseada para la cita en formato HH:MM.',
+          },
+          phone: {
+            type: 'string',
+            description: 'El número de teléfono de contacto del cliente.',
+          },
+          email: {
+            type: 'string',
+            description: 'El correo electrónico del cliente.',
+          },
+          original_time: {
+            type: 'string',
+            description: 'La hora original de la cita que se desea cambiar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
+          }
         },
+        required: ['original_date', 'new_date', 'new_time', 'phone'],
       },
-      {
-        type: 'custom',
-        name: 'verificar_pago',
-        description: 'Verifica si el cliente ya ha completado el pago de la fianza por Stripe para confirmar la cita.',
-        url: `${webhookBaseUrl}/api/webhook/verify-payment?tenant_id=${tenant.id}`,
-        parameters: {
-          type: 'object',
-          properties: {
-            phone: {
-              type: 'string',
-              description: 'El número de teléfono del cliente (facilita el mismo número desde el que llama).'
-            }
-          },
-          required: ['phone']
-        }
-      },
-      {
-        type: 'custom',
-        name: 'obtener_recuerdos_cliente',
-        description: 'Recupera silenciosamente un historial de resúmenes de las llamadas previas que ha realizado este cliente en los últimos 7 días.',
-        url: `${webhookBaseUrl}/api/webhook/obtener-recuerdo-cliente?tenant_id=${tenant.id}`,
-        parameters: {
-          type: 'object',
-          properties: {
-            phone: {
-              type: 'string',
-              description: 'El número de teléfono del cliente para buscar sus recuerdos (opcional, el backend resolverá el número de la llamada automáticamente si no se envía).'
-            }
+    },
+    {
+      type: 'custom',
+      name: 'verificar_pago',
+      description: 'Verifica si el cliente ya ha completado el pago de la fianza por Stripe para confirmar la cita.',
+      url: `${webhookBaseUrl}/api/webhook/verify-payment?tenant_id=${tenant.id}`,
+      parameters: {
+        type: 'object',
+        properties: {
+          phone: {
+            type: 'string',
+            description: 'El número de teléfono del cliente (facilita el mismo número desde el que llama).'
+          }
+        },
+        required: ['phone']
+      }
+    },
+    {
+      type: 'custom',
+      name: 'obtener_recuerdos_cliente',
+      description: 'Recupera silenciosamente un historial de resúmenes de las llamadas previas que ha realizado este cliente en los últimos 7 días.',
+      url: `${webhookBaseUrl}/api/webhook/obtener-recuerdo-cliente?tenant_id=${tenant.id}`,
+      parameters: {
+        type: 'object',
+        properties: {
+          phone: {
+            type: 'string',
+            description: 'El número de teléfono del cliente para buscar sus recuerdos (opcional, el backend resolverá el número de la llamada automáticamente si no se envía).'
           }
         }
       }
-    ]
+    }
+  ];
+
+  if (tenant.transfer_phone_number && tenant.transfer_phone_number.trim() !== '') {
+    tools.push({
+      type: 'transfer_call',
+      name: 'transferir_llamada_encargado',
+      description: 'Transfiere la llamada de forma inmediata al gerente o encargado humano del negocio. Utilízalo si el cliente pide hablar con un humano, si la consulta está fuera de tu base de conocimiento, o si estás confundido y no puedes dar una respuesta correcta.',
+      number: tenant.transfer_phone_number.trim()
+    });
+  }
+
+  const llmRes = await retellClient.post('/create-retell-llm', {
+    general_prompt: systemPrompt,
+    model: 'gpt-4o',
+    general_tools: tools
   });
 
   const llmId = llmRes.data.llm_id;

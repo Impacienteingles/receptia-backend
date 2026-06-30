@@ -2712,10 +2712,10 @@
               <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">Historial de Facturas</span>
               <div id="invoices-list" style="display: flex; flex-direction: column; gap: 0.35rem; max-height: 120px; overflow-y: auto; padding-right: 0.25rem;">
                 <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">No hay facturas disponibles.</p>
-              </div>
             </div>
+          </div> <!-- Cierre del div de datos (line 2643) -->
 
-            <button id="btn-change-plan" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem;" onclick="openPlansModal()">
+          <button id="btn-change-plan" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem;" onclick="openPlansModal()">
               <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Cambiar o Mejorar Plan
             </button>
             <button id="btn-stripe-portal" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem; display: none;" onclick="openStripePortal()">
@@ -2728,21 +2728,8 @@
         </div>
 
         <!-- VISTA: CAMPAÑAS OUTBOUND -->
-        <div id="client-view-campaigns" class="client-view" style="position: relative;">
-          <!-- Bloqueo Flotante: En fase de desarrollo -->
-          <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(11, 15, 25, 0.45); border-radius: 12px; padding: 2rem; text-align: center;">
-            <div style="background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(139, 92, 246, 0.35); padding: 2rem 2.5rem; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); backdrop-filter: blur(6px); max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 1rem; border-radius: 16px;">
-              <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(139, 92, 246, 0.12); border: 1px dashed rgba(139, 92, 246, 0.4); display: flex; align-items: center; justify-content: center; color: #a78bfa; margin-bottom: 0.25rem;">
-                <i data-lucide="megaphone" style="width: 24px; height: 24px;"></i>
-              </div>
-              <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 700; color: #fff;">Campañas Outbound</h3>
-              <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Esta funcionalidad se encuentra actualmente en **fase de pruebas y desarrollo**. Permite automatizar llamadas salientes de la IA para confirmación de citas y reactivación de clientes.</p>
-              <span style="font-family: monospace; font-size: 0.75rem; font-weight: 600; color: #a78bfa; background: rgba(139, 92, 246, 0.15); padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.25); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem;">Fase de Desarrollo</span>
-            </div>
-          </div>
-
-          <!-- Contenido Desenfocado de la Pestaña -->
-          <div style="filter: blur(4px); pointer-events: none; width: 100%; display: flex; flex-direction: column; gap: 1.5rem; opacity: 0.3; user-select: none;">
+        <div id="client-view-campaigns" class="client-view">
+          <div style="width: 100%; display: flex; flex-direction: column; gap: 1.5rem;">
             <div class="card" style="flex: 1; display: flex; flex-direction: column; gap: 1.5rem;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
                 <h2 class="card-title" style="margin: 0; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
@@ -2985,6 +2972,27 @@
                 <button class="btn btn-secondary" onclick="saveVacationSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
                   <i data-lucide="save"></i>
                   Guardar Estado de Vacaciones
+                </button>
+              </div>
+
+              <!-- Sección Desvío de Llamadas / Soporte Humano -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="phone-forwarded" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Soporte Humano y Desvío de Llamadas
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Configura un número de teléfono (gerente, encargado o soporte) para que el asistente de voz IA pueda transferir la llamada de inmediato si el cliente lo solicita o si la IA no logra resolver una consulta compleja.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
+                  <div>
+                    <label for="setting-transfer-phone" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem; text-align: left;">Número de Teléfono del Encargado / Desvío (formato internacional, ej. +34600000000):</label>
+                    <input type="text" id="setting-transfer-phone" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; box-sizing: border-box; font-family: inherit;" placeholder="ej. +34600112233">
+                  </div>
+                </div>
+                <button class="btn btn-secondary" onclick="saveTransferSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                  <i data-lucide="save"></i>
+                  Guardar Teléfono de Desvío
                 </button>
               </div>
 
@@ -4495,6 +4503,31 @@
         const updated = await res.json();
         currentTenant = updated;
         showToast('Configuración del Modo Vacaciones guardada correctamente.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function saveTransferSettings() {
+      if (!currentTenant) return;
+      
+      const phoneVal = document.getElementById('setting-transfer-phone').value.trim();
+      
+      try {
+        const res = await fetch('/api/tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentTenant.email,
+            business_name: currentTenant.business_name,
+            transfer_phone_number: phoneVal
+          })
+        });
+        
+        if (!res.ok) throw new Error('No se pudo guardar la configuración del teléfono de desvío.');
+        const updated = await res.json();
+        currentTenant = updated;
+        showToast('Teléfono de desvío guardado y sincronizado correctamente con el agente de voz.');
       } catch (err) {
         showToast(err.message, 'error');
       }
@@ -6494,6 +6527,10 @@
       const txtVacation = document.getElementById('setting-vacation-message');
       if (chkVacation) chkVacation.checked = !!currentTenant.vacation_mode;
       if (txtVacation) txtVacation.value = currentTenant.vacation_message || '';
+
+      // Cargar teléfono de desvío/transferencia en Ajustes
+      const txtTransfer = document.getElementById('setting-transfer-phone');
+      if (txtTransfer) txtTransfer.value = currentTenant.transfer_phone_number || '';
 
       // Cargar personalidad de la IA en Ajustes
       const toneVal = currentTenant.personality_tone !== undefined ? currentTenant.personality_tone : 3;
