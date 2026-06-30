@@ -9,5 +9,9 @@ ADD COLUMN IF NOT EXISTS transfer_phone_number TEXT;
 ALTER TABLE tenants 
 ADD COLUMN IF NOT EXISTS addon_minutes INTEGER DEFAULT 0;
 
--- 3. Notificar a PostgREST para recargar el esquema de forma inmediata
+-- 3. Asegurar columna voice_locked en tenants si no existe
+ALTER TABLE tenants 
+ADD COLUMN IF NOT EXISTS voice_locked BOOLEAN DEFAULT false;
+
+-- 4. Notificar a PostgREST para recargar el esquema de forma inmediata
 NOTIFY pgrst, 'reload schema';

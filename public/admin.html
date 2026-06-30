@@ -1633,7 +1633,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.60</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.61</span>
       </div>
     </aside>
 
@@ -1656,7 +1656,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.59</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.61</span>
         </div>
       </header>
 
@@ -1899,6 +1899,14 @@
                   <label for="voice-responsiveness" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Pausas de Respuesta: <span id="voice-responsiveness-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
                   <input type="range" id="voice-responsiveness" min="0.0" max="1.0" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-responsiveness-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof onResponsivenessChange === 'function') onResponsivenessChange(this.value);">
                 </div>
+              </div>
+
+              <!-- Bloqueo de configuración de voz en el panel de administrador -->
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; grid-column: span 2; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.75rem 1rem; border-radius: 8px;">
+                <input type="checkbox" id="voice-locked-toggle" style="width: 16px; height: 16px; accent-color: var(--error);" onchange="toggleVoiceInputsLock(this.checked)">
+                <label for="voice-locked-toggle" style="color: #fca5a5; font-size: 0.85rem; cursor: pointer; margin: 0; display: flex; align-items: center; gap: 0.35rem;">
+                  <i data-lucide="lock" style="width: 14px; height: 14px;"></i> Bloquear configuración de voz en este panel (Evitar modificaciones accidentales)
+                </label>
               </div>
 
               <div class="form-group" id="agent-id-group">
@@ -6872,6 +6880,26 @@
       lucide.createIcons();
     }
 
+    function toggleVoiceInputsLock(isLocked) {
+      const voiceIdElem = document.getElementById('voice-id');
+      const voiceSpeedElem = document.getElementById('voice-speed');
+      const voiceTempElem = document.getElementById('voice-temperature');
+      const voiceRespElem = document.getElementById('voice-responsiveness');
+      const voiceToggleElem = document.getElementById('custom-voice-toggle');
+
+      if (voiceIdElem) voiceIdElem.disabled = isLocked;
+      if (voiceSpeedElem) voiceSpeedElem.disabled = isLocked;
+      if (voiceTempElem) voiceTempElem.disabled = isLocked;
+      if (voiceRespElem) voiceRespElem.disabled = isLocked;
+      if (voiceToggleElem) voiceToggleElem.disabled = isLocked;
+
+      const grid = document.getElementById('voice-catalog-grid');
+      if (grid) {
+        grid.style.pointerEvents = isLocked ? 'none' : 'auto';
+        grid.style.opacity = isLocked ? '0.4' : '1';
+      }
+    }
+
     async function saveManualTransaction(e) {
       e.preventDefault();
       const payload = {
@@ -8013,7 +8041,12 @@
       document.getElementById('voice-temperature-val').innerText = temp.toFixed(2);
       document.getElementById('voice-responsiveness').value = resp;
       document.getElementById('voice-responsiveness-val').innerText = resp.toFixed(2);
-
+      const isVoiceLocked = !!tenant.voice_locked;
+      const voiceLockCheckbox = document.getElementById('voice-locked-toggle');
+      if (voiceLockCheckbox) {
+        voiceLockCheckbox.checked = isVoiceLocked;
+      }
+      toggleVoiceInputsLock(isBlocked || isVoiceLocked);
       document.getElementById('business-sector').value = tenant.business_sector || 'general';
       
       // Auto-check terms and privacy (RGPD) for existing client
@@ -9806,6 +9839,12 @@
       document.getElementById('voice-temperature').disabled = false;
       document.getElementById('voice-responsiveness').disabled = false;
       
+      const voiceLockCheckbox = document.getElementById('voice-locked-toggle');
+      if (voiceLockCheckbox) {
+        voiceLockCheckbox.checked = false;
+      }
+      toggleVoiceInputsLock(false);
+      
       // Fechas por defecto
       document.getElementById('contract-start-date').value = new Date().toISOString().split('T')[0];
       if (window.fpContractStart) {
@@ -10183,7 +10222,8 @@
         business_sector: document.getElementById('business-sector').value || 'general',
         voice_speed: Number(document.getElementById('voice-speed').value),
         voice_temperature: Number(document.getElementById('voice-temperature').value),
-        voice_responsiveness: Number(document.getElementById('voice-responsiveness').value)
+        voice_responsiveness: Number(document.getElementById('voice-responsiveness').value),
+        voice_locked: document.getElementById('voice-locked-toggle').checked
       };
 
       // Abrir modal de progreso

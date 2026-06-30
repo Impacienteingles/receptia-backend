@@ -1128,7 +1128,8 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     twilio_auth_token,
     twilio_whatsapp_number,
     whatsapp_immediate_notification_enabled,
-    block_admin_access
+    block_admin_access,
+    voice_locked
   } = req.body;
 
   if (!business_name || !email) {
@@ -1202,11 +1203,25 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       }
     }
 
+    let computedVoiceId = formattedVoiceIdVal;
+    let computedVoiceSpeed = voice_speed !== undefined && voice_speed !== null ? Number(voice_speed) : 1.0;
+    let computedVoiceTemp = voice_temperature !== undefined && voice_temperature !== null ? Number(voice_temperature) : 1.0;
+    let computedVoiceResp = voice_responsiveness !== undefined && voice_responsiveness !== null ? Number(voice_responsiveness) : 1.0;
+
+    const isVoiceLocked = voice_locked !== undefined ? !!voice_locked : (existing ? !!existing.voice_locked : false);
+
+    if (existing && existing.voice_locked && voice_locked !== false) {
+      computedVoiceId = existing.voice_id;
+      computedVoiceSpeed = existing.voice_speed !== undefined && existing.voice_speed !== null ? Number(existing.voice_speed) : 1.0;
+      computedVoiceTemp = existing.voice_temperature !== undefined && existing.voice_temperature !== null ? Number(existing.voice_temperature) : 1.0;
+      computedVoiceResp = existing.voice_responsiveness !== undefined && existing.voice_responsiveness !== null ? Number(existing.voice_responsiveness) : 1.0;
+    }
+
     let tenant: any;
     const tenantData: any = {
       business_name,
       specialties,
-      voice_id: formattedVoiceIdVal,
+      voice_id: computedVoiceId,
       phone_provider,
       phone_number: phone_number !== undefined ? phone_number : (existing ? existing.phone_number : null),
       sip_username,
@@ -1251,9 +1266,10 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       signing_city: signing_city || null,
       retell_agent_id: computedAgentId,
       business_sector: business_sector || 'general',
-      voice_speed: voice_speed !== undefined && voice_speed !== null ? Number(voice_speed) : 1.0,
-      voice_temperature: voice_temperature !== undefined && voice_temperature !== null ? Number(voice_temperature) : 1.0,
-      voice_responsiveness: voice_responsiveness !== undefined && voice_responsiveness !== null ? Number(voice_responsiveness) : 1.0,
+      voice_speed: computedVoiceSpeed,
+      voice_temperature: computedVoiceTemp,
+      voice_responsiveness: computedVoiceResp,
+      voice_locked: isVoiceLocked,
       vacation_mode: vacation_mode !== undefined ? !!vacation_mode : (existing ? existing.vacation_mode : false),
       vacation_message: vacation_message !== undefined ? vacation_message : (existing ? existing.vacation_message : ''),
       whatsapp_reminder_hours: whatsapp_reminder_hours !== undefined ? Number(whatsapp_reminder_hours) : (existing ? existing.whatsapp_reminder_hours : 24),
@@ -4515,6 +4531,12 @@ async function runDatabaseMigrations() {
     await clientInstance.query(`
       ALTER TABLE tenants 
       ADD COLUMN IF NOT EXISTS transfer_phone_number TEXT;
+    `);
+
+    // Asegurar columna voice_locked en tenants si no existe
+    await clientInstance.query(`
+      ALTER TABLE tenants 
+      ADD COLUMN IF NOT EXISTS voice_locked BOOLEAN DEFAULT FALSE;
     `);
 
     // Crear tabla outbound_campaigns si no existe
