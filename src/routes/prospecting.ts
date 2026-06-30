@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { supabase, getSettingVal } from '../services/supabase';
-import { scrapeProspects } from '../services/scraper';
+import { scrapeProspects, scrapeSingleBusiness } from '../services/scraper';
 import { sendOutreachEmail, getOutreachEmailTemplate } from '../services/outreach';
 import { createRetellAgentForTenant, deleteRetellAgent } from '../services/retell';
 import axios from 'axios';
@@ -42,8 +42,8 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 router.post('/manual', async (req: Request, res: Response): Promise<void> => {
   const { business_name, phone, email, website, city, country, sector } = req.body;
 
-  if (!business_name || !phone || !city || !country || !sector) {
-    res.status(400).json({ error: 'Los campos nombre, teléfono, ciudad, país y sector son requeridos.' });
+  if (!business_name || !city || !country || !sector) {
+    res.status(400).json({ error: 'Los campos nombre, ciudad, país y sector son requeridos.' });
     return;
   }
 
@@ -111,16 +111,24 @@ router.post('/manual', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Ejecutar raspado en segundo plano de forma síncrona para recopilar información y llenar la base de conocimiento
+    const scrapeResult = await scrapeSingleBusiness(business_name, sector, website || '', city);
+    const finalEmail = email || scrapeResult.email || null;
+    const finalSpecialties = scrapeResult.specialties || [];
+    const scrapedKnowledge = scrapeResult.scraped_knowledge || '';
+
     const { data, error } = await supabase
       .from('prospects')
       .insert({
         business_name,
-        phone,
-        email: email || null,
+        phone: phone || null,
+        email: finalEmail,
         website: website || null,
         city,
         country,
         sector,
+        specialties: finalSpecialties,
+        scraped_knowledge: scrapedKnowledge,
         is_manual: true,
         status: 'extracted',
         classification: 'no_contactado',
@@ -131,7 +139,7 @@ router.post('/manual', async (req: Request, res: Response): Promise<void> => {
 
     if (error) throw error;
 
-    res.json({ success: true, message: 'Prospecto manual agregado con éxito.', prospect: data });
+    res.json({ success: true, message: 'Prospecto manual agregado con éxito y analizado por el scraper.', prospect: data });
   } catch (error: any) {
     console.error('[Prospecting API] Error al agregar prospecto manual:', error.message);
     res.status(500).json({ error: error.message });

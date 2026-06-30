@@ -541,7 +541,7 @@
       <div class="logo-container">
         <img src="/receptia_logo.png" alt="Receptia Logo">
         <span>Receptia Comercial</span>
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.1.1</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.1.2</span>
       </div>
 
       <div class="user-info">
@@ -1146,20 +1146,25 @@
     // Cambiar pestañas principales
     function switchMainTab(tabName) {
       activeTab = tabName;
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
-
-      // Activar correspondiente
-      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => {
-        const text = btn.innerText.toLowerCase();
-        if (tabName === 'leads') return text.includes('leads');
-        if (tabName === 'commissions') return text.includes('comisiones');
-        if (tabName === 'guide') return text.includes('guía');
-        return false;
-      });
-      if (activeBtn) activeBtn.classList.add('active');
       
-      document.getElementById(`panel-${tabName}`).classList.add('active');
+      // Toggle active class on buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const onclickAttr = btn.getAttribute('onclick') || '';
+        if (onclickAttr.includes(`'${tabName}'`)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Toggle active class on panels
+      document.querySelectorAll('.tab-content-panel').forEach(p => {
+        if (p.id === `panel-${tabName}`) {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
     }
 
     // Cargar toda la información
@@ -1277,21 +1282,25 @@
         }
 
         row.innerHTML = `
-          <td style="font-weight: 600; color: #fff;">${lead.business_name}</td>
-          <td>
-            <div style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 0.15rem;">
-              <span>${lead.phone || '-'}</span>
-              <span style="color: var(--text-muted); font-size: 0.75rem;">${lead.email || '-'}</span>
+          <td style="font-weight: 600; color: #fff; max-width: 220px; vertical-align: middle; padding: 1rem 0.5rem 1rem 1rem;">
+            <div style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.35;" title="${lead.business_name}">
+              ${lead.business_name}
             </div>
           </td>
-          <td>${sectorText}</td>
-          <td>
+          <td style="vertical-align: middle; max-width: 200px; padding: 1rem 0.5rem;">
+            <div style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 0.15rem;">
+              <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${lead.phone || '-'}</span>
+              <span style="color: var(--text-muted); font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${lead.email || '-'}">${lead.email || '-'}</span>
+            </div>
+          </td>
+          <td style="vertical-align: middle; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 1rem 0.5rem;" title="${sectorText}">${sectorText}</td>
+          <td style="vertical-align: middle; padding: 1rem 0.5rem;">
             <span class="badge-status badge-${currentClass}">
               ${classText}
             </span>
           </td>
-          <td>
-            <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+          <td style="vertical-align: middle; padding: 1rem 1rem 1rem 0.5rem;">
+            <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; white-space: nowrap;">
               <i data-lucide="eye" style="width: 12px; height: 12px; display:inline-block; vertical-align: middle;"></i> Ver
             </button>
           </td>

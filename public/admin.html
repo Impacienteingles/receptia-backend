@@ -1779,7 +1779,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.70</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.71</span>
       </div>
     </aside>
 
@@ -1802,7 +1802,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.70</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v2.7.71</span>
         </div>
       </header>
 
@@ -4329,6 +4329,16 @@
         <div class="form-group" id="manual-sector-custom-container" style="display: none;">
           <label for="manual-sector-custom" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Especificar Sector *</label>
           <input type="text" id="manual-sector-custom" placeholder="Ej: Floristería, Restaurante" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem;">
+        </div>
+        <!-- Barra de progreso para scraping manual -->
+        <div id="manual-scraper-progress" style="display: none; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;">
+            <span id="manual-progress-status" style="color: var(--text-muted); font-weight: 500;">Listo</span>
+            <span id="manual-progress-percent" style="color: var(--primary); font-weight: 700; font-family: monospace;">0%</span>
+          </div>
+          <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden; border: 1px solid var(--border-color);">
+            <div id="manual-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%); transition: width 0.3s ease; border-radius: 3px;"></div>
+          </div>
         </div>
         <div style="display: flex; gap: 1rem; margin-top: 0.5rem; justify-content: flex-end;">
           <button type="button" class="btn btn-secondary" onclick="closeManualProspectModal()" style="border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; cursor: pointer; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.9rem;">Cancelar</button>
@@ -9899,6 +9909,15 @@
       if (autoCountry) document.getElementById('manual-country').value = autoCountry;
       if (autoSector) document.getElementById('manual-sector').value = autoSector;
 
+      // Reset progress bar container
+      const progressContainer = document.getElementById('manual-scraper-progress');
+      if (progressContainer) {
+        progressContainer.style.display = 'none';
+        document.getElementById('manual-progress-bar').style.width = '0%';
+        document.getElementById('manual-progress-percent').innerText = '0%';
+        document.getElementById('manual-progress-status').innerText = 'Listo';
+      }
+
       document.getElementById('manual-prospect-modal').style.display = 'flex';
       
       // Asegurar que Lucide renderiza iconos nuevos dentro del modal
@@ -9993,6 +10012,39 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="spinner-small" style="display:inline-block; width:14px; height:14px; border:2px solid #fff; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right: 4px;"></i> Guardando...`;
 
+      // Mostrar y animar barra de progreso
+      const progressContainer = document.getElementById('manual-scraper-progress');
+      const progressBar = document.getElementById('manual-progress-bar');
+      const progressPercent = document.getElementById('manual-progress-percent');
+      const progressStatus = document.getElementById('manual-progress-status');
+
+      if (progressContainer) {
+        progressContainer.style.display = 'flex';
+      }
+      
+      let currentProgress = 0;
+      const progressSteps = [
+        { limit: 15, text: 'Validando duplicados y conectando al servidor...' },
+        { limit: 45, text: 'Raspando el sitio web del negocio...' },
+        { limit: 75, text: 'Estructurando servicios y especialidades...' },
+        { limit: 95, text: 'Generando base de conocimientos con IA...' }
+      ];
+
+      const progressInterval = setInterval(() => {
+        if (currentProgress < 95) {
+          currentProgress += Math.floor(Math.random() * 3) + 1;
+          if (currentProgress > 95) currentProgress = 95;
+          
+          if (progressBar) progressBar.style.width = `${currentProgress}%`;
+          if (progressPercent) progressPercent.innerText = `${currentProgress}%`;
+          
+          const step = progressSteps.find(s => currentProgress <= s.limit);
+          if (step && progressStatus) {
+            progressStatus.innerText = step.text;
+          }
+        }
+      }, 250);
+
       try {
         const response = await fetch('/api/admin/prospects/manual', {
           method: 'POST',
@@ -10004,6 +10056,7 @@
 
         const data = await response.json();
         
+        clearInterval(progressInterval);
         btn.disabled = false;
         btn.innerHTML = originalText;
 
@@ -10011,15 +10064,25 @@
           throw new Error(data.error || 'Error al guardar el prospecto manual.');
         }
 
+        // Completar barra de progreso
+        if (progressBar) progressBar.style.width = '100%';
+        if (progressPercent) progressPercent.innerText = '100%';
+        if (progressStatus) progressStatus.innerText = '¡Guardado y analizado con éxito!';
+
         // Agregar dinámicamente el sector si fue personalizado
         addCustomSectorToSelects(sector);
 
-        closeManualProspectModal();
-        showCustomAlert(data.message, 'Guardado Exitoso', 'success');
-        await fetchProspects();
+        setTimeout(async () => {
+          closeManualProspectModal();
+          showCustomAlert(data.message, 'Guardado Exitoso', 'success');
+          await fetchProspects();
+        }, 600);
+
       } catch (err) {
+        clearInterval(progressInterval);
         btn.disabled = false;
         btn.innerHTML = originalText;
+        if (progressContainer) progressContainer.style.display = 'none';
         showCustomAlert(err.message, 'Error', 'error');
       }
     }

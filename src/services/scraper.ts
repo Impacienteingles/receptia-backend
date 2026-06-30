@@ -369,3 +369,45 @@ ${list.map(s => `- ${s}`).join('\n')}
 - Sector: ${sector.toUpperCase()}
 - Nota: Datos autogenerados por defecto para pruebas comerciales.`;
 }
+
+/**
+ * Realiza el scrapeado de un único negocio de forma síncrona/directa para prospección manual.
+ */
+export async function scrapeSingleBusiness(businessName: string, sector: string, website: string, city: string): Promise<{
+  email?: string;
+  scraped_knowledge: string;
+  specialties: string[];
+}> {
+  let email = '';
+  let specialties: string[] = [];
+  let scrapedKnowledge = '';
+
+  if (website && website.trim() !== '' && website !== 'No disponible') {
+    try {
+      const scraped = await scrapeWebsiteDetails(website, sector);
+      email = scraped.email;
+      specialties = scraped.specialties;
+      scrapedKnowledge = await extractKnowledgeFromWeb(scraped.htmlText, sector, businessName);
+    } catch (err: any) {
+      console.warn(`[Scraper] Error al scrapear sitio web manual ${website}:`, err.message);
+      scrapedKnowledge = generateFallbackKnowledge(businessName, sector);
+    }
+  } else {
+    scrapedKnowledge = generateFallbackKnowledge(businessName, sector);
+  }
+
+  if (specialties.length === 0) {
+    specialties = getDefaultSpecialties(sector);
+  }
+
+  if (!email && website && website.trim() !== '' && website !== 'No disponible') {
+    email = generateFallbackEmail(businessName, website);
+  }
+
+  return {
+    email: email || undefined,
+    scraped_knowledge: scrapedKnowledge,
+    specialties
+  };
+}
+
