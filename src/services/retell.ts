@@ -13,7 +13,7 @@ const retellClient = axios.create({
 
 // Interceptor para inyectar la API Key de Retell de forma dinámica desde BD o .env
 retellClient.interceptors.request.use(async (config) => {
-  const apiKey = await getSettingVal('RETELL_API_KEY');
+  const apiKey = await getSettingVal('RETELL_API_KEY') || process.env.RETELL_API_KEY;
   if (apiKey) {
     config.headers.Authorization = `Bearer ${apiKey}`;
   }
