@@ -87,6 +87,23 @@ async function setBlockAdminAccess(tenantId: string, value: boolean): Promise<vo
   }
 }
 
+// Middleware de seguridad para validar el PIN del Administrador Global en endpoints /api/admin/*
+function requireAdminPin(req: any, res: any, next: any) {
+  if (req.method === 'OPTIONS') {
+    next();
+    return;
+  }
+  const pin = req.headers['x-admin-pin'] || req.query.admin_pin;
+  const expectedPin = process.env.ADMIN_PIN || '1234';
+  if (!pin || pin !== expectedPin) {
+    res.status(401).json({ error: 'No autorizado: PIN de administrador ausente o incorrecto.' });
+    return;
+  }
+  next();
+}
+
+app.use('/api/admin', requireAdminPin);
+
 // Endpoints REST de la Plataforma SaaS
 
 // 1. Obtener detalles de un inquilino por email o ID, o listar todos si no se especifican filtros
@@ -3609,9 +3626,7 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
   const passwordsToTry = [
-    '5MP)3i9P7wjBr[',
-    process.env.SUPABASE_DB_PASSWORD,
-    '1S67.!3CFitNmj'
+    process.env.SUPABASE_DB_PASSWORD
   ].filter(Boolean) as string[];
 
   let migrationSuccess = false;
@@ -4387,9 +4402,7 @@ async function runDatabaseMigrations() {
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
   const passwordsToTry = [
-    '5MP)3i9P7wjBr[',
-    process.env.SUPABASE_DB_PASSWORD,
-    '1S67.!3CFitNmj'
+    process.env.SUPABASE_DB_PASSWORD
   ].filter(Boolean) as string[];
 
   const query = async (clientInstance: any) => {
