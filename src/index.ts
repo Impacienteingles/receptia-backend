@@ -4528,6 +4528,24 @@ async function runDatabaseMigrations() {
       ADD COLUMN IF NOT EXISTS is_manual BOOLEAN DEFAULT FALSE;
     `);
 
+    // Asegurar columna city en prospects si no existe
+    await clientInstance.query(`
+      ALTER TABLE prospects 
+      ADD COLUMN IF NOT EXISTS city VARCHAR;
+    `);
+
+    // Asegurar columna country en prospects si no existe
+    await clientInstance.query(`
+      ALTER TABLE prospects 
+      ADD COLUMN IF NOT EXISTS country VARCHAR;
+    `);
+
+    // Asegurar columna tags en prospects si no existe
+    await clientInstance.query(`
+      ALTER TABLE prospects 
+      ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]'::jsonb;
+    `);
+
     // Asegurar columnas de tracking de apertura en prospects si no existen
     await clientInstance.query(`
       ALTER TABLE prospects 
