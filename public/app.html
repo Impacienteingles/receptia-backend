@@ -3089,6 +3089,7 @@
                   <select id="setting-whatsapp-provider" onchange="toggleWhatsappProviderFields()" style="width: 100%; background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem 2.5rem 0.5rem 0.75rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit; cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url(&quot;data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E&quot;); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.25rem;">
                     <option value="qr">Código QR Gratis (WhatsApp Web Autohospedado)</option>
                     <option value="twilio">Twilio Profesional (Tu propia cuenta - Pago)</option>
+                    <option value="cloud">WhatsApp Cloud API Oficial (Meta - Estable)</option>
                   </select>
                 </div>
 
@@ -3127,6 +3128,23 @@
                   </div>
                   <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.4;">
                     💡 Para usar Twilio, debes configurar un Sandbox o adquirir un número de WhatsApp remitente aprobado en la consola de Twilio. Los costes de envío serán facturados directamente a tu cuenta de Twilio.
+                  </div>
+                </div>
+
+                <!-- CONTENEDOR MODO CLOUD API -->
+                <div id="whatsapp-provider-cloud-container" style="display: none; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px; margin-bottom: 1.25rem;">
+                  <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                      <label for="setting-cloud-token" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">WhatsApp Cloud Token (System User Access Token):</label>
+                      <input type="password" id="setting-cloud-token" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;" placeholder="Tu Access Token de Meta Developer Console">
+                    </div>
+                    <div>
+                      <label for="setting-cloud-phone-number-id" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Phone Number ID:</label>
+                      <input type="text" id="setting-cloud-phone-number-id" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;" placeholder="ej. 104829384729102">
+                    </div>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.4;">
+                    💡 Para usar la API oficial de WhatsApp Cloud de Meta, debes crear una aplicación de desarrollador en Facebook Developers y obtener tu Token de acceso de usuario del sistema (permanente) y tu Identificador de número de teléfono. Las tarifas de envío se cargan directamente por Meta según la plantilla de precios por conversación.
                   </div>
                 </div>
 
@@ -5435,13 +5453,20 @@
       
       const qrContainer = document.getElementById('whatsapp-provider-qr-container');
       const twilioContainer = document.getElementById('whatsapp-provider-twilio-container');
+      const cloudContainer = document.getElementById('whatsapp-provider-cloud-container');
       
       if (provider === 'qr') {
         if (qrContainer) qrContainer.style.display = 'block';
         if (twilioContainer) twilioContainer.style.display = 'none';
-      } else {
+        if (cloudContainer) cloudContainer.style.display = 'none';
+      } else if (provider === 'twilio') {
         if (qrContainer) qrContainer.style.display = 'none';
         if (twilioContainer) twilioContainer.style.display = 'block';
+        if (cloudContainer) cloudContainer.style.display = 'none';
+      } else if (provider === 'cloud') {
+        if (qrContainer) qrContainer.style.display = 'none';
+        if (twilioContainer) twilioContainer.style.display = 'none';
+        if (cloudContainer) cloudContainer.style.display = 'block';
       }
     }
 
@@ -5604,8 +5629,18 @@
       const token = document.getElementById('setting-twilio-token').value.trim();
       const number = document.getElementById('setting-twilio-number').value.trim();
       
+      const cloudTokenInput = document.getElementById('setting-cloud-token');
+      const cloudToken = cloudTokenInput ? cloudTokenInput.value.trim() : '';
+      const cloudPhoneIdInput = document.getElementById('setting-cloud-phone-number-id');
+      const cloudPhoneId = cloudPhoneIdInput ? cloudPhoneIdInput.value.trim() : '';
+      
       if (provider === 'twilio' && (!sid || !token || !number)) {
         showToast('Por favor, rellena todas las credenciales de Twilio.', 'error');
+        return;
+      }
+      
+      if (provider === 'cloud' && (!cloudToken || !cloudPhoneId)) {
+        showToast('Por favor, rellena todas las credenciales de WhatsApp Cloud API.', 'error');
         return;
       }
       
@@ -5627,7 +5662,9 @@
             whatsapp_immediate_notification_enabled: immediateNotification,
             twilio_account_sid: provider === 'twilio' ? sid : currentTenant.twilio_account_sid,
             twilio_auth_token: provider === 'twilio' ? token : currentTenant.twilio_auth_token,
-            twilio_whatsapp_number: provider === 'twilio' ? number : currentTenant.twilio_whatsapp_number
+            twilio_whatsapp_number: provider === 'twilio' ? number : currentTenant.twilio_whatsapp_number,
+            whatsapp_cloud_token: provider === 'cloud' ? cloudToken : currentTenant.whatsapp_cloud_token,
+            whatsapp_cloud_phone_number_id: provider === 'cloud' ? cloudPhoneId : currentTenant.whatsapp_cloud_phone_number_id
           })
         });
         
@@ -6731,13 +6768,18 @@
         chkImmediate.checked = currentTenant.whatsapp_immediate_notification_enabled !== false;
       }
       
-      const txtTwilioSid = document.getElementById('setting-twilio-sid');
+       const txtTwilioSid = document.getElementById('setting-twilio-sid');
       const txtTwilioToken = document.getElementById('setting-twilio-token');
       const txtTwilioNumber = document.getElementById('setting-twilio-number');
       
       if (txtTwilioSid) txtTwilioSid.value = currentTenant.twilio_account_sid || '';
       if (txtTwilioToken) txtTwilioToken.value = currentTenant.twilio_auth_token || '';
       if (txtTwilioNumber) txtTwilioNumber.value = currentTenant.twilio_whatsapp_number || '';
+
+      const txtCloudToken = document.getElementById('setting-cloud-token');
+      const txtCloudPhoneId = document.getElementById('setting-cloud-phone-number-id');
+      if (txtCloudToken) txtCloudToken.value = currentTenant.whatsapp_cloud_token || '';
+      if (txtCloudPhoneId) txtCloudPhoneId.value = currentTenant.whatsapp_cloud_phone_number_id || '';
       
       toggleWhatsappProviderFields();
       
