@@ -1365,6 +1365,23 @@
       margin-left: 0.75rem;
     }
 
+    /* Estilos para Tarjetas de Prospectos */
+    .prospect-card {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+    .prospect-card:hover {
+      background: rgba(255, 255, 255, 0.03) !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
     /* Estilos para las cápsulas de color de las etiquetas comerciales */
     .commercial-tag {
       font-size: 0.68rem;
@@ -9275,44 +9292,50 @@
         const accordionContent = document.createElement('div');
         accordionContent.className = isCollapsed ? 'city-accordion-content' : 'city-accordion-content expanded';
 
-        const tableWrapper = document.createElement('div');
-        tableWrapper.style.overflowX = 'auto';
-        tableWrapper.style.background = 'rgba(0,0,0,0.15)';
-        tableWrapper.style.border = '1px solid var(--border-color)';
-        tableWrapper.style.borderRadius = '8px';
-        tableWrapper.style.padding = '0.5rem';
-
-        const table = document.createElement('table');
-        table.className = 'table';
-        table.style.width = '100%';
-        table.style.borderCollapse = 'collapse';
-        table.style.textAlign = 'left';
-
-        table.innerHTML = `
-          <thead>
-            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.85rem; user-select: none;">
-              <th style="padding: 1rem 0.5rem; width: 40px; text-align: center;"><input type="checkbox" class="prospects-city-select-all" onclick="toggleSelectAllCityProspects(this, '${city}')"></th>
-              <th onclick="sortProspects('business_name')" style="padding: 1rem 0.5rem; cursor: pointer;">Nombre del Negocio <span id="sort-icon-business_name"></span></th>
-              <th style="padding: 1rem 0.5rem; text-align: center;">Email</th>
-              <th style="padding: 1rem 0.5rem;">Teléfono</th>
-              <th style="padding: 1rem 0.5rem;">Sitio Web</th>
-              <th onclick="sortProspects('sector')" style="padding: 1rem 0.5rem; cursor: pointer;">Sector <span id="sort-icon-sector"></span></th>
-              <th style="padding: 1rem 0.5rem; text-align: center;">Comercial</th>
-              <th onclick="sortProspects('classification')" style="padding: 1rem 0.5rem; text-align: center; cursor: pointer;">Clasificación <span id="sort-icon-classification"></span></th>
-              <th style="padding: 1rem 0.5rem; text-align: center;">Etiquetas</th>
-              <th onclick="sortProspects('status')" style="padding: 1rem 0.5rem; text-align: center; cursor: pointer;">Estado Demo <span id="sort-icon-status"></span></th>
-              <th style="padding: 1rem 0.5rem; text-align: center;">Apertura</th>
-              <th style="padding: 1rem 0.5rem; text-align: right;">Acciones</th>
-            </tr>
-          </thead>
+        const controlBar = document.createElement('div');
+        controlBar.className = 'prospects-control-bar';
+        controlBar.style.display = 'flex';
+        controlBar.style.alignItems = 'center';
+        controlBar.style.justifyContent = 'space-between';
+        controlBar.style.flexWrap = 'wrap';
+        controlBar.style.gap = '0.75rem';
+        controlBar.style.padding = '0.75rem 1rem';
+        controlBar.style.background = 'rgba(0,0,0,0.1)';
+        controlBar.style.border = '1px solid var(--border-color)';
+        controlBar.style.borderRadius = '8px';
+        controlBar.style.marginBottom = '0.75rem';
+        
+        controlBar.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <input type="checkbox" class="prospects-city-select-all" onclick="toggleSelectAllCityProspects(this, '${city}')" style="width: 16px; height: 16px; cursor: pointer;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Seleccionar todos de ${city}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 0.25rem;">Ordenar por:</span>
+            <button class="btn btn-secondary btn-sort" onclick="sortProspects('business_name')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; height: auto; display: inline-flex; align-items: center; gap: 0.2rem;">
+              Nombre <span id="sort-icon-business_name"></span>
+            </button>
+            <button class="btn btn-secondary btn-sort" onclick="sortProspects('sector')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; height: auto; display: inline-flex; align-items: center; gap: 0.2rem;">
+              Sector <span id="sort-icon-sector"></span>
+            </button>
+            <button class="btn btn-secondary btn-sort" onclick="sortProspects('classification')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; height: auto; display: inline-flex; align-items: center; gap: 0.2rem;">
+              Clasificación <span id="sort-icon-classification"></span>
+            </button>
+            <button class="btn btn-secondary btn-sort" onclick="sortProspects('status')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; height: auto; display: inline-flex; align-items: center; gap: 0.2rem;">
+              Estado <span id="sort-icon-status"></span>
+            </button>
+          </div>
         `;
-
-        const tbody = document.createElement('tbody');
+        
+        accordionContent.appendChild(controlBar);
+        
+        const cardListContainer = document.createElement('div');
+        cardListContainer.className = 'prospects-cards-list';
+        cardListContainer.style.display = 'flex';
+        cardListContainer.style.flexDirection = 'column';
+        cardListContainer.style.gap = '0.75rem';
 
         prospectsList.forEach(p => {
-          const row = document.createElement('tr');
-          row.style.borderBottom = '1px solid var(--border-color)';
-
           // Barra de progreso y estado
           let progressPercent = 0;
           let progressColor = 'var(--primary)';
@@ -9488,24 +9511,31 @@
 
           // Acciones disponibles cuando existe la demo_tenant_id o demo_url
           const shareBtn = p.demo_url ? `
-            <button class="btn btn-secondary" onclick="copyToClipboard('${p.demo_url}')" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Copiar enlace de demo">
-              <i data-lucide="copy" style="width: 13px; height: 13px;"></i>
+            <button class="btn btn-secondary" onclick="copyToClipboard('${p.demo_url}')" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; font-size: 0.75rem; border-radius: 6px;" title="Copiar enlace de demo">
+              <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
             </button>
           ` : '';
 
           const editBtn = p.demo_tenant_id ? `
-            <button class="btn btn-secondary" onclick="loadTenantToEdit('${p.demo_tenant_id}')" style="color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Editar configuración de demo">
-              <i data-lucide="edit-3" style="width: 13px; height: 13px;"></i>
+            <button class="btn btn-secondary" onclick="loadTenantToEdit('${p.demo_tenant_id}')" style="color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; font-size: 0.75rem; border-radius: 6px;" title="Editar configuración de demo">
+              <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
             </button>
           ` : '';
 
-          const duplicateBtn = ''; // Botón duplicar eliminado a petición del usuario
-
           const deleteBtn = `
-            <button class="btn btn-secondary" onclick="deleteProspect('${p.id}')" style="color: #f87171; border-color: rgba(248, 113, 113, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Eliminar lead de prospección">
-              <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+            <button class="btn btn-secondary" onclick="deleteProspect('${p.id}')" style="color: #f87171; border-color: rgba(248, 113, 113, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; font-size: 0.75rem; border-radius: 6px;" title="Eliminar lead de prospección">
+              <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
             </button>
           `;
+
+          let openDemoBtn = '';
+          if (p.demo_url) {
+            openDemoBtn = `
+              <a href="${p.demo_url}" target="_blank" class="btn btn-secondary" style="color: var(--success); border-color: rgba(52, 211, 153, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; font-size: 0.75rem; border-radius: 6px;" title="Abrir panel demo">
+                <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+              </a>
+            `;
+          }
 
           // Tracking de apertura
           let trackingHtml = '<span style="color: var(--text-muted); font-size: 0.75rem;">-</span>';
@@ -9527,40 +9557,87 @@
             `;
           }
 
-          row.innerHTML = `
-            <td style="padding: 0.85rem 0.5rem; text-align: center;"><input type="checkbox" class="prospect-select" value="${p.id}"></td>
-            <td style="font-weight: 600; color: #fff; padding: 0.85rem 0.5rem;">${p.business_name}</td>
-            <td style="padding: 0.85rem 0.5rem; text-align: center;">${emailHtml}</td>
-            <td style="padding: 0.85rem 0.5rem; font-family: monospace;">${p.phone || 'No disponible'}</td>
-            <td style="padding: 0.85rem 0.5rem;">${websiteLink}</td>
-            <td style="padding: 0.85rem 0.5rem; font-weight: 500;">${sectorStr}</td>
-            <td style="padding: 0.85rem 0.5rem; text-align: center;">${comercialSelect}</td>
-            <td style="padding: 0.85rem 0.5rem; text-align: center;">${classificationSelect}</td>
-            <td style="padding: 0.85rem 0.5rem; text-align: center;">${tagsHtml}</td>
-            <td style="padding: 0.85rem 0.5rem; text-align: center;">${statusBadge}</td>
-            <td style="padding: 0.85rem 0.5rem; text-align: center;">${trackingHtml}</td>
-            <td style="padding: 0.85rem 0.5rem; text-align: right; display: flex; gap: 0.3rem; justify-content: flex-end; align-items: center;">
-              ${actionBtn}
-              ${p.demo_url ? `
-                <a href="${p.demo_url}" target="_blank" class="btn btn-secondary" style="color: var(--success); border-color: rgba(52, 211, 153, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0.3rem 0; font-size: 0.75rem; height: auto;" title="Abrir panel demo">
-                  <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
-                </a>
-              ` : ''}
-              ${shareBtn}
-              ${editBtn}
-              ${duplicateBtn}
-              ${deleteBtn}
-            </td>
+          const card = document.createElement('div');
+          card.className = 'prospect-card';
+          card.style.background = 'rgba(255,255,255,0.015)';
+          card.style.border = '1px solid var(--border-color)';
+          card.style.borderRadius = '8px';
+          card.style.padding = '1rem';
+          card.style.display = 'flex';
+          card.style.flexDirection = 'column';
+          card.style.gap = '0.75rem';
+
+          card.innerHTML = `
+            <!-- Fila 1: Checkbox + Nombre, Teléfono, Comercial -->
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <input type="checkbox" class="prospect-select" value="${p.id}" onchange="updateBulkActionState()" style="width: 16px; height: 16px; cursor: pointer;">
+                <span style="font-weight: 600; font-size: 1.05rem; color: #fff;">${p.business_name}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Teléfono</span>
+                  <span style="font-family: monospace; font-size: 0.85rem; color: #fff; font-weight: 500; margin-top: 0.15rem;">${p.phone || 'No disponible'}</span>
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Comercial</span>
+                  <div style="margin-top: 0.15rem;">${comercialSelect}</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Fila 2: Email, Sitio Web, Sector, Clasificación, Etiquetas, Estado Demo, Apertura, Acciones -->
+            <div style="display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: center; justify-content: space-between; width: 100%;">
+              <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center;">
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 0.2rem;">Email</span>
+                  ${emailHtml}
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 0.2rem;">Sitio Web</span>
+                  ${websiteLink}
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 0.2rem;">Sector</span>
+                  <span style="font-size: 0.85rem; color: #fff; font-weight: 500; padding: 0.2rem 0.4rem; background: rgba(255,255,255,0.03); border-radius: 4px; border: 1px solid var(--border-color);">${sectorStr}</span>
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 0.2rem;">Clasificación</span>
+                  ${classificationSelect}
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 0.2rem;">Etiquetas</span>
+                  ${tagsHtml}
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 0.2rem;">Estado Demo</span>
+                  ${statusBadge}
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 0.2rem;">Apertura</span>
+                  ${trackingHtml}
+                </div>
+              </div>
+              
+              <!-- Acciones -->
+              <div style="display: flex; gap: 0.35rem; align-items: center; margin-left: auto;">
+                ${openDemoBtn}
+                ${shareBtn}
+                ${editBtn}
+                ${actionBtn}
+                ${deleteBtn}
+              </div>
+            </div>
           `;
-          tbody.appendChild(row);
+          
+          cardListContainer.appendChild(card);
         });
 
-        table.appendChild(tbody);
-        tableWrapper.appendChild(table);
-        accordionContent.appendChild(tableWrapper);
+        accordionContent.appendChild(cardListContainer);
         
         container.appendChild(accordionHeader);
         container.appendChild(accordionContent);
+      });
       });
 
       lucide.createIcons();
