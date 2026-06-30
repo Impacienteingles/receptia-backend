@@ -851,7 +851,7 @@ export async function triggerOutboundCall(
       payload.retell_llm_dynamic_variables = dynamicVariables;
     }
 
-    const response = await retellClient.post('/create-phone-call', payload);
+    const response = await retellClient.post('/v2/create-phone-call', payload);
     const callId = response.data.call_id;
     console.log(`[Retell Outbound] ✅ Llamada creada con éxito. Call ID: ${callId}`);
     return callId;
