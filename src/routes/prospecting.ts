@@ -165,7 +165,7 @@ router.post('/search', async (req: Request, res: Response): Promise<void> => {
           specialties: lead.specialties,
           scraped_knowledge: lead.scraped_knowledge,
           status: 'extracted',
-          city: lead.city
+          city: lead.city || city
         })
         .select('*')
         .single();

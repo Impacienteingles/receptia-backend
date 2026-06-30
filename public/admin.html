@@ -9189,16 +9189,20 @@
       }
     }
 
-    function toggleCityAccordion(headerEl) {
+    function toggleCityAccordion(headerEl, city) {
       const content = headerEl.nextElementSibling;
       const chevron = headerEl.querySelector('.chevron-icon');
+      
+      if (!window.collapsedCities) window.collapsedCities = {};
       
       if (content.classList.contains('expanded')) {
         content.classList.remove('expanded');
         if (chevron) chevron.style.transform = 'rotate(0deg)';
+        window.collapsedCities[city] = true;
       } else {
         content.classList.add('expanded');
         if (chevron) chevron.style.transform = 'rotate(180deg)';
+        window.collapsedCities[city] = false;
       }
     }
 
@@ -9254,20 +9258,22 @@
       Object.keys(groupedByCity).sort().forEach(city => {
         const prospectsList = groupedByCity[city];
         
+        const isCollapsed = window.collapsedCities && window.collapsedCities[city];
+        
         const accordionHeader = document.createElement('div');
         accordionHeader.className = 'city-accordion-header';
-        accordionHeader.onclick = () => toggleCityAccordion(accordionHeader);
+        accordionHeader.onclick = () => toggleCityAccordion(accordionHeader, city);
         accordionHeader.innerHTML = `
           <div style="display: flex; align-items: center;">
             <i data-lucide="map-pin" style="color: var(--primary); width: 20px; height: 20px;"></i>
             <span style="font-weight: 600; color: #fff; font-size: 1.05rem; margin-left: 0.75rem;">${city}</span>
             <span class="city-badge-count">${prospectsList.length} leads</span>
           </div>
-          <i data-lucide="chevron-down" class="chevron-icon" style="transition: transform 0.2s ease; color: var(--text-muted); width: 20px; height: 20px; transform: rotate(180deg);"></i>
+          <i data-lucide="chevron-down" class="chevron-icon" style="transition: transform 0.2s ease; color: var(--text-muted); width: 20px; height: 20px; transform: ${isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)'};"></i>
         `;
 
         const accordionContent = document.createElement('div');
-        accordionContent.className = 'city-accordion-content expanded'; // Expandido por defecto para premium feel
+        accordionContent.className = isCollapsed ? 'city-accordion-content' : 'city-accordion-content expanded';
 
         const tableWrapper = document.createElement('div');
         tableWrapper.style.overflowX = 'auto';
