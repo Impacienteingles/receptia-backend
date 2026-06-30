@@ -2692,30 +2692,31 @@
                 <div id="client-signature-badge-container" style="font-size: 0.8rem; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.02);">
                   <!-- Se cargará la firma del estado -->
                 </div>
-            </div>
-
-            <!-- Adquirir Minutos Extra -->
-            <div id="extra-minutes-section" style="border-top: 1px solid var(--border-color); padding-top: 0.75rem; margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
-              <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">¿Necesitas más minutos?</span>
-              <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <button class="btn btn-secondary" onclick="buyExtraMinutes(50)" style="flex: 1; padding: 0.4rem; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: 1px solid rgba(255,255,255,0.05);">
-                  <i data-lucide="plus-circle" style="width: 12px; height: 12px;"></i> +50 min (15€)
-                </button>
-                <button class="btn btn-secondary" onclick="buyExtraMinutes(100)" style="flex: 1; padding: 0.4rem; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: 1px solid rgba(255,255,255,0.05);">
-                  <i data-lucide="plus-circle" style="width: 12px; height: 12px;"></i> +100 min (25€)
-                </button>
               </div>
-            </div>
 
-            <!-- Historial de Facturas -->
-            <div id="invoices-section" style="border-top: 1px solid var(--border-color); padding-top: 0.75rem; margin-top: 0.75rem;">
-              <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">Historial de Facturas</span>
-              <div id="invoices-list" style="display: flex; flex-direction: column; gap: 0.35rem; max-height: 120px; overflow-y: auto; padding-right: 0.25rem;">
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">No hay facturas disponibles.</p>
-            </div>
-          </div> <!-- Cierre del div de datos (line 2643) -->
+              <!-- Adquirir Minutos Extra -->
+              <div id="extra-minutes-section" style="border-top: 1px solid var(--border-color); padding-top: 0.75rem; margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">¿Necesitas más minutos?</span>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <button class="btn btn-secondary" onclick="buyExtraMinutes(50)" style="flex: 1; padding: 0.4rem; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: 1px solid rgba(255,255,255,0.05);">
+                    <i data-lucide="plus-circle" style="width: 12px; height: 12px;"></i> +50 min (15€)
+                  </button>
+                  <button class="btn btn-secondary" onclick="buyExtraMinutes(100)" style="flex: 1; padding: 0.4rem; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: 1px solid rgba(255,255,255,0.05);">
+                    <i data-lucide="plus-circle" style="width: 12px; height: 12px;"></i> +100 min (25€)
+                  </button>
+                </div>
+              </div>
 
-          <button id="btn-change-plan" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem;" onclick="openPlansModal()">
+              <!-- Historial de Facturas -->
+              <div id="invoices-section" style="border-top: 1px solid var(--border-color); padding-top: 0.75rem; margin-top: 0.75rem;">
+                <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">Historial de Facturas</span>
+                <div id="invoices-list" style="display: flex; flex-direction: column; gap: 0.35rem; max-height: 120px; overflow-y: auto; padding-right: 0.25rem;">
+                  <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">No hay facturas disponibles.</p>
+                </div>
+              </div>
+            </div> <!-- Cierre del div de datos (line 2643) -->
+
+            <button id="btn-change-plan" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem;" onclick="openPlansModal()">
               <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Cambiar o Mejorar Plan
             </button>
             <button id="btn-stripe-portal" class="btn btn-outline" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem; display: none;" onclick="openStripePortal()">
