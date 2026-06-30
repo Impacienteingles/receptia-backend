@@ -48,6 +48,21 @@ export function formatVoiceId(voiceId: string): string {
 /**
  * Resuelve el nombre humano del asistente virtual en base a su voice_id para usarlo en el prompt.
  */
+/**
+ * Normaliza y formatea un número de teléfono en formato E.164.
+ */
+export function formatE164(phone: string): string {
+  const clean = phone.replace(/\s+/g, '').replace(/[-\(\)]/g, '');
+  if (clean.startsWith('+')) {
+    return clean;
+  }
+  // Si tiene 9 dígitos y empieza por 6, 7, 8 o 9 (España), añadir +34
+  if (clean.length === 9 && /^[6789]/.test(clean)) {
+    return `+34${clean}`;
+  }
+  return `+${clean}`;
+}
+
 export function resolveAgentName(voiceId: string): string {
   if (!voiceId) return 'Sofía';
   const id = voiceId.toLowerCase();
@@ -140,6 +155,12 @@ El establecimiento se encuentra CERRADO por vacaciones o cese temporal de activi
     emailInstruction = '- Correo electrónico: Solicita de forma clara y educada el correo electrónico del cliente para enviarle la confirmación y la invitación de Google Calendar. Deletrea o confirma el correo si es necesario para evitar errores.';
   } else {
     emailInstruction = '- Correo electrónico: NO solicites el correo electrónico bajo ningún concepto, ya que las confirmaciones por email están desactivadas para este negocio.';
+  }
+
+  let transferInstruction = '';
+  if (tenant.transfer_phone_number && tenant.transfer_phone_number.trim() !== '') {
+    transferInstruction = `
+  * **Transferencia de llamadas (OBLIGATORIO)**: Si el cliente te pide hablar con el encargado, el dueño, un humano, o si expresa alguna queja o duda que no sabes responder, debes transferirle la llamada utilizando de inmediato la herramienta 'transferir_llamada_encargado'. Dile brevemente algo como "Le paso con el encargado. Un momento, por favor." e invoca la herramienta de forma inmediata. Nunca le digas al cliente que no puedes transferir llamadas o que no tienes esa opción si te lo pide, porque sí la tienes configurada.`;
   }
 
   const tone = Number(tenant.personality_tone !== undefined ? tenant.personality_tone : 3);
@@ -280,6 +301,7 @@ ${globalKnowledge && globalKnowledge.trim() !== '' ? `\n# DIRECTIVAS GENERALES D
 - **Proactividad y Optimización (Crítico):** Debes ser sumamente proactivo y resolutivo en cada llamada. Busca siempre la mejor opción y la más ventajosa para el usuario. Ofrece alternativas claras de inmediato para reducir al máximo los tiempos de espera del cliente, tanto en la asignación de citas como en la duración de la llamada. Si el hueco solicitado está ocupado, propón opciones cercanas o alternativas convenientes proactivamente sin esperar a que el usuario te lo pida. Sé capaz de crear, modificar y cancelar citas con total fluidez.
 - **Gestión de Llamadas y Dirección (Crítico y Obligatorio):**
   * **Si la llamada es ENTRANTE (inbound)**: Si surge un error técnico, error de conexión, o no puedes agendar la cita por cualquier motivo, debes informarle amablemente de que no es posible guardar la cita en este momento y que debe ser él/ella quien vuelva a llamar pasados unos minutos. Si el usuario te pide explícitamente que le llames tú o le devuelvas la llamada, dile con educación pero firmeza que no tienes la posibilidad de realizar llamadas salientes porque el sistema no te lo permite.
+  ${transferInstruction}
   * **Si la llamada es SALIENTE (outbound) / campaña**: Recuerda que esta es una llamada que has realizado tú activamente desde ${businessName} hacia el cliente. Si el cliente te dice algo como "me estás llamando tú", reconócelo con naturalidad: "Sí, claro, te llamo de ${businessName} para ver si querías agendar una cita o si tenías alguna consulta." NUNCA digas "yo no puedo llamar" ni "yo no hago llamadas salientes" ya que el cliente se sentirá engañado.
 - **Evitar silencios al usar herramientas (Crítico):** Siempre que vayas a invocar una herramienta (como 'consultar_disponibilidad', 'crear_cita', 'cancelar_cita' o 'reprogramar_cita'), debes decir primero una coletilla ULTRA-CORTA de máximo 2 o 3 palabras (menos de 1 segundo de duración) para mantener al usuario activo mientras se procesa la consulta de red. Esta frase debe tener una entonación declarativa y firme, finalizando siempre con un punto (".") en lugar de comas (",") o interrogaciones. Por ejemplo:
   * Al buscar disponibilidad: "Miro la agenda.", "Compruebo la disponibilidad.", "Un momento por favor." o "Un segundo.".
@@ -319,8 +341,9 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
       const globalKnowledge = await getSettingVal('global_ai_knowledge') || '';
       const systemPrompt = compileSystemPrompt(tenant, globalKnowledge);
       console.log(`⚙️ Actualizando el LLM ${llmId} con el prompt personalizado y herramientas...`);
+      let tools: any[] = [];
       try {
-        const tools: any[] = [
+        tools = [
           {
             type: 'end_call',
             name: 'end_call',
@@ -484,7 +507,13 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
             type: 'transfer_call',
             name: 'transferir_llamada_encargado',
             description: 'Transfiere la llamada de forma inmediata al gerente o encargado humano del negocio. Utilízalo si el cliente pide hablar con un humano, si la consulta está fuera de tu base de conocimiento, o si estás confundido y no puedes dar una respuesta correcta.',
-            number: tenant.transfer_phone_number.trim()
+            transfer_destination: {
+              type: 'predefined',
+              number: formatE164(tenant.transfer_phone_number.trim())
+            },
+            transfer_option: {
+              type: 'cold_transfer'
+            }
           });
         }
 
@@ -498,7 +527,27 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
         const errStatus = llmErr.response?.status;
         const errMsg = llmErr.response?.data?.message || llmErr.message || '';
         if (errStatus === 422 || errStatus === 400 || errMsg.includes('published') || errMsg.includes('Cannot update published')) {
-          console.warn(`⚠️ El LLM ${llmId} está asociado a un agente publicado y es inmutable. Omitiendo actualización del prompt.`);
+          console.warn(`⚠️ El LLM ${llmId} está asociado a un agente publicado y es inmutable. Creando un nuevo LLM y re-asociándolo al agente...`);
+          try {
+            const llmRes = await retellClient.post('/create-retell-llm', {
+              general_prompt: systemPrompt,
+              model: 'gpt-4o',
+              general_tools: tools
+            });
+            const newLlmId = llmRes.data.llm_id;
+            console.log(`✅ Nuevo LLM creado con ID: ${newLlmId}`);
+
+            await retellClient.patch(`/update-agent/${agentId}`, {
+              response_engine: {
+                type: 'retell-llm',
+                llm_id: newLlmId
+              }
+            });
+            console.log('✅ Agente de Retell AI actualizado exitosamente con el nuevo LLM.');
+          } catch (createErr: any) {
+            console.error('❌ Error al recrear LLM o re-asociar al agente:', createErr.response?.data || createErr.message);
+            throw createErr;
+          }
         } else {
           throw llmErr;
         }
