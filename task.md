@@ -7,5 +7,6 @@
 - `[x]` Modificar `public/sectores/asesorias-abogados/index.html` para integrar la cabecera dinámica, doble menú y footer
 - `[x]` Regenerar el zip de la landing page estática limpia
 - `[x]` Subir y extraer el paquete de la landing page en Webempresa y borrar el helper de WordPress
-- `[x]` Subir los cambios a GitHub y forzar el deploy en Vercel CLI
-- `[x]` Verificar y auditar en vivo la navegación en ambos entornos
+- `[x]` Compilar código con `npm run build` y verificar que no existan errores
+- `[x]` Empujar y desplegar la versión `v2.7.62` / `v1.5.85` en la nube de Render
+- `[x]` Corregir esquema de transferencia de llamadas predefined y sincronizar Carlos Romero
