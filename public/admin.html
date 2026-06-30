@@ -3538,6 +3538,26 @@
                     </p>
                   </div>
                 </div>
+
+                <!-- CARD: SEGURIDAD DEL ADMINISTRADOR -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="shield-check" style="color: var(--primary);"></i> Seguridad del Administrador
+                  </h3>
+                  <div class="form-group">
+                    <label for="setting-admin-pin">PIN de Acceso Global (ADMIN_PIN):</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-admin-pin" placeholder="PIN de Administrador" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-admin-pin')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
+                      PIN numérico o alfanumérico para proteger el acceso a esta consola de administración y todos los endpoints de API críticos.
+                    </p>
+                  </div>
+                </div>
+
                 <!-- CARD: INTERFAZ DE USUARIO -->
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
                   <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
@@ -6436,6 +6456,7 @@
           'CORANDAR_REPRESENTATIVE': 'setting-corandar-rep',
           'CORANDAR_REPRESENTATIVE_ID': 'setting-corandar-rep-id',
           'CORANDAR_REPRESENTATIVE_ROLE': 'setting-corandar-rep-role',
+          'ADMIN_PIN': 'setting-admin-pin',
           'refresh_interval': 'setting-refresh-interval'
         };
 
@@ -6498,6 +6519,7 @@
         'CORANDAR_REPRESENTATIVE': 'setting-corandar-rep',
         'CORANDAR_REPRESENTATIVE_ID': 'setting-corandar-rep-id',
         'CORANDAR_REPRESENTATIVE_ROLE': 'setting-corandar-rep-role',
+        'ADMIN_PIN': 'setting-admin-pin',
         'refresh_interval': 'setting-refresh-interval'
       };
 
@@ -6521,6 +6543,12 @@
         if (!response.ok) {
           const errRes = await response.json();
           throw new Error(errRes.error || 'Error al guardar los ajustes.');
+        }
+
+        // Si se ha modificado el PIN del admin, actualizar en sessionStorage
+        const newPinEl = document.getElementById('setting-admin-pin');
+        if (newPinEl && newPinEl.value.trim() !== '') {
+          sessionStorage.setItem('admin_pin', newPinEl.value.trim());
         }
 
         await showCustomAlert('Todos los ajustes e integraciones se han guardado correctamente en Supabase.', 'Ajustes Guardados', 'success');
