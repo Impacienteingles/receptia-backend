@@ -4286,8 +4286,8 @@
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
           <div class="form-group">
-            <label for="manual-phone" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Teléfono *</label>
-            <input type="text" id="manual-phone" placeholder="Ej: 34600112233" required style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem;">
+            <label for="manual-phone" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Teléfono</label>
+            <input type="text" id="manual-phone" placeholder="Ej: 34600112233" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem;">
           </div>
           <div class="form-group">
             <label for="manual-email" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Email</label>
@@ -4310,7 +4310,7 @@
         </div>
         <div class="form-group">
           <label for="manual-sector" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Sector *</label>
-          <select id="manual-sector" required style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem; -webkit-appearance: none; appearance: none;">
+          <select id="manual-sector" required onchange="handleManualSectorChange()" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem; -webkit-appearance: none; appearance: none;">
             <option value="peluqueria">Peluquería / Estética</option>
             <option value="dental">Clínica Dental</option>
             <option value="medica">Clínica Médica</option>
@@ -4323,7 +4323,12 @@
             <option value="gimnasio">Gimnasio / Entrenador</option>
             <option value="academia">Academia de Estudios</option>
             <option value="inmobiliaria">Inmobiliaria</option>
+            <option value="otro">Otro (Introducir manualmente...)</option>
           </select>
+        </div>
+        <div class="form-group" id="manual-sector-custom-container" style="display: none;">
+          <label for="manual-sector-custom" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Especificar Sector *</label>
+          <input type="text" id="manual-sector-custom" placeholder="Ej: Floristería, Restaurante" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem;">
         </div>
         <div style="display: flex; gap: 1rem; margin-top: 0.5rem; justify-content: flex-end;">
           <button type="button" class="btn btn-secondary" onclick="closeManualProspectModal()" style="border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; cursor: pointer; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.9rem;">Cancelar</button>
@@ -8764,10 +8769,13 @@
         const data = await response.json();
         allProspects = data.prospects || [];
         
-        // Clean up completed/failed prospects from processing set
+        // Clean up completed/failed prospects and extract custom sectors
         allProspects.forEach(p => {
           if (p.status === 'email_sent' || p.status === 'failed') {
             processingProspectIds.delete(p.id);
+          }
+          if (p.sector) {
+            addCustomSectorToSelects(p.sector);
           }
         });
 
@@ -9903,6 +9911,64 @@
       document.getElementById('manual-prospect-modal').style.display = 'none';
     }
 
+    function handleManualSectorChange() {
+      const select = document.getElementById('manual-sector');
+      const customContainer = document.getElementById('manual-sector-custom-container');
+      const customInput = document.getElementById('manual-sector-custom');
+      
+      if (select.value === 'otro') {
+        customContainer.style.display = 'block';
+        customInput.required = true;
+        customInput.focus();
+      } else {
+        customContainer.style.display = 'none';
+        customInput.required = false;
+        customInput.value = '';
+      }
+    }
+
+    function addCustomSectorToSelects(sectorValue) {
+      if (!sectorValue) return;
+      const normalizedValue = sectorValue.trim();
+      
+      // Lista de sectores fijos para no duplicar en dropdowns
+      const fixedSectors = [
+        'peluqueria', 'dental', 'medica', 'fisioterapia', 'abogados',
+        'psicologia', 'taller', 'veterinaria', 'spa', 'gimnasio',
+        'academia', 'inmobiliaria', 'otro', ''
+      ];
+      if (fixedSectors.includes(normalizedValue.toLowerCase())) return;
+
+      // 1. Agregar a manual-sector
+      const manualSelect = document.getElementById('manual-sector');
+      if (manualSelect) {
+        const exists = Array.from(manualSelect.options).some(opt => opt.value === normalizedValue);
+        if (!exists) {
+          const newOpt = document.createElement('option');
+          newOpt.value = normalizedValue;
+          newOpt.innerText = normalizedValue;
+          const otroOpt = Array.from(manualSelect.options).find(opt => opt.value === 'otro');
+          if (otroOpt) {
+            manualSelect.insertBefore(newOpt, otroOpt);
+          } else {
+            manualSelect.appendChild(newOpt);
+          }
+        }
+      }
+
+      // 2. Agregar a prospect-sector
+      const autoSelect = document.getElementById('prospect-sector');
+      if (autoSelect) {
+        const exists = Array.from(autoSelect.options).some(opt => opt.value === normalizedValue);
+        if (!exists) {
+          const newOpt = document.createElement('option');
+          newOpt.value = normalizedValue;
+          newOpt.innerText = normalizedValue;
+          autoSelect.appendChild(newOpt);
+        }
+      }
+    }
+
     async function saveManualProspect(event) {
       event.preventDefault();
       
@@ -9912,7 +9978,15 @@
       const website = document.getElementById('manual-website').value.trim();
       const city = document.getElementById('manual-city').value.trim();
       const country = document.getElementById('manual-country').value.trim();
-      const sector = document.getElementById('manual-sector').value;
+      
+      let sector = document.getElementById('manual-sector').value;
+      if (sector === 'otro') {
+        sector = document.getElementById('manual-sector-custom').value.trim();
+        if (!sector) {
+          showCustomAlert('Por favor, especifica el sector.', 'Error', 'error');
+          return;
+        }
+      }
 
       const btn = document.getElementById('btn-save-manual-prospect');
       const originalText = btn.innerHTML;
@@ -9925,7 +9999,7 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ business_name, phone, email, website, city, country, sector })
+          body: JSON.stringify({ business_name, phone: phone || null, email: email || null, website: website || null, city, country, sector })
         });
 
         const data = await response.json();
@@ -9936,6 +10010,9 @@
         if (!response.ok) {
           throw new Error(data.error || 'Error al guardar el prospecto manual.');
         }
+
+        // Agregar dinámicamente el sector si fue personalizado
+        addCustomSectorToSelects(sector);
 
         closeManualProspectModal();
         showCustomAlert(data.message, 'Guardado Exitoso', 'success');
