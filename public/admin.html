@@ -3769,10 +3769,16 @@
         <div id="tab-prospecting" class="tab-content">
           <!-- Formulario de búsqueda -->
           <div class="card" style="margin-bottom: 2rem;">
-            <h2 class="card-title" style="color: var(--primary-light);">
-              <i data-lucide="target"></i>
-              Prospección Automatizada B2B
-            </h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+              <h2 class="card-title" style="color: var(--primary-light); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="target"></i>
+                Prospección Automatizada B2B
+              </h2>
+              <button class="btn btn-secondary" onclick="openManualProspectModal()" style="display: flex; align-items: center; gap: 0.5rem; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); height: 38px; padding: 0 1rem; border-radius: 8px; color: #fff; cursor: pointer; transition: background 0.2s;">
+                <i data-lucide="plus-circle" style="width: 16px; height: 16px; color: var(--primary-light);"></i>
+                <span>Añadir Prospecto Manual</span>
+              </button>
+            </div>
             <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4;">
               Busque clientes potenciales B2B en Google Maps según la ciudad y sector, extraiga sus datos de contacto del sitio web y active el pipeline automático para crearles un panel demo y un audio personalizado con Cartesia.
             </p>
@@ -4258,6 +4264,72 @@
           <i data-lucide="send" style="width: 15px; height: 15px;"></i> Enviar a Cliente
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL AÑADIR PROSPECTO MANUAL -->
+  <div class="modal" id="manual-prospect-modal" style="display: none; align-items: center; justify-content: center; z-index: 1100; background: rgba(0, 0, 0, 0.75); position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div class="card" style="width: 500px; max-width: 90%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4); backdrop-filter: blur(10px);">
+      <div style="padding: 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="color: #fff; font-size: 1.15rem; font-family: 'Outfit', sans-serif; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+          <i data-lucide="plus-circle" style="color: var(--primary); width: 20px; height: 20px;"></i>
+          Nuevo Prospecto Manual
+        </h3>
+        <button onclick="closeManualProspectModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.25rem;" title="Cerrar">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+      <form id="manual-prospect-form" onsubmit="saveManualProspect(event)" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; margin: 0;">
+        <div class="form-group">
+          <label for="manual-business-name" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Nombre del Negocio *</label>
+          <input type="text" id="manual-business-name" placeholder="Ej: Clínica Dental DentalSana" required style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem;">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="manual-phone" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Teléfono *</label>
+            <input type="text" id="manual-phone" placeholder="Ej: 34600112233" required style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem;">
+          </div>
+          <div class="form-group">
+            <label for="manual-email" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Email</label>
+            <input type="email" id="manual-email" placeholder="Ej: info@dentalsana.com" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="manual-website" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Sitio Web</label>
+          <input type="text" id="manual-website" placeholder="Ej: https://dentalsana.com" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem;">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="manual-city" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Ciudad / Región *</label>
+            <input type="text" id="manual-city" placeholder="Ej: Granada" required style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem;">
+          </div>
+          <div class="form-group">
+            <label for="manual-country" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">País *</label>
+            <input type="text" id="manual-country" value="España" required style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="manual-sector" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 0.35rem;">Sector *</label>
+          <select id="manual-sector" required style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem; -webkit-appearance: none; appearance: none;">
+            <option value="peluqueria">Peluquería / Estética</option>
+            <option value="dental">Clínica Dental</option>
+            <option value="medica">Clínica Médica</option>
+            <option value="fisioterapia">Fisioterapia</option>
+            <option value="abogados">Bufete de Abogados</option>
+            <option value="psicologia">Centro de Psicología</option>
+            <option value="taller">Taller Mecánico</option>
+            <option value="veterinaria">Clínica Veterinaria</option>
+            <option value="spa">Spa y Bienestar</option>
+            <option value="gimnasio">Gimnasio / Entrenador</option>
+            <option value="academia">Academia de Estudios</option>
+            <option value="inmobiliaria">Inmobiliaria</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 1rem; margin-top: 0.5rem; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="closeManualProspectModal()" style="border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; cursor: pointer; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.9rem;">Cancelar</button>
+          <button type="submit" id="btn-save-manual-prospect" class="btn" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border: none; color: #fff; cursor: pointer; border-radius: 6px; padding: 0.5rem 1.25rem; font-size: 0.9rem; font-weight: 600;">Guardar Prospecto</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -9559,8 +9631,13 @@
 
           const card = document.createElement('div');
           card.className = 'prospect-card';
-          card.style.background = 'rgba(255,255,255,0.015)';
-          card.style.border = '1px solid var(--border-color)';
+          if (p.is_manual) {
+            card.style.background = 'rgba(255,255,255,0.055)';
+            card.style.border = '1px solid rgba(255,255,255,0.08)';
+          } else {
+            card.style.background = 'rgba(255,255,255,0.015)';
+            card.style.border = '1px solid var(--border-color)';
+          }
           card.style.borderRadius = '8px';
           card.style.padding = '1rem';
           card.style.display = 'flex';
@@ -9572,7 +9649,10 @@
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; width: 100%;">
               <div style="display: flex; align-items: center; gap: 0.6rem;">
                 <input type="checkbox" class="prospect-select" value="${p.id}" onchange="updateBulkActionState()" style="width: 16px; height: 16px; cursor: pointer;">
-                <span style="font-weight: 600; font-size: 1.05rem; color: #fff;">${p.business_name}</span>
+                <span style="font-weight: 600; font-size: 1.05rem; color: #fff; display: inline-flex; align-items: center; gap: 0.5rem;">
+                  ${p.business_name}
+                  ${p.is_manual ? `<span style="font-size: 0.65rem; padding: 0.15rem 0.4rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #ccc; border-radius: 4px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">Manual</span>` : ''}
+                </span>
               </div>
               <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
                 <div style="display: flex; flex-direction: column;">
@@ -9797,6 +9877,73 @@
         btn.disabled = false;
         btn.innerHTML = originalText;
         showCustomAlert(err.message, 'Error de búsqueda', 'error');
+      }
+    }
+
+    function openManualProspectModal() {
+      document.getElementById('manual-prospect-form').reset();
+      
+      const autoCity = document.getElementById('prospect-city').value.trim();
+      const autoCountry = document.getElementById('prospect-country').value.trim();
+      const autoSector = document.getElementById('prospect-sector').value;
+      
+      if (autoCity) document.getElementById('manual-city').value = autoCity;
+      if (autoCountry) document.getElementById('manual-country').value = autoCountry;
+      if (autoSector) document.getElementById('manual-sector').value = autoSector;
+
+      document.getElementById('manual-prospect-modal').style.display = 'flex';
+      
+      // Asegurar que Lucide renderiza iconos nuevos dentro del modal
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+
+    function closeManualProspectModal() {
+      document.getElementById('manual-prospect-modal').style.display = 'none';
+    }
+
+    async function saveManualProspect(event) {
+      event.preventDefault();
+      
+      const business_name = document.getElementById('manual-business-name').value.trim();
+      const phone = document.getElementById('manual-phone').value.trim();
+      const email = document.getElementById('manual-email').value.trim();
+      const website = document.getElementById('manual-website').value.trim();
+      const city = document.getElementById('manual-city').value.trim();
+      const country = document.getElementById('manual-country').value.trim();
+      const sector = document.getElementById('manual-sector').value;
+
+      const btn = document.getElementById('btn-save-manual-prospect');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="spinner-small" style="display:inline-block; width:14px; height:14px; border:2px solid #fff; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right: 4px;"></i> Guardando...`;
+
+      try {
+        const response = await fetch('/api/admin/prospects/manual', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ business_name, phone, email, website, city, country, sector })
+        });
+
+        const data = await response.json();
+        
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al guardar el prospecto manual.');
+        }
+
+        closeManualProspectModal();
+        showCustomAlert(data.message, 'Guardado Exitoso', 'success');
+        await fetchProspects();
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        showCustomAlert(err.message, 'Error', 'error');
       }
     }
 

@@ -617,6 +617,10 @@
               <i data-lucide="bar-chart-2" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px;"></i>
               Comisiones y Pagos
             </button>
+            <button class="tab-btn" onclick="switchMainTab('guide')">
+              <i data-lucide="book-open" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px;"></i>
+              Guía Comercial
+            </button>
           </div>
 
           <!-- TAB LEADS -->
@@ -696,6 +700,84 @@
                   </table>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- TAB GUÍA COMERCIAL (PLAYBOOK INTERACTIVO) -->
+          <div class="tab-content-panel" id="panel-guide">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem;">
+              
+              <!-- Presentación -->
+              <div style="background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); border-radius: 8px; padding: 1rem; line-height: 1.5; font-size: 0.9rem; color: var(--text-muted);">
+                <span style="font-weight: 700; color: var(--primary-light);">🎯 Guía Comercial de Receptia:</span> 
+                Análisis estratégico, guiones prácticos y hoja de ruta comercial para convencer al cliente y firmar contratos de forma inmediata.
+              </div>
+
+              <!-- Bloque 1: Guión de Apertura -->
+              <div class="card" style="border: 1px solid var(--border-color); background: rgba(0,0,0,0.15); padding: 1.25rem;">
+                <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="phone-call" style="color: var(--primary-light); width: 18px; height: 18px;"></i>
+                  1. Guión Ganador de Llamada en Frío (Apertura)
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem; line-height: 1.45;">
+                  <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-left: 3px solid var(--primary); border-radius: 4px;">
+                    <strong>Paso 1: Gancho de Llamada Perdida</strong><br>
+                    <span style="color: var(--text-muted);">"Hola, buenas. ¿Hablo con el encargado o dueño del negocio? Verá, le llamo porque intentamos ponernos en contacto con ustedes hace unos momentos y la línea daba ocupada / no pudimos contactar. Queríamos confirmar si a menudo tienen saturación de llamadas o pierden clientes por no dar abasto al teléfono."</span>
+                  </div>
+                  <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-left: 3px solid var(--primary-hover); border-radius: 4px;">
+                    <strong>Paso 2: Presentación de la Solución (Receptia IA)</strong><br>
+                    <span style="color: var(--text-muted);">"Somos Receptia. Hemos desarrollado una recepcionista virtual con Inteligencia Artificial que atiende llamadas las 24 horas del día. Lo interesante es que habla de forma 100% natural, agenda citas directamente en su calendario y envía confirmaciones automáticas por WhatsApp para que su equipo no pierda tiempo respondiendo preguntas repetitivas o perdiendo citas fuera de horario."</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloque 2: Auditoría y Preguntas Clave -->
+              <div class="card" style="border: 1px solid var(--border-color); background: rgba(0,0,0,0.15); padding: 1.25rem;">
+                <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="help-circle" style="color: #f59e0b; width: 18px; height: 18px;"></i>
+                  2. Preguntas Clave para Calificar y Convencer
+                </h3>
+                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; display: flex; flex-direction: column; gap: 0.5rem;">
+                  <li>¿Cuántas llamadas al día se quedan sin responder porque vuestro personal está atendiendo a un cliente en sala o fuera del horario comercial?</li>
+                  <li>¿Cuál es el valor o ticket medio de una cita en vuestro negocio? (Si una cita vale 40€ o 50€, con solo 3 citas que el agente de IA rescate al mes, la plataforma ya se paga sola).</li>
+                  <li>¿Sabías que el 62% de los clientes no vuelve a llamar si su primera llamada no es respondida al instante?</li>
+                </ul>
+              </div>
+
+              <!-- Bloque 3: Manejo de Objeciones -->
+              <div class="card" style="border: 1px solid var(--border-color); background: rgba(0,0,0,0.15); padding: 1.25rem;">
+                <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="message-square" style="color: #10b981; width: 18px; height: 18px;"></i>
+                  3. Objeciones Habituales vs Respuestas Ganadoras
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.88rem; line-height: 1.45;">
+                  <div style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.50rem;">
+                    <span style="color: #ef4444; font-weight: 600;">❌ Objeción:</span> <em>"Ya tengo secretaria / recepcionista."</em><br>
+                    <span style="color: #10b981; font-weight: 600;">👉 Respuesta:</span> <span style="color: var(--text-muted);">"Perfecto. Receptia no reemplaza a tu secretaria. Al contrario, la ayuda filtrando las llamadas repetitivas de solicitud de precios u horarios, y atiende aquellas llamadas que entran cuando ella está ocupada con un cliente presencial o fuera de su jornada de trabajo."</span>
+                  </div>
+                  <div style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.50rem;">
+                    <span style="color: #ef4444; font-weight: 600;">❌ Objeción:</span> <em>"Es que una Inteligencia Artificial suena muy robótica."</em><br>
+                    <span style="color: #10b981; font-weight: 600;">👉 Respuesta:</span> <span style="color: var(--text-muted);">"Para nada. Usamos motores de voz de última generación (Cartesia / ElevenLabs) con entonación humana y acento español perfecto. Si quiere, le generamos una demostración interactiva con su propio catálogo de servicios y le llamamos en 5 minutos para que hable con ella directamente."</span>
+                  </div>
+                  <div>
+                    <span style="color: #ef4444; font-weight: 600;">❌ Objeción:</span> <em>"Me parece un servicio costoso."</em><br>
+                    <span style="color: #10b981; font-weight: 600;">👉 Respuesta:</span> <span style="color: var(--text-muted);">"Cuesta 149€/mes. Si una sola cita media perdida os cuesta unos 50€ de facturación, con recuperar solo 3 citas de clientes que llaman por la noche, festivos o al mediodía, el sistema ya os sale rentable. El resto es puro beneficio."</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloque 4: Cierre Exitoso -->
+              <div class="card" style="border: 1px solid var(--border-color); background: rgba(0,0,0,0.15); padding: 1.25rem;">
+                <h3 style="font-size: 1.05rem; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="award" style="color: #8b5cf6; width: 18px; height: 18px;"></i>
+                  4. Estrategia de Cierre de Contratos (Efecto WOW)
+                </h3>
+                <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; display: flex; flex-direction: column; gap: 0.5rem;">
+                  <p>1. **Demo Personalizada Instantánea:** Crea el lead en tu panel y activa el pipeline de prueba. Haz que el cliente llame al número demo asignado. Al escuchar a la IA responder con su propio nombre de negocio y agendar una cita real, el cliente queda convencido.</p>
+                  <p>2. **Periodo de Prueba Gratis de 7 Días:** Ofréceles 7 días de prueba sin coste. Una vez que ven que la IA atiende de verdad sus llamadas perdidas sin coste de instalación, la conversión a plan de pago supera el 85%.</p>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -1068,7 +1150,13 @@
       document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
 
       // Activar correspondiente
-      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.innerText.toLowerCase().includes(tabName === 'leads' ? 'leads' : 'comisiones'));
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => {
+        const text = btn.innerText.toLowerCase();
+        if (tabName === 'leads') return text.includes('leads');
+        if (tabName === 'commissions') return text.includes('comisiones');
+        if (tabName === 'guide') return text.includes('guía');
+        return false;
+      });
       if (activeBtn) activeBtn.classList.add('active');
       
       document.getElementById(`panel-${tabName}`).classList.add('active');

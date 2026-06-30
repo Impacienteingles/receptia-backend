@@ -37,7 +37,109 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 });
 
 /**
- * 2. Buscar y extraer prospectos de Google Maps y scraping web
+ * 2. Agregar un prospecto de forma manual
+ */
+router.post('/manual', async (req: Request, res: Response): Promise<void> => {
+  const { business_name, phone, email, website, city, country, sector } = req.body;
+
+  if (!business_name || !phone || !city || !country || !sector) {
+    res.status(400).json({ error: 'Los campos nombre, teléfono, ciudad, país y sector son requeridos.' });
+    return;
+  }
+
+  try {
+    const normalizeString = (str: string): string => {
+      if (!str) return '';
+      return str
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '')
+        .trim();
+    };
+
+    const normalizePhone = (p: string): string => {
+      if (!p || p === 'No disponible') return '';
+      return p.replace(/[^0-9]/g, '');
+    };
+
+    const normalizeWebsite = (url: string): string => {
+      if (!url || url === 'No disponible' || url.includes('google.com')) return '';
+      return url
+        .toLowerCase()
+        .replace(/^(https?:\/\/)?(www\.)?/, '')
+        .replace(/\/$/, '')
+        .trim();
+    };
+
+    // Obtener los prospectos existentes para deduplicación
+    const { data: dbProspects, error: fetchErr } = await supabase
+      .from('prospects')
+      .select('id, business_name, email, phone, website, sector');
+    
+    if (fetchErr) throw fetchErr;
+
+    const normName = normalizeString(business_name);
+    const normPhone = normalizePhone(phone);
+    const normWebsite = normalizeWebsite(website || '');
+    const normEmail = email && email.trim() !== '' ? email.trim().toLowerCase() : '';
+
+    let isDuplicate = false;
+    for (const existing of dbProspects || []) {
+      if (existing.sector !== sector) continue;
+
+      if (normName && normalizeString(existing.business_name) === normName) {
+        isDuplicate = true;
+        break;
+      }
+      if (normPhone && normalizePhone(existing.phone) === normPhone) {
+        isDuplicate = true;
+        break;
+      }
+      if (normEmail && existing.email && existing.email.trim().toLowerCase() === normEmail) {
+        isDuplicate = true;
+        break;
+      }
+      if (normWebsite && existing.website && normalizeWebsite(existing.website) === normWebsite) {
+        isDuplicate = true;
+        break;
+      }
+    }
+
+    if (isDuplicate) {
+      res.status(409).json({ error: 'Ya existe un prospecto en este sector con el mismo nombre, teléfono, correo o web.' });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('prospects')
+      .insert({
+        business_name,
+        phone,
+        email: email || null,
+        website: website || null,
+        city,
+        country,
+        sector,
+        is_manual: true,
+        status: 'extracted',
+        classification: 'no_contactado',
+        tags: []
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ success: true, message: 'Prospecto manual agregado con éxito.', prospect: data });
+  } catch (error: any) {
+    console.error('[Prospecting API] Error al agregar prospecto manual:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * 3. Buscar y extraer prospectos de Google Maps y scraping web
  */
 router.post('/search', async (req: Request, res: Response): Promise<void> => {
   const { city, country, sector } = req.body;

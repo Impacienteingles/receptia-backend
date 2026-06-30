@@ -3724,6 +3724,9 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
         
         ALTER TABLE call_logs 
         ADD COLUMN IF NOT EXISTS retell_call_id TEXT;
+
+        ALTER TABLE prospects 
+        ADD COLUMN IF NOT EXISTS is_manual BOOLEAN DEFAULT FALSE;
         
         NOTIFY pgrst, 'reload schema';
       `);
@@ -3771,6 +3774,9 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
         
         ALTER TABLE call_logs 
         ADD COLUMN IF NOT EXISTS retell_call_id TEXT;
+
+        ALTER TABLE prospects 
+        ADD COLUMN IF NOT EXISTS is_manual BOOLEAN DEFAULT FALSE;
         
         NOTIFY pgrst, 'reload schema';
       `);
@@ -4514,6 +4520,12 @@ async function runDatabaseMigrations() {
     await clientInstance.query(`
       ALTER TABLE prospects 
       ADD COLUMN IF NOT EXISTS classification VARCHAR DEFAULT 'no_contactado';
+    `);
+
+    // Asegurar columna is_manual en prospects si no existe
+    await clientInstance.query(`
+      ALTER TABLE prospects 
+      ADD COLUMN IF NOT EXISTS is_manual BOOLEAN DEFAULT FALSE;
     `);
 
     // Asegurar columnas de tracking de apertura en prospects si no existen
