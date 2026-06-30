@@ -1,22 +1,12 @@
-# Tareas de Ejecución: Cabecera Diferenciada, Doble Menú y Retorno Premium
+# Tareas de Ejecución: Guía Comercial, Prospecto Manual y Ajustes WhatsApp Cloud API
 
-- `[x]` Diseñar y validar la lógica CSS y JavaScript para la detección dinámica del dominio
-- `[x]` Modificar `public/index.html` para integrar el doble menú, el logo con texto y el logo del footer con fondo blanco
-- `[x]` Modificar `public/sectores/clinicas-dentales/index.html` para integrar la cabecera dinámica, doble menú y footer
-- `[x]` Modificar `public/sectores/peluquerias/index.html` para integrar la cabecera dinámica, doble menú y footer
-- `[x]` Modificar `public/sectores/asesorias-abogados/index.html` para integrar la cabecera dinámica, doble menú y footer
-- `[x]` Regenerar el zip de la landing page estática limpia
-- `[x]` Subir y extraer el paquete de la landing page en Webempresa y borrar el helper de WordPress
+- `[x]` Actualizar la lógica JavaScript de `switchMainTab(tabName)` en `public/comercial.html` para soportar la pestaña `'guide'`
+- `[x]` Adaptar el diseño responsivo del Playbook "Guía Comercial" en el panel comercial
+- `[x]` Crear la ruta backend `POST /api/admin/prospects/manual` con validación de duplicados y deduplicación inteligente
+- `[x]` Modificar el formulario en `public/admin.html` para admitir campos opcionales (Teléfono, Email, URL) al crear prospectos manualmente
+- `[x]` Implementar la opción de sector "Otro (especificar manualmente)" en `public/admin.html` para ingresar sectores personalizados
+- `[x]` Programar la lógica JavaScript para añadir los sectores dinámicos a los selects de prospección automática y manual en el cliente
+- `[x]` Actualizar la función `renderProspectsTable()` en `public/admin.html` para marcar prospectos manuales con un fondo gris tenue (`rgba(255,255,255,0.03)`) y la etiqueta `"Manual"`
+- `[x]` Extraer e inyectar dinámicamente sectores personalizados desde la base de datos al cargar prospectos
 - `[x]` Compilar código con `npm run build` y verificar que no existan errores
-- `[x]` Empujar y desplegar la versión `v2.7.62` / `v1.5.85` en la nube de Render
-- `[x]` Corregir esquema de transferencia de llamadas predefined y sincronizar Carlos Romero
-- `[x]` Ejecutar migración SQL en la base de datos de Supabase
-- `[x]` Actualizar `src/services/scraper.ts` para soportar la ciudad en los leads
-- `[x]` Actualizar `src/routes/prospecting.ts` para persistir e interactuar con ciudad y etiquetas
-- `[x]` Modificar la interfaz en `public/admin.html`
-    - `[x]` Agregar estilos CSS para acordeones y etiquetas de color
-    - `[x]` Lógica de agrupamiento por ciudad en `renderProspectsTable`
-    - `[x]` Renderizar secciones colapsables (acordeones) por ciudad
-    - `[x]` Crear el componente visual de etiquetas y selector de acción comercial
-- `[x]` Compilar con `npm run build` para validar sintaxis de TypeScript
-- `[x]` Incrementar versiones, realizar commit y empujar despliegue a Render y Vercel
+- `[x]` Empujar y desplegar cambios a Render (vía GitHub) y Vercel (`npx vercel --prod --yes`)
