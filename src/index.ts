@@ -4503,6 +4503,33 @@ async function runDatabaseMigrations() {
       ADD COLUMN IF NOT EXISTS transfer_phone_number TEXT;
     `);
 
+    // Crear tabla outbound_campaigns si no existe
+    await clientInstance.query(`
+      CREATE TABLE IF NOT EXISTS outbound_campaigns (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+        name VARCHAR NOT NULL,
+        status VARCHAR DEFAULT 'pending',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
+    `);
+
+    // Crear tabla outbound_campaign_recipients si no existe
+    await clientInstance.query(`
+      CREATE TABLE IF NOT EXISTS outbound_campaign_recipients (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        campaign_id UUID REFERENCES outbound_campaigns(id) ON DELETE CASCADE,
+        client_name VARCHAR NOT NULL,
+        client_phone VARCHAR NOT NULL,
+        custom_variable VARCHAR,
+        status VARCHAR DEFAULT 'pending',
+        call_id VARCHAR,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
+    `);
+
     // 3. Notificar a PostgREST
     await clientInstance.query("NOTIFY pgrst, 'reload schema';");
   };
