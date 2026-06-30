@@ -18,6 +18,7 @@ const logger = pino({ level: 'silent' });
 const activeSockets = new Map<string, WASocket>();
 const activeQrs = new Map<string, string>();
 const connectionStatus = new Map<string, 'connecting' | 'connected' | 'disconnected' | 'qr'>();
+const connectionRetries = new Map<string, number>();
 
 export const debugLogs: string[] = [];
 export function logDebug(msg: string) {
@@ -204,6 +205,7 @@ export async function initWhatsAppWebSession(tenantId: string): Promise<WASocket
         logDebug(`[WhatsApp Web] ¡Sesión CONECTADA con éxito para tenant: ${tenantId}!`);
         activeQrs.delete(tenantId);
         connectionStatus.set(tenantId, 'connected');
+        connectionRetries.set(tenantId, 0); // Restablecer contador al conectar con éxito
         
         // Guardar estado en base de datos
         await supabase
@@ -224,6 +226,7 @@ export async function initWhatsAppWebSession(tenantId: string): Promise<WASocket
 
         if (!shouldReconnect) {
           logDebug(`[WhatsApp Web] Sesión CERRADA/DESVINCULADA por completo para tenant: ${tenantId}`);
+          connectionRetries.set(tenantId, 0); // Restablecer contador
           
           // Limpiar base de datos
           await supabase
@@ -236,8 +239,20 @@ export async function initWhatsAppWebSession(tenantId: string): Promise<WASocket
             .update({ client_whatsapp_connected: false })
             .eq('id', tenantId);
         } else {
-          logDebug(`[WhatsApp Web] Intentando reconexión automática en 5s para tenant: ${tenantId}...`);
-          setTimeout(() => initWhatsAppWebSession(tenantId), 5000);
+          const retries = connectionRetries.get(tenantId) || 0;
+          if (retries >= 5) {
+            logDebug(`[WhatsApp Web] ⚠️ Límite de reconexiones alcanzado (5) para tenant: ${tenantId}. Deteniendo intentos automáticos para evitar fugas de memoria.`);
+            connectionRetries.set(tenantId, 0); // Restablecer contador
+            
+            await supabase
+              .from('tenants')
+              .update({ client_whatsapp_connected: false })
+              .eq('id', tenantId);
+          } else {
+            connectionRetries.set(tenantId, retries + 1);
+            logDebug(`[WhatsApp Web] Intentando reconexión automática (${retries + 1}/5) en 5s para tenant: ${tenantId}...`);
+            setTimeout(() => initWhatsAppWebSession(tenantId), 5000);
+          }
         }
       }
     });

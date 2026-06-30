@@ -26,6 +26,7 @@ import {
   autoStartActiveSessions,
   debugLogs
 } from './services/whatsapp-web';
+import { startCampaignWorker } from './services/campaign-worker';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -3646,7 +3647,26 @@ app.get('/api/admin/settings', async (req, res): Promise<void> => {
       }
       throw error;
     }
-    res.json({ settings: data || [], migration_required: false });
+
+    // Enmascarar claves privadas
+    const maskedSettings = (data || []).map((s: any) => {
+      const keyUpper = s.key.toUpperCase();
+      const isSensitive = keyUpper.includes('KEY') || 
+                          keyUpper.includes('SECRET') || 
+                          keyUpper.includes('TOKEN') || 
+                          keyUpper.includes('PASSWORD') || 
+                          keyUpper.includes('URL');
+      if (isSensitive && s.value) {
+        if (s.value.length <= 8) {
+          s.value = '••••••••';
+        } else {
+          s.value = s.value.substring(0, 4) + '••••••••' + s.value.substring(s.value.length - 4);
+        }
+      }
+      return s;
+    });
+
+    res.json({ settings: maskedSettings, migration_required: false });
   } catch (err: any) {
     console.error('Error al obtener ajustes:', err);
     res.status(500).json({ error: err.message });
@@ -3768,10 +3788,21 @@ app.post('/api/admin/settings', async (req, res): Promise<void> => {
     return;
   }
   try {
-    const upsertData = settings.map((s: any) => ({
-      key: s.key,
-      value: s.value
-    }));
+    // Obtener valores actuales de base de datos para no pisar las keys enmascaradas
+    const { data: existingData } = await supabase
+      .from('settings')
+      .select('key, value');
+    
+    const existingMap = new Map<string, string>((existingData || []).map(s => [s.key, s.value]));
+
+    const upsertData = settings.map((s: any) => {
+      const hasMask = s.value && s.value.includes('••••');
+      const finalVal = hasMask ? (existingMap.get(s.key) || s.value) : s.value;
+      return {
+        key: s.key,
+        value: finalVal
+      };
+    });
     
     const { error } = await supabase
       .from('settings')
@@ -4744,4 +4775,7 @@ app.listen(PORT, () => {
 
   // Arrancar scheduler de sincronización diaria de fecha en prompts de agentes
   scheduleDailyAgentSync();
+
+  // Arrancar worker de cola persistente para campañas salientes
+  startCampaignWorker();
 });

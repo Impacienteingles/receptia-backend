@@ -185,79 +185,25 @@ router.post('/:campaign_id/launch', async (req: Request, res: Response): Promise
       return;
     }
 
-    // 2. Actualizar estado de la campaña a 'running'
+    // 2. Validar que el tenant tenga agente de Retell activo
+    const tenant = campaign.tenants;
+    const agentId = tenant?.retell_agent_id;
+    if (!agentId) {
+      res.status(400).json({ error: 'El inquilino no tiene un agente de Retell AI activo configurado.' });
+      return;
+    }
+
+    // 3. Actualizar estado de la campaña a 'running'
     await supabase
       .from('outbound_campaigns')
       .update({ status: 'running' })
       .eq('id', campaign_id);
 
-    // 3. Ejecutar las llamadas en segundo plano (Worker secuencial simple con throttle)
-    const tenant = campaign.tenants;
-    const agentId = tenant.retell_agent_id;
-    const fromNumber = tenant.phone_number || process.env.RETELL_FROM_NUMBER || '+34910000000';
-
-    if (!agentId) {
-      throw new Error('El inquilino no tiene un agente de Retell AI activo configurado.');
-    }
-
     res.json({
       success: true,
-      message: `Campaña '${campaign.name}' iniciada. Procesando ${recipients.length} llamadas en segundo plano.`,
+      message: `Campaña '${campaign.name}' iniciada. Procesando ${recipients.length} llamadas en segundo plano de forma persistente.`,
       total_calls: recipients.length
     });
-
-    // Worker asíncrono
-    (async () => {
-      console.log(`[Campaign Worker] Iniciando procesamiento de ${recipients.length} llamadas para campaña ${campaign.name}...`);
-      
-      for (const recipient of recipients) {
-        try {
-          // Actualizar estado del recipiente a 'calling'
-          await supabase
-            .from('outbound_campaign_recipients')
-            .update({ status: 'calling' })
-            .eq('id', recipient.id);
-
-          // Configurar variables dinámicas para el LLM de Retell
-          const dynamicVars = {
-            patient_name: recipient.client_name,
-            custom_note: recipient.custom_variable || 'limpieza dental'
-          };
-
-          // Disparar llamada saliente en Retell
-          const callId = await triggerOutboundCall(
-            fromNumber,
-            recipient.client_phone,
-            agentId,
-            dynamicVars
-          );
-
-          // Guardar el call_id en el destinatario
-          await supabase
-            .from('outbound_campaign_recipients')
-            .update({ call_id: callId })
-            .eq('id', recipient.id);
-
-          // Throttle de 15 segundos entre llamadas para evitar colapsar la línea
-          await new Promise(resolve => setTimeout(resolve, 15000));
-        } catch (callErr: any) {
-          console.error(`[Campaign Worker Error] Fallo al iniciar llamada para ${recipient.client_name}:`, callErr.message);
-          await supabase
-            .from('outbound_campaign_recipients')
-            .update({ status: 'failed' })
-            .eq('id', recipient.id);
-        }
-      }
-
-      // Marcar campaña como completada
-      await supabase
-        .from('outbound_campaigns')
-        .update({ status: 'completed' })
-        .eq('id', campaign_id);
-      
-      console.log(`[Campaign Worker] ✅ Campaña ${campaign.name} completada.`);
-    })().catch(err => console.error('[Campaign Worker Exception]', err.message));
-
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
