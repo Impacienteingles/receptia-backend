@@ -1153,6 +1153,36 @@
     </div>
   </div>
   <script>
+    // Interceptar fetch para añadir automáticamente el PIN del cliente en las peticiones a la API
+    (function() {
+      const originalFetch = window.fetch;
+      window.fetch = function(input, init) {
+        init = init || {};
+        init.headers = init.headers || {};
+        
+        const url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+        if (url.startsWith('/api/')) {
+          const pin = sessionStorage.getItem('current_tenant_pin') || '';
+          if (init.headers instanceof Headers) {
+            init.headers.set('x-client-pin', pin);
+          } else if (Array.isArray(init.headers)) {
+            init.headers.push(['x-client-pin', pin]);
+          } else {
+            init.headers['x-client-pin'] = pin;
+          }
+        }
+        
+        return originalFetch(input, init).then(response => {
+          if ((response.status === 401 || response.status === 403) && url.startsWith('/api/')) {
+            sessionStorage.removeItem('current_tenant_pin');
+            const pinM = document.getElementById('pin-modal');
+            if (pinM) pinM.style.display = 'flex';
+          }
+          return response;
+        });
+      };
+    })();
+
     // Control de la barra de progreso de carga inicial
     (function() {
       const bar = document.getElementById('app-loading-bar');
@@ -7684,6 +7714,7 @@
         }
         
         showToast('PIN actualizado correctamente.', 'success');
+        sessionStorage.setItem('current_tenant_pin', newPin);
         if (currentTenant) {
           currentTenant.admin_pin = newPin;
         }

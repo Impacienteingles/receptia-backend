@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
+import rateLimit from 'express-rate-limit';
 const pdf = require('pdf-parse');
 import webhookRouter from './routes/webhook';
 import prospectingRouter from './routes/prospecting';
@@ -35,11 +36,43 @@ const app = express();
 app.set('trust proxy', true);
 const PORT = process.env.PORT || 3000;
 
+// Rate Limiter para endpoints de autenticación y accesos sensibles
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 15, // Máximo 15 peticiones por ventana desde la misma IP
+  message: { error: 'Demasiadas solicitudes de autenticación desde esta dirección IP. Por favor, inténtelo de nuevo más tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Middlewares
 import path from 'path';
 
-// Middlewares
-app.use(cors());
+// Configurar orígenes CORS permitidos
+const allowedOrigins = [
+  'https://receptia.corandar.com',
+  'https://receptia.app',
+  'https://www.receptia.app',
+  'https://corandar.com'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permitir peticiones sin origen (como curl, apps nativas, etc.)
+    if (!origin) return callback(null, true);
+    // Permitir localhost para desarrollo local
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Bloqueado por CORS: origen no permitido.'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json({
   limit: '15mb',
   verify: (req: any, res, buf) => {
@@ -96,7 +129,12 @@ async function requireAdminPin(req: any, res: any, next: any) {
   }
   const pin = req.headers['x-admin-pin'] || req.query.admin_pin;
   const dbPin = await getSettingVal('ADMIN_PIN');
-  const expectedPin = dbPin || process.env.ADMIN_PIN || '1234';
+  const expectedPin = dbPin || process.env.ADMIN_PIN;
+  if (!expectedPin) {
+    console.error('❌ [Security Error] La variable ADMIN_PIN o el ajuste en BD no están configurados. Deshabilitando acceso de administrador por seguridad.');
+    res.status(500).json({ error: 'Error del servidor: PIN de administrador no configurado.' });
+    return;
+  }
   if (!pin || pin !== expectedPin) {
     res.status(401).json({ error: 'No autorizado: PIN de administrador ausente o incorrecto.' });
     return;
@@ -188,7 +226,7 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
 });
 
 // Nuevo endpoint para autenticación de inquilinos con Email y PIN
-app.post('/api/auth/login', async (req, res): Promise<void> => {
+app.post('/api/auth/login', authLimiter, async (req, res): Promise<void> => {
   const { email, pin } = req.body;
   if (!email || !pin) {
     res.status(400).json({ error: 'El email y el PIN son obligatorios.' });
@@ -232,7 +270,7 @@ app.post('/api/auth/login', async (req, res): Promise<void> => {
 });
 
 // Endpoint para recuperación automática de PIN mediante envío de correo SMTP
-app.post('/api/auth/recover-pin', async (req, res): Promise<void> => {
+app.post('/api/auth/recover-pin', authLimiter, async (req, res): Promise<void> => {
   const { email } = req.body;
   if (!email) {
     res.status(400).json({ error: 'El correo electrónico es obligatorio.' });
@@ -329,6 +367,79 @@ app.post('/api/auth/recover-pin', async (req, res): Promise<void> => {
   }
 });
 
+// Función de utilidad para enviar un correo de bienvenida con las credenciales de acceso (PIN autogenerado)
+async function sendWelcomeEmail(businessName: string, email: string, pin: string) {
+  try {
+    let transporter = null;
+    let mailFrom = '';
+
+    if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 5000
+      });
+      mailFrom = process.env.SMTP_USER;
+    } else if (process.env.GOOGLE_EMAIL && process.env.GOOGLE_PASSWORD) {
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GOOGLE_EMAIL,
+          pass: process.env.GOOGLE_PASSWORD
+        },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 5000
+      });
+      mailFrom = process.env.GOOGLE_EMAIL;
+    }
+
+    if (transporter && mailFrom) {
+      const mailOptions = {
+        from: `"Soporte Receptia" <${mailFrom}>`,
+        to: email.trim().toLowerCase(),
+        subject: `Bienvenido a Receptia - Tu cuenta ha sido creada`,
+        html: `
+          <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <h2 style="color: #7c3aed; margin: 0; font-size: 24px;">Receptia</h2>
+              <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Tus credenciales de acceso</p>
+            </div>
+            <div style="font-size: 16px; color: #1e293b; line-height: 1.6; margin-bottom: 24px;">
+              <p>Hola, <strong>${businessName}</strong>:</p>
+              <p>¡Te damos la bienvenida a Receptia! Tu cuenta ha sido creada con éxito en la plataforma.</p>
+              <p>Para acceder a tu panel de control de cliente y empezar a configurar tu asistente virtual, utiliza las siguientes credenciales:</p>
+              <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin: 24px 0;">
+                <p style="margin: 0 0 8px 0; font-size: 14px; color: #64748b;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 0; font-size: 14px; color: #64748b;"><strong>PIN de acceso:</strong> <span style="font-size: 20px; font-weight: bold; color: #1e293b; letter-spacing: 0.05em;">${pin}</span></p>
+              </div>
+              <p style="font-size: 14px; color: #64748b;">Te sugerimos cambiar tu PIN desde la sección de ajustes de tu panel una vez inicies sesión.</p>
+            </div>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin-bottom: 20px;" />
+            <div style="text-align: center; font-size: 12px; color: #94a3b8;">
+              <p>© 2026 Receptia. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+      console.log(`[Welcome Email] ✅ Correo de bienvenida enviado con éxito a ${email}`);
+    } else {
+      console.warn(`[Welcome Email] ⚠️ No se pudo enviar el correo de bienvenida a ${email} porque la configuración SMTP/Gmail no está disponible.`);
+    }
+  } catch (err: any) {
+    console.error(`[Welcome Email] ❌ Error al enviar correo de bienvenida a ${email}:`, err.message);
+  }
+}
+
 // 2. Registrar o actualizar un inquilino
 app.post('/api/tenants', async (req, res): Promise<void> => {
   const { 
@@ -383,6 +494,14 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
       .select('*')
       .eq('email', email)
       .maybeSingle();
+
+    if (existing) {
+      const clientPin = req.headers['x-client-pin'] || req.body.pin || req.query.pin;
+      if (!clientPin || clientPin !== existing.admin_pin) {
+        res.status(403).json({ error: 'No autorizado: PIN de acceso incorrecto o ausente.' });
+        return;
+      }
+    }
 
     const formattedVoiceIdVal = formatVoiceId(voice_id);
     const tenantData: any = {};
@@ -494,8 +613,10 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
       // Crear un nuevo registro
       let attemptData: any = { ...tenantData };
       if (!attemptData.admin_pin) {
-        attemptData.admin_pin = '0000';
+        // Generar PIN aleatorio de 6 dígitos
+        attemptData.admin_pin = Math.floor(100000 + Math.random() * 900000).toString();
       }
+      const initialPin = attemptData.admin_pin;
       let retries = 10;
       let success = false;
       let lastError: any = null;
@@ -531,6 +652,11 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
         success = true;
       }
       if (!success && lastError) throw lastError;
+
+      // Enviar correo de bienvenida con el PIN autogenerado
+      if (savedTenant) {
+        sendWelcomeEmail(savedTenant.business_name, savedTenant.email, initialPin);
+      }
     }
 
     // Sincronizar en segundo plano con Retell AI para no bloquear la respuesta HTTP
@@ -1348,8 +1474,9 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     } else {
       let attemptData: any = { ...tenantData };
       if (!attemptData.admin_pin) {
-        attemptData.admin_pin = '0000';
+        attemptData.admin_pin = Math.floor(100000 + Math.random() * 900000).toString();
       }
+      const initialPin = attemptData.admin_pin;
       let retries = 10;
       let success = false;
       let lastError: any = null;
@@ -1381,6 +1508,11 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
         success = true;
       }
       if (!success && lastError) throw lastError;
+
+      // Enviar correo de bienvenida con el PIN autogenerado
+      if (tenant) {
+        sendWelcomeEmail(tenant.business_name, tenant.email, initialPin);
+      }
     }
 
     addStep('2. Registro en Supabase completado con UUID: ' + tenant.id);
@@ -4230,10 +4362,10 @@ app.post('/api/client/tenants/:id/sign-contract', async (req, res): Promise<void
 // 11. Cambio de PIN del cliente autónomo
 app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> => {
   const { id } = req.params;
-  const { new_pin } = req.body;
+  const { new_pin, current_pin } = req.body;
 
-  if (!new_pin || new_pin.length !== 4 || isNaN(Number(new_pin))) {
-    res.status(400).json({ error: 'El PIN debe ser un código de 4 dígitos.' });
+  if (!new_pin || new_pin.length < 4 || isNaN(Number(new_pin))) {
+    res.status(400).json({ error: 'El PIN nuevo debe ser un código numérico de al menos 4 dígitos.' });
     return;
   }
 
@@ -4241,12 +4373,19 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
     // Check if client is allowed to change PIN (must have active subscription or signed contract)
     const { data: tenant, error: fetchErr } = await supabase
       .from('tenants')
-      .select('subscription_status, signed_contract_content, stripe_subscription_id')
+      .select('subscription_status, signed_contract_content, stripe_subscription_id, admin_pin')
       .eq('id', id)
       .single();
 
     if (fetchErr || !tenant) {
       res.status(404).json({ error: 'Inquilino no encontrado.' });
+      return;
+    }
+
+    // Validar el PIN actual
+    const clientPin = current_pin || req.headers['x-client-pin'];
+    if (!clientPin || clientPin !== tenant.admin_pin) {
+      res.status(403).json({ error: 'El PIN actual provisto es incorrecto.' });
       return;
     }
 
@@ -4256,7 +4395,7 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
       (tenant.subscription_status && tenant.subscription_status !== 'trial');
 
     if (!hasContractOrSub) {
-      res.status(403).json({ error: 'La posibilidad de cambiar el PIN requiere una suscripción activa o un contrato firmado. Mientras tanto, tu PIN predeterminado es 0000.' });
+      res.status(403).json({ error: 'La posibilidad de cambiar el PIN requiere una suscripción activa o un contrato firmado.' });
       return;
     }
 

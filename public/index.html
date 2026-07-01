@@ -100,11 +100,15 @@ Saltar al contenido principal
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16 md:h-20">
       <!-- Logo Dinámico -->
-      <div id="header-logo-wrapper" class="flex items-center gap-3">
+      <div id="header-logo-wrapper" class="flex flex-col items-stretch justify-center gap-2.5 pt-2 pb-2 w-fit">
         <!-- Logo Receptia oficial con texto estilizado en Outfit Bold -->
-        <a href="/" id="logo-receptia-link" class="flex items-center gap-2 group" aria-label="Inicio Receptia">
+        <a href="/" id="logo-receptia-link" class="flex items-center gap-2 group w-full" aria-label="Inicio Receptia">
           <img src="/logo.png" alt="Receptia" class="h-8 md:h-9 w-auto transition-transform group-hover:scale-105" width="120" height="36">
           <span class="font-outfit font-extrabold text-lg md:text-xl text-white tracking-tight hover:text-brand-400 transition-colors" style="font-family: 'Outfit', sans-serif; font-weight: 800; letter-spacing: -0.02em;">Receptia</span>
+        </a>
+        <!-- Logo Corandar debajo con fondo blanco y esquinas redondeadas (se auto-ajusta al ancho de Receptia y se centra) -->
+        <a href="https://corandar.com" class="corandar-top-logo-container w-full h-8 md:h-9 hover:scale-[1.02] transition-transform duration-200" style="background-color: #ffffff; padding: 0; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15);" target="_blank" rel="noopener">
+          <img src="/corandar-logo.png" alt="Corandar Logo" class="h-5 md:h-6 w-auto">
         </a>
       </div> <!-- Desktop nav --   --> <nav class="hidden lg:flex items-center gap-1" aria-label="Navegación principal"> <a href="#features" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"> Funciones </a><a href="#sectors" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"> Sectores </a><a href="#demo" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"> Escúchala </a><a href="#pricing" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"> Precios </a><a href="#faq" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"> FAQ </a><a href="#download-app" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"> Descargas </a> </nav> <!-- CTA --> <div class="hidden lg:flex items-center gap-3"> <a href="https://receptia.corandar.com/app.html" class="text-sm font-medium text-gray-300 hover:text-white px-4 py-2 transition-colors">
 Iniciar sesión
@@ -368,31 +372,69 @@ RGPD nativo
 Servidores en Europa
 </span> </div> </div> </div> </footer>
   <!-- Botón Volver Arriba -->
-  <button id="scroll-to-top" class="fixed bottom-6 right-6 z-50 flex items-center justify-center w-12 h-12 rounded-full text-white shadow-lg opacity-0 translate-y-10 pointer-events-none transition-all duration-300 ease-in-out border border-white/10 hover:scale-105 active:scale-95" aria-label="Volver arriba" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <button id="scroll-to-top" aria-label="Volver arriba" style="
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    color: #ffffff;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  ">
+    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7 7 7M12 3v18"></path>
     </svg>
   </button>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    (() => {
       const btn = document.getElementById('scroll-to-top');
-      if (btn) {
-        window.addEventListener('scroll', () => {
-          if (window.scrollY > 500) {
-            btn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-            btn.classList.add('opacity-100', 'translate-y-0');
-          } else {
-            btn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
-            btn.classList.remove('opacity-100', 'translate-y-0');
-          }
-        });
-        btn.addEventListener('click', () => {
-          window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-          });
-        });
-      }
-    });
+      if (!btn) return;
+
+      btn.addEventListener('mouseenter', () => {
+        btn.style.transform = 'scale(1.08) translateY(' + (btn.dataset.visible === 'true' ? '0' : '20px') + ')';
+        btn.style.boxShadow = '0 6px 20px rgba(139, 92, 246, 0.6)';
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = btn.dataset.visible === 'true' ? 'translateY(0) scale(1)' : 'translateY(20px) scale(1)';
+        btn.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.4)';
+      });
+
+      const handleScroll = () => {
+        const scrollPos = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+        if (scrollPos > 500) {
+          btn.dataset.visible = 'true';
+          btn.style.opacity = '1';
+          btn.style.visibility = 'visible';
+          btn.style.transform = 'translateY(0)';
+        } else {
+          btn.dataset.visible = 'false';
+          btn.style.opacity = '0';
+          btn.style.visibility = 'hidden';
+          btn.style.transform = 'translateY(20px)';
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      document.addEventListener('scroll', handleScroll, { passive: true });
+
+      btn.addEventListener('click', () => {
+        const target = { top: 0, behavior: 'smooth' };
+        window.scrollTo(target);
+        document.documentElement.scrollTo(target);
+        document.body.scrollTo(target);
+      });
+    })();
   </script>
 </body></html>

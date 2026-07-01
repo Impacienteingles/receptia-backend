@@ -75,12 +75,7 @@ INSERT INTO plans (id, name, price, cycle, features, description) VALUES
 ('premium_mensual', 'Plan Premium Mensual', 249.00, 'monthly', ARRAY['Todo lo del Plan Estándar', 'Conexión SIP Zadarma avanzada', 'Soporte de Voz ElevenLabs de alta calidad', 'Prompt e instrucciones optimizadas', 'Hasta 500 minutos incluidos / mes', 'Minuto adicional a 0.20€/min'], 'Más Popular'),
 ('estandar_anual', 'Plan Estándar Anual', 1290.00, 'annually', ARRAY['1 Agente de Voz IA activo', '1 Número telefónico en Retell AI', 'Integración con Google Calendar', 'Panel de control de cliente', 'Hasta 200 minutos incluidos / mes', 'Minuto adicional a 0.20€/min', 'Ahorro de casi 3 meses de suscripción'], 'Ahorro de casi 3 meses de suscripción'),
 ('premium_anual', 'Plan Premium Anual', 2290.00, 'annually', ARRAY['Todo lo del Plan Premium', 'Soporte VIP priorizado 24/7', 'Ahorro de 2 meses de suscripción', 'Minutos ilimitados controlados'], 'Ahorro de 2 meses de suscripción')
-ON CONFLICT (id) DO UPDATE SET
-  name = EXCLUDED.name,
-  price = EXCLUDED.price,
-  cycle = EXCLUDED.cycle,
-  features = EXCLUDED.features,
-  description = EXCLUDED.description;
+ON CONFLICT (id) DO NOTHING;
 
 -- 5. Tabla de Transacciones Manuales (Contabilidad)
 CREATE TABLE IF NOT EXISTS accounting_transactions (
