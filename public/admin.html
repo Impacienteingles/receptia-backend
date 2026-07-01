@@ -1633,7 +1633,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.20</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.21</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -1857,7 +1857,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.20</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.21</span>
       </div>
     </aside>
 
@@ -1880,7 +1880,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.20</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.21</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2673,7 +2673,7 @@
           </div>
 
           <!-- Formulario Registro y Tabla -->
-          <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1.5rem; align-items: start;">
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
             <!-- CARD REGISTRAR/AÑADIR -->
             <div class="card" style="padding: 1.5rem; border-radius: 12px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border-color);">
               <h3 style="margin: 0 0 1.25rem; font-size: 1rem; color: #fff; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem;" id="virtual-phone-form-title">
@@ -2682,46 +2682,43 @@
               <form id="virtual-phone-form" onsubmit="saveVirtualPhone(event)">
                 <input type="hidden" id="virtual-phone-id" value="">
                 
-                <div style="margin-bottom: 1rem;">
-                  <label for="vp-phone-number" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Número de Teléfono:</label>
-                  <input type="text" id="vp-phone-number" placeholder="ej. +34910080090" required style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
-                </div>
-
-                <div style="margin-bottom: 1rem; border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1rem;">
-                  <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary-hover); display: block; margin-bottom: 0.75rem;">Credenciales SIP (Zadarma)</span>
-                  
-                  <div style="margin-bottom: 0.75rem;">
-                    <label for="vp-sip-username" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">Usuario SIP:</label>
-                    <input type="text" id="vp-sip-username" placeholder="ej. 488592" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.5rem; border-radius: 6px;" class="input">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 1rem; align-items: end; margin-bottom: 1.25rem;">
+                  <div>
+                    <label for="vp-phone-number" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Número de Teléfono:</label>
+                    <input type="text" id="vp-phone-number" placeholder="ej. +34910080090" required style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.55rem; border-radius: 8px;" class="input">
                   </div>
                   
-                  <div style="margin-bottom: 0.75rem;">
-                    <label for="vp-sip-password" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">Contraseña SIP:</label>
+                  <div>
+                    <label for="vp-sip-username" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Usuario SIP:</label>
+                    <input type="text" id="vp-sip-username" placeholder="ej. 488592" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.55rem; border-radius: 8px;" class="input">
+                  </div>
+                  
+                  <div>
+                    <label for="vp-sip-password" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Contraseña SIP:</label>
                     <div style="position: relative; display: flex; align-items: center;">
-                      <input type="password" id="vp-sip-password" placeholder="Contraseña SIP" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.5rem; padding-right: 2.25rem; border-radius: 6px;" class="input">
+                      <input type="password" id="vp-sip-password" placeholder="Contraseña SIP" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.55rem; padding-right: 2.25rem; border-radius: 8px;" class="input">
                       <button type="button" onclick="toggleVpSipPasswordVisibility()" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; padding: 0;">
                         <i data-lucide="eye" id="vp-sip-password-toggle-icon" style="width: 16px; height: 16px;"></i>
                       </button>
                     </div>
                   </div>
                   
-                  <div style="margin-bottom: 0.75rem;">
-                    <label for="vp-sip-server" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">Servidor/Proxy SIP:</label>
-                    <input type="text" id="vp-sip-server" placeholder="ej. sip.zadarma.com" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.5rem; border-radius: 6px;" class="input">
+                  <div>
+                    <label for="vp-sip-server" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Servidor/Proxy SIP:</label>
+                    <input type="text" id="vp-sip-server" placeholder="ej. sip.zadarma.com" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.55rem; border-radius: 8px;" class="input">
                   </div>
-                </div>
 
-                <div style="margin-bottom: 1rem;">
-                  <label for="vp-billing-date" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Próxima Fecha de Baja:</label>
-                  <input type="text" id="vp-billing-date" readonly disabled placeholder="Calculado automáticamente" style="width: 100%; border: 1px solid var(--border-color); background: rgba(50,50,60,0.4); color: var(--text-muted); padding: 0.6rem; border-radius: 8px; cursor: not-allowed;" class="input">
-                  <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">Esta fecha se calcula de forma automática según la demo o suscripción activa del cliente asignado.</p>
-                </div>
+                  <div>
+                    <label for="vp-tenant-id" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Asignar a Cliente (Opcional):</label>
+                    <select id="vp-tenant-id" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.55rem; border-radius: 8px;" class="input">
+                      <option value="">-- Sin asignar (Disponible) --</option>
+                    </select>
+                  </div>
 
-                <div style="margin-bottom: 1.25rem;">
-                  <label for="vp-tenant-id" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Asignar a Cliente (Opcional):</label>
-                  <select id="vp-tenant-id" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
-                    <option value="">-- Sin asignar (Disponible) --</option>
-                  </select>
+                  <div>
+                    <label for="vp-billing-date" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Fecha de Baja:</label>
+                    <input type="text" id="vp-billing-date" readonly disabled placeholder="Calculado automáticamente" style="width: 100%; border: 1px solid var(--border-color); background: rgba(50,50,60,0.4); color: var(--text-muted); padding: 0.55rem; border-radius: 8px; cursor: not-allowed;" class="input">
+                  </div>
                 </div>
 
                 <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
@@ -2745,15 +2742,17 @@
                   <thead>
                     <tr>
                       <th>Número de Teléfono</th>
-                      <th>Estado</th>
+                      <th>Usuario SIP</th>
+                      <th>Contraseña SIP</th>
+                      <th>Servidor SIP</th>
                       <th>Asignado a</th>
-                      <th>Próxima Fecha de Baja</th>
+                      <th>Fecha de Baja</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody id="vp-tbody">
                     <tr>
-                      <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                      <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                         Cargando inventario de números...
                       </td>
                     </tr>
@@ -11424,7 +11423,6 @@
       isContractManuallyEdited = false;
       
       document.getElementById('manual-phone-fields').style.display = 'block';
-      document.getElementById('sip-fields').style.display = 'none';
       document.getElementById('virtual-phone-select-group').style.display = 'none';
       
       formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Nuevo Cliente`;
@@ -13814,26 +13812,53 @@
       document.getElementById('virtual-phones-available').innerText = available;
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No se encontraron números telefónicos.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No se encontraron números telefónicos.</td></tr>`;
         return;
       }
 
       filtered.forEach(vp => {
         const tr = document.createElement('tr');
+        
+        const isAvailable = vp.status === 'available' || !vp.tenant_id;
+        
+        // Apply subtle green background if free/available
+        if (isAvailable) {
+          tr.style.background = 'rgba(16, 185, 129, 0.04)';
+        }
 
-        // Number Column (Badge green if available, red if assigned)
-        const isAvailable = vp.status === 'available';
-        const numColor = isAvailable ? '#34d399' : '#f87171';
-        const numBg = isAvailable ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
-        const numberTd = `<td><span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; font-family: monospace; background: ${numBg}; color: ${numColor};">${vp.phone_number}</span></td>`;
+        // Phone Number Column
+        const numberTd = `<td><span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; font-family: monospace; background: rgba(255,255,255,0.05); color: #fff;">${vp.phone_number}</span></td>`;
 
-        // Status Column
-        const statusText = isAvailable ? 'Disponible' : 'Asignado';
-        const statusTd = `<td><span style="font-size: 0.85rem; font-weight: 500; color: ${numColor};">${statusText}</span></td>`;
+        // SIP Username
+        const sipUserTd = `<td><span style="font-family: monospace; font-size: 0.85rem; color: #fff;">${vp.sip_username || '-'}</span></td>`;
 
-        // Assigned to Column
-        let assignedToText = '<span style="color: var(--text-muted); font-style: italic;">Sin asignar</span>';
-        if (vp.status === 'assigned') {
+        // SIP Password with individual show/hide
+        const sipPasswordTd = `
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.4rem; justify-content: flex-start;">
+              <span id="vp-pwd-mask-${vp.id}" style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">${vp.sip_password ? '••••••••' : '-'}</span>
+              <span id="vp-pwd-text-${vp.id}" style="display: none; font-family: monospace; font-size: 0.85rem; color: #fff;">${vp.sip_password || ''}</span>
+              ${vp.sip_password ? `
+                <button type="button" onclick="toggleVpRowPasswordVisibility('${vp.id}')" style="background: none; border: none; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; padding: 0.2rem; margin: 0;" title="Mostrar/Ocultar contraseña">
+                  <i data-lucide="eye" id="vp-pwd-icon-${vp.id}" style="width: 14px; height: 14px;"></i>
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        `;
+
+        // SIP Server
+        const sipServerTd = `<td><span style="font-family: monospace; font-size: 0.85rem; color: #fff;">${vp.sip_server || '-'}</span></td>`;
+
+        // Assigned to Column (badge green if free, blue if client, yellow if other)
+        let assignedToText = '';
+        if (isAvailable) {
+          assignedToText = `
+            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 600; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(16, 185, 129, 0.25);">
+              <i data-lucide="check-circle" style="width: 13px; height: 13px;"></i> Libre (Disponible)
+            </span>
+          `;
+        } else {
           if (vp.tenants && vp.tenants.business_name) {
             assignedToText = `<span style="color: #60a5fa; font-weight: 500;"><i data-lucide="building-2" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Cliente: ${vp.tenants.business_name}</span>`;
           } else if (vp.prospects && vp.prospects.business_name) {
@@ -13844,7 +13869,7 @@
         }
         const assignedTd = `<td>${assignedToText}</td>`;
 
-        // Next Payment/Renewal Date
+        // Date of Baja Column (renamed to Fecha de Baja)
         let billingText = '<span style="color: var(--text-muted);">-</span>';
         if (vp.next_billing_date) {
           const date = new Date(vp.next_billing_date);
@@ -13867,11 +13892,29 @@
           </td>
         `;
 
-        tr.innerHTML = numberTd + statusTd + assignedTd + billingTd + actionsTd;
+        tr.innerHTML = numberTd + sipUserTd + sipPasswordTd + sipServerTd + assignedTd + billingTd + actionsTd;
         tbody.appendChild(tr);
       });
 
       lucide.createIcons();
+    };
+
+    window.toggleVpRowPasswordVisibility = function(id) {
+      const mask = document.getElementById(`vp-pwd-mask-${id}`);
+      const text = document.getElementById(`vp-pwd-text-${id}`);
+      const icon = document.getElementById(`vp-pwd-icon-${id}`);
+      if (mask && text && icon) {
+        if (text.style.display === 'none') {
+          text.style.display = 'inline';
+          mask.style.display = 'none';
+          icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+          text.style.display = 'none';
+          mask.style.display = 'inline';
+          icon.setAttribute('data-lucide', 'eye');
+        }
+        lucide.createIcons();
+      }
     };
 
     window.saveVirtualPhone = async function(event) {
@@ -14025,8 +14068,6 @@
           select.appendChild(option);
         }
       });
-
-      onClientVirtualPhoneSelectChange();
     }
 
     window.filterClientVirtualPhonesDropdown = function() {
