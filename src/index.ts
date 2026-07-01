@@ -13,6 +13,7 @@ import comercialesRouter from './routes/comerciales';
 import comercialPanelRouter from './routes/comercial-panel';
 import optimizationRouter from './routes/optimization';
 import referralsRouter from './routes/referrals';
+import virtualPhonesRouter from './routes/virtual-phones';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
 import { supabase, getSettingVal, clearSettingsCache } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName } from './services/retell';
@@ -4848,6 +4849,7 @@ app.use('/api/admin/comerciales', comercialesRouter);
 app.use('/api/comercial', comercialPanelRouter);
 app.use('/api/optimization', optimizationRouter);
 app.use('/api/referrals', referralsRouter);
+app.use('/api/admin/virtual-phones', virtualPhonesRouter);
 
 
 
@@ -5074,6 +5076,20 @@ async function runDatabaseMigrations() {
         custom_variable VARCHAR,
         status VARCHAR DEFAULT 'pending',
         call_id VARCHAR,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
+    `);
+
+    // Crear tabla virtual_phones si no existe
+    await clientInstance.query(`
+      CREATE TABLE IF NOT EXISTS virtual_phones (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        phone_number VARCHAR UNIQUE NOT NULL,
+        status VARCHAR DEFAULT 'available' CHECK (status IN ('available', 'assigned')),
+        tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
+        prospect_id UUID REFERENCES prospects(id) ON DELETE SET NULL,
+        next_billing_date TIMESTAMP WITH TIME ZONE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
       );

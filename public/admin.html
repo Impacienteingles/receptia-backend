@@ -1633,7 +1633,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.16</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.18</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -1803,6 +1803,10 @@
           <i data-lucide="users"></i>
           <span>Clientes</span>
         </button>
+        <button class="nav-item" id="btn-tab-virtual-phones" onclick="switchTab('virtual-phones')">
+          <i data-lucide="phone-call"></i>
+          <span>Teléfonos Virtuales</span>
+        </button>
         <button class="nav-item" id="btn-tab-billing" onclick="switchTab('billing')">
           <i data-lucide="credit-card"></i>
           <span>Planes y Tarifas</span>
@@ -1853,7 +1857,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.16</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.18</span>
       </div>
     </aside>
 
@@ -1876,7 +1880,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.16</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.18</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2636,6 +2640,127 @@
               <button class="btn" id="btn-confirm-archive" onclick="confirmArchive()" style="background:linear-gradient(135deg,#dc2626,#7f1d1d);">
                 <i data-lucide="archive" style="width:15px;height:15px;"></i> Archivar Cliente
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: TELÉFONOS VIRTUALES -->
+        <div id="tab-virtual-phones" class="tab-content">
+          <div class="tab-header" style="margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;"><i data-lucide="phone-call" style="color: var(--primary);"></i> Gestión de Teléfonos Virtuales</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Controla el inventario de números telefónicos comprados en Zadarma, su asignación a demos o clientes de pago, y sus vencimientos.</p>
+          </div>
+
+          <!-- Cards de Estadísticas -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+            <div class="card" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem; border-radius: 12px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border-color);">
+              <div style="background: rgba(139, 92, 246, 0.1); color: var(--primary); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="phone" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 0.25rem;">Total Números</span>
+                <strong id="virtual-phones-total" style="color: #fff; font-size: 1.5rem;">0</strong>
+              </div>
+            </div>
+            <div class="card" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem; border-radius: 12px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border-color);">
+              <div style="background: rgba(239, 68, 68, 0.1); color: var(--error); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="phone-off" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 0.25rem;">Asignados (Rojo)</span>
+                <strong id="virtual-phones-assigned" style="color: var(--error); font-size: 1.5rem;">0</strong>
+              </div>
+            </div>
+            <div class="card" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem; border-radius: 12px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border-color);">
+              <div style="background: rgba(16, 185, 129, 0.1); color: var(--success); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="phone-incoming" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 0.25rem;">Disponibles (Verde)</span>
+                <strong id="virtual-phones-available" style="color: var(--success); font-size: 1.5rem;">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario Registro y Tabla -->
+          <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1.5rem; align-items: start;">
+            <!-- CARD REGISTRAR/AÑADIR -->
+            <div class="card" style="padding: 1.5rem; border-radius: 12px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border-color);">
+              <h3 style="margin: 0 0 1.25rem; font-size: 1rem; color: #fff; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem;" id="virtual-phone-form-title">
+                <i data-lucide="plus-circle" style="width: 18px; height: 18px; color: var(--primary);"></i> Registrar Teléfono
+              </h3>
+              <form id="virtual-phone-form" onsubmit="saveVirtualPhone(event)">
+                <input type="hidden" id="virtual-phone-id" value="">
+                
+                <div style="margin-bottom: 1rem;">
+                  <label for="vp-phone-number" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Número de Teléfono:</label>
+                  <input type="text" id="vp-phone-number" placeholder="ej. +34910080090" required style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                  <label for="vp-billing-date" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Próxima Renovación:</label>
+                  <input type="date" id="vp-billing-date" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                  <label for="vp-assignment-type" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Asignar a:</label>
+                  <select id="vp-assignment-type" onchange="onVpAssignmentTypeChange()" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
+                    <option value="none">Ninguno (Disponible / Libre)</option>
+                    <option value="tenant">Cliente Activo</option>
+                    <option value="prospect">Prospecto B2B</option>
+                  </select>
+                </div>
+
+                <div id="vp-tenant-select-container" style="margin-bottom: 1.25rem; display: none;">
+                  <label for="vp-tenant-id" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Seleccionar Cliente:</label>
+                  <select id="vp-tenant-id" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
+                    <option value="">Cargando clientes...</option>
+                  </select>
+                </div>
+
+                <div id="vp-prospect-select-container" style="margin-bottom: 1.25rem; display: none;">
+                  <label for="vp-prospect-id" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Seleccionar Prospecto:</label>
+                  <select id="vp-prospect-id" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
+                    <option value="">Cargando prospectos...</option>
+                  </select>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                  <button type="button" id="btn-cancel-vp-edit" onclick="cancelVpEdit()" class="btn btn-secondary" style="display: none; padding: 0.5rem 1rem;">Cancelar</button>
+                  <button type="submit" id="btn-submit-vp" class="btn" style="padding: 0.5rem 1.25rem;">Registrar</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- TABLA DE INVENTARIO -->
+            <div class="card" style="padding: 1.5rem; border-radius: 12px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 1rem;">
+                <input type="text" id="vp-search" placeholder="Filtrar números..." style="max-width: 320px; flex: 1; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" oninput="renderVirtualPhones()">
+                <button onclick="fetchVirtualPhones()" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.6rem 1rem;">
+                  <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Actualizar
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Número de Teléfono</th>
+                      <th>Estado</th>
+                      <th>Asignado a</th>
+                      <th>Próximo Pago</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vp-tbody">
+                    <tr>
+                      <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        Cargando inventario de números...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -5415,6 +5540,8 @@
       } else if (tabName === 'promotions') {
         fetchReferralsConfig();
         switchPromoSubtab('config');
+      } else if (tabName === 'virtual-phones') {
+        fetchVirtualPhones();
       }
     }
 
@@ -13605,6 +13732,276 @@
         tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #f87171; padding: 1.5rem;">Error al conectar con el servidor para obtener extracto.</td></tr>`;
       }
     }
+
+    let allVirtualPhones = [];
+
+    window.onVpAssignmentTypeChange = function() {
+      const type = document.getElementById('vp-assignment-type').value;
+      const tenantContainer = document.getElementById('vp-tenant-select-container');
+      const prospectContainer = document.getElementById('vp-prospect-select-container');
+
+      if (type === 'tenant') {
+        tenantContainer.style.display = 'block';
+        prospectContainer.style.display = 'none';
+      } else if (type === 'prospect') {
+        tenantContainer.style.display = 'none';
+        prospectContainer.style.display = 'block';
+      } else {
+        tenantContainer.style.display = 'none';
+        prospectContainer.style.display = 'none';
+      }
+    };
+
+    window.fetchVirtualPhones = async function() {
+      try {
+        const res = await fetch('/api/admin/virtual-phones');
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Error al obtener teléfonos virtuales');
+        allVirtualPhones = json.data || [];
+
+        // Cargar selectores
+        await loadVirtualPhonesSelectors();
+
+        renderVirtualPhones();
+      } catch (err) {
+        console.error('Error cargando teléfonos:', err);
+        showCustomAlert(err.message, 'Error', 'error');
+      }
+    };
+
+    async function loadVirtualPhonesSelectors() {
+      // 1. Cargar clientes (tenants)
+      try {
+        const res = await fetch('/api/admin/tenants');
+        if (res.ok) {
+          const tenants = await res.json();
+          const select = document.getElementById('vp-tenant-id');
+          select.innerHTML = '<option value="">-- Seleccionar Cliente --</option>';
+          tenants.forEach(t => {
+            select.innerHTML += `<option value="${t.id}">${t.business_name || t.id}</option>`;
+          });
+        }
+      } catch (err) {
+        console.error('Error al cargar selectores de clientes:', err);
+      }
+
+      // 2. Cargar prospectos
+      try {
+        const res = await fetch('/api/admin/prospects');
+        if (res.ok) {
+          const data = await res.json();
+          const prospects = data.prospects || [];
+          const select = document.getElementById('vp-prospect-id');
+          select.innerHTML = '<option value="">-- Seleccionar Prospecto --</option>';
+          prospects.forEach(p => {
+            select.innerHTML += `<option value="${p.id}">${p.business_name || p.id}</option>`;
+          });
+        }
+      } catch (err) {
+        console.error('Error al cargar selectores de prospectos:', err);
+      }
+    }
+
+    window.renderVirtualPhones = function() {
+      const tbody = document.getElementById('vp-tbody');
+      tbody.innerHTML = '';
+
+      const query = document.getElementById('vp-search').value.toLowerCase().trim();
+      const filtered = allVirtualPhones.filter(vp => {
+        const numMatch = vp.phone_number.toLowerCase().includes(query);
+        const tenantMatch = vp.tenants && vp.tenants.business_name && vp.tenants.business_name.toLowerCase().includes(query);
+        const prospectMatch = vp.prospects && vp.prospects.business_name && vp.prospects.business_name.toLowerCase().includes(query);
+        return numMatch || tenantMatch || prospectMatch;
+      });
+
+      // Update stats
+      const total = allVirtualPhones.length;
+      const assigned = allVirtualPhones.filter(vp => vp.status === 'assigned').length;
+      const available = total - assigned;
+
+      document.getElementById('virtual-phones-total').innerText = total;
+      document.getElementById('virtual-phones-assigned').innerText = assigned;
+      document.getElementById('virtual-phones-available').innerText = available;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No se encontraron números telefónicos.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(vp => {
+        const tr = document.createElement('tr');
+
+        // Number Column (Badge green if available, red if assigned)
+        const isAvailable = vp.status === 'available';
+        const numColor = isAvailable ? '#34d399' : '#f87171';
+        const numBg = isAvailable ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+        const numberTd = `<td><span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; font-family: monospace; background: ${numBg}; color: ${numColor};">${vp.phone_number}</span></td>`;
+
+        // Status Column
+        const statusText = isAvailable ? 'Disponible' : 'Asignado';
+        const statusTd = `<td><span style="font-size: 0.85rem; font-weight: 500; color: ${numColor};">${statusText}</span></td>`;
+
+        // Assigned to Column
+        let assignedToText = '<span style="color: var(--text-muted); font-style: italic;">Sin asignar</span>';
+        if (vp.status === 'assigned') {
+          if (vp.tenants && vp.tenants.business_name) {
+            assignedToText = `<span style="color: #60a5fa; font-weight: 500;"><i data-lucide="building-2" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Cliente: ${vp.tenants.business_name}</span>`;
+          } else if (vp.prospects && vp.prospects.business_name) {
+            assignedToText = `<span style="color: var(--accent); font-weight: 500;"><i data-lucide="target" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Prospecto: ${vp.prospects.business_name}</span>`;
+          } else {
+            assignedToText = `<span style="color: #fbbf24; font-weight: 500;">Asignado (ID: ${vp.tenant_id || vp.prospect_id})</span>`;
+          }
+        }
+        const assignedTd = `<td>${assignedToText}</td>`;
+
+        // Next Payment/Renewal Date
+        let billingText = '<span style="color: var(--text-muted);">-</span>';
+        if (vp.next_billing_date) {
+          const date = new Date(vp.next_billing_date);
+          const formatted = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+          billingText = `<span style="font-size: 0.85rem; color: #fff;">${formatted}</span>`;
+        }
+        const billingTd = `<td>${billingText}</td>`;
+
+        // Actions
+        const actionsTd = `
+          <td>
+            <div style="display: flex; gap: 0.5rem;">
+              <button onclick="editVirtualPhone('${vp.id}')" class="btn-action" title="Editar" style="background: rgba(139, 92, 246, 0.15); color: var(--primary-hover); border: none; padding: 0.35rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
+                <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
+              </button>
+              <button onclick="deleteVirtualPhone('${vp.id}')" class="btn-action" title="Eliminar" style="background: rgba(239, 68, 68, 0.15); color: var(--error); border: none; padding: 0.35rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+              </button>
+            </div>
+          </td>
+        `;
+
+        tr.innerHTML = numberTd + statusTd + assignedTd + billingTd + actionsTd;
+        tbody.appendChild(tr);
+      });
+
+      lucide.createIcons();
+    };
+
+    window.saveVirtualPhone = async function(event) {
+      event.preventDefault();
+      const id = document.getElementById('virtual-phone-id').value;
+      const phone_number = document.getElementById('vp-phone-number').value.trim();
+      const next_billing_date = document.getElementById('vp-billing-date').value;
+      const assignment_type = document.getElementById('vp-assignment-type').value;
+
+      let tenant_id = null;
+      let prospect_id = null;
+
+      if (assignment_type === 'tenant') {
+        tenant_id = document.getElementById('vp-tenant-id').value || null;
+      } else if (assignment_type === 'prospect') {
+        prospect_id = document.getElementById('vp-prospect-id').value || null;
+      }
+
+      const payload = {
+        phone_number,
+        next_billing_date: next_billing_date || null,
+        tenant_id,
+        prospect_id
+      };
+
+      try {
+        let res;
+        if (id) {
+          // Update
+          res = await fetch(`/api/admin/virtual-phones/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          // Create
+          res = await fetch('/api/admin/virtual-phones', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Error al guardar el teléfono virtual');
+
+        showCustomAlert(id ? 'Teléfono virtual actualizado correctamente.' : 'Teléfono virtual registrado correctamente.', 'Éxito', 'success');
+        cancelVpEdit();
+        fetchVirtualPhones();
+      } catch (err) {
+        console.error('Error al guardar teléfono:', err);
+        showCustomAlert(err.message, 'Error', 'error');
+      }
+    };
+
+    window.editVirtualPhone = function(id) {
+      const vp = allVirtualPhones.find(item => item.id === id);
+      if (!vp) return;
+
+      document.getElementById('virtual-phone-id').value = vp.id;
+      document.getElementById('vp-phone-number').value = vp.phone_number;
+      
+      if (vp.next_billing_date) {
+        const date = new Date(vp.next_billing_date);
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        document.getElementById('vp-billing-date').value = `${yyyy}-${mm}-${dd}`;
+      } else {
+        document.getElementById('vp-billing-date').value = '';
+      }
+
+      if (vp.tenant_id) {
+        document.getElementById('vp-assignment-type').value = 'tenant';
+        document.getElementById('vp-tenant-id').value = vp.tenant_id;
+      } else if (vp.prospect_id) {
+        document.getElementById('vp-assignment-type').value = 'prospect';
+        document.getElementById('vp-prospect-id').value = vp.prospect_id;
+      } else {
+        document.getElementById('vp-assignment-type').value = 'none';
+        document.getElementById('vp-tenant-id').value = '';
+        document.getElementById('vp-prospect-id').value = '';
+      }
+
+      onVpAssignmentTypeChange();
+
+      document.getElementById('virtual-phone-form-title').innerHTML = `<i data-lucide="edit-3" style="width:18px;height:18px;color:var(--primary);"></i> Editar Teléfono`;
+      document.getElementById('btn-cancel-vp-edit').style.display = 'inline-block';
+      document.getElementById('btn-submit-vp').innerText = 'Guardar';
+      lucide.createIcons();
+    };
+
+    window.cancelVpEdit = function() {
+      document.getElementById('virtual-phone-id').value = '';
+      document.getElementById('virtual-phone-form').reset();
+      document.getElementById('virtual-phone-form-title').innerHTML = `<i data-lucide="plus-circle" style="width:18px;height:18px;color:var(--primary);"></i> Registrar Teléfono`;
+      document.getElementById('btn-cancel-vp-edit').style.display = 'none';
+      document.getElementById('btn-submit-vp').innerText = 'Registrar';
+      onVpAssignmentTypeChange();
+      lucide.createIcons();
+    };
+
+    window.deleteVirtualPhone = async function(id) {
+      const confirmed = await showCustomConfirm('¿Estás seguro de que deseas eliminar este teléfono virtual del catálogo de control?', 'Eliminar Teléfono', 'warning');
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/admin/virtual-phones/${id}`, {
+          method: 'DELETE'
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Error al eliminar el teléfono virtual');
+
+        showCustomAlert('Teléfono virtual eliminado correctamente.', 'Eliminado', 'success');
+        fetchVirtualPhones();
+      } catch (err) {
+        console.error('Error al eliminar teléfono:', err);
+        showCustomAlert(err.message, 'Error', 'error');
+      }
+    };
   </script>
 
   <!-- Carga del SDK de Retell y lógica de WebRTC -->
