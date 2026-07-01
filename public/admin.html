@@ -5989,7 +5989,7 @@
           ]
         },
         {
-          title: 'Aprovisionamiento de Clientes y Agentes IA',
+          title: 'Aprovisionamiento de Clientes y Agentes IA (Control de Voz)',
           content: [
             'El proceso de aprovisionamiento de un nuevo comercio consiste en rellenar el formulario de registro en la pestaña principal "Crear Cliente":',
             [
@@ -5997,21 +5997,22 @@
               'Especialidades y Catálogo de Precios: Define los servicios y tarifas del comercio para que la IA pueda informar con precisión a los clientes.',
               'Configuración de Horarios: Indica el horario laboral semanal. El agente de voz IA solo agendará citas dentro de estas franjas horarias.',
               'Ajustes de Telefonía: Selecciona si usarás el proveedor nativo de Retell AI (con un número comprado allí) o Zadarma SIP (introduciendo usuario, clave y servidor SIP).',
-              'Selección de Voz: Elige una de las voces disponibles del catálogo (español de España, español latino, inglés, etc.) con preescucha previa.',
+              'Selección de Voz y Bloqueo (Voice Locked): Elige una de las voces disponibles del catálogo con preescucha previa. Al activar la casilla "Bloquear Voz", impides que el cliente altere la voz o su velocidad en su portal, garantizando consistencia de marca.',
               'Chatbot de Reservas: Puedes pre-configurar si el chatbot textual de reservas y el Widget Web están disponibles de forma predeterminada para el inquilino.'
             ],
             'Una vez introducidos los datos, puedes pulsar "Guardar Borrador Local" para no perder la información, o pulsar "Generar Agente IA y Registrar" para crear el agente en Retell AI y enviar las credenciales al cliente.'
           ]
         },
         {
-          title: 'Control del Ciclo de Vida del Cliente',
+          title: 'Control del Ciclo de Vida del Cliente y Bloqueos de Privacidad',
           content: [
             'Desde la pestaña "Clientes", puedes administrar los accesos y el estado de facturación de cada negocio registrado. Los estados disponibles son:',
             [
               'Activo: El agente está contestando llamadas y el cliente tiene acceso total a su portal.',
               'Trial (Prueba): Estado inicial sin coste. Puedes definir una fecha de vencimiento del trial.',
               'Suspendido: El servicio se pausa temporalmente (generalmente por impago). El agente de voz dejará de contestar llamadas y el portal del cliente mostrará una pantalla de bloqueo pidiendo regularizar su saldo.',
-              'Archivado: Cuando un cliente solicita la baja, se le archiva con un motivo (baja voluntaria, fraude, etc.). Sus datos se guardan en el "Historial de Archivados" pero no consume recursos activos.'
+              'Archivado: Cuando un cliente solicita la baja, se le archiva. Sus datos se guardan en el "Historial de Archivados" pero no consume recursos activos.',
+              'Bloqueo de Privacidad (Block Admin Access): Si el cliente activa esta opción en su portal, el super-administrador no podrá visualizar sus citas ni sus llamadas desde el admin panel a menos que el cliente provea su PIN de acceso.'
             ],
             'Desde el historial de archivados puedes "Recuperar" a cualquier cliente en cualquier momento, lo cual lo restablecerá a estado de Trial automáticamente para permitir una nueva contratación.'
           ]
@@ -6219,23 +6220,26 @@
           ]
         },
         {
-          title: '6. Depósitos y Fianzas (Pasarela de Pago Stripe)',
+          title: '6. Depósitos y Fianzas (Pasarela de Pago Stripe) y Límites de Consumo',
           content: [
-            'Para erradicar por completo los no-shows (clientes que reservan y no asisten), puedes requerir un pago previo de fianza o depósito:',
+            'Para erradicar los no-shows (clientes que reservan y no asisten), puedes requerir fianzas y gestionar tus límites de consumo:',
             [
-              'Activación del Depósito: En Ajustes de Negocio, introduce la cantidad económica que se cobrará como garantía (por ejemplo, 10€).',
-              'Flujo en Llamada: Cuando un cliente solicita agendar, la IA le indica que se requiere una fianza y le envía inmediatamente un enlace de Stripe Checkout por SMS o WhatsApp.',
-              'Confirmación por Webhook: La cita se crea inicialmente como [PENDIENTE DE PAGO]. En cuanto el cliente abona la fianza en su móvil, el sistema la marca en verde como Confirmada y le envía la confirmación final.'
+              'Activación del Depósito: En Ajustes de Negocio, introduce la cantidad que se cobrará como garantía (ej: 10€). La IA guiará al cliente y le enviará un enlace de Stripe Checkout por SMS o WhatsApp.',
+              'Confirmación por Webhook: En cuanto el cliente abona el depósito, el sistema marca la cita automáticamente como Confirmada en tu calendario.',
+              'Límites Mensuales de Llamada: El Plan Estándar incluye 200 minutos mensuales y el Plan Premium incluye 500 minutos mensuales.',
+              'Paquetes Adicionales de Minutos: Si consumes tus minutos incluidos, puedes comprar bonos adicionales (+50 min o +100 min) desde el portal de facturación de Stripe para asegurar que la recepcionista IA nunca deje de contestar.'
             ]
           ]
         },
         {
-          title: '7. Omnicanalidad: Chatbot de Reservas y Widget Web',
+          title: '7. Omnicanalidad: Chatbot de WhatsApp y Widget Web (Comparativa de Conectividad)',
           content: [
-            'Receptia unifica la comunicación telefónica y los canales de texto de tu negocio bajo el mismo motor inteligente:',
+            'Receptia unifica la comunicación telefónica y los canales de texto de tu negocio. Para la integración con WhatsApp, puedes elegir entre tres opciones según tus necesidades de estabilidad y coste:',
             [
-              'Widget Web Glassmorphic: Copia el código HTML (iframe) disponible en tu panel e insértalo en tu sitio web. Esto añadirá un chat interactivo con diseño translúcido para agendar citas sin salir de tu web.',
-              'WhatsApp Business QR: Escanea el código QR de vinculación en el panel utilizando la app de WhatsApp de tu móvil. Tu agente virtual (Gemini) responderá automáticamente a cualquier chat de cliente gestionando reservas de forma escrita.'
+              'Opción A: Código QR (WhatsApp Web - No Oficial): Conexión gratuita y rápida escaneando el QR desde tu móvil. Estabilidad media-baja (depende de que tu móvil esté encendido y conectado a internet) y riesgo de suspensión si hay envíos masivos.',
+              'Opción B: WhatsApp Cloud API (Oficial de Meta): Conexión directa a la nube de Meta. Estabilidad excelente (100% garantizada, no requiere móvil encendido) y sin riesgo de suspensión. Coste: primeras 1.000 conversaciones/mes gratis, luego micropago por chat (~0.05€). Configuración técnica media (requiere cuenta en Meta Developers).',
+              'Opción C: Twilio Profesional (Proveedor Oficial): Estabilidad excelente con infraestructura de Twilio en la nube. Coste: cuota fija de Twilio (~1€/mes) más consumo por mensaje oficial. Ideal para grandes empresas que centralizan su telefonía.',
+              'Widget Web Glassmorphic: Chat translúcido interactivo que puedes insertar en tu web mediante un iframe para agendar citas sin salir de tu sitio.'
             ]
           ]
         },

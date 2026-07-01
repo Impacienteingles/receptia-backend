@@ -4379,23 +4379,26 @@
           ]
         },
         {
-          title: '6. Depósitos y Fianzas (Pasarela de Pago Stripe)',
+          title: '6. Depósitos y Fianzas (Pasarela de Pago Stripe) y Límites de Consumo',
           content: [
-            'Para erradicar por completo los no-shows (clientes que reservan y no asisten), puedes requerir un pago previo de fianza o depósito:',
+            'Para erradicar los no-shows (clientes que reservan y no asisten), puedes requerir fianzas y gestionar tus límites de consumo:',
             [
-              'Activación del Depósito: En Ajustes de Negocio, introduce la cantidad económica que se cobrará como garantía (por ejemplo, 10€).',
-              'Flujo en Llamada: Cuando un cliente solicita agendar, la IA le indica que se requiere una fianza y le envía inmediatamente un enlace de Stripe Checkout por SMS o WhatsApp.',
-              'Confirmación por Webhook: La cita se crea inicialmente como [PENDIENTE DE PAGO]. En cuanto el cliente abona la fianza en su móvil, el sistema la marca en verde como Confirmada y le envía la confirmación final.'
+              'Activación del Depósito: En Ajustes de Negocio, introduce la cantidad que se cobrará como garantía (ej: 10€). La IA guiará al cliente y le enviará un enlace de Stripe Checkout por SMS o WhatsApp.',
+              'Confirmación por Webhook: En cuanto el cliente abona el depósito, el sistema marca la cita automáticamente como Confirmada en tu calendario.',
+              'Límites Mensuales de Llamada: El Plan Estándar incluye 200 minutos mensuales y el Plan Premium incluye 500 minutos mensuales.',
+              'Paquetes Adicionales de Minutos: Si consumes tus minutos incluidos, puedes comprar bonos adicionales (+50 min o +100 min) desde el portal de facturación de Stripe para asegurar que la recepcionista IA nunca deje de contestar.'
             ]
           ]
         },
         {
-          title: '7. Omnicanalidad: Chatbot de Reservas y Widget Web',
+          title: '7. Omnicanalidad: Chatbot de WhatsApp y Widget Web (Comparativa de Conectividad)',
           content: [
-            'Receptia unifica la comunicación telefónica y los canales de texto de tu negocio bajo el mismo motor inteligente:',
+            'Receptia unifica la comunicación telefónica y los canales de texto de tu negocio. Para la integración con WhatsApp, puedes elegir entre tres opciones según tus necesidades de estabilidad y coste:',
             [
-              'Widget Web Glassmorphic: Copia el código HTML (iframe) disponible en tu panel e insértalo en tu sitio web. Esto añadirá un chat interactivo con diseño translúcido para agendar citas sin salir de tu web.',
-              'WhatsApp Business QR: Escanea el código QR de vinculación en el panel utilizando la app de WhatsApp de tu móvil. Tu agente virtual (Gemini) responderá automáticamente a cualquier chat de cliente gestionando reservas de forma escrita.'
+              'Opción A: Código QR (WhatsApp Web - No Oficial): Conexión gratuita y rápida escaneando el QR desde tu móvil. Estabilidad media-baja (depende de que tu móvil esté encendido y conectado a internet) y riesgo de suspensión si hay envíos masivos.',
+              'Opción B: WhatsApp Cloud API (Oficial de Meta): Conexión directa a la nube de Meta. Estabilidad excelente (100% garantizada, no requiere móvil encendido) y sin riesgo de suspensión. Coste: primeras 1.000 conversaciones/mes gratis, luego micropago por chat (~0.05€). Configuración técnica media (requiere cuenta en Meta Developers).',
+              'Opción C: Twilio Profesional (Proveedor Oficial): Estabilidad excelente con infraestructura de Twilio en la nube. Coste: cuota fija de Twilio (~1€/mes) más consumo por mensaje oficial. Ideal para grandes empresas que centralizan su telefonía.',
+              'Widget Web Glassmorphic: Chat translúcido interactivo que puedes insertar en tu web mediante un iframe para agendar citas sin salir de tu sitio.'
             ]
           ]
         },
@@ -6213,19 +6216,38 @@
         description: 'Ahorras 240€/año'
       }
     ];
+
     let activePaymentPlan = null;
     let selectedPaymentGateway = 'stripe';
 
+    function logClientBilling(msg) {
+      console.log('[Billing Log]', msg);
+      const logEl = document.getElementById('debug-billing-logs');
+      if (logEl) {
+        logEl.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+        logEl.style.display = 'block';
+      }
+    }
+
     async function fetchPlans() {
+      logClientBilling('fetchPlans() iniciada');
+      // Renderizar de inmediato usando los planes locales (evita pantalla vacía por latencia de red o cold start)
+      renderPricingGrids();
+
       try {
-        const response = await fetch('/api/admin/plans?_t=' + Date.now());
+        logClientBilling('Iniciando fetch(/api/plans)...');
+        const response = await fetch('/api/plans?_t=' + Date.now());
+        logClientBilling(`Respuesta fetch: status=${response.status}`);
         if (!response.ok) throw new Error('Error al cargar las tarifas.');
         const resData = await response.json();
+        logClientBilling(`JSON recibido: plans.length=${resData.plans ? resData.plans.length : 'undefined'}`);
         if (resData.plans && resData.plans.length > 0) {
           allPlans = resData.plans;
+          // Volver a renderizar con las tarifas actualizadas del servidor
+          renderPricingGrids();
         }
-        renderPricingGrids();
       } catch (err) {
+        logClientBilling(`Error en fetchPlans: ${err.message}`);
         console.error('Error al cargar tarifas, usando locales:', err);
         renderPricingGrids();
       }
@@ -6233,6 +6255,7 @@
 
     let selectedClientPlansCycle = 'monthly';
     function setClientPlansCycle(cycle) {
+      logClientBilling(`setClientPlansCycle('${cycle}') llamada`);
       selectedClientPlansCycle = cycle;
       
       const buttons = document.querySelectorAll('.client-billing-btn, .client-modal-billing-btn');
@@ -6251,111 +6274,124 @@
     }
 
     function renderPricingGrids() {
-      const grids = [
-        document.getElementById('pricing-plans-grid'),
-        document.getElementById('modal-pricing-plans-grid')
-      ];
+      logClientBilling(`renderPricingGrids() iniciada (cycle=${selectedClientPlansCycle}, allPlans=${allPlans.length})`);
+      try {
+        const grids = [
+          document.getElementById('pricing-plans-grid'),
+          document.getElementById('modal-pricing-plans-grid')
+        ];
+        logClientBilling(`grids: [${grids[0] ? 'found' : 'null'}, ${grids[1] ? 'found' : 'null'}]`);
 
-      grids.forEach(grid => {
-        if (!grid) return;
-        grid.innerHTML = '';
+        grids.forEach(grid => {
+          if (!grid) return;
+          grid.innerHTML = '';
 
-        const filteredPlans = allPlans.filter(plan => plan.cycle === selectedClientPlansCycle);
+          const filteredPlans = allPlans.filter(plan => plan.cycle === selectedClientPlansCycle);
+          logClientBilling(`Filtered plans for grid: count=${filteredPlans.length}`);
 
-        filteredPlans.forEach(plan => {
-          const card = document.createElement('div');
-          card.style.background = 'rgba(255, 255, 255, 0.02)';
-          card.style.border = '1px solid rgba(255, 255, 255, 0.08)';
-          card.style.borderRadius = '16px';
-          card.style.padding = '1.25rem 1.25rem';
-          card.style.display = 'flex';
-          card.style.flexDirection = 'column';
-          card.style.gap = '0.75rem';
-          card.style.position = 'relative';
-          card.style.textAlign = 'left';
-          
-          let badgeText = '';
-          let badgeBg = 'var(--accent)';
-          let badgeColor = '#fff';
+          if (filteredPlans.length === 0) {
+            grid.innerHTML = `<div style="grid-column: 1 / -1; color: var(--text-muted); font-size: 0.9rem; padding: 2rem; border: 1px dashed var(--border-color); border-radius: 12px; background: rgba(255,255,255,0.01); text-align: center; width: 100%;">No hay planes disponibles para el ciclo seleccionado (locales: ${allPlans.length}).</div>`;
+            return;
+          }
 
-          // Determine nice, short badges that won't wrap and look ugly
-          if (plan.id.includes('estandar')) {
-            badgeText = 'Más Popular';
-            badgeBg = 'var(--primary)';
-          } else if (plan.cycle === 'annually') {
-            if (plan.id.includes('inicial')) {
-              badgeText = 'Ahorras 48€/año';
-            } else if (plan.id.includes('premium')) {
-              badgeText = 'Ahorras 2 meses';
-              badgeBg = 'rgba(16, 185, 129, 0.15)';
-              badgeColor = 'var(--success)';
+          filteredPlans.forEach(plan => {
+            const card = document.createElement('div');
+            card.style.background = 'rgba(255, 255, 255, 0.02)';
+            card.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+            card.style.borderRadius = '16px';
+            card.style.padding = '1.25rem 1.25rem';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
+            card.style.gap = '0.75rem';
+            card.style.position = 'relative';
+            card.style.textAlign = 'left';
+            
+            let badgeText = '';
+            let badgeBg = 'var(--accent)';
+            let badgeColor = '#fff';
+
+            if (plan.id.includes('estandar')) {
+              badgeText = 'Más Popular';
+              badgeBg = 'var(--primary)';
+            } else if (plan.cycle === 'annually') {
+              if (plan.id.includes('inicial')) {
+                badgeText = 'Ahorras 48€/año';
+              } else if (plan.id.includes('premium')) {
+                badgeText = 'Ahorras 2 meses';
+                badgeBg = 'rgba(16, 185, 129, 0.15)';
+                badgeColor = 'var(--success)';
+              }
             }
-          }
 
-          if (badgeText) {
-            card.style.border = plan.id.includes('estandar') ? '2px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.15)';
-            card.style.background = plan.id.includes('estandar') ? 'rgba(139, 92, 246, 0.04)' : 'rgba(255, 255, 255, 0.02)';
-            
-            const badge = document.createElement('div');
-            badge.innerText = badgeText;
-            badge.style.position = 'absolute';
-            badge.style.top = '-10px';
-            badge.style.left = '50%';
-            badge.style.transform = 'translateX(-50%)';
-            badge.style.background = badgeBg;
-            badge.style.color = badgeColor;
-            badge.style.padding = '0.2rem 0.6rem';
-            badge.style.borderRadius = '9999px';
-            badge.style.fontSize = '0.7rem';
-            badge.style.fontWeight = '600';
-            badge.style.whiteSpace = 'nowrap';
-            badge.style.border = plan.id.includes('estandar') ? 'none' : '1px solid rgba(255, 255, 255, 0.15)';
-            card.appendChild(badge);
-          }
+            if (badgeText) {
+              card.style.border = plan.id.includes('estandar') ? '2px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.15)';
+              card.style.background = plan.id.includes('estandar') ? 'rgba(139, 92, 246, 0.04)' : 'rgba(255, 255, 255, 0.02)';
+              
+              const badge = document.createElement('div');
+              badge.innerText = badgeText;
+              badge.style.position = 'absolute';
+              badge.style.top = '-10px';
+              badge.style.left = '50%';
+              badge.style.transform = 'translateX(-50%)';
+              badge.style.background = badgeBg;
+              badge.style.color = badgeColor;
+              badge.style.padding = '0.2rem 0.6rem';
+              badge.style.borderRadius = '9999px';
+              badge.style.fontSize = '0.7rem';
+              badge.style.fontWeight = '600';
+              badge.style.whiteSpace = 'nowrap';
+              badge.style.border = plan.id.includes('estandar') ? 'none' : '1px solid rgba(255, 255, 255, 0.15)';
+              card.appendChild(badge);
+            }
 
-          const cycleLabel = plan.cycle === 'annually' ? 'año' : 'mes';
-          
-          let featuresList = '';
-          if (plan.features) {
-            plan.features.forEach(f => {
-              featuresList += `
-                <li style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted); list-style: none;">
-                  <i data-lucide="check" style="width: 14px; height: 14px; color: var(--success); flex-shrink: 0; margin-top: 0.15rem;"></i>
-                  <span>${f}</span>
-                </li>
-              `;
-            });
-          }
+            let featuresList = '';
+            if (plan.features) {
+              plan.features.forEach(f => {
+                featuresList += `
+                  <li style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted); list-style: none;">
+                    <i data-lucide="check" style="width: 14px; height: 14px; color: var(--success); flex-shrink: 0; margin-top: 0.15rem;"></i>
+                    <span>${f}</span>
+                  </li>
+                `;
+              });
+            }
 
-          card.innerHTML += `
-            <div style="display: flex; flex-direction: column; gap: 0.15rem;">
-              <h3 style="font-size: 1.15rem; color: #fff; font-weight: 700; margin: 0;">${plan.name}</h3>
-              <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; min-height: 2.2rem; margin: 0;">${plan.description || ''}</p>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 0.1rem;">
-              <div style="display: flex; align-items: baseline; gap: 0.2rem;">
-                <span style="font-size: 1.75rem; font-weight: 700; color: #fff; font-family: 'Outfit', sans-serif;">${plan.cycle === 'annually' ? Math.round(plan.price / 12) : plan.price}€</span>
-                <span style="font-size: 0.8rem; color: var(--text-muted);">/ mes</span>
+            card.innerHTML += `
+              <div style="display: flex; flex-direction: column; gap: 0.15rem;">
+                <h3 style="font-size: 1.15rem; color: #fff; font-weight: 700; margin: 0;">${plan.name}</h3>
+                <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; min-height: 2.2rem; margin: 0;">${plan.description || ''}</p>
               </div>
-              ${plan.cycle === 'annually' ? `<span style="font-size: 0.7rem; color: rgba(167, 243, 208, 0.6); margin-top: -0.1rem;">Facturado anualmente (${plan.price}€)</span>` : ''}
-            </div>
+              
+              <div style="display: flex; flex-direction: column; gap: 0.1rem;">
+                <div style="display: flex; align-items: baseline; gap: 0.2rem;">
+                  <span style="font-size: 1.75rem; font-weight: 700; color: #fff; font-family: 'Outfit', sans-serif;">${plan.cycle === 'annually' ? Math.round(plan.price / 12) : plan.price}€</span>
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">/ mes</span>
+                </div>
+                ${plan.cycle === 'annually' ? `<span style="font-size: 0.7rem; color: rgba(167, 243, 208, 0.6); margin-top: -0.1rem;">Facturado anualmente (${plan.price}€)</span>` : ''}
+              </div>
 
-            <ul style="display: flex; flex-direction: column; gap: 0.45rem; margin: 0.4rem 0; flex: 1; padding: 0;">
-              ${featuresList}
-            </ul>
+              <ul style="display: flex; flex-direction: column; gap: 0.45rem; margin: 0.4rem 0; flex: 1; padding: 0;">
+                ${featuresList}
+              </ul>
 
-            <button class="btn" onclick="redirectToStripeCheckout('${plan.id}', this)" style="width: 100%; font-size: 0.85rem; padding: 0.55rem; height: auto;">
-              <i data-lucide="credit-card"></i> Pagar con Stripe
-            </button>
-          `;
+              <button class="btn" onclick="redirectToStripeCheckout('${plan.id}', this)" style="width: 100%; font-size: 0.85rem; padding: 0.55rem; height: auto;">
+                <i data-lucide="credit-card"></i> Pagar con Stripe
+              </button>
+            `;
 
-          grid.appendChild(card);
+            grid.appendChild(card);
+          });
         });
-      });
-      lucide.createIcons();
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Error in renderPricingGrids:', err);
+        const dbg = document.getElementById('debug-billing-error');
+        if (dbg) {
+          dbg.innerText = `Error al renderizar tarifas: ${err.message}\nStack: ${err.stack}`;
+          dbg.style.display = 'block';
+        }
+      }
     }
-
     function openPlansModal() {
       document.getElementById('plans-modal').style.display = 'flex';
       fetchPlans();
@@ -6366,32 +6402,43 @@
     }
 
     async function redirectToStripeCheckout(planId, btn) {
-      if (!planId) return;
+      logClientBilling(`redirectToStripeCheckout('${planId}') llamada`);
+      if (!planId) {
+        logClientBilling('Error: planId no provisto.');
+        return;
+      }
       
       const originalHtml = btn.innerHTML;
       btn.disabled = true;
       btn.innerHTML = '<span class="loading-spinner"></span> Redirigiendo...';
       
+      const activeId = currentTenant ? currentTenant.id : tenantId;
+      logClientBilling(`activeId para checkout: ${activeId}`);
+
       try {
+        logClientBilling('Iniciando fetch(/api/payments/create-checkout-session)...');
         const response = await fetch('/api/payments/create-checkout-session', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            tenant_id: tenantId,
+            tenant_id: activeId,
             plan_id: planId
           })
         });
 
+        logClientBilling(`Respuesta checkout fetch: status=${response.status}`);
         const data = await response.json();
         if (!response.ok) {
           throw new Error(data.error || 'Error al conectar con Stripe.');
         }
 
+        logClientBilling(`URL de Stripe Checkout recibida: ${data.url}`);
         // Redirigir a la pasarela de Stripe directamente
         window.location.href = data.url;
       } catch (err) {
+        logClientBilling(`Error en redirectToStripeCheckout: ${err.message}`);
         showToast(err.message, 'error');
         btn.disabled = false;
         btn.innerHTML = originalHtml;
@@ -9053,6 +9100,8 @@ ${cleanAudio}`;
             <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 600px; margin: 0 auto; line-height: 1.35;" id="expired-overlay-message">
               Tu período de prueba de 7 días ha finalizado o tu suscripción se encuentra pausada/cancelada. Para seguir utilizando el agente de voz IA y gestionando tus citas, selecciona uno de nuestros planes a continuación.
             </p>
+            <div id="debug-billing-error" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--error); padding: 0.75rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem; text-align: left; max-width: 600px; margin-top: 0.5rem; white-space: pre-wrap; width: 100%;"></div>
+            <div id="debug-billing-logs" style="display: none; background: rgba(0, 0, 0, 0.5); border: 1px solid #00ff00; color: #00ff00; padding: 0.75rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem; text-align: left; max-width: 600px; margin-top: 0.5rem; white-space: pre-wrap; width: 100%; max-height: 150px; overflow-y: auto;"></div>
           </div>
           <div class="client-billing-toggle-container" style="display: flex; justify-content: center; margin: 0.25rem 0;">
             <div style="background: rgba(255, 255, 255, 0.05); padding: 0.25rem; border-radius: 9999px; border: 1px solid var(--border-color); display: inline-flex; gap: 0.25rem;">
@@ -9758,6 +9807,9 @@ ${cleanAudio}`;
         showCustomAlert('Error de Conexión', 'Hubo un error al comunicar con el servidor.', 'error');
       }
     }
+
+    // Inicializar renderizado local de tarifas de inmediato para evitar pantallas vacías por latencia de red
+    renderPricingGrids();
   </script>
 
   <!-- MODAL DEL CENTRO DE AYUDA -->
