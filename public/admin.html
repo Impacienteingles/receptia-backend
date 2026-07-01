@@ -6166,158 +6166,120 @@
     function getClientGuideSections() {
       return [
         {
-          title: 'Bienvenido a Receptia',
+          title: '1. Introducción y Acceso a la Plataforma',
           content: [
-            '¡Enhorabuena! Tu asistente de recepción por Inteligencia Artificial de Receptia ya está configurado y respondiendo llamadas de tus clientes de forma ininterrumpida las 24 horas del día, los 7 días de la semana.',
-            'Este portal te permite gestionar todas las citas que agende tu agente de voz IA, escuchar las grabaciones de las llamadas con sus transcripciones, configurar la integración con tu Google Calendar y personalizar la información del negocio para entrenar a tu asistente.'
+            '¡Bienvenido a Receptia! Tu asistente virtual de voz e Inteligencia Artificial ya está activo en tu línea telefónica atendiendo a tus clientes las 24 horas del día, los 7 días de la semana, de forma totalmente ininterrumpida.',
+            'Este panel de cliente es tu centro de control operativo desde el cual podrás supervisar la agenda interactiva de citas, gestionar los registros de llamadas, escuchar grabaciones, revisar transcripciones, sincronizar Google Calendar, configurar el chatbot de WhatsApp y ajustar el comportamiento del agente de voz. Para garantizar la seguridad del panel, se aconseja cambiar el PIN de acceso inicial desde la pestaña de seguridad.'
           ]
         },
         {
-          title: 'Panel de Inicio y Métricas ROI',
+          title: '2. Panel de Inicio y Métricas de ROI (Retorno de Inversión)',
           content: [
-            'En la pantalla principal (Inicio) tendrás acceso a métricas clave en tiempo real:',
+            'La pantalla de Inicio recopila los principales indicadores clave de rendimiento (KPIs) de tu negocio para que visualices el impacto económico directo de Receptia:',
             [
-              'Llamadas Atendidas: Total de clientes atendidos por la IA.',
-              'Citas Agendadas: Citas guardadas con éxito en tu agenda.',
-              'Minutos Consumidos: Consumo de tiempo telefónico acumulado en tu período actual.',
-              'Calculadora de ROI (Retorno de Inversión): Te muestra el ahorro estimado en personal de recepción y las citas rescatadas fuera de horario laboral gracias al asistente de voz 24/7.'
+              'Llamadas Atendidas: Muestreo acumulado de todas las llamadas recibidas y gestionadas con éxito por la recepcionista IA en el período de facturación actual.',
+              'Citas Agendadas: Sumatorio de citas que el asistente virtual ha conseguido insertar directamente en tu calendario de reservas.',
+              'Minutos Consumidos: Barra de progreso en tiempo real con el total de minutos consumidos. Te avisa visualmente si estás cerca de alcanzar el límite mensual contratado, previniéndote de costes adicionales.',
+              'Calculadora de ROI: Algoritmo automatizado que calcula las ganancias estimadas multiplicando las citas agendadas fuera de tu horario laboral tradicional por tu ticket medio de servicio. Resta el coste de tu suscripción mensual para mostrar el beneficio neto rescatado por Receptia.'
             ]
           ]
         },
         {
-          title: 'Agenda de Citas y Google Calendar',
+          title: '3. Agenda de Citas Inteligente y Optimización de Huecos',
           content: [
-            'Desde la pestaña "Agenda de Citas" verás un calendario interactivo con todas tus reservas:',
+            'La agenda interactiva te permite visualizar de forma cómoda y en cuadrícula temporal todas las reservas del comercio:',
             [
-              'Ver Citas: Haz clic en cualquier cita para ver los detalles del cliente (nombre, teléfono, especialidad y notas de la IA).',
-              'Gestión Manual: Puedes agendar nuevas citas manualmente, editarlas o cancelarlas si el cliente te lo solicita.',
-              'Sincronización con Google Calendar: Haz clic en el botón "Reautorizar / Conectar Google Calendar". Esto vinculará la agenda con el calendario de tu teléfono. Cada vez que la IA reserve una cita, esta aparecerá automáticamente en tu calendario personal en segundos.'
+              'Fichas de Citas: Haz clic en cualquier reserva del calendario para ver los datos del cliente (nombre, teléfono, email, especialidad seleccionada) y notas clínicas o de contexto generadas automáticamente por la IA.',
+              'Gestión Manual: Puedes agendar nuevas reservas manualmente, reubicar citas arrastrándolas o cancelarlas si el paciente te lo solicita.',
+              'Optimización de Agenda (Algoritmo de Huecos): Si activas este ajuste, el motor de reservas priorizará ofrecer al cliente slots adyacentes a citas preexistentes o en los extremos del día, aplicando una penalización a huecos aislados que rompan la continuidad de la jornada de trabajo.'
             ]
           ]
         },
         {
-          title: 'Historial de Llamadas IA y Transcripciones',
+          title: '4. Conexión y Sincronización con Google Calendar',
           content: [
-            'En la pestaña "Llamadas IA" verás el registro detallado de cada llamada:',
+            'Vincular Receptia con el calendario de tu teléfono móvil o el de tu clínica es sumamente fácil gracias a la integración oficial con Google Calendar API:',
             [
-              'Grabaciones: Escucha el audio completo de la conversación entre el cliente y la IA.',
-              'Etiqueta de Intención: La IA clasifica automáticamente si la llamada resultó en "Cita Agendada", una "Consulta General", "Queja" (con análisis de sentimiento automático) o si el cliente colgó.',
-              'Transcripción y Resumen: Lee la conversación palabra por palabra y consulta un resumen estructurado con los puntos clave que identificó la IA.'
+              'Conectar Cuenta: Ve a "Agenda de Citas" y haz clic en el botón "Reautorizar / Conectar Google Calendar". Sigue el flujo seguro de inicio de sesión de Google (OAuth 2.0) y otorga permisos de escritura en tus calendarios.',
+              'Sincronización Bidireccional: Cuando la IA reserva una llamada telefónica, el evento se crea instantáneamente en Google Calendar con la información del paciente. Si tú mueves o borras la cita desde tu móvil, Receptia se actualizará en tiempo real.',
+              'Evitación de Conflictos: Antes de ofrecer opciones de hora a un cliente que llama, la IA consulta de manera invisible tu Google Calendar para asegurarse de no generar solapamientos ni citas duplicadas.'
             ]
           ]
         },
         {
-          title: 'Chatbot de Reservas y Widget Web',
+          title: '5. Historial de Llamadas, Transcripciones y Sentimiento',
           content: [
-            'Receptia unifica la atención telefónica y escrita en una sola agenda lógica:',
+            'La pestaña "Llamadas IA" registra de forma transparente y exhaustiva cada interacción telefónica:',
             [
-              'Atención Multicanal: Desde Ajustes puedes habilitar el Chatbot de Reservas por texto.',
-              'Widget Web: Copia el código iframe proporcionado en tu web para añadir un chat elegante (glassmorphic) donde los clientes pueden resolver dudas y agendar citas directamente con la IA.',
-              'WhatsApp Web: Vincula tu WhatsApp escaneando el código QR para que el chatbot de Receptia responda los mensajes de texto entrantes automáticamente.'
+              'Reproductor de Grabaciones: Escucha el archivo de audio de cada llamada entrante y saliente para evaluar el desempeño y la fluidez de la conversación.',
+              'Transcripción Literal: Visualiza la transcripción textual organizada por interlocutores (Llamante vs Recepcionista IA) para leer la conversación palabra por palabra.',
+              'Resumen Estructurado: Extrae automáticamente el motivo principal de la consulta, datos personales, fecha y hora acordadas y acciones requeridas.',
+              'Etiqueta de Intención y Sentimiento: Clasificación inteligente (Cita Agendada, Consulta General, Queja con alerta urgente, o Llamada Perdida) con análisis de satisfacción del cliente.'
             ]
           ]
         },
         {
-          title: 'Fianzas y Pagos Stripe (Seguridad Anti-NoShow)',
+          title: '6. Depósitos y Fianzas (Pasarela de Pago Stripe)',
           content: [
-            'Reduce las incomparecencias y cancelaciones de última hora cobrando un depósito de reserva:',
+            'Para erradicar por completo los no-shows (clientes que reservan y no asisten), puedes requerir un pago previo de fianza o depósito:',
             [
-              'Habilitación: Activa los depósitos en Ajustes de tu Negocio e indica el importe del depósito.',
-              'Envío del Link: Durante la llamada o chat, la IA le enviará al cliente un enlace de Stripe para realizar el pago de forma segura por WhatsApp o SMS.',
-              'Bloqueo Preventivo: La cita se crea en estado pendiente de pago en Google Calendar. En cuanto el cliente complete el pago, se actualizará a confirmada y se le enviará un mensaje final de confirmación.'
+              'Activación del Depósito: En Ajustes de Negocio, introduce la cantidad económica que se cobrará como garantía (por ejemplo, 10€).',
+              'Flujo en Llamada: Cuando un cliente solicita agendar, la IA le indica que se requiere una fianza y le envía inmediatamente un enlace de Stripe Checkout por SMS o WhatsApp.',
+              'Confirmación por Webhook: La cita se crea inicialmente como [PENDIENTE DE PAGO]. En cuanto el cliente abona la fianza en su móvil, el sistema la marca en verde como Confirmada y le envía la confirmación final.'
             ]
           ]
         },
         {
-          title: 'Campañas Outbound de Voz (Reactivación)',
+          title: '7. Omnicanalidad: Chatbot de Reservas y Widget Web',
           content: [
-            'Crea campañas automáticas de llamadas salientes para fidelizar o reactivar clientes:',
+            'Receptia unifica la comunicación telefónica y los canales de texto de tu negocio bajo el mismo motor inteligente:',
             [
-              'Carga de Contactos: Crea una campaña, introduce una lista de clientes con formato "Nombre, Teléfono, Variable Personalizada" y haz clic en lanzar.',
-              'Llamadas Asíncronas: El robot de Receptia llamará de forma automática y secuencial a tus clientes, hablándoles de forma personalizada e invitándoles a agendar una cita que se registrará directamente en tu agenda.'
+              'Widget Web Glassmorphic: Copia el código HTML (iframe) disponible en tu panel e insértalo en tu sitio web. Esto añadirá un chat interactivo con diseño translúcido para agendar citas sin salir de tu web.',
+              'WhatsApp Business QR: Escanea el código QR de vinculación en el panel utilizando la app de WhatsApp de tu móvil. Tu agente virtual (Gemini) responderá automáticamente a cualquier chat de cliente gestionando reservas de forma escrita.'
             ]
           ]
         },
         {
-          title: 'Integración PMS (Sincronización Local)',
+          title: '8. Campañas Salientes (Outbound) de Voz',
           content: [
-            'Conecta tu software local de clínica o estética (Gesden, Dentrix) con Receptia:',
+            'Reactivar clientes inactivos o recordar citas anuales es posible de forma automática:',
             [
-              'Token PMS: Genera un token único y seguro en la pestaña Ajustes.',
-              'Agente de Escritorio: Descarga el script de sincronización local en tu ordenador. Éste leerá periódicamente tu agenda y la sincronizará bidireccionalmente con la nube de Receptia en tiempo real.'
+              'Configuración de Campaña: Crea una campaña en el panel, introduce un listado de clientes (Nombre y Teléfono) e inyecta una variable descriptiva (ej: "hace 6 meses que no viene a su limpieza").',
+              'Llamadas Secuenciales: El servidor de Receptia llamará secuencialmente a cada cliente, hablándoles de forma amigable e invitándolos a agendar. Las citas exitosas se añadirán solas a tu agenda de reservas.'
             ]
           ]
         },
         {
-          title: 'Agenda Inteligente y Compactador de Huecos',
+          title: '9. Integración con Software Local (Gesden / Dentrix PMS)',
           content: [
-            'Activa la Optimización de Agenda en la pestaña Ajustes para compactar tus horarios laborales:',
+            'Si tu clínica o estética trabaja con un software de escritorio sin conexión directa a la nube, puedes sincronizarlo bidireccionalmente:',
             [
-              'Agrupación Eficiente: El sistema de agendamiento priorizará y ofrecerá primero al paciente las ranuras que estén pegadas a citas ya agendadas o en los extremos del día, evitando dejar huecos sueltos e inservibles de 15/30 minutos en tu agenda diaria.'
+              'Token de Integración PMS: Genera tu clave secreta de sincronización local en el apartado de ajustes.',
+              'Agente Sincronizador: Descarga el script local "pms-agent-sync.js". Al ejecutarlo en tu servidor local de base de datos, leerá periódicamente tu agenda y la sincronizará en la nube con Receptia cada 30 segundos.'
             ]
           ]
         },
         {
-          title: 'Gestión de Suscripción y Contrato Digital',
+          title: '10. Explicación Detallada de los Ajustes de Negocio',
           content: [
-            'En la pestaña "Mi Suscripción" puedes controlar la relación comercial de tu negocio con la plataforma:',
+            'Para personalizar y entrenar a tu asistente virtual de Inteligencia Artificial, debes configurar los siguientes ajustes:',
             [
-              'Plan y Estado: Monitorea si tu estado está en Trial, Activo o Suspendido, así como la fecha de renovación o expiración.',
-              'Control de Consumo: Muestra la barra de minutos de llamada consumidos en el período actual y te previene sobre posibles excesos de minutos que se tarificarán según la tarifa adicional contratada.',
-              'Firma Digital de Contrato: Lee las condiciones legales de tu plan y firma digitalmente el contrato introduciendo tu nombre de representante legal y completando la firma manuscrita en pantalla para generar el PDF contractual oficial.',
-              'Pasarela Stripe: Accede mediante un enlace directo al Portal de Clientes de Stripe para actualizar tus tarjetas de crédito, descargar facturas anteriores y cambiar tu plan.'
+              'Especialidades y Catálogo: Define cada servicio que ofreces, su duración exacta (ej: 30 minutos) y su coste. La IA utilizará estos datos para calcular la duración de los huecos y cobrar depósitos.',
+              'Instrucciones de Comportamiento: Escribe pautas detalladas del tono o reglas del negocio (ej: "No des citas de ortodoncia los viernes por la tarde", "Sé extremadamente cortés", "Si preguntan por el Dr. Romero, explica que está de baja").',
+              'Personalidad y Voz (Cartesia): Ajusta los deslizadores de personalidad para cambiar la actitud (de muy formal a muy cercano), el enfoque (empático o eficiente), la velocidad del habla (0.8x a 1.2x) y la temperatura de variabilidad de voz.',
+              'Modo Vacaciones (Vacation Mode): Activa las fechas en las que el negocio estará cerrado. La IA responderá de forma comprensiva informando del periodo vacacional y guiará al cliente a agendar en fechas posteriores a tu regreso.',
+              'WhatsApp Text-Back: Configura un mensaje personalizado que se enviará automáticamente por WhatsApp a cualquier cliente que realice una llamada perdida, ofreciéndole reservar al instante por chat.'
             ]
           ]
         },
         {
-          title: 'Ajustes del Negocio y Base de Conocimientos',
+          title: '11. Copias de Seguridad y Seguridad del Acceso',
           content: [
-            'Para refinar el comportamiento de tu agente de voz IA, puedes rellenar las secciones en la pestaña de ajustes de tu negocio:',
+            'Mantén a salvo los datos de tus citas y la configuración de tu asistente virtual:',
             [
-              'Especialidades y Catálogo: Indica tus servicios y precios actualizados.',
-              'Instrucciones Personalizadas: Puedes dar pautas específicas a la IA, por ejemplo: "Sé muy amable", "Si preguntan por el Dr. Pérez, di que solo atiende los jueves", o "Recomienda nuestro tratamiento estrella de hidratación".',
-              'Controles de Personalidad de la IA: Personaliza la actitud (de muy formal a muy cercano), el enfoque (de empático a eficiente) y la velocidad del habla de tu agente virtual para que represente de forma óptima a tu marca.',
-              'Recuperación de Llamadas Perdidas (Text-Back): Activa el envío automático de un mensaje de WhatsApp cuando tu negocio pierda una llamada telefónica, ofreciéndole al cliente agendar su cita de forma inmediata por chat.',
-              'Base de Conocimientos: Escribe respuestas a preguntas frecuentes sobre parking, formas de pago, cancelaciones, etc. La IA estudiará esta información y responderá con precisión.'
+              'PIN de Acceso: Modifica el PIN de acceso del negocio periódicamente para evitar intrusiones no deseadas.',
+              'Copia de Seguridad JSON: Descarga un respaldo completo en formato JSON con todo tu historial de citas, configuración de especialidades e historial de llamadas. Puedes volver a importar este archivo en cualquier momento para restaurar la configuración completa.'
             ]
-          ]
-        },
-        {
-          title: 'Plan de Recomendados y Descuentos',
-          content: [
-            'Obtén recompensas e importantes descuentos recurrentes en tu suscripción recomendando Receptia a otros negocios:',
-            [
-              'Formulario de Recomendación: Introduce los datos del negocio apadrinado (nombre, contacto, email y teléfono) en la pestaña correspondiente.',
-              'Comisiones Mensuales: Cuando un negocio recomendado se suscriba a un plan de pago, recibirás un descuento mensual automático en tu factura equivalente al 10% del valor del plan del recomendado.',
-              'Historial de Descuentos: Consulta el listado de tus negocios recomendados y el desglose de todos los importes descontados de tus últimas facturas.'
-            ]
-          ]
-        },
-        {
-          title: 'Prueba de Voz en Tiempo Real (WebRTC Sandbox)',
-          content: [
-            'Testea el agente conversacional directamente desde tu navegador sin consumir minutos de tu línea de teléfono:',
-            [
-              'Llamada en Vivo: En Ajustes de Negocio, haz clic en "Iniciar Llamada de Prueba" y conversa con el agente mediante el micrófono de tu ordenador.',
-              'Ajuste en Caliente: Modifica las instrucciones, catálogo o base de conocimiento y vuelve a iniciar la llamada para escuchar los cambios aplicados en segundos.'
-            ]
-          ]
-        },
-        {
-          title: 'Configuración Avanzada de WhatsApp (QR, Twilio, Cloud API)',
-          content: [
-            'Personaliza el remitente y canal de mensajería utilizado por la IA para interactuar por chat:',
-            [
-              'WhatsApp QR (Gratuito): Escanea el código QR en pantalla con la aplicación de WhatsApp de tu móvil para vincular tu propio número.',
-              'Twilio / Cloud API (Profesional): Si requieres mayor estabilidad y volumen, puedes configurar tus credenciales de Twilio o la API oficial de WhatsApp Cloud de Meta directamente en los ajustes.'
-            ]
-          ]
-        },
-        {
-          title: 'Seguridad y Copias de Seguridad',
-          content: [
-            'En tu panel puedes cambiar tu contraseña de acceso de forma segura en cualquier momento.',
-            'Además, puedes exportar una copia de seguridad local en formato JSON con todo tu historial de citas, configuración de negocio y registros de llamadas para resguardar tu información.'
           ]
         }
       ];
@@ -6573,6 +6535,10 @@
         title = 'Guía de Desvío Telefónico';
         sections = getForwardingGuideSections();
         downloadFn = downloadForwardingGuidePDF;
+      } else if (type === 'comercial') {
+        title = 'Guía de Crecimiento & Playbook Comercial';
+        sections = getComercialGuideSections();
+        downloadFn = downloadComercialGuidePDF;
       } else if (type === 'audit') {
         title = 'Auditoría Completa';
         sections = getAuditGuideSections();
@@ -6624,6 +6590,143 @@
         'Guía Práctica para el Control de Citas, Historial de Llamadas IA e Integraciones',
         clientSections,
         'Guia_Usuario_Receptia.pdf'
+      );
+    }
+
+    function getComercialGuideSections() {
+      return [
+        {
+          title: 'Propuesta de Valor vs. Alternativas del Mercado',
+          content: [
+            'Para evaluar la viabilidad de Receptia, es crucial comparar su coste y rendimiento frente a las opciones tradicionales de recepción telefónica de una PYME (clínicas, centros de estética, notarías, consultorías, etc.):',
+            [
+              'Recepcionista Humana: Coste de 1.800€ - 2.500€/mes (salario y seguridad social). Atiende 8 horas/día de lunes a viernes, gestionando solo 1 llamada a la vez (cuello de botella) y con sensibilidad a picos de estrés o descuidos.',
+              'Call Center Externo: Coste de 350€ - 600€/mes. Ofrece mayor cobertura de horario, pero carece de conocimiento profundo y local del negocio, y genera costes variables altos o tiempos de espera prolongados.',
+              'Receptia (IA): Coste fijo de 149€/mes (Plan Estándar). Proporciona atención ininterrumpida las 24 horas del día, los 365 días del año. Gestiona llamadas concurrentes ilimitadas sin tiempos de espera, con un comportamiento 100% consistente y un ROI inmediato al salvar 2-3 citas al mes.'
+            ]
+          ]
+        },
+        {
+          title: 'Estructura de Costes de Receptia y Unit Economics',
+          content: [
+            'Receptia opera bajo una estructura de costes variables muy baja gracias a la infraestructura en la nube y APIs de IA de voz, lo que genera alta rentabilidad:',
+            [
+              'Procesamiento de Voz y LLM (Retell AI): ~$0.08 por minuto de llamada (incluye transcripción, motor de voz y hosting del modelo). Equivale a unos 16.00€ para el Plan Estándar de 200 minutos.',
+              'Proveedor de Telefonía / SIP: ~0.02€ por minuto de llamada más una cuota fija de 3.00€ al mes por número. Equivale a unos 7.00€ para 200 minutos.',
+              'Base de Datos y Servidor (Supabase + Render): ~0.50€ por cliente.',
+              'Pasarela de Pago (Stripe): 1.5% + 0.25€ = ~2.50€.',
+              'Márgenes de Beneficio: Coste total de servicio de ~26.00€/mes. Esto resulta en un Margen de Contribución de 123.00€/mes (82.5% de beneficio neto) en el Plan Estándar Mensual, y de 81.50€/mes (75.8% neto) en el Plan Anual. Los minutos adicionales tienen un margen neto del 71% (0.25€ de beneficio por minuto extra).'
+            ]
+          ]
+        },
+        {
+          title: 'Punto de Equilibrio (Break-Even)',
+          content: [
+            'Fórmula de amortización directa e infraestructura del SaaS:',
+            'Asumiendo unos costes fijos mensuales del sistema (servidores Render, Supabase Pro, licencias de desarrollo, etc.) de 150€/mes, el punto de equilibrio se calcula como: Clientes necesarios = Costes Fijos / Margen por Cliente = 150€ / 123€ = ~2 clientes activos.',
+            'Con solo 2 clientes activos en el plan más económico, el SaaS de Receptia es completamente autosuficiente y cubre todos sus costes de infraestructura técnica. A partir de ahí, todo el ingreso es beneficio neto.'
+          ]
+        },
+        {
+          title: 'Funnel de Ventas Híbrido y Adquisición',
+          content: [
+            'La estrategia de comercialización combina la captación dirigida del administrador y la venta de alto impacto del comercial:',
+            [
+              'Scrapeo y Filtrado: El Administrador recopila y limpia leads cualificados en sectores clave.',
+              'Asignación y Prospección: El comercial recibe los leads en su panel, investiga cada negocio y realiza una pre-configuración personalizada del agente de voz.',
+              'Primer Contacto: Llamada telefónica corta de calificación usando el hook de la cita perdida.',
+              'Llamada de Demo en Vivo: El cliente interactúa con la IA en tiempo real y experimenta el efecto WOW.',
+              'Cierre de Venta: Conversión hacia el Plan Anual para aprovechar el setup gratis, firma digital y pago instantáneo.'
+            ]
+          ]
+        },
+        {
+          title: 'El Rol del Administrador: Generación y Distribución de Leads',
+          content: [
+            'El administrador tiene el control total de la base de datos de captación. Sus pasos semanales son:',
+            [
+              'Identificar Sectores Clave: Centrarse en negocios que dependen de citas y tienen alta pérdida de llamadas por estar atendiendo clientes (Clínicas Dentales, Fisioterapeutas, Psicólogos, Salones de Belleza, Peluquerías, Talleres Mecánicos, Gestorías, etc.).',
+              'Generación de Bases de Datos: Recopilar datos (Nombre, Teléfono, Web, Email) mediante scraping de Google Maps y directorios sectoriales.',
+              'Carga y Distribución: Cargar los prospectos en la base de datos y asignarlos equilibradamente entre los comerciales disponibles.'
+            ]
+          ]
+        },
+        {
+          title: 'El Rol del Agente Comercial: La Venta del "Efecto WOW"',
+          content: [
+            'Los comerciales no venden software; venden tiempo, tranquilidad y dinero recuperado a través de dos ganchos clave:',
+            [
+              'Hook de la Cita Perdida: Concienciar al dueño del negocio sobre cuántas llamadas se pierden al día y la pérdida de ingresos mensual que esto supone.',
+              'La Demo Personalizada: Crear un agente de pruebas con el nombre del negocio del cliente antes de llamarle, de forma que el cliente pueda hablar con su propia recepcionista virtual en el primer contacto.',
+              'Venta de Soluciones: Demostrar cómo Receptia automatiza el calendario, evitando no-shows con Stripe y contestando llamadas 24/7 de forma 100% natural.'
+            ]
+          ]
+        },
+        {
+          title: 'Guión de Primer Contacto (Cold Calling Script)',
+          content: [
+            'El objetivo de esta llamada es captar la atención del dueño en menos de 90 segundos y agendar una demo en vivo:',
+            'Comercial: "Hola, buenas tardes, ¿se encuentra el responsable del centro o el encargado de las citas? Hola [Nombre], mi nombre es [Comercial] de Receptia. Le llamo muy brevemente. Hemos estado analizando los centros de su sector en [Ciudad] y hemos notado que durante las horas pico de atención o cuando estáis con pacientes, muchas llamadas telefónicas de nuevos clientes se quedan sin responder. ¿Es esto correcto en vuestro caso?"',
+            'Cliente: "Bueno, sí, a veces estamos ocupados y no podemos coger el teléfono..."',
+            'Comercial: "Exacto. Cada llamada no respondida es una cita perdida y dinero que se va a la competencia. En Receptia ayudamos a negocios como el tuyo instalando una Recepcionista de Voz con Inteligencia Artificial que responde al instante con tu misma voz, responde dudas frecuentes de tus tratamientos y agenda la cita directamente en tu calendario de Google en tiempo real. Todo de forma natural."',
+            'Cliente: "¿Pero eso es un contestador?"',
+            'Comercial: "Para nada. Es una conversación fluida y natural, casi idéntica a la de una recepcionista humana. De hecho, para que veas que no es teoría, me gustaría hacer una prueba contigo ahora mismo. Te voy a dar un número de teléfono de pruebas para que le llames durante 1 minuto. ¿Tienes 1 minuto para ver cómo responde con el nombre de tu propio negocio?"'
+          ]
+        },
+        {
+          title: 'Procedimiento de Demostración en Vivo (Live Demo)',
+          content: [
+            'La demo es el punto donde se cierra la venta. El cliente debe escuchar la IA funcionar en vivo:',
+            [
+              'Llamada de Prueba: Pide al cliente que llame al número configurado para su demo. Guíale para que intente agendar un servicio específico o haga una pregunta difícil sobre su negocio.',
+              'Compartir Pantalla (Videollamada): Si es por Zoom o Meet, comparte la pantalla de Google Calendar vacía. Pídele al cliente que llame con el altavoz encendido y observa su cara de sorpresa al ver cómo la reserva aparece en el calendario en tiempo real.',
+              'Silencio de Impacto: Mantente en silencio mientras el cliente habla con la IA. Deja que experimente la naturalidad y rapidez del agente virtual sin interrupciones.'
+            ]
+          ]
+        },
+        {
+          title: 'Preguntas de Calificación Clave (Pain Points)',
+          content: [
+            'Utiliza estas preguntas estratégicas para cuantificar el problema del cliente y adaptar el cierre:',
+            [
+              '¿Cuántas llamadas calculas que se quedan sin responder al día porque estáis atendiendo a otros clientes o fuera de horario comercial?',
+              'Con un ticket medio de 50€, perder 3 llamadas al día son 150€ diarios en pérdidas potenciales. ¿Cuánto dinero crees que está dejando de ingresar tu negocio cada mes por este motivo?',
+              '¿Qué agenda o software utilizáis actualmente para gestionar vuestras citas?',
+              '¿Quién se encarga actualmente de devolver las llamadas perdidas y cuánto tiempo le toma al final del día?'
+            ]
+          ]
+        },
+        {
+          title: 'Manejo de Objeciones Comunes',
+          content: [
+            'Estrategias de respuesta ante las reticencias del cliente:',
+            [
+              'Objeción A: "Suena muy robótico, prefiero el trato humano." -> Respuesta: "Le entiendo perfectamente. El trato humano es insustituible para dar el servicio. Pero la realidad es que cuando el teléfono suena y nadie lo coge, el trato humano para ese cliente es un tono de llamada vacío. Receptia no sustituye a tu personal, sino que actúa como una red de seguridad: si en 3 tonos nadie responde, la IA entra para que ese cliente no se vaya a otro centro. Además, utilizamos voces premium hiperrealistas."',
+              'Objeción B: "¿Y si la IA se equivoca o le reservan a una hora ocupada?" -> Respuesta: "El sistema es 100% parametrizable. La IA solo puede dar citas en los huecos exactos que tú dejes disponibles en tu calendario de Google. Si un cliente pide una hora ocupada, la IA buscará de inmediato alternativas libres dentro de tu horario. Además, puedes indicarle reglas estrictas (por ejemplo: dejar 15 minutos entre citas)."',
+              'Objeción C: "Es muy caro." -> Respuesta: "El Plan Estándar cuesta 149€ al mes. Si un solo cliente nuevo agenda una cita que de otro modo habrías perdido por no poder atender el teléfono, esa cita ya paga la mensualidad de todo el mes. El resto es beneficio neto."'
+            ]
+          ]
+        },
+        {
+          title: 'Estrategia de Cierre y Enfoque en el Plan Anual',
+          content: [
+            'El plan anual maximiza el compromiso y proporciona un flujo de caja inmediato:',
+            [
+              'Gancho Llave en Mano: Ofrece la suscripción anual con un ahorro de casi 3 meses de servicio (1.290€ en lugar de 1.788€, un ahorro directo de 500€). Además, garantiza que nuestro equipo técnico configurará todo el sistema llave en mano (especialidades, instrucciones de comportamiento de la IA y conexión a Google Calendar) de forma gratuita.',
+              'Firma y Alta Digital: Una vez que el cliente acepta, créale la cuenta en el panel, guíale para que inicie sesión y firme digitalmente el contrato desde la sección "Mi Suscripción", e indícale cómo añadir la tarjeta de crédito en Stripe Checkout.'
+            ]
+          ]
+        }
+      ];
+    }
+
+    function downloadComercialGuidePDF() {
+      const sections = getComercialGuideSections();
+      generateGuidePDF(
+        'RECEPTIA - Playbook Comercial y Guía de Crecimiento',
+        'Manual Operativo de Ventas, Estudio de Viabilidad Financiera y Manejo de Objeciones',
+        sections,
+        'Playbook_Comercial_Receptia.pdf'
       );
     }
 
@@ -13276,6 +13379,18 @@
           <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
             <button class="btn btn-secondary" onclick="openGuideViewerFromHelp('forwarding')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">Leer</button>
             <button class="btn" onclick="downloadForwardingGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
+          </div>
+        </div>
+
+        <!-- Card Guía 5: Comercial -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="text-align: left;">
+            <strong style="color: #fff; display: block; font-size: 0.95rem; margin-bottom: 0.25rem;">Guía de Crecimiento & Playbook Comercial</strong>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Estudio de viabilidad estratégica, guiones prácticos, objeciones y hoja de ruta.</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+            <button class="btn btn-secondary" onclick="openGuideViewerFromHelp('comercial')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">Leer</button>
+            <button class="btn" onclick="downloadComercialGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer;"><i data-lucide="download" style="width: 14px; height: 14px;"></i></button>
           </div>
         </div>
 

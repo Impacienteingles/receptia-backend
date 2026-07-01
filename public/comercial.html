@@ -16,6 +16,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   <style>
     :root {
@@ -536,7 +538,7 @@
           <img src="/receptia_logo.png" alt="Receptia Logo" style="width: 40px; height: 40px; border-radius: 8px;">
           <h2 style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif;">Receptia B2B</h2>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.0.9</span></p>
+        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.1.5</span></p>
       </div>
 
       <form id="login-form" novalidate onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
@@ -571,7 +573,7 @@
       <div class="logo-container">
         <img src="/receptia_logo.png" alt="Receptia Logo">
         <span>Receptia Comercial</span>
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.1.4</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.1.5</span>
       </div>
 
       <div class="user-info">
@@ -736,12 +738,17 @@
             <div style="display: flex; flex-direction: column; gap: 1.25rem;">
               
               <!-- Presentación -->
-              <div style="background: rgba(124, 58, 237, 0.05); border: 1px dashed var(--primary-light); border-radius: 12px; padding: 1.2rem; line-height: 1.5; font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.75rem;">
-                <span style="font-size: 1.5rem;">🎯</span> 
-                <div>
-                  <strong style="color: #fff; display: block; margin-bottom: 0.15rem;">Guía de Crecimiento & Playbook Comercial de Receptia</strong>
-                  Estudio de viabilidad estratégica, guiones prácticos de llamadas, manejo de objeciones y hoja de ruta de cierre.
+              <div style="background: rgba(124, 58, 237, 0.05); border: 1px dashed var(--primary-light); border-radius: 12px; padding: 1.2rem; line-height: 1.5; font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <span style="font-size: 1.5rem;">🎯</span> 
+                  <div>
+                    <strong style="color: #fff; display: block; margin-bottom: 0.15rem;">Guía de Crecimiento & Playbook Comercial de Receptia</strong>
+                    Estudio de viabilidad estratégica, guiones prácticos de llamadas, manejo de objeciones y hoja de ruta de cierre.
+                  </div>
                 </div>
+                <button onclick="downloadComercialGuidePDF()" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; height: 32px; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; background: var(--primary); border: none; color: #fff; border-radius: 6px; font-weight: 500; transition: background 0.2s;" onmouseover="this.style.background='var(--primary-hover)'" onmouseout="this.style.background='var(--primary)'">
+                  <i data-lucide="download" style="width: 14px; height: 14px;"></i> Descargar PDF
+                </button>
               </div>
 
               <!-- Subpestañas Internas (Diseño Premium de Pestañas) -->
@@ -1119,7 +1126,7 @@
 
     // Inicializar
     window.addEventListener('DOMContentLoaded', async () => {
-      console.log('[Receptia Comercial v1.0.9] Inicializando panel...');
+      console.log('[Receptia Comercial v1.1.5] Inicializando panel...');
       const urlParams = new URLSearchParams(window.location.search);
       currentAccessUrl = urlParams.get('c') || '';
       console.log('[Receptia] Token de acceso detectado:', currentAccessUrl ? `"${currentAccessUrl}"` : '(ninguno)');
@@ -1214,14 +1221,14 @@
           currentAccessUrl = '';
           emailGroup.style.display = 'flex';
           emailInput.disabled = false;
-          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.9</span>`;
+          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.1.5</span>`;
           emailInput.focus();
         }
       } else {
         console.log('[Receptia] Modo login manual (sin token de URL).');
         emailGroup.style.display = 'flex';
         emailInput.disabled = false;
-        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.9</span>`;
+        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.1.5</span>`;
       }
     }
 
@@ -1801,6 +1808,341 @@
       } finally {
         submitBtn.disabled = false;
       }
+    }
+
+    // --- GENERACIÓN DE GUÍA COMERCIAL EN PDF ---
+    function generateGuidePDF(title, subtitle, sections, filename) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      
+      const leftMargin = 20;
+      const rightMargin = 20;
+      const topMargin = 25;
+      const bottomMargin = 25;
+      const contentWidth = pageWidth - leftMargin - rightMargin;
+
+      let y = topMargin;
+      let pageNum = 1;
+
+      function drawHeader() {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(139, 92, 246); // #8b5cf6
+        doc.text('RECEPTIA COMERCIAL PORTAL', leftMargin, 15);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(107, 114, 128); // #6b7280
+        doc.text('GUÍA Y PLAYBOOK COMERCIAL', pageWidth - rightMargin, 15, { align: 'right' });
+        
+        doc.setDrawColor(139, 92, 246);
+        doc.setLineWidth(0.3);
+        doc.line(leftMargin, 17, pageWidth - rightMargin, 17);
+      }
+
+      function drawFooter(pNum, totalP) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(156, 163, 175); // #9ca3af
+        doc.text('© 2026 Corandar S.L. - Receptia. Todos los derechos reservados.', leftMargin, pageHeight - 12);
+        doc.text(`Página ${pNum} de ${totalP}`, pageWidth - rightMargin, pageHeight - 12, { align: 'right' });
+      }
+
+      // --- PÁGINA DE PORTADA ---
+      doc.setFillColor(139, 92, 246); // #8b5cf6 (púrpura principal)
+      doc.rect(0, 0, pageWidth, 65, 'F');
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(28);
+      doc.setTextColor(255, 255, 255);
+      doc.text('RECEPTIA', leftMargin, 35);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      doc.setTextColor(233, 213, 255); // #e9d5ff
+      doc.text('Estudio de Viabilidad y Playbook de Ventas', leftMargin, 43);
+
+      y = 90;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(20);
+      doc.setTextColor(17, 24, 39); // #111827 (oscuro)
+      const titleLines = doc.splitTextToSize(title, contentWidth);
+      titleLines.forEach(line => {
+        doc.text(line, leftMargin, y);
+        y += 8;
+      });
+
+      y += 5;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      doc.setTextColor(75, 85, 99); // #4b5563
+      const subLines = doc.splitTextToSize(subtitle, contentWidth);
+      subLines.forEach(line => {
+        doc.text(line, leftMargin, y);
+        y += 6;
+      });
+
+      y += 20;
+
+      doc.setFillColor(243, 244, 246); // #f3f4f6
+      doc.setDrawColor(229, 231, 235); // #e5e7eb
+      doc.rect(leftMargin, y, contentWidth, 35, 'FD');
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(107, 114, 128);
+      doc.text('INFORMACIÓN DEL DOCUMENTO', leftMargin + 8, y + 8);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text(`Fecha de Publicación: 25 de junio de 2026`, leftMargin + 8, y + 15);
+      doc.text(`Versión: 2.6.7 (Canal Estable)`, leftMargin + 8, y + 21);
+      doc.text(`Proveedor SaaS: CORANDAR S.L.`, leftMargin + 8, y + 27);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(156, 163, 175);
+      doc.text('Este documento es para uso exclusivo de los agentes comerciales autorizados de Receptia.', leftMargin, pageHeight - 15);
+      doc.text('Para soporte adicional, contactar al administrador de tu servicio o consultar con dirección.', leftMargin, pageHeight - 10);
+
+      // --- FIN PORTADA -> NUEVA PÁGINA ---
+      doc.addPage();
+      pageNum++;
+      y = topMargin;
+      drawHeader();
+
+      // --- DIBUJAR CONTENIDO ---
+      sections.forEach((section, sIdx) => {
+        if (y > pageHeight - bottomMargin - 20) {
+          doc.addPage();
+          pageNum++;
+          y = topMargin;
+          drawHeader();
+        }
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.setTextColor(139, 92, 246);
+        doc.text(`${sIdx + 1}. ${section.title}`, leftMargin, y);
+        y += 8;
+
+        section.content.forEach(block => {
+          if (typeof block === 'string') {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81);
+            const pLines = doc.splitTextToSize(block, contentWidth);
+            
+            pLines.forEach(line => {
+              if (y > pageHeight - bottomMargin) {
+                doc.addPage();
+                pageNum++;
+                y = topMargin;
+                drawHeader();
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(10);
+                doc.setTextColor(55, 65, 81);
+              }
+              doc.text(line, leftMargin, y);
+              y += 5.5;
+            });
+            y += 2.5;
+          } else if (Array.isArray(block)) {
+            block.forEach(item => {
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(10);
+              doc.setTextColor(55, 65, 81);
+              
+              const bullet = '• ';
+              const itemText = item;
+              
+              const bulletWidth = 4;
+              const textWidth = contentWidth - bulletWidth;
+              const itemLines = doc.splitTextToSize(itemText, textWidth);
+
+              itemLines.forEach((line, lIdx) => {
+                if (y > pageHeight - bottomMargin) {
+                  doc.addPage();
+                  pageNum++;
+                  y = topMargin;
+                  drawHeader();
+                  
+                  doc.setFont('helvetica', 'normal');
+                  doc.setFontSize(10);
+                  doc.setTextColor(55, 65, 81);
+                }
+                
+                if (lIdx === 0) {
+                  doc.setTextColor(139, 92, 246);
+                  doc.text(bullet, leftMargin + 2, y);
+                  doc.setTextColor(55, 65, 81);
+                  doc.text(line, leftMargin + 2 + bulletWidth, y);
+                } else {
+                  doc.text(line, leftMargin + 2 + bulletWidth, y);
+                }
+                y += 5.5;
+              });
+              y += 1.5;
+            });
+            y += 2.5;
+          }
+        });
+        y += 4;
+      });
+
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 2; i <= totalPages; i++) {
+        doc.setPage(i);
+        drawFooter(i, totalPages);
+      }
+
+      doc.save(filename);
+    }
+
+    function getComercialGuideSections() {
+      return [
+        {
+          title: 'Propuesta de Valor vs. Alternativas del Mercado',
+          content: [
+            'Para evaluar la viabilidad de Receptia, es crucial comparar su coste y rendimiento frente a las opciones tradicionales de recepción telefónica de una PYME (clínicas, centros de estética, notarías, consultorías, etc.):',
+            [
+              'Recepcionista Humana: Coste de 1.800€ - 2.500€/mes (salario y seguridad social). Atiende 8 horas/día de lunes a viernes, gestionando solo 1 llamada a la vez (cuello de botella) y con sensibilidad a picos de estrés o descuidos.',
+              'Call Center Externo: Coste de 350€ - 600€/mes. Ofrece mayor cobertura de horario, pero carece de conocimiento profundo y local del negocio, y genera costes variables altos o tiempos de espera prolongados.',
+              'Receptia (IA): Coste fijo de 149€/mes (Plan Estándar). Proporciona atención ininterrumpida las 24 horas del día, los 365 días del año. Gestiona llamadas concurrentes ilimitadas sin tiempos de espera, con un comportamiento 100% consistente y un ROI inmediato al salvar 2-3 citas al mes.'
+            ]
+          ]
+        },
+        {
+          title: 'Estructura de Costes de Receptia y Unit Economics',
+          content: [
+            'Receptia opera bajo una estructura de costes variables muy baja gracias a la infraestructura en la nube y APIs de IA de voz, lo que genera alta rentabilidad:',
+            [
+              'Procesamiento de Voz y LLM (Retell AI): ~$0.08 por minuto de llamada (incluye transcripción, motor de voz y hosting del modelo). Equivale a unos 16.00€ para el Plan Estándar de 200 minutos.',
+              'Proveedor de Telefonía / SIP: ~0.02€ por minuto de llamada más una cuota fija de 3.00€ al mes por número. Equivale a unos 7.00€ para 200 minutos.',
+              'Base de Datos y Servidor (Supabase + Render): ~0.50€ por cliente.',
+              'Pasarela de Pago (Stripe): 1.5% + 0.25€ = ~2.50€.',
+              'Márgenes de Beneficio: Coste total de servicio de ~26.00€/mes. Esto resulta en un Margen de Contribución de 123.00€/mes (82.5% de beneficio neto) en el Plan Estándar Mensual, y de 81.50€/mes (75.8% neto) en el Plan Anual. Los minutos adicionales tienen un margen neto del 71% (0.25€ de beneficio por minuto extra).'
+            ]
+          ]
+        },
+        {
+          title: 'Punto de Equilibrio (Break-Even)',
+          content: [
+            'Fórmula de amortización directa e infraestructura del SaaS:',
+            'Asumiendo unos costes fijos mensuales del sistema (servidores Render, Supabase Pro, licencias de desarrollo, etc.) de 150€/mes, el punto de equilibrio se calcula como: Clientes necesarios = Costes Fijos / Margen por Cliente = 150€ / 123€ = ~2 clientes activos.',
+            'Con solo 2 clientes activos en el plan más económico, el SaaS de Receptia es completamente autosuficiente y cubre todos sus costes de infraestructura técnica. A partir de ahí, todo el ingreso es beneficio neto.'
+          ]
+        },
+        {
+          title: 'Funnel de Ventas Híbrido y Adquisición',
+          content: [
+            'La estrategia de comercialización combina la captación dirigida del administrador y la venta de alto impacto del comercial:',
+            [
+              'Scrapeo y Filtrado: El Administrador recopila y limpia leads cualificados en sectores clave.',
+              'Asignación y Prospección: El comercial recibe los leads en su panel, investiga cada negocio y realiza una pre-configuración personalizada del agente de voz.',
+              'Primer Contacto: Llamada telefónica corta de calificación usando el hook de la cita perdida.',
+              'Llamada de Demo en Vivo: El cliente interactúa con la IA en tiempo real y experimenta el efecto WOW.',
+              'Cierre de Venta: Conversión hacia el Plan Anual para aprovechar el setup gratis, firma digital y pago instantáneo.'
+            ]
+          ]
+        },
+        {
+          title: 'El Rol del Administrador: Generación y Distribución de Leads',
+          content: [
+            'El administrador tiene el control total de la base de datos de captación. Sus pasos semanales son:',
+            [
+              'Identificar Sectores Clave: Centrarse en negocios que dependen de citas y tienen alta pérdida de llamadas por estar atendiendo clientes (Clínicas Dentales, Fisioterapeutas, Psicólogos, Salones de Belleza, Peluquerías, Talleres Mecánicos, Gestorías, etc.).',
+              'Generación de Bases de Datos: Recopilar datos (Nombre, Teléfono, Web, Email) mediante scraping de Google Maps y directorios sectoriales.',
+              'Carga y Distribución: Cargar los prospectos en la base de datos y asignarlos equilibradamente entre los comerciales disponibles.'
+            ]
+          ]
+        },
+        {
+          title: 'El Rol del Agente Comercial: La Venta del "Efecto WOW"',
+          content: [
+            'Los comerciales no venden software; venden tiempo, tranquilidad y dinero recuperado a través de dos ganchos clave:',
+            [
+              'Hook de la Cita Perdida: Concienciar al dueño del negocio sobre cuántas llamadas se pierden al día y la pérdida de ingresos mensual que esto supone.',
+              'La Demo Personalizada: Crear un agente de pruebas con el nombre del negocio del cliente antes de llamarle, de forma que el cliente pueda hablar con su propia recepcionista virtual en el primer contacto.',
+              'Venta de Soluciones: Demostrar cómo Receptia automatiza el calendario, evitando no-shows con Stripe y contestando llamadas 24/7 de forma 100% natural.'
+            ]
+          ]
+        },
+        {
+          title: 'Guión de Primer Contacto (Cold Calling Script)',
+          content: [
+            'El objetivo de esta llamada es captar la atención del dueño en menos de 90 segundos y agendar una demo en vivo:',
+            'Comercial: "Hola, buenas tardes, ¿se encuentra el responsable del centro o el encargado de las citas? Hola [Nombre], mi nombre es [Comercial] de Receptia. Le llamo muy brevemente. Hemos estado analizando los centros de su sector en [Ciudad] y hemos notado que durante las horas pico de atención o cuando estáis con pacientes, muchas llamadas telefónicas de nuevos clientes se quedan sin responder. ¿Es esto correcto en vuestro caso?"',
+            'Cliente: "Bueno, sí, a veces estamos ocupados y no podemos coger el teléfono..."',
+            'Comercial: "Exacto. Cada llamada no respondida es una cita perdida y dinero que se va a la competencia. En Receptia ayudamos a negocios como el tuyo instalando una Recepcionista de Voz con Inteligencia Artificial que responde al instante con tu misma voz, responde dudas frecuentes de tus tratamientos y agenda la cita directamente en tu calendario de Google en tiempo real. Todo de forma natural."',
+            'Cliente: "¿Pero eso es un contestador?"',
+            'Comercial: "Para nada. Es una conversación fluida y natural, casi idéntica a la de una recepcionista humana. De hecho, para que veas que no es teoría, me gustaría hacer una prueba contigo ahora mismo. Te voy a dar un número de teléfono de pruebas para que le llames durante 1 minuto. ¿Tienes 1 minuto para ver cómo responde con el nombre de tu propio negocio?"'
+          ]
+        },
+        {
+          title: 'Procedimiento de Demostración en Vivo (Live Demo)',
+          content: [
+            'La demo es el punto donde se cierra la venta. El cliente debe escuchar la IA funcionar en vivo:',
+            [
+              'Llamada de Prueba: Pide al cliente que llame al número configurado para su demo. Guíale para que intente agendar un servicio específico o haga una pregunta difícil sobre su negocio.',
+              'Compartir Pantalla (Videollamada): Si es por Zoom o Meet, comparte la pantalla de Google Calendar vacía. Pídele al cliente que llame con el altavoz encendido y observa su cara de sorpresa al ver cómo la reserva aparece en el calendario en tiempo real.',
+              'Silencio de Impacto: Mantente en silencio mientras el cliente habla con la IA. Deja que experimente la naturalidad y rapidez del agente virtual sin interrupciones.'
+            ]
+          ]
+        },
+        {
+          title: 'Preguntas de Calificación Clave (Pain Points)',
+          content: [
+            'Utiliza estas preguntas estratégicas para cuantificar el problema del cliente y adaptar el cierre:',
+            [
+              '¿Cuántas llamadas calculas que se quedan sin responder al día porque estáis atendiendo a otros clientes o fuera de horario comercial?',
+              'Con un ticket medio de 50€, perder 3 llamadas al día son 150€ diarios en pérdidas potenciales. ¿Cuánto dinero crees que está dejando de ingresar tu negocio cada mes por este motivo?',
+              '¿Qué agenda o software utilizáis actualmente para gestionar vuestras citas?',
+              '¿Quién se encarga actualmente de devolver las llamadas perdidas y cuánto tiempo le toma al final del día?'
+            ]
+          ]
+        },
+        {
+          title: 'Manejo de Objeciones Comunes',
+          content: [
+            'Estrategias de respuesta ante las reticencias del cliente:',
+            [
+              'Objeción A: "Suena muy robótico, prefiero el trato humano." -> Respuesta: "Le entiendo perfectamente. El trato humano es insustituible para dar el servicio. Pero la realidad es que cuando el teléfono suena y nadie lo coge, el trato humano para ese cliente es un tono de llamada vacío. Receptia no sustituye a tu personal, sino que actúa como una red de seguridad: si en 3 tonos nadie responde, la IA entra para que ese cliente no se vaya a otro centro. Además, utilizamos voces premium hiperrealistas."',
+              'Objeción B: "¿Y si la IA se equivoca o le reservan a una hora ocupada?" -> Respuesta: "El sistema es 100% parametrizable. La IA solo puede dar citas en los huecos exactos que tú dejes disponibles en tu calendario de Google. Si un cliente pide una hora ocupada, la IA buscará de inmediato alternativas libres dentro de tu horario. Además, puedes indicarle reglas estrictas (por ejemplo: dejar 15 minutos entre citas)."',
+              'Objeción C: "Es muy caro." -> Respuesta: "El Plan Estándar cuesta 149€ al mes. Si un solo cliente nuevo agenda una cita que de otro modo habrías perdido por no poder atender el teléfono, esa cita ya paga la mensualidad de todo el mes. El resto es beneficio neto."'
+            ]
+          ]
+        },
+        {
+          title: 'Estrategia de Cierre y Enfoque en el Plan Anual',
+          content: [
+            'El plan anual maximiza el compromiso y proporciona un flujo de caja inmediato:',
+            [
+              'Gancho Llave en Mano: Ofrece la suscripción anual con un ahorro de casi 3 meses de servicio (1.290€ en lugar de 1.788€, un ahorro directo de 500€). Además, garantiza que nuestro equipo técnico configurará todo el sistema llave en mano (especialidades, instrucciones de comportamiento de la IA y conexión a Google Calendar) de forma gratuita.',
+              'Firma y Alta Digital: Una vez que el cliente acepta, créale la cuenta en el panel, guíale para que inicie sesión y firme digitalmente el contrato desde la sección "Mi Suscripción", e indícale cómo añadir la tarjeta de crédito en Stripe Checkout.'
+            ]
+          ]
+        }
+      ];
+    }
+
+    function downloadComercialGuidePDF() {
+      const sections = getComercialGuideSections();
+      generateGuidePDF(
+        'RECEPTIA - Playbook Comercial y Guía de Crecimiento',
+        'Manual Operativo de Ventas, Estudio de Viabilidad Financiera y Manejo de Objeciones',
+        sections,
+        'Playbook_Comercial_Receptia.pdf'
+      );
     }
 
     // Configurar Polling (Auto-Refresco) dinámico para el Panel del Agente Comercial

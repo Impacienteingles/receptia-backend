@@ -2315,7 +2315,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.68</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.3.69</span>
         </div>
       </header>
 
@@ -4278,162 +4278,125 @@
     function getClientGuideSections() {
       return [
         {
-          title: 'Bienvenido a Receptia',
+          title: '1. Introducción y Acceso a la Plataforma',
           content: [
-            '¡Enhorabuena! Tu asistente de recepción por Inteligencia Artificial de Receptia ya está configurado y respondiendo llamadas de tus clientes de forma ininterrumpida las 24 horas del día, los 7 días de la semana.',
-            'Este portal te permite gestionar todas las citas que agende tu agente de voz IA, escuchar las grabaciones de las llamadas con sus transcripciones, configurar la integración con tu Google Calendar y personalizar la información del negocio para entrenar a tu asistente.'
+            '¡Bienvenido a Receptia! Tu asistente virtual de voz e Inteligencia Artificial ya está activo en tu línea telefónica atendiendo a tus clientes las 24 horas del día, los 7 días de la semana, de forma totalmente ininterrumpida.',
+            'Este panel de cliente es tu centro de control operativo desde el cual podrás supervisar la agenda interactiva de citas, gestionar los registros de llamadas, escuchar grabaciones, revisar transcripciones, sincronizar Google Calendar, configurar el chatbot de WhatsApp y ajustar el comportamiento del agente de voz. Para garantizar la seguridad del panel, se aconseja cambiar el PIN de acceso inicial desde la pestaña de seguridad.'
           ]
         },
         {
-          title: 'Panel de Inicio y Métricas ROI',
+          title: '2. Panel de Inicio y Métricas de ROI (Retorno de Inversión)',
           content: [
-            'En la pantalla principal (Inicio) tendrás acceso a métricas clave en tiempo real:',
+            'La pantalla de Inicio recopila los principales indicadores clave de rendimiento (KPIs) de tu negocio para que visualices el impacto económico directo de Receptia:',
             [
-              'Llamadas Atendidas: Total de clientes atendidos por la IA.',
-              'Citas Agendadas: Citas guardadas con éxito en tu agenda.',
-              'Minutos Consumidos: Consumo de tiempo telefónico acumulado en tu período actual.',
-              'Calculadora de ROI (Retorno de Inversión): Te muestra el ahorro estimado en personal de recepción y las citas rescatadas fuera de horario laboral gracias al asistente de voz 24/7.'
+              'Llamadas Atendidas: Muestreo acumulado de todas las llamadas recibidas y gestionadas con éxito por la recepcionista IA en el período de facturación actual.',
+              'Citas Agendadas: Sumatorio de citas que el asistente virtual ha conseguido insertar directamente en tu calendario de reservas.',
+              'Minutos Consumidos: Barra de progreso en tiempo real con el total de minutos consumidos. Te avisa visualmente si estás cerca de alcanzar el límite mensual contratado, previniéndote de costes adicionales.',
+              'Calculadora de ROI: Algoritmo automatizado que calcula las ganancias estimadas multiplicando las citas agendadas fuera de tu horario laboral tradicional por tu ticket medio de servicio. Resta el coste de tu suscripción mensual para mostrar el beneficio neto rescatado por Receptia.'
             ]
           ]
         },
         {
-          title: 'Agenda de Citas y Google Calendar',
+          title: '3. Agenda de Citas Inteligente y Optimización de Huecos',
           content: [
-            'Desde la pestaña "Agenda de Citas" verás un calendario interactivo con todas tus reservas:',
+            'La agenda interactiva te permite visualizar de forma cómoda y en cuadrícula temporal todas las reservas del comercio:',
             [
-              'Ver Citas: Haz clic en cualquier cita para ver los detalles del cliente (nombre, teléfono, especialidad y notas de la IA).',
-              'Gestión Manual: Puedes agendar nuevas citas manualmente, editarlas o cancelarlas si el cliente te lo solicita.',
-              'Sincronización con Google Calendar: Haz clic en el botón "Reautorizar / Conectar Google Calendar". Esto vinculará la agenda con el calendario de tu teléfono. Cada vez que la IA reserve una cita, esta aparecerá automáticamente en tu calendario personal en segundos.'
+              'Fichas de Citas: Haz clic en cualquier reserva del calendario para ver los datos del cliente (nombre, teléfono, email, especialidad seleccionada) y notas clínicas o de contexto generadas automáticamente por la IA.',
+              'Gestión Manual: Puedes agendar nuevas reservas manualmente, reubicar citas arrastrándolas o cancelarlas si el paciente te lo solicita.',
+              'Optimización de Agenda (Algoritmo de Huecos): Si activas este ajuste, el motor de reservas priorizará ofrecer al cliente slots adyacentes a citas preexistentes o en los extremos del día, aplicando una penalización a huecos aislados que rompan la continuidad de la jornada de trabajo.'
             ]
           ]
         },
         {
-          title: 'Historial de Llamadas IA y Transcripciones',
+          title: '4. Conexión y Sincronización con Google Calendar',
           content: [
-            'En la pestaña "Llamadas IA" verás el registro detallado de cada llamada:',
+            'Vincular Receptia con el calendario de tu teléfono móvil o el de tu clínica es sumamente fácil gracias a la integración oficial con Google Calendar API:',
             [
-              'Grabaciones: Escucha el audio completo de la conversación entre el cliente y la IA.',
-              'Etiqueta de Intención: La IA clasifica automáticamente si la llamada resultó en "Cita Agendada", una "Consulta General", "Queja" (con análisis de sentimiento automático) o si el cliente colgó.',
-              'Transcripción y Resumen: Lee la conversación palabra por palabra y consulta un resumen estructurado con los puntos clave que identificó la IA.'
+              'Conectar Cuenta: Ve a "Agenda de Citas" y haz clic en el botón "Reautorizar / Conectar Google Calendar". Sigue el flujo seguro de inicio de sesión de Google (OAuth 2.0) y otorga permisos de escritura en tus calendarios.',
+              'Sincronización Bidireccional: Cuando la IA reserva una llamada telefónica, el evento se crea instantáneamente en Google Calendar con la información del paciente. Si tú mueves o borras la cita desde tu móvil, Receptia se actualizará en tiempo real.',
+              'Evitación de Conflictos: Antes de ofrecer opciones de hora a un cliente que llama, la IA consulta de manera invisible tu Google Calendar para asegurarse de no generar solapamientos ni citas duplicadas.'
             ]
           ]
         },
         {
-          title: 'Chatbot de Reservas y Widget Web',
+          title: '5. Historial de Llamadas, Transcripciones y Sentimiento',
           content: [
-            'Receptia unifica la atención telefónica y escrita en una sola agenda lógica:',
+            'La pestaña "Llamadas IA" registra de forma transparente y exhaustiva cada interacción telefónica:',
             [
-              'Atención Multicanal: Desde Ajustes puedes habilitar el Chatbot de Reservas por texto.',
-              'Widget Web: Copia el código iframe proporcionado en tu web para añadir un chat elegante (glassmorphic) donde los clientes pueden resolver dudas y agendar citas directamente con la IA.',
-              'WhatsApp Web: Vincula tu WhatsApp escaneando el código QR para que el chatbot de Receptia responda los mensajes de texto entrantes automáticamente.'
+              'Reproductor de Grabaciones: Escucha el archivo de audio de cada llamada entrante y saliente para evaluar el desempeño y la fluidez de la conversación.',
+              'Transcripción Literal: Visualiza la transcripción textual organizada por interlocutores (Llamante vs Recepcionista IA) para leer la conversación palabra por palabra.',
+              'Resumen Estructurado: Extrae automáticamente el motivo principal de la consulta, datos personales, fecha y hora acordadas y acciones requeridas.',
+              'Etiqueta de Intención y Sentimiento: Clasificación inteligente (Cita Agendada, Consulta General, Queja con alerta urgente, o Llamada Perdida) con análisis de satisfacción del cliente.'
             ]
           ]
         },
         {
-          title: 'Fianzas y Pagos Stripe (Seguridad Anti-NoShow)',
+          title: '6. Depósitos y Fianzas (Pasarela de Pago Stripe)',
           content: [
-            'Reduce las incomparecencias y cancelaciones de última hora cobrando un depósito de reserva:',
+            'Para erradicar por completo los no-shows (clientes que reservan y no asisten), puedes requerir un pago previo de fianza o depósito:',
             [
-              'Habilitación: Activa los depósitos en Ajustes de tu Negocio e indica el importe del depósito.',
-              'Envío del Link: Durante la llamada o chat, la IA le enviará al cliente un enlace de Stripe para realizar el pago de forma segura por WhatsApp o SMS.',
-              'Bloqueo Preventivo: La cita se crea en estado pendiente de pago en Google Calendar. En cuanto el cliente complete el pago, se actualizará a confirmada y se le enviará un mensaje final de confirmación.'
+              'Activación del Depósito: En Ajustes de Negocio, introduce la cantidad económica que se cobrará como garantía (por ejemplo, 10€).',
+              'Flujo en Llamada: Cuando un cliente solicita agendar, la IA le indica que se requiere una fianza y le envía inmediatamente un enlace de Stripe Checkout por SMS o WhatsApp.',
+              'Confirmación por Webhook: La cita se crea inicialmente como [PENDIENTE DE PAGO]. En cuanto el cliente abona la fianza en su móvil, el sistema la marca en verde como Confirmada y le envía la confirmación final.'
             ]
           ]
         },
         {
-          title: 'Campañas Outbound de Voz (Reactivación)',
+          title: '7. Omnicanalidad: Chatbot de Reservas y Widget Web',
           content: [
-            'Crea campañas automáticas de llamadas salientes para fidelizar o reactivar clientes:',
+            'Receptia unifica la comunicación telefónica y los canales de texto de tu negocio bajo el mismo motor inteligente:',
             [
-              'Carga de Contactos: Crea una campaña, introduce una lista de clientes con formato "Nombre, Teléfono, Variable Personalizada" y haz clic en lanzar.',
-              'Llamadas Asíncronas: El robot de Receptia llamará de forma automática y secuencial a tus clientes, hablándoles de forma personalizada e invitándoles a agendar una cita que se registrará directamente en tu agenda.'
+              'Widget Web Glassmorphic: Copia el código HTML (iframe) disponible en tu panel e insértalo en tu sitio web. Esto añadirá un chat interactivo con diseño translúcido para agendar citas sin salir de tu web.',
+              'WhatsApp Business QR: Escanea el código QR de vinculación en el panel utilizando la app de WhatsApp de tu móvil. Tu agente virtual (Gemini) responderá automáticamente a cualquier chat de cliente gestionando reservas de forma escrita.'
             ]
           ]
         },
         {
-          title: 'Integración PMS (Sincronización Local)',
+          title: '8. Campañas Salientes (Outbound) de Voz',
           content: [
-            'Conecta tu software local de clínica o estética (Gesden, Dentrix) con Receptia:',
+            'Reactivar clientes inactivos o recordar citas anuales es posible de forma automática:',
             [
-              'Token PMS: Genera un token único y seguro en la pestaña Ajustes.',
-              'Agente de Escritorio: Descarga el script de sincronización local en tu ordenador. Éste leerá periódicamente tu agenda y la sincronizará bidireccionalmente con la nube de Receptia en tiempo real.'
+              'Configuración de Campaña: Crea una campaña en el panel, introduce un listado de clientes (Nombre y Teléfono) e inyecta una variable descriptiva (ej: "hace 6 meses que no viene a su limpieza").',
+              'Llamadas Secuenciales: El servidor de Receptia llamará secuencialmente a cada cliente, hablándoles de forma amigable e invitándolos a agendar. Las citas exitosas se añadirán solas a tu agenda de reservas.'
             ]
           ]
         },
         {
-          title: 'Agenda Inteligente y Compactador de Huecos',
+          title: '9. Integración con Software Local (Gesden / Dentrix PMS)',
           content: [
-            'Activa la Optimización de Agenda en la pestaña Ajustes para compactar tus horarios laborales:',
+            'Si tu clínica o estética trabaja con un software de escritorio sin conexión directa a la nube, puedes sincronizarlo bidireccionalmente:',
             [
-              'Agrupación Eficiente: El sistema de agendamiento priorizará y ofrecerá primero al paciente las ranuras que estén pegadas a citas ya agendadas o en los extremos del día, evitando dejar huecos sueltos e inservibles de 15/30 minutos en tu agenda diaria.'
+              'Token de Integración PMS: Genera tu clave secreta de sincronización local en el apartado de ajustes.',
+              'Agente Sincronizador: Descarga el script local "pms-agent-sync.js". Al ejecutarlo en tu servidor local de base de datos, leerá periódicamente tu agenda y la sincronizará en la nube con Receptia cada 30 segundos.'
             ]
           ]
         },
         {
-          title: 'Gestión de Suscripción y Contrato Digital',
+          title: '10. Explicación Detallada de los Ajustes de Negocio',
           content: [
-            'En la pestaña "Mi Suscripción" puedes controlar la relación comercial de tu negocio con la plataforma:',
+            'Para personalizar y entrenar a tu asistente virtual de Inteligencia Artificial, debes configurar los siguientes ajustes:',
             [
-              'Plan y Estado: Monitorea si tu estado está en Trial, Activo o Suspendido, así como la fecha de renovación o expiración.',
-              'Control de Consumo: Muestra la barra de minutos de llamada consumidos en el período actual y te previene sobre posibles excesos de minutos que se tarificarán según la tarifa adicional contratada.',
-              'Firma Digital de Contrato: Lee las condiciones legales de tu plan y firma digitalmente el contrato introduciendo tu nombre de representante legal y completando la firma manuscrita en pantalla para generar el PDF contractual oficial.',
-              'Pasarela Stripe: Accede mediante un enlace directo al Portal de Clientes de Stripe para actualizar tus tarjetas de crédito, descargar facturas anteriores y cambiar tu plan.'
+              'Especialidades y Catálogo: Define cada servicio que ofreces, su duración exacta (ej: 30 minutos) y su coste. La IA utilizará estos datos para calcular la duración de los huecos y cobrar depósitos.',
+              'Instrucciones de Comportamiento: Escribe pautas detalladas del tono o reglas del negocio (ej: "No des citas de ortodoncia los viernes por la tarde", "Sé extremadamente cortés", "Si preguntan por el Dr. Romero, explica que está de baja").',
+              'Personalidad y Voz (Cartesia): Ajusta los deslizadores de personalidad para cambiar la actitud (de muy formal a muy cercano), el enfoque (empático o eficiente), la velocidad del habla (0.8x a 1.2x) y la temperatura de variabilidad de voz.',
+              'Modo Vacaciones (Vacation Mode): Activa las fechas en las que el negocio estará cerrado. La IA responderá de forma comprensiva informando del periodo vacacional y guiará al cliente a agendar en fechas posteriores a tu regreso.',
+              'WhatsApp Text-Back: Configura un mensaje personalizado que se enviará automáticamente por WhatsApp a cualquier cliente que realice una llamada perdida, ofreciéndole reservar al instante por chat.'
             ]
           ]
         },
         {
-          title: 'Ajustes del Negocio y Base de Conocimientos',
+          title: '11. Copias de Seguridad y Seguridad del Acceso',
           content: [
-            'Para refinar el comportamiento de tu agente de voz IA, puedes rellenar las secciones en la pestaña de ajustes de tu negocio:',
+            'Mantén a salvo los datos de tus citas y la configuración de tu asistente virtual:',
             [
-              'Especialidades y Catálogo: Indica tus servicios y precios actualizados.',
-              'Instrucciones Personalizadas: Puedes dar pautas específicas a la IA, por ejemplo: "Sé muy amable", "Si preguntan por el Dr. Pérez, di que solo atiende los jueves", o "Recomienda nuestro tratamiento estrella de hidratación".',
-              'Controles de Personalidad de la IA: Personaliza la actitud (de muy formal a muy cercano), el enfoque (de empático a eficiente) y la velocidad del habla de tu agente virtual para que represente de forma óptima a tu marca.',
-              'Recuperación de Llamadas Perdidas (Text-Back): Activa el envío automático de un mensaje de WhatsApp cuando tu negocio pierda una llamada telefónica, ofreciéndole al cliente agendar su cita de forma inmediata por chat.',
-              'Base de Conocimientos: Escribe respuestas a preguntas frecuentes sobre parking, formas de pago, cancelaciones, etc. La IA estudiará esta información y responderá con precisión.'
+              'PIN de Acceso: Modifica el PIN de acceso del negocio periódicamente para evitar intrusiones no deseadas.',
+              'Copia de Seguridad JSON: Descarga un respaldo completo en formato JSON con todo tu historial de citas, configuración de especialidades e historial de llamadas. Puedes volver a importar este archivo en cualquier momento para restaurar la configuración completa.'
             ]
-          ]
-        },
-        {
-          title: 'Plan de Recomendados y Descuentos',
-          content: [
-            'Obtén recompensas e importantes descuentos recurrentes en tu suscripción recomendando Receptia a otros negocios:',
-            [
-              'Formulario de Recomendación: Introduce los datos del negocio apadrinado (nombre, contacto, email y teléfono) en la pestaña correspondiente.',
-              'Comisiones Mensuales: Cuando un negocio recomendado se suscriba a un plan de pago, recibirás un descuento mensual automático en tu factura equivalente al 10% del valor del plan del recomendado.',
-              'Historial de Descuentos: Consulta el listado de tus negocios recomendados y el desglose de todos los importes descontados de tus últimas facturas.'
-            ]
-          ]
-        },
-        {
-          title: 'Prueba de Voz en Tiempo Real (WebRTC Sandbox)',
-          content: [
-            'Testea el agente conversacional directamente desde tu navegador sin consumir minutos de tu línea de teléfono:',
-            [
-              'Llamada en Vivo: En Ajustes de Negocio, haz clic en "Iniciar Llamada de Prueba" y conversa con el agente mediante el micrófono de tu ordenador.',
-              'Ajuste en Caliente: Modifica las instrucciones, catálogo o base de conocimiento y vuelve a iniciar la llamada para escuchar los cambios aplicados en segundos.'
-            ]
-          ]
-        },
-        {
-          title: 'Configuración Avanzada de WhatsApp (QR, Twilio, Cloud API)',
-          content: [
-            'Personaliza el remitente y canal de mensajería utilizado por la IA para interactuar por chat:',
-            [
-              'WhatsApp QR (Gratuito): Escanea el código QR en pantalla con la aplicación de WhatsApp de tu móvil para vincular tu propio número.',
-              'Twilio / Cloud API (Profesional): Si requieres mayor estabilidad y volumen, puedes configurar tus credenciales de Twilio o la API oficial de WhatsApp Cloud de Meta directamente en los ajustes.'
-            ]
-          ]
-        },
-        {
-          title: 'Seguridad y Copias de Seguridad',
-          content: [
-            'En tu panel puedes cambiar tu contraseña de acceso de forma segura en cualquier momento.',
-            'Además, puedes exportar una copia de seguridad local en formato JSON con todo tu historial de citas, configuración de negocio y registros de llamadas para resguardar tu información.'
           ]
         }
       ];
     }
+
 
     function downloadClientGuidePDF() {
       const clientSections = getClientGuideSections();
