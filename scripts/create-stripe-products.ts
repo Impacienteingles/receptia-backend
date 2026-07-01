@@ -16,21 +16,21 @@ async function main() {
       name: 'Receptia - Plan Estándar Mensual',
       price: 149.00,
       cycle: 'month',
-      description: '1 Agente de Voz IA activo, 1 Número telefónico en Retell AI, Integración con Google Calendar, Panel de control de cliente, Hasta 200 minutos incluidos / mes, Minuto adicional a 0.20€/min.'
+      description: '1 Agente de Voz IA activo, 1 Número telefónico en Retell AI, Integración con Google Calendar, Panel de control de cliente, Hasta 200 minutos incluidos / mes, Minuto adicional a 0.35€/min.'
     },
     {
       id: 'premium_mensual',
       name: 'Receptia - Plan Premium Mensual',
       price: 249.00,
       cycle: 'month',
-      description: 'Todo lo del Plan Estándar, Conexión SIP Zadarma avanzada, Soporte de Voz ElevenLabs de alta calidad, Prompt e instrucciones optimizadas, Hasta 500 minutos incluidos / mes, Minuto adicional a 0.20€/min.'
+      description: 'Todo lo del Plan Estándar, Conexión SIP Zadarma avanzada, Soporte de Voz ElevenLabs de alta calidad, Prompt e instrucciones optimizadas, Hasta 500 minutos incluidos / mes, Minuto adicional a 0.35€/min.'
     },
     {
       id: 'estandar_anual',
       name: 'Receptia - Plan Estándar Anual',
       price: 1290.00,
       cycle: 'year',
-      description: '1 Agente de Voz IA activo, 1 Número telefónico en Retell AI, Integración con Google Calendar, Panel de control de cliente, Hasta 200 minutos incluidos / mes, Minuto adicional a 0.20€/min, Ahorro de casi 3 meses de suscripción.'
+      description: '1 Agente de Voz IA activo, 1 Número telefónico en Retell AI, Integración con Google Calendar, Panel de control de cliente, Hasta 200 minutos incluidos / mes, Minuto adicional a 0.35€/min, Ahorro de casi 3 meses de suscripción.'
     },
     {
       id: 'premium_anual',
