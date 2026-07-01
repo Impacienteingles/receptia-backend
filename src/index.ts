@@ -237,7 +237,7 @@ app.post('/api/admin/auth/recover', async (req, res): Promise<void> => {
 
     if (resendApiKey && resendApiKey !== 'YOUR_RESEND_API_KEY') {
       await axios.post('https://api.resend.com/emails', {
-        from: resendFrom,
+        from: `"Soporte Receptia" <receptia@corandar.com>`,
         to: expectedEmail,
         subject: 'Recuperación de Contraseña de Administrador - Receptia',
         html: htmlContent
@@ -266,7 +266,7 @@ app.post('/api/admin/auth/recover', async (req, res): Promise<void> => {
         });
 
         await transporter.sendMail({
-          from: smtpUser,
+          from: `"Soporte Receptia" <receptia@corandar.com>`,
           to: expectedEmail,
           subject: 'Recuperación de Contraseña de Administrador - Receptia',
           html: htmlContent
@@ -490,7 +490,7 @@ app.post('/api/auth/recover-pin', authLimiter, async (req, res): Promise<void> =
     if (resendApiKey && resendApiKey !== 'YOUR_RESEND_API_KEY') {
       try {
         await axios.post('https://api.resend.com/emails', {
-          from: resendFrom,
+          from: `"Soporte Receptia" <receptia@corandar.com>`,
           to: email.trim().toLowerCase(),
           subject: 'Recuperación de Contraseña - Receptia',
           html: htmlContent
@@ -549,7 +549,7 @@ app.post('/api/auth/recover-pin', authLimiter, async (req, res): Promise<void> =
       if (transporter && mailFrom) {
         try {
           const mailOptions = {
-            from: `"Soporte Receptia" <${mailFrom}>`,
+            from: `"Soporte Receptia" <receptia@corandar.com>`,
             to: email.trim().toLowerCase(),
             subject: 'Recuperación de Contraseña - Receptia',
             html: htmlContent
