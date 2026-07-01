@@ -111,7 +111,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
     bodyHtml = `
         <p>Estimado/a responsable de <span class="highlight">${businessName}</span>,</p>
         
-        <p>Desde <span class="highlight">Corandar</span> hemos diseñado y configurado un <span class="highlight">Agente de Voz con Inteligencia Artificial</span> adaptado a las necesidades específicas de su negocio.</p>
+        <p>Desde <span class="highlight">Corándar</span> hemos diseñado y configurado un <span class="highlight">Agente de Voz con Inteligencia Artificial</span> adaptado a las necesidades específicas de su negocio.</p>
         
         <p>Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.</p>
     `;
@@ -382,13 +382,13 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
         ${bodyHtml}
 
         <!-- Tarjeta Ficha de Corandar -->
-        <a href="https://corandar.com" class="corandar-card" target="_blank">
+        <a href="https://receptia.corandar.com" class="corandar-card" target="_blank">
           <div style="background-color: #ffffff; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; width: 110px; min-width: 110px; height: 34px; box-sizing: border-box; border: 1px solid #e5e7eb;">
             <img src="https://receptia.corandar.com/corandar_logo.png" alt="Logo Corandar" style="max-width: 100%; max-height: 100%; object-fit: contain;">
           </div>
           <div style="text-align: left;">
-            <div class="corandar-card-title">Desarrollado por Corandar</div>
-            <div class="corandar-card-desc">Visite nuestra web oficial para conocer más sobre nuestras soluciones de IA y automatización.</div>
+            <div class="corandar-card-title">Desarrollado por Corándar</div>
+            <div class="corandar-card-desc">Visite la landing page de Receptia para descubrir cómo nuestra IA puede automatizar la atención de su negocio.</div>
           </div>
           <div class="corandar-card-arrow">→</div>
         </a>
@@ -412,7 +412,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
 
         <p>Además de esta presentación en audio, le hemos configurado una <span class="highlight">Demostración Real e Interactiva</span> de su receptor virtual de llamadas en su <strong>Panel de Control de Cliente</strong> privado.</p>
         
-        <p>Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña <span class="highlight">"Llamadas IA"</span>. Podrá probar al agente virtual, ver su calendario y utilizar su contraseña de acceso temporal: <strong style="color: #60a5fa; font-family: monospace; font-size: 1.1em; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">0000</strong>.</p>
+        <p>Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña <span class="highlight">"Llamadas IA"</span>. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: <strong style="color: #60a5fa; font-family: monospace; font-size: 1.1em; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">Receptia123!</strong>.</p>
 
         <!-- Beneficios en tarjetas -->
         <div class="benefit-card">
@@ -444,7 +444,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
       </div>
       
       <div class="footer">
-        <p>Este correo electrónico fue generado automáticamente por <a href="https://receptia.corandar.com" target="_blank">Receptia</a>, una solución de <a href="https://corandar.com" target="_blank">Corandar, S.L.</a></p>
+        <p>Este correo electrónico fue generado automáticamente por <a href="https://receptia.corandar.com" target="_blank">Receptia</a>, una solución de <a href="https://receptia.corandar.com" target="_blank">Corándar, S.L.</a></p>
         <p>Para no recibir más demostraciones, responda indicando "Baja" y procesaremos su solicitud de inmediato.</p>
       </div>
     </div>
