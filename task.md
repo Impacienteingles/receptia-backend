@@ -8,5 +8,8 @@
 - `[x]` Programar la lógica JavaScript para añadir los sectores dinámicos a los selects de prospección automática y manual en el cliente
 - `[x]` Actualizar la función `renderProspectsTable()` en `public/admin.html` para marcar prospectos manuales con un fondo gris tenue (`rgba(255,255,255,0.03)`) y la etiqueta `"Manual"`
 - `[x]` Extraer e inyectar dinámicamente sectores personalizados desde la base de datos al cargar prospectos
+- `[x]` Añadir botón y lógica de descarga en PDF para la "Guía Comercial / Playbook de Crecimiento" en el Panel de Administrador (`admin.html`)
+- `[x]` Corregir desalineaciones sintácticas en los scripts de `app.html` y `comercial.html`
+- `[x]` Consolidar la versión visual y de logs a la `v1.1.5`
 - `[x]` Compilar código con `npm run build` y verificar que no existan errores
 - `[x]` Empujar y desplegar cambios a Render (vía GitHub) y Vercel (`npx vercel --prod --yes`)
