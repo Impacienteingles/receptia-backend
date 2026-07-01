@@ -1253,7 +1253,7 @@
       <img src="/receptia_logo.png" alt="Logo Receptia" style="width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Panel Protegido
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.3</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.4</span>
       </h3>
       <p id="pin-description" style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Por favor, introduce tu contraseña de acceso para gestionar tu agenda de citas.</p>
       
@@ -2404,7 +2404,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.3</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.4</span>
           <button onclick="handleClientLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -3202,7 +3202,7 @@
               </div>
 
               <!-- Sección Integración de Agenda (PMS Local) -->
-              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+              <div id="settings-pms-section" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
                   <i data-lucide="database" style="color: var(--primary); width: 20px; height: 20px;"></i>
                   Integración de Agenda (PMS Local / Escritorio) 🔌
@@ -3488,7 +3488,7 @@
 
             <div id="settings-tab-seguridad" class="settings-tab-content" style="display: none; flex-direction: column; gap: 1.5rem;">
               <!-- Sección Modo Vacaciones -->
-              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+              <div id="settings-vacation-section" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
                   <i data-lucide="palm-tree" style="color: var(--primary); width: 20px; height: 20px;"></i>
                   Modo Vacaciones y Cierres Temporales
@@ -7467,6 +7467,60 @@
 
       // Aplicar estado de bloqueo de voz
       applyVoiceLockState(!!currentTenant.voice_locked);
+      
+      // Aplicar restricciones según plan contratado
+      applyPlanConstraints();
+    }
+
+    function applyPlanConstraints() {
+      const plan = currentTenant.plan_id || 'premium_mensual';
+      const isPremium = plan.includes('premium');
+      const isEstandar = plan.includes('estandar');
+      const isInicial = plan.includes('inicial');
+
+      // 1. Campañas Outbound (Sidebar)
+      const btnTabCampaigns = document.getElementById('btn-tab-campaigns');
+      if (btnTabCampaigns) {
+        btnTabCampaigns.style.display = isPremium ? 'flex' : 'none';
+      }
+      if (!isPremium && window.location.hash === '#campaigns') {
+        switchTab('inicio');
+      }
+
+      // 2. Modo Vacaciones (Inicial bloqueado)
+      const vacationCard = document.getElementById('settings-vacation-section');
+      if (vacationCard) {
+        vacationCard.style.display = isInicial ? 'none' : 'block';
+      }
+
+      // 3. Integración PMS Local (Inicial bloqueado)
+      const pmsCard = document.getElementById('settings-pms-section');
+      if (pmsCard) {
+        pmsCard.style.display = isInicial ? 'none' : 'block';
+      }
+
+      // 4. Voz Clonada (Inicial y Estándar bloqueados)
+      const voiceCard = document.getElementById('voice-clone-container');
+      if (voiceCard) {
+        voiceCard.style.display = isPremium ? 'block' : 'none';
+      }
+
+      // 5. Soporte Multi-Profesional (Inicial bloqueado)
+      const chkMultiProf = document.getElementById('setting-multiprof-toggle');
+      const badgeMultiProf = document.getElementById('badge-multiprof-module');
+      if (isInicial) {
+        if (chkMultiProf) {
+          chkMultiProf.checked = false;
+          chkMultiProf.disabled = true;
+        }
+        if (badgeMultiProf) {
+          badgeMultiProf.style.display = 'inline-block';
+          badgeMultiProf.innerText = 'Bloqueado en tu Plan';
+          badgeMultiProf.style.background = 'rgba(239, 68, 68, 0.15)';
+          badgeMultiProf.style.color = '#f87171';
+          badgeMultiProf.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+        }
+      }
     }
 
     function applyVoiceLockState(isVoiceLocked) {

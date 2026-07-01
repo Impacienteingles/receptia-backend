@@ -22,12 +22,18 @@ router.post('/sync', async (req: Request, res: Response): Promise<void> => {
     // Buscar inquilino por token
     const { data: tenant, error: tenantErr } = await supabase
       .from('tenants')
-      .select('id, business_name')
+      .select('id, business_name, plan_id')
       .eq('pms_sync_token', token)
       .maybeSingle();
 
     if (tenantErr || !tenant) {
       res.status(403).json({ error: 'Token de sincronización PMS inválido o no autorizado.' });
+      return;
+    }
+
+    const hasPMSPermission = tenant.plan_id && !tenant.plan_id.includes('inicial');
+    if (!hasPMSPermission) {
+      res.status(403).json({ error: 'Tu plan actual de Receptia no incluye integración local PMS.' });
       return;
     }
 
@@ -91,6 +97,23 @@ router.post('/config', async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
+    const { data: tenant, error: tErr } = await supabase
+      .from('tenants')
+      .select('plan_id')
+      .eq('id', tenant_id)
+      .maybeSingle();
+
+    if (tErr || !tenant) {
+      res.status(404).json({ error: 'Inquilino no encontrado.' });
+      return;
+    }
+
+    const hasPMSPermission = tenant.plan_id && !tenant.plan_id.includes('inicial');
+    if (!hasPMSPermission) {
+      res.status(403).json({ error: 'Tu plan actual de Receptia no incluye integración local PMS.' });
+      return;
+    }
+
     const updateData: any = {};
     if (database_type !== undefined) {
       updateData.pms_database_type = database_type;

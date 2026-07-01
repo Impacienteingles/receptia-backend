@@ -108,8 +108,8 @@ export async function processBookingFlow(
   let calendarId = 'primary';
   let matchedProfName = null;
   const clientEnableMulti = tenantDetails.working_hours?.client_enable_multi_professional !== false;
-  
-  if (tenantDetails.enable_multi_professional && clientEnableMulti && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
+  const hasMultiProfPermission = tenantDetails.plan_id && !tenantDetails.plan_id.includes('inicial');
+  if (hasMultiProfPermission && tenantDetails.enable_multi_professional && clientEnableMulti && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
     const profName = professional;
     if (profName) {
       const prof = tenantDetails.professionals.find((p: any) => 
@@ -165,7 +165,8 @@ export async function processBookingFlow(
     };
   }
 
-  const isDepositEnabled = !!tenantDetails.enable_no_show_deposits;
+  const hasDepositPermission = tenantDetails.plan_id && !tenantDetails.plan_id.includes('inicial');
+  const isDepositEnabled = hasDepositPermission && !!tenantDetails.enable_no_show_deposits;
   const depositAmount = Number(tenantDetails.no_show_deposit_amount || 10.00);
 
   if (isDepositEnabled) {

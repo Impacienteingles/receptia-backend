@@ -148,7 +148,8 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
     // Mapear calendario del profesional si está activo
     let calendarId = 'primary';
     const clientEnableMulti = tenantDetails.working_hours?.client_enable_multi_professional !== false;
-    if (tenantDetails.enable_multi_professional && clientEnableMulti && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
+    const hasMultiProfPermission = tenantDetails.plan_id && !tenantDetails.plan_id.includes('inicial');
+    if (hasMultiProfPermission && tenantDetails.enable_multi_professional && clientEnableMulti && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
       if (professional) {
         const prof = tenantDetails.professionals.find((p: any) => 
           p.name.toLowerCase().includes(String(professional).toLowerCase()) ||
