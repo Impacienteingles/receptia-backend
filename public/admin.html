@@ -8028,7 +8028,7 @@
 
     async function fetchTenants() {
       try {
-        const response = await fetch('/api/tenants');
+        const response = await fetch('/api/admin/tenants');
         if (!response.ok) throw new Error('Error al conectar con la base de datos.');
         allTenants = await response.json();
         renderClientsTable();
@@ -8381,7 +8381,7 @@
       let tenant = allTenants.find(t => t.id === tenantId);
       if (!tenant) {
         try {
-          const response = await fetch(`/api/tenants?id=${tenantId}`);
+          const response = await fetch(`/api/admin/tenants?id=${tenantId}`);
           if (response.ok) {
             tenant = await response.json();
             if (tenant) {
@@ -9358,7 +9358,7 @@
     async function populateBaseTenantSelect(selectEl) {
       selectEl.innerHTML = '<option value="">-- Usar Plantilla Predeterminada (Elena) --</option>';
       try {
-        const tResponse = await fetch('/api/tenants');
+        const tResponse = await fetch('/api/admin/tenants');
         const vResponse = await fetch('/api/voices-catalog');
         
         let tenants = [];

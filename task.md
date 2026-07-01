@@ -10,6 +10,10 @@
 - `[x]` Extraer e inyectar dinámicamente sectores personalizados desde la base de datos al cargar prospectos
 - `[x]` Añadir botón y lógica de descarga en PDF para la "Guía Comercial / Playbook de Crecimiento" en el Panel de Administrador (`admin.html`)
 - `[x]` Corregir desalineaciones sintácticas en los scripts de `app.html` y `comercial.html`
-- `[x]` Consolidar la versión visual y de logs a la `v1.1.5`
+- `[x]` Consolidar la versión visual y de logs a la `v1.8.1`
+- `[x]` Crear la ruta backend `GET /api/admin/tenants` protegida con el PIN de administrador
+- `[x]` Restringir la ruta pública `GET /api/tenants` para evitar enumeración masiva
+- `[x]` Enmascarar el PIN `admin_pin` para evitar fugas si la petición no viene del cliente autenticado
+- `[x]` Modificar `public/admin.html` para consultar el endpoint seguro `/api/admin/tenants`
 - `[x]` Compilar código con `npm run build` y verificar que no existan errores
 - `[x]` Empujar y desplegar cambios a Render (vía GitHub) y Vercel (`npx vercel --prod --yes`)

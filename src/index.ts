@@ -181,9 +181,13 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
       const reqPin = req.query.pin || req.headers['x-client-pin'];
       const isClientRequest = reqPin && reqPin === t.admin_pin;
       
+      // Always redact PIN if not verified client request
+      if (!isClientRequest) {
+        t.admin_pin = '****';
+      }
+
       if (t.block_admin_access && !isClientRequest) {
         // Redact sensitive details for admin
-        t.admin_pin = '****';
         t.custom_instructions = 'Acceso bloqueado por privacidad del cliente';
         t.business_description = 'Acceso bloqueado por privacidad del cliente';
         t.pricing_details = 'Acceso bloqueado por privacidad del cliente';
@@ -212,12 +216,7 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
       res.json(mapTenant(data));
       return;
     } else {
-      // Listar todos los inquilinos activos (no archivados) para el panel de administración
-      const { data, error } = await query
-        .eq('is_archived', false)
-        .order('business_name', { ascending: true });
-      if (error) throw error;
-      res.json((data || []).map(mapTenant));
+      res.status(400).json({ error: 'Faltan parámetros de consulta (id o email).' });
       return;
     }
   } catch (err: any) {
@@ -965,6 +964,74 @@ app.get('/oauth2callback', async (req, res): Promise<void> => {
 // =====================================================================
 // GESTIÓN DEL CICLO DE VIDA DE CLIENTES: Suspender, Archivar, Restaurar
 // =====================================================================
+
+// 6A0. Listar todos los clientes activos (no archivados) o consultar por ID para el panel de administración
+app.get('/api/admin/tenants', async (req, res): Promise<void> => {
+  const { id } = req.query;
+  try {
+    const { data: blockedSettings } = await supabase
+      .from('settings')
+      .select('key, value')
+      .like('key', 'block_admin_access_%');
+    
+    const blockedTenantIds = new Set(
+      (blockedSettings || [])
+        .filter(s => s.value === 'true')
+        .map(s => s.key.replace('block_admin_access_', ''))
+    );
+
+    let query = supabase.from('tenants').select('*');
+    const mapTenant = (t: any) => {
+      if (!t) return t;
+      let workingHoursObj = t.working_hours;
+      if (typeof workingHoursObj === 'string') {
+        try { workingHoursObj = JSON.parse(workingHoursObj); } catch (e) {}
+      }
+      t.client_enable_multi_professional = workingHoursObj?.client_enable_multi_professional !== false;
+      t.client_enable_no_show_deposits = workingHoursObj?.client_enable_no_show_deposits !== false;
+      t.whatsapp_immediate_notification_enabled = t.whatsapp_immediate_notification_enabled !== undefined && t.whatsapp_immediate_notification_enabled !== null
+        ? t.whatsapp_immediate_notification_enabled
+        : (workingHoursObj?.whatsapp_immediate_notification_enabled !== false);
+        
+      t.block_admin_access = blockedTenantIds.has(t.id);
+
+      // Privacy Block: if block_admin_access is enabled
+      const reqPin = req.query.pin || req.headers['x-client-pin'];
+      const isClientRequest = reqPin && reqPin === t.admin_pin;
+      
+      if (t.block_admin_access && !isClientRequest) {
+        // Redact sensitive details for admin
+        t.admin_pin = '****';
+        t.custom_instructions = 'Acceso bloqueado por privacidad del cliente';
+        t.business_description = 'Acceso bloqueado por privacidad del cliente';
+        t.pricing_details = 'Acceso bloqueado por privacidad del cliente';
+        t.specialties = [];
+        t.vacation_message = 'Acceso bloqueado';
+        t.knowledge_base_content = 'Acceso bloqueado';
+        t.admin_access_blocked = true;
+      }
+      return t;
+    };
+
+    if (id) {
+      const { data, error } = await query.eq('id', id).single();
+      if (error || !data) {
+        res.status(404).json({ error: 'Inquilino no encontrado.' });
+        return;
+      }
+      res.json(mapTenant(data));
+      return;
+    } else {
+      const { data, error } = await query
+        .eq('is_archived', false)
+        .order('business_name', { ascending: true });
+      if (error) throw error;
+      res.json((data || []).map(mapTenant));
+    }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // 6A. Listar clientes archivados (historial)
 app.get('/api/admin/tenants/archived', async (req, res): Promise<void> => {
