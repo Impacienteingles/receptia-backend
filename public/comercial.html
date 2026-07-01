@@ -566,16 +566,20 @@
   #custom-modal-btn-ok {
     min-width: 140px;
     justify-content: center;
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
     font-weight: 600;
     padding: 0.6rem 1.5rem;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
     border-radius: 8px;
     margin: 0 auto;
   }
 
   #custom-modal-btn-ok:hover {
     transform: translateY(-1px);
+    background: var(--primary-dark);
     box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45);
     opacity: 1;
   }

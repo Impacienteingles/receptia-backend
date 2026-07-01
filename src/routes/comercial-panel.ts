@@ -343,7 +343,7 @@ router.post('/auth/recover', async (req: Request, res: Response): Promise<void> 
       if (transporter && mailFrom) {
         try {
           const mailOptions = {
-            from: `"Soporte Receptia" <${mailFrom}>`,
+            from: `"Soporte Receptia" <receptia@corandar.com>`,
             to: normalizedEmail,
             subject: 'Recuperación de Contraseña Comercial - Receptia',
             html: htmlContent
