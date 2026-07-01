@@ -428,10 +428,42 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
 - Especialidades / Servicios Ofrecidos: ${specialties.length > 0 ? specialties.join(', ') : 'Servicios Generales'}
 - Página Web del Negocio: ${website || 'No especificada'}`;
 
+      let resolvedPhoneProvider = 'retell';
+      let resolvedPhoneNumber = phone || null;
+      let resolvedSipUsername = null;
+      let resolvedSipPassword = null;
+      let resolvedSipServer = null;
+
+      if (overrideData && overrideData.virtual_phone_id) {
+        console.log(`[Pipeline] Buscando número Zadarma ID ${overrideData.virtual_phone_id} para la demo...`);
+        try {
+          const { data: vp } = await supabase
+            .from('virtual_phones')
+            .select('*')
+            .eq('id', overrideData.virtual_phone_id)
+            .maybeSingle();
+
+          if (vp) {
+            resolvedPhoneProvider = 'zadarma';
+            resolvedPhoneNumber = vp.phone_number;
+            resolvedSipUsername = vp.sip_username;
+            resolvedSipPassword = vp.sip_password;
+            resolvedSipServer = vp.sip_server;
+            console.log(`[Pipeline] Número Zadarma ${vp.phone_number} heredado correctamente.`);
+          }
+        } catch (vpErr: any) {
+          console.warn('⚠️ Error al cargar virtual_phone en trigger-pipeline:', vpErr.message);
+        }
+      }
+
       let attemptData: any = {
         business_name: businessName,
         email: email,
-        phone_number: phone || null,
+        phone_provider: resolvedPhoneProvider,
+        phone_number: resolvedPhoneNumber,
+        sip_username: resolvedSipUsername,
+        sip_password: resolvedSipPassword,
+        sip_server: resolvedSipServer,
         specialties: specialties,
         business_sector: sector || 'general',
         subscription_status: 'trial',
@@ -500,6 +532,25 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
 
       tenantId = newTenant.id;
       demoUrl = `${origin}/?tenant_id=${newTenant.id}`;
+
+      // Vincular número Zadarma virtual si se seleccionó uno en overrideData
+      if (overrideData && overrideData.virtual_phone_id) {
+        try {
+          const trialEndsStr = newTenant.trial_ends_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          await supabase
+            .from('virtual_phones')
+            .update({
+              tenant_id: newTenant.id,
+              prospect_id: prospectId,
+              status: 'assigned',
+              next_billing_date: trialEndsStr
+            })
+            .eq('id', overrideData.virtual_phone_id);
+          console.log(`[Pipeline] Teléfono Zadarma vinculado con éxito a demo ${newTenant.id} y prospecto ${prospectId}. Vence: ${trialEndsStr}`);
+        } catch (phoneSyncErr: any) {
+          console.warn('⚠️ Fallo al vincular teléfono virtual en el pipeline:', phoneSyncErr.message);
+        }
+      }
 
       // Aprovisionar LLM y Agente dedicados en Retell AI de forma asíncrona pero bloqueando este paso del pipeline
       let webhookBaseUrl = process.env.WEBHOOK_BASE_URL;

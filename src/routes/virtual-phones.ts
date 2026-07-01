@@ -36,7 +36,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
  * 2. Agregar un nuevo número de teléfono virtual
  */
 router.post('/', async (req: Request, res: Response): Promise<void> => {
-  const { phone_number, next_billing_date, tenant_id, prospect_id } = req.body;
+  const { phone_number, next_billing_date, tenant_id, prospect_id, sip_username, sip_password, sip_server } = req.body;
 
   if (!phone_number) {
     res.status(400).json({ error: 'El número de teléfono es obligatorio.' });
@@ -53,6 +53,9 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         next_billing_date: next_billing_date || null,
         tenant_id: tenant_id || null,
         prospect_id: prospect_id || null,
+        sip_username: sip_username || null,
+        sip_password: sip_password || null,
+        sip_server: sip_server || null,
         status
       }])
       .select()
@@ -72,7 +75,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
  */
 router.put('/:id', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { phone_number, next_billing_date, tenant_id, prospect_id } = req.body;
+  const { phone_number, next_billing_date, tenant_id, prospect_id, sip_username, sip_password, sip_server } = req.body;
 
   try {
     // Si se pasa tenant_id o prospect_id vacíos/limpios, se desasigna.
@@ -88,6 +91,9 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
         next_billing_date: next_billing_date !== undefined ? (next_billing_date || null) : undefined,
         tenant_id: cleanTenantId,
         prospect_id: cleanProspectId,
+        sip_username: sip_username !== undefined ? (sip_username || null) : undefined,
+        sip_password: sip_password !== undefined ? (sip_password || null) : undefined,
+        sip_server: sip_server !== undefined ? (sip_server || null) : undefined,
         status
       })
       .eq('id', id)

@@ -1633,7 +1633,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.18</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.19</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -1857,7 +1857,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.18</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.19</span>
       </div>
     </aside>
 
@@ -1880,7 +1880,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.18</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.19</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2155,9 +2155,27 @@
                 </select>
               </div>
 
-              <div class="form-group">
+              <div class="form-group" id="manual-phone-fields">
                 <label for="phone-number">Número de Teléfono Asignado / Desvío:</label>
                 <input type="text" id="phone-number">
+              </div>
+
+              <!-- DESPLEGABLE CON BUSCADOR DE TELÉFONOS VIRTUALES ZADARMA (INVENTARIO) -->
+              <div class="form-group" id="virtual-phone-select-group" style="display: none;">
+                <label for="client-virtual-phone-id">Número de Teléfono Zadarma (Inventario):</label>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <input type="text" id="client-virtual-phone-search" placeholder="Filtrar números..." style="flex: 1; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" oninput="filterClientVirtualPhonesDropdown()" class="input">
+                  <button type="button" class="btn btn-secondary" onclick="fetchVirtualPhonesForClientSelect()" style="padding: 0.6rem 0.8rem; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;" title="Actualizar inventario">
+                    <i data-lucide="refresh-cw" style="width: 14px; height: 14px; color: #fff;"></i>
+                  </button>
+                </div>
+                <select id="client-virtual-phone-id" class="input" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" onchange="onClientVirtualPhoneSelectChange()">
+                  <option value="">-- Selecciona un número --</option>
+                </select>
+                <div id="selected-phone-credentials-preview" style="display: none; font-size: 0.8rem; background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 0.5rem; color: var(--text-muted);">
+                  <span>Usuario SIP: <strong id="preview-sip-user" style="color: #60a5fa;"></strong></span> | 
+                  <span>Servidor: <strong id="preview-sip-server" style="color: #60a5fa;"></strong></span>
+                </div>
               </div>
 
               <!-- CAMPOS SIP PARA ZADARMA -->
@@ -2695,6 +2713,25 @@
                 <div style="margin-bottom: 1rem;">
                   <label for="vp-phone-number" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Número de Teléfono:</label>
                   <input type="text" id="vp-phone-number" placeholder="ej. +34910080090" required style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
+                </div>
+
+                <div style="margin-bottom: 1rem; border-top: 1px dashed var(--border-color); padding-top: 1rem; margin-top: 1rem;">
+                  <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary-hover); display: block; margin-bottom: 0.75rem;">Credenciales SIP (Zadarma)</span>
+                  
+                  <div style="margin-bottom: 0.75rem;">
+                    <label for="vp-sip-username" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">Usuario SIP:</label>
+                    <input type="text" id="vp-sip-username" placeholder="ej. 488592" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.5rem; border-radius: 6px;" class="input">
+                  </div>
+                  
+                  <div style="margin-bottom: 0.75rem;">
+                    <label for="vp-sip-password" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">Contraseña SIP:</label>
+                    <input type="password" id="vp-sip-password" placeholder="Contraseña SIP" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.5rem; border-radius: 6px;" class="input">
+                  </div>
+                  
+                  <div style="margin-bottom: 0.75rem;">
+                    <label for="vp-sip-server" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">Servidor/Proxy SIP:</label>
+                    <input type="text" id="vp-sip-server" placeholder="ej. sip.zadarma.com" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.5rem; border-radius: 6px;" class="input">
+                  </div>
                 </div>
 
                 <div style="margin-bottom: 1rem;">
@@ -4389,6 +4426,17 @@
               <option value="">-- Usar Plantilla Predeterminada (Elena) --</option>
             </select>
             <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Esto heredará los horarios, la voz, la velocidad y la estructura de prompts del cliente seleccionado, adaptándose automáticamente al negocio de esta demo.</p>
+          </div>
+
+          <!-- SECTOR COMÚN: ASIGNACIÓN DE NÚMERO DE TELÉFONO DE INVENTARIO -->
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+            <label style="color: #fff; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+              <i data-lucide="phone" style="width: 16px; height: 16px; color: var(--primary);"></i> Asignar Teléfono Zadarma (Disponible):
+            </label>
+            <select id="demo-virtual-phone-select" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: #fff;">
+              <option value="">-- No asignar teléfono ahora (Retell manual/vacío) --</option>
+            </select>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Selecciona uno de los números telefónicos libres para que se asocie automáticamente a la demo y a sus credenciales SIP.</p>
           </div>
         </div>
         
@@ -8873,7 +8921,20 @@
         btnTestCall.style.display = agentIdVal ? 'flex' : 'none';
       }
 
-      document.getElementById('phone-provider').value = tenant.phone_provider || 'retell';
+      const provider = tenant.phone_provider || 'retell';
+      document.getElementById('phone-provider').value = provider;
+      
+      if (provider === 'zadarma') {
+        document.getElementById('manual-phone-fields').style.display = 'none';
+        document.getElementById('sip-fields').style.display = 'none';
+        document.getElementById('virtual-phone-select-group').style.display = 'block';
+        fetchVirtualPhonesForClientSelect(tenant.phone_number || '');
+      } else {
+        document.getElementById('manual-phone-fields').style.display = 'block';
+        document.getElementById('sip-fields').style.display = 'none';
+        document.getElementById('virtual-phone-select-group').style.display = 'none';
+      }
+      
       document.getElementById('phone-number').value = tenant.phone_number || '';
       document.getElementById('sip-username').value = tenant.sip_username || '';
       document.getElementById('sip-password').value = tenant.sip_password || '';
@@ -11040,6 +11101,9 @@
       const select = document.getElementById('demo-base-tenant-select');
       await populateBaseTenantSelect(select);
 
+      // Cargar inventario de teléfonos libres para la demo B2B
+      await fetchVirtualPhonesForDemoSelect();
+
       // Mostrar modal
       document.getElementById('prospect-demo-modal').style.display = 'flex';
       lucide.createIcons();
@@ -11153,6 +11217,7 @@
         showCustomAlert('Iniciando la generación de la demo inteligente en segundo plano...', 'Pipeline Iniciado', 'info');
 
         try {
+          const virtualPhoneVal = document.getElementById('demo-virtual-phone-select').value;
           const override_data = {
             business_name: businessName,
             email: email,
@@ -11160,7 +11225,8 @@
             address: address,
             sector: sector,
             website: website,
-            specialties: specialties
+            specialties: specialties,
+            virtual_phone_id: virtualPhoneVal || null
           };
           if (finalVoiceId) {
             override_data.voice_id = finalVoiceId;
@@ -11406,6 +11472,11 @@
       adminForm.reset();
       editingTenantId = null;
       isContractManuallyEdited = false;
+      
+      document.getElementById('manual-phone-fields').style.display = 'block';
+      document.getElementById('sip-fields').style.display = 'none';
+      document.getElementById('virtual-phone-select-group').style.display = 'none';
+      
       formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Nuevo Cliente`;
       btnGenerateText.innerText = 'Generar Agente IA y Registrar';
 
@@ -11774,6 +11845,7 @@
         sip_username: document.getElementById('sip-username').value || null,
         sip_password: document.getElementById('sip-password').value || null,
         sip_server: document.getElementById('sip-server').value || null,
+        virtual_phone_id: phoneProvider.value === 'zadarma' ? document.getElementById('client-virtual-phone-id').value : null,
         specialties,
         working_hours,
         business_description: document.getElementById('business-description').value,
@@ -13890,6 +13962,9 @@
       const phone_number = document.getElementById('vp-phone-number').value.trim();
       const next_billing_date = document.getElementById('vp-billing-date').value;
       const assignment_type = document.getElementById('vp-assignment-type').value;
+      const sip_username = document.getElementById('vp-sip-username').value.trim();
+      const sip_password = document.getElementById('vp-sip-password').value;
+      const sip_server = document.getElementById('vp-sip-server').value.trim();
 
       let tenant_id = null;
       let prospect_id = null;
@@ -13904,7 +13979,10 @@
         phone_number,
         next_billing_date: next_billing_date || null,
         tenant_id,
-        prospect_id
+        prospect_id,
+        sip_username: sip_username || null,
+        sip_password: sip_password || null,
+        sip_server: sip_server || null
       };
 
       try {
@@ -13943,6 +14021,9 @@
 
       document.getElementById('virtual-phone-id').value = vp.id;
       document.getElementById('vp-phone-number').value = vp.phone_number;
+      document.getElementById('vp-sip-username').value = vp.sip_username || '';
+      document.getElementById('vp-sip-password').value = vp.sip_password || '';
+      document.getElementById('vp-sip-server').value = vp.sip_server || '';
       
       if (vp.next_billing_date) {
         const date = new Date(vp.next_billing_date);
@@ -13977,11 +14058,110 @@
     window.cancelVpEdit = function() {
       document.getElementById('virtual-phone-id').value = '';
       document.getElementById('virtual-phone-form').reset();
+      document.getElementById('vp-sip-username').value = '';
+      document.getElementById('vp-sip-password').value = '';
+      document.getElementById('vp-sip-server').value = '';
       document.getElementById('virtual-phone-form-title').innerHTML = `<i data-lucide="plus-circle" style="width:18px;height:18px;color:var(--primary);"></i> Registrar Teléfono`;
       document.getElementById('btn-cancel-vp-edit').style.display = 'none';
       document.getElementById('btn-submit-vp').innerText = 'Registrar';
       onVpAssignmentTypeChange();
       lucide.createIcons();
+    };
+
+    // Funciones del selector de teléfonos virtuales para la ficha del cliente
+    let allVpForSelect = [];
+
+    window.fetchVirtualPhonesForClientSelect = async function(selectedNumber = '') {
+      try {
+        const res = await fetch('/api/admin/virtual-phones');
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Error al obtener teléfonos');
+        allVpForSelect = json.data || [];
+        populateClientVirtualPhonesDropdown(selectedNumber);
+      } catch (err) {
+        console.error('Error al cargar teléfonos para selector:', err);
+      }
+    };
+
+    function populateClientVirtualPhonesDropdown(selectedNumber = '') {
+      const select = document.getElementById('client-virtual-phone-id');
+      select.innerHTML = '<option value="">-- Selecciona un número --</option>';
+
+      allVpForSelect.forEach(vp => {
+        const isSelected = vp.phone_number === selectedNumber;
+        if (vp.status === 'available' || isSelected) {
+          const option = document.createElement('option');
+          option.value = vp.id;
+          option.innerText = isSelected ? `${vp.phone_number} (Asignado actualmente)` : `${vp.phone_number} (Disponible)`;
+          option.setAttribute('data-phone', vp.phone_number);
+          option.setAttribute('data-sip-user', vp.sip_username || '');
+          option.setAttribute('data-sip-server', vp.sip_server || '');
+          
+          if (isSelected) {
+            option.selected = true;
+          }
+          select.appendChild(option);
+        }
+      });
+
+      onClientVirtualPhoneSelectChange();
+    }
+
+    window.filterClientVirtualPhonesDropdown = function() {
+      const query = document.getElementById('client-virtual-phone-search').value.toLowerCase().trim();
+      const select = document.getElementById('client-virtual-phone-id');
+      const options = select.options;
+
+      for (let i = 1; i < options.length; i++) {
+        const opt = options[i];
+        const text = opt.text.toLowerCase();
+        if (text.includes(query)) {
+          opt.style.display = 'block';
+        } else {
+          opt.style.display = 'none';
+        }
+      }
+    };
+
+    window.onClientVirtualPhoneSelectChange = function() {
+      const select = document.getElementById('client-virtual-phone-id');
+      const selectedOption = select.options[select.selectedIndex];
+      const previewDiv = document.getElementById('selected-phone-credentials-preview');
+
+      if (selectedOption && selectedOption.value) {
+        const sipUser = selectedOption.getAttribute('data-sip-user');
+        const sipServer = selectedOption.getAttribute('data-sip-server');
+        
+        document.getElementById('preview-sip-user').innerText = sipUser || 'No especificado';
+        document.getElementById('preview-sip-server').innerText = sipServer || 'No especificado';
+        previewDiv.style.display = 'block';
+      } else {
+        previewDiv.style.display = 'none';
+      }
+    };
+
+    // Funciones del selector de teléfonos virtuales para el modal de demos B2B
+    window.fetchVirtualPhonesForDemoSelect = async function() {
+      try {
+        const res = await fetch('/api/admin/virtual-phones');
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Error al obtener teléfonos');
+        const list = json.data || [];
+        
+        const select = document.getElementById('demo-virtual-phone-select');
+        select.innerHTML = '<option value="">-- No asignar teléfono ahora (Retell manual/vacío) --</option>';
+
+        list.forEach(vp => {
+          if (vp.status === 'available') {
+            const option = document.createElement('option');
+            option.value = vp.id;
+            option.innerText = `${vp.phone_number} (Zadarma Libre)`;
+            select.appendChild(option);
+          }
+        });
+      } catch (err) {
+        console.error('Error al cargar teléfonos para demo select:', err);
+      }
     };
 
     window.deleteVirtualPhone = async function(id) {

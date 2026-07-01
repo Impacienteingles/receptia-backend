@@ -1539,7 +1539,8 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     twilio_whatsapp_number,
     whatsapp_immediate_notification_enabled,
     block_admin_access,
-    voice_locked
+    voice_locked,
+    virtual_phone_id
   } = req.body;
 
   if (!business_name || !email) {
@@ -1563,6 +1564,30 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       .select('*')
       .eq('email', email)
       .maybeSingle();
+
+    let resolvedPhoneNumber = phone_number !== undefined ? phone_number : (existing ? existing.phone_number : null);
+    let resolvedSipUsername = sip_username;
+    let resolvedSipPassword = sip_password;
+    let resolvedSipServer = sip_server;
+
+    if (phone_provider === 'zadarma' && virtual_phone_id) {
+      addStep('1B. Buscando número de teléfono virtual en el inventario...');
+      const { data: vp } = await supabase
+        .from('virtual_phones')
+        .select('*')
+        .eq('id', virtual_phone_id)
+        .maybeSingle();
+
+      if (vp) {
+        resolvedPhoneNumber = vp.phone_number;
+        resolvedSipUsername = vp.sip_username;
+        resolvedSipPassword = vp.sip_password;
+        resolvedSipServer = vp.sip_server;
+        addStep(`1C. Teléfono virtual ${vp.phone_number} seleccionado correctamente.`);
+      } else {
+        addStep('⚠️ Advertencia: No se encontró el teléfono virtual en el inventario. Se usarán valores manuales.');
+      }
+    }
 
     const existingBlockAdminAccess = existing ? await getBlockAdminAccess(existing.id) : false;
     const blockAdminAccessVal = block_admin_access !== undefined ? !!block_admin_access : existingBlockAdminAccess;
@@ -1633,10 +1658,10 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       specialties,
       voice_id: computedVoiceId,
       phone_provider,
-      phone_number: phone_number !== undefined ? phone_number : (existing ? existing.phone_number : null),
-      sip_username,
-      sip_password,
-      sip_server,
+      phone_number: resolvedPhoneNumber,
+      sip_username: resolvedSipUsername,
+      sip_password: resolvedSipPassword,
+      sip_server: resolvedSipServer,
       working_hours: workingHoursObj,
       business_description,
       pricing_details,
@@ -2045,6 +2070,33 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
         tenant.block_admin_access = blockAdminAccessVal;
       } else {
         tenant.block_admin_access = await getBlockAdminAccess(tenant.id);
+      }
+
+      // Sincronizar asignación y fechas de vencimiento de Teléfonos Virtuales
+      try {
+        // Primero, liberar cualquier número asignado anteriormente a este tenant
+        await supabase
+          .from('virtual_phones')
+          .update({ tenant_id: null, status: 'available' })
+          .eq('tenant_id', tenant.id);
+
+        // Si se seleccionó un teléfono Zadarma del inventario, asociarlo ahora
+        if (phone_provider === 'zadarma' && virtual_phone_id) {
+          const phoneBillingDate = computedStatus === 'trial' ? computedTrialEndsAt : (contract_end_date || null);
+          
+          await supabase
+            .from('virtual_phones')
+            .update({
+              tenant_id: tenant.id,
+              status: 'assigned',
+              next_billing_date: phoneBillingDate
+            })
+            .eq('id', virtual_phone_id);
+
+          console.log(`[Aprovisionamiento] Teléfono virtual ID ${virtual_phone_id} asignado a Tenant ${tenant.id}. Vencimiento: ${phoneBillingDate}`);
+        }
+      } catch (phoneSyncErr: any) {
+        console.warn('⚠️ No se pudo sincronizar la asignación del teléfono virtual:', phoneSyncErr.message);
       }
     }
     res.json({
@@ -2478,6 +2530,15 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
 
           const todayStr = new Date().toISOString().split('T')[0];
 
+          // Calcular fecha de próxima renovación del contrato
+          const nextRenewalDate = new Date();
+          if (planCycle === 'annually') {
+            nextRenewalDate.setFullYear(nextRenewalDate.getFullYear() + 1);
+          } else {
+            nextRenewalDate.setMonth(nextRenewalDate.getMonth() + 1);
+          }
+          const contractEndDateStr = nextRenewalDate.toISOString().split('T')[0];
+
           // Actualizar tenant en Supabase
           const { error: updErr } = await supabase
             .from('tenants')
@@ -2489,7 +2550,8 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
               stripe_subscription_id: session.subscription,
               is_trial: false,
               trial_ends_at: null,
-              contract_start_date: todayStr
+              contract_start_date: todayStr,
+              contract_end_date: contractEndDateStr
             })
             .eq('id', tenantId);
 
@@ -2497,6 +2559,17 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
             console.error(`❌ Error al actualizar suscripción de tenant ${tenantId} tras webhook checkout.completed:`, updErr.message);
           } else {
             console.log(`✅ Suscripción de tenant ${tenantId} activada con éxito en la base de datos.`);
+            
+            // Sincronizar fecha del teléfono virtual asociado a este tenant
+            try {
+              await supabase
+                .from('virtual_phones')
+                .update({ next_billing_date: contractEndDateStr })
+                .eq('tenant_id', tenantId);
+              console.log(`[Stripe Webhook] Sincronizada fecha de renovación del teléfono virtual para el tenant ${tenantId}: ${contractEndDateStr}`);
+            } catch (phoneErr: any) {
+              console.warn('⚠️ No se pudo actualizar el vencimiento del teléfono virtual en el webhook:', phoneErr.message);
+            }
             
             // Cargar de nuevo el tenant con su nuevo estado y sincronizar con Retell AI
             const { data: updatedTenant } = await supabase
@@ -2823,6 +2896,17 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
             console.error(`❌ Error al desactivar suscripción del tenant ${tenant.id} en base de datos:`, updErr.message);
           } else {
             console.log(`✅ Suscripción de tenant ${tenant.id} cambiada a inactiva.`);
+            
+            // Liberar teléfono virtual del inventario
+            try {
+              await supabase
+                .from('virtual_phones')
+                .update({ tenant_id: null, status: 'available' })
+                .eq('tenant_id', tenant.id);
+              console.log(`[Stripe Webhook] Teléfono virtual liberado para el tenant desactivado ${tenant.id}`);
+            } catch (phoneErr: any) {
+              console.warn('⚠️ No se pudo liberar el teléfono virtual tras desactivación:', phoneErr.message);
+            }
             
             // Reversión de comisiones y prospecto si ocurre cancelación en periodo de prueba (menos de 7 días)
             try {
@@ -5086,6 +5170,9 @@ async function runDatabaseMigrations() {
       CREATE TABLE IF NOT EXISTS virtual_phones (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         phone_number VARCHAR UNIQUE NOT NULL,
+        sip_username VARCHAR,
+        sip_password VARCHAR,
+        sip_server VARCHAR,
         status VARCHAR DEFAULT 'available' CHECK (status IN ('available', 'assigned')),
         tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
         prospect_id UUID REFERENCES prospects(id) ON DELETE SET NULL,
@@ -5093,6 +5180,11 @@ async function runDatabaseMigrations() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
       );
+
+      ALTER TABLE virtual_phones 
+      ADD COLUMN IF NOT EXISTS sip_username VARCHAR,
+      ADD COLUMN IF NOT EXISTS sip_password VARCHAR,
+      ADD COLUMN IF NOT EXISTS sip_server VARCHAR;
     `);
 
     // 3. Notificar a PostgREST
