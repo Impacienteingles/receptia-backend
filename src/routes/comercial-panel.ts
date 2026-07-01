@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { supabase } from '../services/supabase';
+import { supabase, getSettingVal } from '../services/supabase';
 import nodemailer from 'nodemailer';
+import axios from 'axios';
 
 // Extender Express Request para almacenar la entidad comercial autenticada
 interface ComercialRequest extends Request {
@@ -226,67 +227,107 @@ router.post('/auth/recover', async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Configurar transporte SMTP modular de Nodemailer reutilizando las variables del .env
-    let transporter = null;
-    let mailFrom = '';
+    const resendApiKey = await getSettingVal('RESEND_API_KEY') || process.env.RESEND_API_KEY;
+    const resendFrom = await getSettingVal('RESEND_FROM_EMAIL') || process.env.RESEND_FROM_EMAIL || 'Receptia Demos <onboarding@resend.dev>';
 
-    if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        },
-        connectionTimeout: 5000,
-        connectionTimeoutMs: 5000
-      } as any);
-      mailFrom = process.env.SMTP_USER;
-    } else if (process.env.GOOGLE_EMAIL && process.env.GOOGLE_PASSWORD) {
-      transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.GOOGLE_EMAIL,
-          pass: process.env.GOOGLE_PASSWORD
-        },
-        connectionTimeout: 5000
-      } as any);
-      mailFrom = process.env.GOOGLE_EMAIL;
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+        <h2 style="color: #8b5cf6; margin-top: 0;">Recuperación de Contraseña Comercial</h2>
+        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+        <p>Hola, <strong>${agent.name}</strong>:</p>
+        <p>Hemos recibido una solicitud para recuperar tu contraseña de acceso al panel de agente comercial de Receptia.</p>
+        <p>Tu contraseña de acceso es:</p>
+        <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 1.2rem; font-weight: bold; text-align: center; color: #1f2937; border: 1px solid #e5e7eb;">
+          ${agent.pin}
+        </div>
+        <p style="margin-top: 20px; font-size: 0.9rem; color: #6b7280;">Si no has solicitado este correo, por favor cambia tu contraseña desde la pestaña de Ajustes del panel comercial.</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin-top: 25px; margin-bottom: 15px;">
+        <p style="font-size: 0.8rem; color: #888; text-align: center;">Receptia B2B.</p>
+      </div>
+    `;
+
+    let emailSent = false;
+
+    // 1. Intentar con Resend si está configurado
+    if (resendApiKey && resendApiKey !== 'YOUR_RESEND_API_KEY') {
+      try {
+        await axios.post('https://api.resend.com/emails', {
+          from: resendFrom,
+          to: normalizedEmail,
+          subject: 'Recuperación de Contraseña Comercial - Receptia',
+          html: htmlContent
+        }, {
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        emailSent = true;
+      } catch (resendErr: any) {
+        console.error('[auth/recover] Error al enviar con Resend:', resendErr.response?.data || resendErr.message);
+      }
     }
 
-    if (transporter && mailFrom) {
-      const mailOptions = {
-        from: `"Soporte Receptia" <${mailFrom}>`,
-        to: normalizedEmail,
-        subject: `Recuperación de Contraseña Comercial - Receptia`,
-        html: `
-          <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
-            <div style="text-align: center; margin-bottom: 24px;">
-              <h2 style="color: #7c3aed; margin: 0; font-size: 24px;">Receptia</h2>
-              <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Recuperación de credenciales comerciales</p>
-            </div>
-            <div style="font-size: 16px; color: #1e293b; line-height: 1.6; margin-bottom: 24px;">
-              <p>Hola, <strong>${agent.name}</strong>:</p>
-              <p>Hemos recibido una solicitud para recuperar tu contraseña de acceso al panel de agente comercial de Receptia.</p>
-              <div style="text-align: center; background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin: 24px 0;">
-                <p style="font-size: 13px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">Tu contraseña de acceso es:</p>
-                <p style="font-size: 36px; font-weight: bold; color: #1e293b; letter-spacing: 0.1em; margin: 8px 0 0 0;">${agent.pin}</p>
-              </div>
-              <p style="font-size: 14px; color: #64748b;">Si no has solicitado esta recuperación, por favor te sugerimos cambiar tu contraseña desde el panel comercial o ponerte en contacto con soporte.</p>
-            </div>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin-bottom: 20px;" />
-            <div style="text-align: center; font-size: 12px; color: #94a3b8;">
-              <p>© 2026 Receptia. Todos los derechos reservados.</p>
-            </div>
-          </div>
-        `
-      };
+    // 2. Si no se envió, intentar con SMTP / Gmail
+    if (!emailSent) {
+      const smtpHost = await getSettingVal('SMTP_HOST') || process.env.SMTP_HOST;
+      const smtpPort = parseInt((await getSettingVal('SMTP_PORT')) || process.env.SMTP_PORT || '587');
+      const smtpSecure = (await getSettingVal('SMTP_SECURE')) === 'true' || process.env.SMTP_SECURE === 'true';
+      const smtpUser = await getSettingVal('SMTP_USER') || process.env.SMTP_USER;
+      const smtpPass = await getSettingVal('SMTP_PASS') || process.env.SMTP_PASS;
 
-      await transporter.sendMail(mailOptions);
+      let transporter = null;
+      let mailFrom = '';
+
+      if (smtpHost && smtpPort && smtpUser && smtpPass) {
+        transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpSecure,
+          auth: {
+            user: smtpUser,
+            pass: smtpPass
+          },
+          connectionTimeout: 5000,
+          connectionTimeoutMs: 5000
+        } as any);
+        mailFrom = smtpUser;
+      } else {
+        const googleEmail = await getSettingVal('GOOGLE_EMAIL') || process.env.GOOGLE_EMAIL;
+        const googlePassword = await getSettingVal('GOOGLE_PASSWORD') || process.env.GOOGLE_PASSWORD;
+        if (googleEmail && googlePassword) {
+          transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: googleEmail,
+              pass: googlePassword
+            },
+            connectionTimeout: 5000
+          } as any);
+          mailFrom = googleEmail;
+        }
+      }
+
+      if (transporter && mailFrom) {
+        try {
+          const mailOptions = {
+            from: `"Soporte Receptia" <${mailFrom}>`,
+            to: normalizedEmail,
+            subject: 'Recuperación de Contraseña Comercial - Receptia',
+            html: htmlContent
+          };
+          await transporter.sendMail(mailOptions);
+          emailSent = true;
+        } catch (smtpErr: any) {
+          console.error('[auth/recover] Error al enviar con SMTP:', smtpErr.message);
+        }
+      }
+    }
+
+    if (emailSent) {
       res.json({ success: true, message: 'La contraseña de comercial ha sido enviada automáticamente a tu correo electrónico registrado.' });
     } else {
-      res.status(500).json({ error: 'El servicio de envío de correos no está configurado en el servidor.' });
+      res.status(500).json({ error: 'El servicio de envío de correos no está configurado o falló el envío.' });
     }
   } catch (err: any) {
     res.status(500).json({ error: err.message });
