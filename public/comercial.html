@@ -538,7 +538,7 @@
           <img src="/receptia_logo.png" alt="Receptia Logo" style="width: 40px; height: 40px; border-radius: 8px;">
           <h2 style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif;">Receptia B2B</h2>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.0.7</span></p>
+        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.0.8</span></p>
       </div>
 
       <form id="login-form" novalidate onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
@@ -581,7 +581,7 @@
       <div class="logo-container">
         <img src="/receptia_logo.png" alt="Receptia Logo">
         <span>Receptia Comercial</span>
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.0.7</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.0.8</span>
       </div>
 
       <div class="user-info">
@@ -1188,7 +1188,7 @@
 
     // Inicializar
     window.addEventListener('DOMContentLoaded', async () => {
-      console.log('[Receptia Comercial v1.0.7] Inicializando panel...');
+      console.log('[Receptia Comercial v1.0.8] Inicializando panel...');
       const urlParams = new URLSearchParams(window.location.search);
       currentAccessUrl = urlParams.get('c') || '';
       console.log('[Receptia] Token de acceso detectado:', currentAccessUrl ? `"${currentAccessUrl}"` : '(ninguno)');
@@ -1261,7 +1261,7 @@
           emailInput.removeAttribute('required');
           emailInput.disabled = true;
           
-          loginWelcome.innerHTML = `Bienvenido, <strong>${res.agent.name}</strong> <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.7</span>`;
+          loginWelcome.innerHTML = `Bienvenido, <strong>${res.agent.name}</strong> <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.8</span>`;
           pinInput.value = '';
           pinInput.focus();
         } catch (err) {
@@ -1270,14 +1270,14 @@
           currentAccessUrl = '';
           emailGroup.style.display = 'flex';
           emailInput.disabled = false;
-          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.7</span>`;
+          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.8</span>`;
           emailInput.focus();
         }
       } else {
         console.log('[Receptia] Modo login manual (sin token de URL).');
         emailGroup.style.display = 'flex';
         emailInput.disabled = false;
-        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.7</span>`;
+        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.8</span>`;
       }
     }
 

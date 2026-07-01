@@ -231,18 +231,50 @@ router.post('/auth/recover', async (req: Request, res: Response): Promise<void> 
     const resendFrom = await getSettingVal('RESEND_FROM_EMAIL') || process.env.RESEND_FROM_EMAIL || 'Receptia Demos <onboarding@resend.dev>';
 
     const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
-        <h2 style="color: #8b5cf6; margin-top: 0;">Recuperación de Contraseña Comercial</h2>
-        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
-        <p>Hola, <strong>${agent.name}</strong>:</p>
-        <p>Hemos recibido una solicitud para recuperar tu contraseña de acceso al panel de agente comercial de Receptia.</p>
-        <p>Tu contraseña de acceso es:</p>
-        <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 1.2rem; font-weight: bold; text-align: center; color: #1f2937; border: 1px solid #e5e7eb;">
-          ${agent.pin}
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 540px; margin: 40px auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);">
+        
+        <!-- HEADER CON LOGOS -->
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 24px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
+          <tr>
+            <td align="center" style="vertical-align: middle;">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="vertical-align: middle; padding-right: 12px;">
+                    <img src="https://receptia.corandar.com/logo.png" alt="Receptia" style="height: 32px; width: auto; display: block; border: 0;" />
+                  </td>
+                  <td style="vertical-align: middle; border-left: 1px solid #cbd5e1; height: 24px; padding-right: 12px;">&nbsp;</td>
+                  <td style="vertical-align: middle; background-color: #ffffff; padding: 4px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    <img src="https://receptia.corandar.com/corandar-logo.png" alt="Corandar Logo" style="height: 18px; width: auto; display: block; border: 0;" />
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- CONTENIDO -->
+        <div style="font-size: 15px; color: #334155; line-height: 1.6; margin-bottom: 24px;">
+          <p style="margin-top: 0; font-size: 16px; font-weight: 600; color: #0f172a;">Hola, <strong>${agent.name}</strong>:</p>
+          <p>Hemos recibido una solicitud para recuperar tu contraseña de acceso al panel de agente comercial de Receptia.</p>
+          
+          <div style="text-align: center; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #cbd5e1; padding: 24px; border-radius: 12px; margin: 24px 0;">
+            <p style="font-size: 12px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Tu contraseña de acceso es:</p>
+            <p style="font-size: 32px; font-weight: 700; color: #7c3aed; letter-spacing: 0.05em; margin: 10px 0 0 0; font-family: Courier, monospace;">${agent.pin}</p>
+          </div>
+          
+          <p style="font-size: 13px; color: #64748b; margin-bottom: 0;">Si no has solicitado este correo, por favor cambia tu contraseña desde la pestaña de Ajustes del panel comercial.</p>
         </div>
-        <p style="margin-top: 20px; font-size: 0.9rem; color: #6b7280;">Si no has solicitado este correo, por favor cambia tu contraseña desde la pestaña de Ajustes del panel comercial.</p>
-        <hr style="border: 0; border-top: 1px solid #eee; margin-top: 25px; margin-bottom: 15px;">
-        <p style="font-size: 0.8rem; color: #888; text-align: center;">Receptia B2B.</p>
+
+        <!-- FOOTER -->
+        <hr style="border: none; border-top: 1px solid #f1f5f9; margin-top: 24px; margin-bottom: 16px;" />
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td align="center" style="font-size: 12px; color: #94a3b8;">
+              © 2026 <a href="https://corandar.com" style="color: #7c3aed; text-decoration: none; font-weight: 500;">Corandar S.L.</a> · Todos los derechos reservados.
+            </td>
+          </tr>
+        </table>
+
       </div>
     `;
 
