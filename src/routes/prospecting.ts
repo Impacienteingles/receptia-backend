@@ -1097,7 +1097,8 @@ Este agente es capaz de atender llamadas telefónicas las 24 horas del día, res
       to: prospect.email,
       html: htmlContent,
       voice_id: selectedVoiceId,
-      script: selectedScript
+      script: selectedScript,
+      business_name: prospect.business_name
     });
   } catch (err: any) {
     console.error(`[Prospecting API ERROR] Fallo al obtener vista previa para prospecto ${id}:`, err.message);
@@ -1110,9 +1111,16 @@ Este agente es capaz de atender llamadas telefónicas las 24 horas del día, res
  */
 router.post('/:id/save-outreach-settings', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { subject, body, voice_id, script, html } = req.body;
+  const { subject, body, voice_id, script, html, business_name } = req.body;
 
   try {
+    if (business_name !== undefined && business_name.trim() !== '') {
+      await supabase
+        .from('prospects')
+        .update({ business_name: business_name.trim() })
+        .eq('id', id);
+    }
+
     const { data: prospect, error: fetchErr } = await supabase
       .from('prospects')
       .select('*')
@@ -1197,7 +1205,8 @@ router.post('/:id/save-outreach-settings', async (req: Request, res: Response): 
 
     res.json({
       status: 'success',
-      html: htmlContent
+      html: htmlContent,
+      business_name: prospect.business_name
     });
   } catch (err: any) {
     console.error(`[Prospecting API ERROR] Fallo al guardar ajustes de outreach para prospecto ${id}:`, err.message);
@@ -1210,9 +1219,16 @@ router.post('/:id/save-outreach-settings', async (req: Request, res: Response): 
  */
 router.post('/:id/regenerate-audio', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { voice_id, script, subject, body } = req.body;
+  const { voice_id, script, subject, body, business_name } = req.body;
 
   try {
+    if (business_name !== undefined && business_name.trim() !== '') {
+      await supabase
+        .from('prospects')
+        .update({ business_name: business_name.trim() })
+        .eq('id', id);
+    }
+
     const { data: prospect, error: fetchErr } = await supabase
       .from('prospects')
       .select('*')
@@ -1375,7 +1391,8 @@ router.post('/:id/reset-outreach-html', async (req: Request, res: Response): Pro
 
     res.json({
       status: 'success',
-      html: htmlContent
+      html: htmlContent,
+      business_name: prospect.business_name
     });
   } catch (err: any) {
     console.error(`[Prospecting API ERROR] Fallo al restablecer html para prospecto ${id}:`, err.message);

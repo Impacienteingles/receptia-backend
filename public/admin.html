@@ -1633,7 +1633,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.14</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.15</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -1853,7 +1853,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.14</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.15</span>
       </div>
     </aside>
 
@@ -1876,7 +1876,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.14</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.15</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -4287,10 +4287,14 @@
       </div>
       
       <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; background: rgba(255, 255, 255, 0.02); padding: 0.6rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); gap: 2rem;">
-        <div style="display: flex; gap: 1.5rem; flex-grow: 1;">
-          <div style="display: flex; gap: 0.5rem; font-size: 0.85rem;">
+        <div style="display: flex; gap: 2rem; flex-grow: 1; align-items: center; justify-content: space-between;">
+          <div style="display: flex; gap: 0.5rem; font-size: 0.85rem; align-items: center;">
             <span style="color: var(--text-muted); font-weight: 600; min-width: 80px;">Destinatario:</span>
             <span id="preview-email-to" style="color: #fff; font-weight: 500;"></span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; font-size: 0.85rem; align-items: center; flex-grow: 0; width: 450px;">
+            <span style="color: var(--text-muted); font-weight: 600; min-width: 135px;">Nombre del Negocio:</span>
+            <input type="text" id="preview-email-business-name-input" placeholder="Nombre comercial" style="width: 100%; padding: 0.35rem 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: #fff; font-size: 0.8rem; font-weight: 500;">
           </div>
         </div>
       </div>
@@ -9362,6 +9366,9 @@
         }
         
         document.getElementById('preview-email-html-input').value = data.html || '';
+        if (data.business_name) {
+          document.getElementById('preview-email-business-name-input').value = data.business_name;
+        }
         
         const iframe = document.getElementById('preview-email-iframe');
         const doc = iframe.contentDocument || iframe.contentWindow.document;
@@ -9394,6 +9401,7 @@
 
         // Populate details
         document.getElementById('preview-email-to').innerText = data.to;
+        document.getElementById('preview-email-business-name-input').value = data.business_name || '';
         document.getElementById('preview-email-subject-input').value = data.subject || '';
         document.getElementById('preview-email-body-input').value = data.body || '';
         document.getElementById('preview-email-html-input').value = data.html || '';
@@ -9414,13 +9422,14 @@
 
         // Helper function to save outreach text/settings without Cartesia audio regeneration
         const saveAndRefreshPreview = async (silent = false) => {
+          const business_name = document.getElementById('preview-email-business-name-input').value.trim();
           const subject = document.getElementById('preview-email-subject-input').value;
           const body = document.getElementById('preview-email-body-input').value;
           const voice_id = document.getElementById('preview-audio-voice').value;
           const script = document.getElementById('preview-audio-script').value;
           const html = document.getElementById('preview-email-html-input').value;
 
-          const payload = { subject, body, voice_id, script };
+          const payload = { subject, body, voice_id, script, business_name };
           if (activeEditMode === 'html') {
             payload.html = html;
           }
@@ -9439,6 +9448,14 @@
             }
             writeToIframe(saveData.html);
             document.getElementById('preview-email-html-input').value = saveData.html || '';
+            document.getElementById('preview-email-business-name-input').value = saveData.business_name || '';
+            
+            // También actualizar localmente en allProspects el nombre comercial para que al abrir Activar Demo se muestre actualizado
+            const p = allProspects.find(item => item.id === prospectId);
+            if (p && saveData.business_name) {
+              p.business_name = saveData.business_name;
+            }
+            
             if (!silent) {
               showCustomAlert('Vista previa de correo actualizada y guardada con éxito.', 'Actualizado', 'success');
             }
@@ -9466,6 +9483,7 @@
         document.getElementById('preview-email-subject-input').onblur = () => saveAndRefreshPreview(true);
         document.getElementById('preview-email-body-input').onblur = () => saveAndRefreshPreview(true);
         document.getElementById('preview-email-html-input').onblur = () => saveAndRefreshPreview(true);
+        document.getElementById('preview-email-business-name-input').onblur = () => saveAndRefreshPreview(true);
 
         // Configure the "Regenerar Audio" button (Cartesia TTS)
         const regenBtn = document.getElementById('regenerate-audio-btn');
@@ -9475,6 +9493,7 @@
           regenBtn.disabled = true;
           regenBtn.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Regenerando...`;
           
+          const business_name = document.getElementById('preview-email-business-name-input').value.trim();
           const voice_id = document.getElementById('preview-audio-voice').value;
           const script = document.getElementById('preview-audio-script').value;
           const subject = document.getElementById('preview-email-subject-input').value;
@@ -9486,7 +9505,7 @@
               headers: {
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({ voice_id, script, subject, body })
+              body: JSON.stringify({ voice_id, script, subject, body, business_name })
             });
             const regenData = await regenRes.json();
             if (!regenRes.ok) {
