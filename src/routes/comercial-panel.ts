@@ -689,8 +689,8 @@ router.post('/change-password', requireComercialAuth, async (req: ComercialReque
     return;
   }
 
-  if (new_pin.length < 8 || !/^[a-zA-Z0-9]+$/.test(new_pin)) {
-    res.status(400).json({ error: 'La nueva contraseña debe ser alfanumérica y tener al menos 8 caracteres.' });
+  if (new_pin.length < 8) {
+    res.status(400).json({ error: 'La nueva contraseña debe tener al menos 8 caracteres.' });
     return;
   }
 
