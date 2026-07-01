@@ -366,4 +366,33 @@ Todos los sistemas operativos
 RGPD nativo
 </span> <span class="inline-flex items-center gap-1.5"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path> </svg>
 Servidores en Europa
-</span> </div> </div> </div> </footer>   </body></html>
+</span> </div> </div> </div> </footer>
+  <!-- Botón Volver Arriba -->
+  <button id="scroll-to-top" class="fixed bottom-6 right-6 z-50 flex items-center justify-center w-12 h-12 rounded-full text-white shadow-lg opacity-0 translate-y-10 pointer-events-none transition-all duration-300 ease-in-out border border-white/10 hover:scale-105 active:scale-95" aria-label="Volver arriba" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7 7 7M12 3v18"></path>
+    </svg>
+  </button>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('scroll-to-top');
+      if (btn) {
+        window.addEventListener('scroll', () => {
+          if (window.scrollY > 500) {
+            btn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+            btn.classList.add('opacity-100', 'translate-y-0');
+          } else {
+            btn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+            btn.classList.remove('opacity-100', 'translate-y-0');
+          }
+        });
+        btn.addEventListener('click', () => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        });
+      }
+    });
+  </script>
+</body></html>
