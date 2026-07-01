@@ -538,7 +538,7 @@
           <img src="/receptia_logo.png" alt="Receptia Logo" style="width: 40px; height: 40px; border-radius: 8px;">
           <h2 style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif;">Receptia B2B</h2>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.0.0</span></p>
+        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.0.1</span></p>
       </div>
 
       <form id="login-form" novalidate onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
@@ -581,7 +581,7 @@
       <div class="logo-container">
         <img src="/receptia_logo.png" alt="Receptia Logo">
         <span>Receptia Comercial</span>
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.0.0</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.0.1</span>
       </div>
 
       <div class="user-info">
@@ -660,6 +660,10 @@
             <button class="tab-btn" onclick="switchMainTab('guide')">
               <i data-lucide="help-circle" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px;"></i>
               Centro de Ayuda
+            </button>
+            <button class="tab-btn" onclick="switchMainTab('settings')">
+              <i data-lucide="settings" style="width: 14px; height: 14px; display: inline; vertical-align: middle; margin-right: 4px;"></i>
+              Ajustes
             </button>
           </div>
 
@@ -1017,6 +1021,56 @@
             </div>
           </div>
 
+          <!-- TAB AJUSTES -->
+          <div class="tab-content-panel" id="panel-settings">
+            <div style="max-width: 480px; margin: 0 auto; padding: 2rem 1rem;">
+              <h3 style="color: #fff; display: flex; align-items: center; gap: 0.5rem; margin-top: 0; font-size: 1.25rem; font-family: 'Outfit', sans-serif;">
+                <i data-lucide="key-round" style="color: var(--primary);"></i>
+                Cambiar Contraseña de Acceso
+              </h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.5rem;">
+                Modifica tu contraseña de agente comercial. La nueva contraseña debe ser alfanumérica y tener al menos 8 caracteres.
+              </p>
+
+              <div style="display: flex; flex-direction: column; gap: 1.2rem; text-align: left;">
+                <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                  <label style="font-size: 0.8rem; color: #fff; font-weight: 600;">Contraseña Actual:</label>
+                  <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="password" id="comercial-current-password" style="flex: 1; padding: 0.75rem 1rem; padding-right: 2.5rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.2); color: #fff; width: 100%; font-size: 0.9rem;" placeholder="Introduce tu contraseña actual" required>
+                    <button type="button" onclick="togglePasswordVisibility('comercial-current-password')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem; height: 100%;">
+                      <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                  <label style="font-size: 0.8rem; color: #fff; font-weight: 600;">Nueva Contraseña (mín. 8 caracteres):</label>
+                  <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="password" id="comercial-new-password" style="flex: 1; padding: 0.75rem 1rem; padding-right: 2.5rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.2); color: #fff; width: 100%; font-size: 0.9rem;" placeholder="Mínimo 8 caracteres" required>
+                    <button type="button" onclick="togglePasswordVisibility('comercial-new-password')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem; height: 100%;">
+                      <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                  <label style="font-size: 0.8rem; color: #fff; font-weight: 600;">Confirmar Nueva Contraseña:</label>
+                  <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="password" id="comercial-confirm-password" style="flex: 1; padding: 0.75rem 1rem; padding-right: 2.5rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.2); color: #fff; width: 100%; font-size: 0.9rem;" placeholder="Confirmar nueva contraseña" required>
+                    <button type="button" onclick="togglePasswordVisibility('comercial-confirm-password')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem; height: 100%;">
+                      <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div id="comercial-settings-error" style="color: var(--error); font-size: 0.8rem; display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.6rem; border-radius: 6px; text-align: center;"></div>
+                <div id="comercial-settings-success" style="color: var(--success); font-size: 0.8rem; display: none; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.6rem; border-radius: 6px; text-align: center;">Contraseña actualizada correctamente.</div>
+
+                <button class="btn" onclick="updateComercialPassword()" style="margin-top: 1rem; padding: 0.75rem; font-weight: 600; width: 100%; text-align: center;">Actualizar Contraseña</button>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <!-- Derecha: Ficha de detalle de Lead Seleccionado -->
@@ -1134,7 +1188,7 @@
 
     // Inicializar
     window.addEventListener('DOMContentLoaded', async () => {
-      console.log('[Receptia Comercial v1.0.0] Inicializando panel...');
+      console.log('[Receptia Comercial v1.0.1] Inicializando panel...');
       const urlParams = new URLSearchParams(window.location.search);
       currentAccessUrl = urlParams.get('c') || '';
       console.log('[Receptia] Token de acceso detectado:', currentAccessUrl ? `"${currentAccessUrl}"` : '(ninguno)');
@@ -1216,14 +1270,14 @@
           currentAccessUrl = '';
           emailGroup.style.display = 'flex';
           emailInput.disabled = false;
-          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.0</span>`;
+          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.1</span>`;
           emailInput.focus();
         }
       } else {
         console.log('[Receptia] Modo login manual (sin token de URL).');
         emailGroup.style.display = 'flex';
         emailInput.disabled = false;
-        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.0</span>`;
+        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.1</span>`;
       }
     }
 
@@ -1247,6 +1301,25 @@
     function handleCommercialRecoverPassword(e) {
       if (e) e.preventDefault();
       alert('Para recuperar tu contraseña de comercial, por favor contacta con tu administrador del sistema.');
+    }
+
+    function togglePasswordVisibility(inputId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      
+      const button = input.nextElementSibling;
+      if (!button) return;
+      
+      const icon = button.querySelector('i');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
     }
 
     // Login Handler
@@ -1395,6 +1468,71 @@
           p.classList.remove('active');
         }
       });
+    }
+
+    // Actualizar contraseña del comercial
+    async function updateComercialPassword() {
+      const currentPassInput = document.getElementById('comercial-current-password');
+      const newPassInput = document.getElementById('comercial-new-password');
+      const confirmPassInput = document.getElementById('comercial-confirm-password');
+      
+      const currentPin = currentPassInput.value.trim();
+      const newPin = newPassInput.value.trim();
+      const confirmPin = confirmPassInput.value.trim();
+      
+      const errorDiv = document.getElementById('comercial-settings-error');
+      const successDiv = document.getElementById('comercial-settings-success');
+      
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+      
+      if (!currentPin || !newPin || !confirmPin) {
+        errorDiv.innerText = 'Todos los campos son obligatorios.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (newPin.length < 8 || !/^[a-zA-Z0-9]+$/.test(newPin)) {
+        errorDiv.innerText = 'La nueva contraseña debe ser alfanumérica y tener al menos 8 caracteres.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      if (newPin !== confirmPin) {
+        errorDiv.innerText = 'La nueva contraseña y la confirmación no coinciden.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/comercial/change-password', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ current_pin: currentPin, new_pin: newPin })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          successDiv.style.display = 'block';
+          // Actualizar PIN de sesión
+          currentComercialPin = newPin;
+          sessionStorage.setItem('comercial_pin', newPin);
+          if (localStorage.getItem('comercial_pin')) {
+            localStorage.setItem('comercial_pin', newPin);
+          }
+          // Limpiar campos
+          currentPassInput.value = '';
+          newPassInput.value = '';
+          confirmPassInput.value = '';
+        } else {
+          errorDiv.innerText = data.error || 'Error al actualizar la contraseña.';
+          errorDiv.style.display = 'block';
+        }
+      } catch (err) {
+        errorDiv.innerText = 'Error de conexión con el servidor.';
+        errorDiv.style.display = 'block';
+      }
     }
 
     // Cambiar subpestañas de la guía comercial

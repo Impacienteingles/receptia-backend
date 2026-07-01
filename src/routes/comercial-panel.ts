@@ -586,5 +586,38 @@ router.get('/commissions', requireComercialAuth, async (req: ComercialRequest, r
   }
 });
 
+router.post('/change-password', requireComercialAuth, async (req: ComercialRequest, res: Response): Promise<void> => {
+  const { current_pin, new_pin } = req.body;
+
+  if (!current_pin || !new_pin) {
+    res.status(400).json({ error: 'La contraseña actual y la nueva son obligatorias.' });
+    return;
+  }
+
+  if (new_pin.length < 8 || !/^[a-zA-Z0-9]+$/.test(new_pin)) {
+    res.status(400).json({ error: 'La nueva contraseña debe ser alfanumérica y tener al menos 8 caracteres.' });
+    return;
+  }
+
+  // Validar contraseña actual
+  if (current_pin.trim() !== req.comercial.pin.trim()) {
+    res.status(403).json({ error: 'La contraseña actual introducida es incorrecta.' });
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('commercial_agents')
+      .update({ pin: new_pin.trim() })
+      .eq('id', req.comercial.id);
+
+    if (error) throw error;
+
+    res.json({ success: true, message: 'Contraseña actualizada correctamente.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
 export { generateCommissionOnContratado };

@@ -2386,7 +2386,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.0</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.1</span>
         </div>
       </header>
 
@@ -7813,14 +7813,14 @@
       document.getElementById('change-pin-modal').style.display = 'none';
     }
 
-    // Confirmar cambio de PIN
+    // Confirmar cambio de contraseña
     async function confirmChangePin() {
       const newPin = document.getElementById('new-pin-input').value.trim();
       const confirmPin = document.getElementById('confirm-pin-input').value.trim();
       const errorDiv = document.getElementById('change-pin-error');
       
-      if (!newPin || newPin.length < 8) {
-        errorDiv.innerText = 'La contraseña debe tener al menos 8 caracteres.';
+      if (!newPin || newPin.length < 8 || !/^[a-zA-Z0-9]+$/.test(newPin)) {
+        errorDiv.innerText = 'La contraseña nueva debe ser alfanumérica (letras y números) de al menos 8 caracteres.';
         errorDiv.style.display = 'block';
         return;
       }

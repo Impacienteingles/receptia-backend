@@ -121,28 +121,132 @@ async function setBlockAdminAccess(tenantId: string, value: boolean): Promise<vo
   }
 }
 
-// Middleware de seguridad para validar el PIN del Administrador Global en endpoints /api/admin/*
+// Middleware de seguridad para validar el Token del Administrador Global en endpoints /api/admin/*
 async function requireAdminPin(req: any, res: any, next: any) {
   if (req.method === 'OPTIONS') {
     next();
     return;
   }
-  const pin = req.headers['x-admin-pin'] || req.query.admin_pin;
-  const dbPin = await getSettingVal('ADMIN_PIN');
-  const expectedPin = dbPin || process.env.ADMIN_PIN;
-  if (!expectedPin) {
-    console.error('❌ [Security Error] La variable ADMIN_PIN o el ajuste en BD no están configurados. Deshabilitando acceso de administrador por seguridad.');
-    res.status(500).json({ error: 'Error del servidor: PIN de administrador no configurado.' });
+  const url = req.originalUrl || req.url || '';
+  if (url.includes('/api/admin/auth/login') || url.includes('/api/admin/auth/recover')) {
+    next();
     return;
   }
-  if (!pin || pin !== expectedPin) {
-    res.status(401).json({ error: 'No autorizado: PIN de administrador ausente o incorrecto.' });
+  const token = req.headers['x-admin-token'] || req.query.admin_token;
+  const dbPass = await getSettingVal('ADMIN_PASS');
+  const expectedPass = dbPass || process.env.ADMIN_PASS || '1Impaciente!';
+  if (!token || token !== expectedPass) {
+    res.status(401).json({ error: 'No autorizado: Token de administrador ausente o incorrecto.' });
     return;
   }
   next();
 }
 
 app.use('/api/admin', requireAdminPin);
+
+// Endpoint para autenticación de administrador global
+app.post('/api/admin/auth/login', async (req, res): Promise<void> => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(400).json({ error: 'El email y la contraseña son obligatorios.' });
+    return;
+  }
+
+  const dbEmail = await getSettingVal('ADMIN_EMAIL');
+  const expectedEmail = dbEmail || process.env.ADMIN_EMAIL || 'yoyrenfe@gmail.com';
+  const dbPass = await getSettingVal('ADMIN_PASS');
+  const expectedPass = dbPass || process.env.ADMIN_PASS || '1Impaciente!';
+
+  if (email.trim().toLowerCase() !== expectedEmail.toLowerCase() || password !== expectedPass) {
+    res.status(401).json({ error: 'Usuario o contraseña de administrador incorrectos.' });
+    return;
+  }
+
+  res.json({ success: true, token: expectedPass });
+});
+
+// Endpoint para recuperar contraseña de administrador global
+app.post('/api/admin/auth/recover', async (req, res): Promise<void> => {
+  const { email } = req.body;
+  if (!email) {
+    res.status(400).json({ error: 'El correo electrónico es obligatorio.' });
+    return;
+  }
+
+  const dbEmail = await getSettingVal('ADMIN_EMAIL');
+  const expectedEmail = dbEmail || process.env.ADMIN_EMAIL || 'yoyrenfe@gmail.com';
+  const dbPass = await getSettingVal('ADMIN_PASS');
+  const expectedPass = dbPass || process.env.ADMIN_PASS || '1Impaciente!';
+
+  if (email.trim().toLowerCase() !== expectedEmail.toLowerCase()) {
+    res.status(400).json({ error: 'El correo electrónico introducido no coincide con el administrador global.' });
+    return;
+  }
+
+  try {
+    const resendApiKey = await getSettingVal('RESEND_API_KEY') || process.env.RESEND_API_KEY;
+    const resendFrom = await getSettingVal('RESEND_FROM_EMAIL') || process.env.RESEND_FROM_EMAIL || 'Receptia Demos <onboarding@resend.dev>';
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+        <h2 style="color: #8b5cf6; margin-top: 0;">Recuperación de Contraseña Administrador</h2>
+        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+        <p>Has solicitado recuperar la contraseña de acceso a la Consola de Administración de Receptia.</p>
+        <p>Tu contraseña de administrador actual es:</p>
+        <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 1.2rem; font-weight: bold; text-align: center; color: #1f2937; border: 1px solid #e5e7eb;">
+          ${expectedPass}
+        </div>
+        <p style="margin-top: 20px; font-size: 0.9rem; color: #6b7280;">Si no has solicitado este correo, por favor cambia tu contraseña en la pestaña de Ajustes del panel de administración.</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin-top: 25px; margin-bottom: 15px;">
+        <p style="font-size: 0.8rem; color: #888; text-align: center;">Receptia SaaS.</p>
+      </div>
+    `;
+
+    if (resendApiKey && resendApiKey !== 'YOUR_RESEND_API_KEY') {
+      await axios.post('https://api.resend.com/emails', {
+        from: resendFrom,
+        to: expectedEmail,
+        subject: 'Recuperación de Contraseña de Administrador - Receptia',
+        html: htmlContent
+      }, {
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      res.json({ success: true });
+    } else {
+      const nodemailer = require('nodemailer');
+      const smtpHost = await getSettingVal('SMTP_HOST') || process.env.SMTP_HOST;
+      const smtpPort = parseInt((await getSettingVal('SMTP_PORT')) || process.env.SMTP_PORT || '587');
+      const smtpSecure = (await getSettingVal('SMTP_SECURE')) === 'true' || process.env.SMTP_SECURE === 'true';
+      const smtpUser = await getSettingVal('SMTP_USER') || process.env.SMTP_USER;
+      const smtpPass = await getSettingVal('SMTP_PASS') || process.env.SMTP_PASS;
+
+      if (smtpHost && smtpUser && smtpPass) {
+        let transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpSecure,
+          auth: { user: smtpUser, pass: smtpPass },
+          tls: { rejectUnauthorized: false }
+        });
+
+        await transporter.sendMail({
+          from: smtpUser,
+          to: expectedEmail,
+          subject: 'Recuperación de Contraseña de Administrador - Receptia',
+          html: htmlContent
+        });
+        res.json({ success: true });
+      } else {
+        res.status(500).json({ error: 'No se pudo enviar el correo de recuperación. El servicio de correo no está configurado.' });
+      }
+    }
+  } catch (err: any) {
+    res.status(500).json({ error: 'Error al enviar el correo de recuperación: ' + err.message });
+  }
+});
 
 // Endpoints REST de la Plataforma SaaS
 
@@ -4442,13 +4546,13 @@ app.post('/api/client/tenants/:id/sign-contract', async (req, res): Promise<void
   }
 });
 
-// 11. Cambio de PIN del cliente autónomo
+// 11. Cambio de PIN/Contraseña del cliente autónomo
 app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> => {
   const { id } = req.params;
   const { new_pin, current_pin } = req.body;
 
-  if (!new_pin || new_pin.length < 4 || isNaN(Number(new_pin))) {
-    res.status(400).json({ error: 'El PIN nuevo debe ser un código numérico de al menos 4 dígitos.' });
+  if (!new_pin || new_pin.length < 8 || !/^[a-zA-Z0-9]+$/.test(new_pin)) {
+    res.status(400).json({ error: 'La contraseña nueva debe ser alfanumérica de al menos 8 caracteres.' });
     return;
   }
 
@@ -4465,10 +4569,10 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
       return;
     }
 
-    // Validar el PIN actual
+    // Validar la contraseña actual
     const clientPin = current_pin || req.headers['x-client-pin'];
     if (!clientPin || clientPin !== tenant.admin_pin) {
-      res.status(403).json({ error: 'El PIN actual provisto es incorrecto.' });
+      res.status(403).json({ error: 'La contraseña actual provista es incorrecta.' });
       return;
     }
 
@@ -4478,7 +4582,7 @@ app.post('/api/client/tenants/:id/change-pin', async (req, res): Promise<void> =
       (tenant.subscription_status && tenant.subscription_status !== 'trial');
 
     if (!hasContractOrSub) {
-      res.status(403).json({ error: 'La posibilidad de cambiar el PIN requiere una suscripción activa o un contrato firmado.' });
+      res.status(403).json({ error: 'La posibilidad de cambiar la contraseña requiere una suscripción activa o un contrato firmado.' });
       return;
     }
 
