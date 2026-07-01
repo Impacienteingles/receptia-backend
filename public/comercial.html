@@ -526,6 +526,41 @@
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
     padding: 1rem 0;
   }
+
+  /* Estilos para el Modal Personalizado (Alert / Confirm) */
+  #custom-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    z-index: 999999;
+    align-items: center;
+    justify-content: center;
+    animation: fadeInModal 0.2s ease;
+  }
+
+  @keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  #custom-modal .modal-content {
+    background: rgba(11, 15, 25, 0.95);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    animation: scaleUpModal 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  @keyframes scaleUpModal {
+    to { transform: scale(1); }
+  }
 </style>
 </head>
 <body>
@@ -538,7 +573,7 @@
           <img src="/receptia_logo.png" alt="Receptia Logo" style="width: 40px; height: 40px; border-radius: 8px;">
           <h2 style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif;">Receptia B2B</h2>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.0.10</span></p>
+        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.0.11</span></p>
       </div>
 
       <form id="login-form" novalidate onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
@@ -581,7 +616,7 @@
       <div class="logo-container">
         <img src="/receptia_logo.png" alt="Receptia Logo">
         <span>Receptia Comercial</span>
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.0.10</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.0.11</span>
       </div>
 
       <div class="user-info">
@@ -1184,11 +1219,64 @@
       };
     }
 
+    // Modal personalizado (Alert / Confirm) estilo premium de la APP
+    function showCustomAlert(message, title = 'Notificación', icon = 'info') {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('custom-modal');
+        const iconDiv = document.getElementById('custom-modal-icon');
+        const titleEl = document.getElementById('custom-modal-title');
+        const msgEl = document.getElementById('custom-modal-message');
+        const btnCancel = document.getElementById('custom-modal-btn-cancel');
+        const btnOk = document.getElementById('custom-modal-btn-ok');
+
+        if (!modal) {
+          alert(message);
+          resolve(true);
+          return;
+        }
+
+        titleEl.innerText = title;
+        msgEl.innerText = message;
+        if (btnCancel) btnCancel.style.display = 'none';
+        btnOk.className = 'btn';
+
+        if (icon === 'success') {
+          iconDiv.style.background = 'rgba(16, 185, 129, 0.1)';
+          iconDiv.style.color = 'var(--success)';
+        } else if (icon === 'error') {
+          iconDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+          iconDiv.style.color = 'var(--error)';
+        } else if (icon === 'warning') {
+          iconDiv.style.background = 'rgba(245, 158, 11, 0.1)';
+          iconDiv.style.color = '#f59e0b';
+        } else {
+          iconDiv.style.background = 'rgba(139, 92, 246, 0.1)';
+          iconDiv.style.color = 'var(--primary)';
+        }
+        
+        let lucideIcon = icon;
+        if (icon === 'success') lucideIcon = 'check-circle';
+        if (icon === 'error') lucideIcon = 'alert-triangle';
+        
+        iconDiv.innerHTML = `<i data-lucide="${lucideIcon}" style="width: 24px; height: 24px;"></i>`;
+        if (window.lucide) {
+          window.lucide.createIcons({ attrs: { 'data-lucide': lucideIcon } });
+        }
+
+        modal.style.display = 'flex';
+
+        btnOk.onclick = () => {
+          modal.style.display = 'none';
+          resolve(true);
+        };
+      });
+    }
+
     let currentAccessUrl = '';
 
     // Inicializar
     window.addEventListener('DOMContentLoaded', async () => {
-      console.log('[Receptia Comercial v1.0.10] Inicializando panel...');
+      console.log('[Receptia Comercial v1.0.11] Inicializando panel...');
       const urlParams = new URLSearchParams(window.location.search);
       currentAccessUrl = urlParams.get('c') || '';
       console.log('[Receptia] Token de acceso detectado:', currentAccessUrl ? `"${currentAccessUrl}"` : '(ninguno)');
@@ -1261,7 +1349,7 @@
           emailInput.removeAttribute('required');
           emailInput.disabled = true;
           
-          loginWelcome.innerHTML = `Bienvenido, <strong>${res.agent.name}</strong> <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.10</span>`;
+          loginWelcome.innerHTML = `Bienvenido, <strong>${res.agent.name}</strong> <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.11</span>`;
           pinInput.value = '';
           pinInput.focus();
         } catch (err) {
@@ -1270,14 +1358,14 @@
           currentAccessUrl = '';
           emailGroup.style.display = 'flex';
           emailInput.disabled = false;
-          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.10</span>`;
+          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.11</span>`;
           emailInput.focus();
         }
       } else {
         console.log('[Receptia] Modo login manual (sin token de URL).');
         emailGroup.style.display = 'flex';
         emailInput.disabled = false;
-        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.10</span>`;
+        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.11</span>`;
       }
     }
 
@@ -1305,7 +1393,7 @@
       const email = emailInput ? emailInput.value.trim() : '';
       
       if (!email) {
-        alert('Por favor, escribe primero tu correo de agente comercial en el campo Correo Electrónico.');
+        showCustomAlert('Por favor, escribe primero tu correo de agente comercial en el campo Correo Electrónico.', 'Recuperación de Contraseña', 'warning');
         return;
       }
       
@@ -1317,13 +1405,13 @@
         });
         
         if (response.ok) {
-          alert('Si el correo coincide con un agente comercial activo, hemos enviado un mensaje a tu email con tu contraseña.');
+          showCustomAlert('Si el correo coincide con un agente comercial activo, hemos enviado un mensaje a tu email con tu contraseña.', 'Correo Enviado', 'success');
         } else {
           const data = await response.json();
-          alert(data.error || 'Error al procesar la recuperación.');
+          showCustomAlert(data.error || 'Error al procesar la recuperación.', 'Error', 'error');
         }
       } catch (err) {
-        alert('Error de red al intentar recuperar la contraseña.');
+        showCustomAlert('Error de red al intentar recuperar la contraseña.', 'Error de Red', 'error');
       }
     }
 
@@ -1945,7 +2033,7 @@
 
       } catch (err) {
         console.error(err);
-        alert('No se pudo actualizar el estado del lead.');
+        showCustomAlert('No se pudo actualizar el estado del lead.', 'Error', 'error');
       }
     }
 
@@ -1974,7 +2062,7 @@
         loadDashboardData();
       } catch (err) {
         console.error('Error al guardar la nota:', err);
-        alert('No se pudo guardar la nota.');
+        showCustomAlert('No se pudo guardar la nota.', 'Error', 'error');
       } finally {
         submitBtn.disabled = false;
       }
@@ -2349,5 +2437,19 @@
       }
     }
   </script>
+  <!-- MODAL PERSONALIZADO DE ALERTA / CONFIRMACIÓN (ESTILO DE LA APP) -->
+  <div id="custom-modal">
+    <div class="modal-content" style="max-width: 450px; text-align: center; gap: 1.25rem; display: flex; flex-direction: column;">
+      <div id="custom-modal-icon" style="margin: 0 auto; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(139, 92, 246, 0.1); color: var(--primary);">
+        <i data-lucide="info" style="width: 24px; height: 24px;"></i>
+      </div>
+      <h3 id="custom-modal-title" style="color: #fff; font-size: 1.25rem; font-family: 'Outfit', sans-serif;">Notificación</h3>
+      <p id="custom-modal-message" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin: 0;"></p>
+      <div style="display: flex; gap: 1rem; margin-top: 0.5rem;" id="custom-modal-buttons">
+        <button class="btn btn-secondary" id="custom-modal-btn-cancel" style="flex: 1; display: none;">Cancelar</button>
+        <button class="btn" id="custom-modal-btn-ok" style="flex: 1;">Aceptar</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
