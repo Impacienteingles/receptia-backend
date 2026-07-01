@@ -4075,6 +4075,7 @@
       </div>
       <h3 id="custom-modal-title" style="color: #fff; font-size: 1.25rem; font-family: 'Outfit', sans-serif;">Notificación</h3>
       <p id="custom-modal-message" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin: 0;"></p>
+      <input type="text" id="custom-modal-input" style="display: none; width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: #fff; font-size: 0.9rem; outline: none; margin-top: 0.5rem; text-align: left;" autocomplete="off">
       <div style="display: flex; gap: 1rem; margin-top: 0.5rem;" id="custom-modal-buttons">
         <button class="btn btn-secondary" id="custom-modal-btn-cancel" style="flex: 1; display: none;">Cancelar</button>
         <button class="btn" id="custom-modal-btn-ok" style="flex: 1;">Aceptar</button>
@@ -4665,9 +4666,11 @@
         const iconDiv = document.getElementById('custom-modal-icon');
         const titleEl = document.getElementById('custom-modal-title');
         const msgEl = document.getElementById('custom-modal-message');
+        const inputEl = document.getElementById('custom-modal-input');
         const btnCancel = document.getElementById('custom-modal-btn-cancel');
         const btnOk = document.getElementById('custom-modal-btn-ok');
 
+        if (inputEl) inputEl.style.display = 'none';
         titleEl.innerText = title;
         msgEl.innerText = message;
         btnCancel.style.display = 'none';
@@ -4734,9 +4737,11 @@
         const iconDiv = document.getElementById('custom-modal-icon');
         const titleEl = document.getElementById('custom-modal-title');
         const msgEl = document.getElementById('custom-modal-message');
+        const inputEl = document.getElementById('custom-modal-input');
         const btnCancel = document.getElementById('custom-modal-btn-cancel');
         const btnOk = document.getElementById('custom-modal-btn-ok');
 
+        if (inputEl) inputEl.style.display = 'none';
         titleEl.innerText = title;
         msgEl.innerText = message;
         btnCancel.style.display = 'block';
@@ -4764,6 +4769,72 @@
         btnCancel.onclick = () => {
           modal.style.display = 'none';
           resolve(false);
+        };
+      });
+    }
+
+    function showCustomPrompt(message, defaultValue = '', title = 'Introducir Datos', icon = 'help-circle') {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('custom-modal');
+        const iconDiv = document.getElementById('custom-modal-icon');
+        const titleEl = document.getElementById('custom-modal-title');
+        const msgEl = document.getElementById('custom-modal-message');
+        const inputEl = document.getElementById('custom-modal-input');
+        const btnCancel = document.getElementById('custom-modal-btn-cancel');
+        const btnOk = document.getElementById('custom-modal-btn-ok');
+
+        titleEl.innerText = title;
+        msgEl.innerText = message;
+        
+        if (inputEl) {
+          inputEl.style.display = 'block';
+          inputEl.value = defaultValue;
+        }
+        btnCancel.style.display = 'block';
+        btnOk.className = 'btn';
+
+        iconDiv.style.background = 'rgba(139, 92, 246, 0.1)';
+        iconDiv.style.color = 'var(--primary)';
+        iconDiv.innerHTML = `<i data-lucide="${icon}" style="width: 24px; height: 24px;"></i>`;
+        lucide.createIcons({ attrs: { 'data-lucide': icon } });
+
+        modal.style.display = 'flex';
+        
+        if (inputEl) {
+          inputEl.focus();
+          inputEl.select();
+        }
+
+        const handleEnter = (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            cleanup();
+            modal.style.display = 'none';
+            resolve(inputEl.value);
+          }
+        };
+        
+        if (inputEl) {
+          inputEl.addEventListener('keydown', handleEnter);
+        }
+
+        const cleanup = () => {
+          if (inputEl) {
+            inputEl.removeEventListener('keydown', handleEnter);
+            inputEl.style.display = 'none';
+          }
+        };
+
+        btnOk.onclick = () => {
+          cleanup();
+          modal.style.display = 'none';
+          resolve(inputEl ? inputEl.value : '');
+        };
+
+        btnCancel.onclick = () => {
+          cleanup();
+          modal.style.display = 'none';
+          resolve(null);
         };
       });
     }
@@ -8485,8 +8556,8 @@
       }
     }
 
-    function openReactivateConfirm(tenantId, tenantName) {
-      if (!confirm('¿Reactivar el servicio de ' + tenantName + '? El cliente recuperará acceso al panel.')) return;
+    async function openReactivateConfirm(tenantId, tenantName) {
+      if (!(await showCustomConfirm('¿Reactivar el servicio de ' + tenantName + '? El cliente recuperará acceso al panel.', 'Reactivar Servicio', 'help-circle'))) return;
       fetch('/api/admin/tenants/' + tenantId + '/reactivate', { method: 'PATCH' })
         .then(r => r.json())
         .then(() => { fetchTenants(); showCustomAlert('Servicio reactivado correctamente.', 'Reactivado', 'success'); })
@@ -8527,7 +8598,7 @@
     }
 
     async function restoreArchivedTenant(tenantId, tenantName) {
-      if (!confirm('¿Recuperar a ' + tenantName + '? Se moverá a activos en estado Trial.')) return;
+      if (!(await showCustomConfirm('¿Recuperar a ' + tenantName + '? Se moverá a activos en estado Trial.', 'Recuperar Cliente', 'help-circle'))) return;
       try {
         const response = await fetch('/api/admin/tenants/' + tenantId + '/restore', { method: 'PATCH' });
         if (!response.ok) throw new Error('Error al recuperar el cliente.');
@@ -8543,10 +8614,10 @@
     }
 
     async function deleteTenantPermanently(tenantId, tenantName) {
-      const isConfirmed = confirm('¿Estás seguro de que deseas eliminar permanentemente a "' + tenantName + '"?\n\nEsta acción es COMPLETAMENTE IRREVERSIBLE. Se borrarán todos los datos del cliente, incluyendo citas, grabaciones de llamadas, configuraciones de negocio y su agente en Retell AI.');
+      const isConfirmed = await showCustomConfirm('¿Estás seguro de que deseas eliminar permanentemente a "' + tenantName + '"?\n\nEsta acción es COMPLETAMENTE IRREVERSIBLE. Se borrarán todos los datos del cliente, incluyendo citas, grabaciones de llamadas, configuraciones de negocio y su agente en Retell AI.', 'Eliminar Permanentemente', 'warning');
       if (!isConfirmed) return;
 
-      const securityPrompt = prompt('ATENCIÓN: Para confirmar la eliminación definitiva, por favor escribe la palabra "ELIMINAR" en mayúsculas:');
+      const securityPrompt = await showCustomPrompt('ATENCIÓN: Para confirmar la eliminación definitiva, por favor escribe la palabra "ELIMINAR" en mayúsculas:', '', 'Confirmación de Seguridad', 'alert-triangle');
       if (securityPrompt !== 'ELIMINAR') {
         await showCustomAlert('Confirmación incorrecta. La eliminación ha sido cancelada.', 'Cancelado', 'info');
         return;
@@ -8569,7 +8640,7 @@
     }
 
     async function refundTenantSubscription(tenantId, tenantName) {
-      const isConfirmed = confirm('¿Estás seguro de que deseas realizar un reembolso completo de la suscripción a "' + tenantName + '"?\n\nEsta acción revertirá el último pago en Stripe, cancelará la suscripción y registrará un gasto en la contabilidad.');
+      const isConfirmed = await showCustomConfirm('¿Estás seguro de que deseas realizar un reembolso completo de la suscripción a "' + tenantName + '"?\n\nEsta acción revertirá el último pago en Stripe, cancelará la suscripción y registrará un gasto en la contabilidad.', 'Reembolso Completo', 'warning');
       if (!isConfirmed) return;
 
       try {
@@ -9354,7 +9425,7 @@
 
     async function resetToDefaultTemplate() {
       if (!currentProspectId) return;
-      if (!confirm('¿Estás seguro de que deseas borrar todos los cambios manuales del HTML y restablecer la plantilla predeterminada? Perderás cualquier cambio de diseño que hayas hecho en el código.')) return;
+      if (!(await showCustomConfirm('¿Estás seguro de que deseas borrar todos los cambios manuales del HTML y restablecer la plantilla predeterminada? Perderás cualquier cambio de diseño que hayas hecho en el código.', 'Restablecer Plantilla', 'warning'))) return;
       
       try {
         const response = await fetch(`/api/admin/prospects/${currentProspectId}/reset-outreach-html`, {
@@ -9382,12 +9453,12 @@
       }
     }
 
-    function startEditProspectName(prospectId) {
+    async function startEditProspectName(prospectId) {
       const textSpan = document.getElementById(`business-name-text-${prospectId}`);
       if (!textSpan) return;
       
       const currentName = textSpan.innerText;
-      const newName = prompt("Editar nombre del negocio:", currentName);
+      const newName = await showCustomPrompt("Editar nombre del negocio:", currentName, "Nombre del Negocio", "edit-2");
       if (newName === null) return;
       const trimmed = newName.trim();
       if (!trimmed) {
@@ -9645,32 +9716,32 @@
     }
 
     async function deleteProspect(id) {
-      const confirmDelete = confirm('¿Estás seguro de que deseas eliminar este prospecto? Si tiene una demo creada, también se eliminará su configuración.');
+      const confirmDelete = await showCustomConfirm('¿Estás seguro de que deseas eliminar este prospecto? Si tiene una demo creada, también se eliminará su configuración.', 'Eliminar Prospecto', 'warning');
       if (!confirmDelete) return;
-
+ 
       try {
         const response = await fetch(`/api/admin/prospects/${id}`, {
           method: 'DELETE'
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Error al eliminar el prospecto.');
-
+ 
         showCustomAlert('Prospecto eliminado correctamente.', 'Eliminado', 'success');
         await fetchProspects();
       } catch (err) {
         showCustomAlert(err.message, 'Error', 'error');
       }
     }
-
+ 
     async function deleteSelectedProspects() {
       const selectedCheckboxes = document.querySelectorAll('.prospect-select:checked');
       if (selectedCheckboxes.length === 0) {
         showCustomAlert('Selecciona al menos un prospecto para eliminar.', 'Sin Selección', 'warning');
         return;
       }
-
+ 
       const ids = Array.from(selectedCheckboxes).map(cb => cb.value);
-      const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar los ${ids.length} prospectos seleccionados? Se eliminarán también sus respectivas demos y configuraciones.`);
+      const confirmDelete = await showCustomConfirm(`¿Estás seguro de que deseas eliminar los ${ids.length} prospectos seleccionados? Se eliminarán también sus respectivas demos y configuraciones.`, 'Eliminar Prospectos', 'warning');
       if (!confirmDelete) return;
 
       try {
@@ -12334,7 +12405,7 @@
     window.onCatalogLangChange = function() {};
 
     window.deleteVoiceFromCatalog = async function(voiceId) {
-      if (!confirm('¿Estás seguro de que deseas eliminar esta voz del catálogo?')) return;
+      if (!(await showCustomConfirm('¿Estás seguro de que deseas eliminar esta voz del catálogo?', 'Eliminar Voz', 'warning'))) return;
       
       try {
         const res = await fetch(`/api/voices-catalog/${voiceId}`, {
@@ -12452,7 +12523,7 @@
       const isClear = comercialId === 'clear';
       const comercialName = isClear ? 'Eliminar comercial' : selectEl.options[selectEl.selectedIndex].text;
       
-      const confirmAssign = confirm(`¿Estás seguro de que deseas asignar el comercial "${comercialName}" a los ${ids.length} prospectos seleccionados?`);
+      const confirmAssign = await showCustomConfirm(`¿Estás seguro de que deseas asignar el comercial "${comercialName}" a los ${ids.length} prospectos seleccionados?`, 'Asignar Comercial', 'help-circle');
       if (!confirmAssign) return;
 
       try {
@@ -12742,7 +12813,7 @@
     };
 
     window.deleteComercial = async function(id) {
-      if (!confirm('¿Estás seguro de que deseas eliminar este comercial? Todos los leads asignados quedarán sin comercial.')) return;
+      if (!(await showCustomConfirm('¿Estás seguro de que deseas eliminar este comercial? Todos los leads asignados quedarán sin comercial.', 'Eliminar Comercial', 'warning'))) return;
       
       try {
         const response = await fetch(`/api/admin/comerciales/${id}`, { method: 'DELETE' });
@@ -13084,7 +13155,7 @@
     }
 
     async function syncAllAgentsMassive(btnEl) {
-      const confirmSync = confirm('¿Estás seguro de que deseas sincronizar el prompt de todos los agentes activos en Retell AI con estas nuevas directivas? Esto tomará unos segundos.');
+      const confirmSync = await showCustomConfirm('¿Estás seguro de que deseas sincronizar el prompt de todos los agentes activos en Retell AI con estas nuevas directivas? Esto tomará unos segundos.', 'Sincronizar Agentes', 'warning');
       if (!confirmSync) return;
 
       const statusMsg = document.getElementById('sync-status-msg');
@@ -13303,7 +13374,7 @@
     }
 
     async function restoreBackup(filename) {
-      const confirmRestore = confirm(`¿Estás seguro de que deseas restaurar la versión del archivo '${filename}' en caliente? Esto sobreescribirá el panel activo de forma inmediata.`);
+      const confirmRestore = await showCustomConfirm(`¿Estás seguro de que deseas restaurar la versión del archivo '${filename}' en caliente? Esto sobreescribirá el panel activo de forma inmediata.`, 'Restaurar Copia', 'warning');
       if (!confirmRestore) return;
 
       showProgressModal('Restaurando copia de seguridad...', 'El servidor está copiando el archivo de respaldo seleccionado sobre la vista web actual. Por favor, espere...');

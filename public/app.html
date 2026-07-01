@@ -6833,7 +6833,7 @@
     }
 
     async function requestCancelSubscription() {
-      const confirmCancel = confirm("¿Estás seguro de que deseas cancelar tu suscripción? Se detendrán los cobros recurrentes y el servicio de IA.");
+      const confirmCancel = await showCustomConfirm("¿Estás seguro de que deseas cancelar tu suscripción? Se detendrán los cobros recurrentes y el servicio de IA.", "Cancelar Suscripción", "warning");
       if (!confirmCancel) return;
 
       const btnCancel = document.getElementById('btn-cancel-subscription');
