@@ -638,6 +638,17 @@
       color: #fbbf24;
     }
 
+    /* Estilos de pestañas de ajustes */
+    .settings-tab-btn.active-tab {
+      background: rgba(139, 92, 246, 0.15) !important;
+      border: 1px solid rgba(139, 92, 246, 0.3) !important;
+      color: #fff !important;
+    }
+    .settings-tab-btn:hover:not(.active-tab) {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #fff !important;
+    }
+
     /* Buttons */
     .btn {
       background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
@@ -1622,7 +1633,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.4</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.5</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -1842,7 +1853,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.4</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.5</span>
       </div>
     </aside>
 
@@ -1865,7 +1876,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.4</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.5</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -3521,66 +3532,24 @@
             <form id="settings-form" onsubmit="saveSettings(event)" style="display: flex; flex-direction: column; gap: 2rem;">
               
               <!-- GRID DE CATEGORÍAS -->
-              <div class="settings-grid">
-                
-                <!-- CARD: INTELIGENCIA ARTIFICIAL -->
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="brain" style="color: var(--primary);"></i> Inteligencia Artificial
-                  </h3>
-                  <div class="form-group">
-                    <label for="setting-gemini-key">Gemini AI API Key:</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-gemini-key" placeholder="AIzaSy..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-gemini-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="setting-retell-key">Retell AI API Key:</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-retell-key" placeholder="key_..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-retell-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="setting-google-places-key">Google Places API Key (Prospección B2B):</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-google-places-key" placeholder="AIzaSy..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-google-places-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              <!-- Selector de Pestañas de Ajustes Administrador -->
+              <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                <button type="button" onclick="switchAdminSettingsTab('admin-settings-tab-saas')" class="settings-tab-btn active-tab" id="btn-admin-tab-saas" style="background: none; border: none; padding: 0.6rem 1rem; border-radius: 8px; color: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; transition: all 0.2s;">
+                  <i data-lucide="building" style="width: 16px; height: 16px;"></i> SaaS y Seguridad
+                </button>
+                <button type="button" onclick="switchAdminSettingsTab('admin-settings-tab-ai')" class="settings-tab-btn" id="btn-admin-tab-ai" style="background: none; border: none; padding: 0.6rem 1rem; border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; transition: all 0.2s;">
+                  <i data-lucide="brain" style="width: 16px; height: 16px;"></i> IA y Sintetizadores
+                </button>
+                <button type="button" onclick="switchAdminSettingsTab('admin-settings-tab-integrations')" class="settings-tab-btn" id="btn-admin-tab-integrations" style="background: none; border: none; padding: 0.6rem 1rem; border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; transition: all 0.2s;">
+                  <i data-lucide="link" style="width: 16px; height: 16px;"></i> Integraciones y Correo
+                </button>
+                <button type="button" onclick="switchAdminSettingsTab('admin-settings-tab-billing')" class="settings-tab-btn" id="btn-admin-tab-billing" style="background: none; border: none; padding: 0.6rem 1rem; border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; transition: all 0.2s;">
+                  <i data-lucide="credit-card" style="width: 16px; height: 16px;"></i> Facturación y Stripe
+                </button>
+              </div>
 
-                <!-- CARD: CALENDARIO Y CLOUD -->
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="calendar" style="color: var(--primary);"></i> Google Calendar & OAuth
-                  </h3>
-                  <div class="form-group">
-                    <label for="setting-google-client-id">Google Client ID:</label>
-                    <input type="text" id="setting-google-client-id" placeholder="123456789-abc.apps.googleusercontent.com" class="setting-input">
-                  </div>
-                  <div class="form-group">
-                    <label for="setting-google-client-secret">Google Client Secret:</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-google-client-secret" placeholder="GOCSPX-..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-google-client-secret')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="setting-google-redirect-uri">URL de Redirección OAuth2:</label>
-                    <input type="text" id="setting-google-redirect-uri" placeholder="http://localhost:3000/oauth2callback" class="setting-input">
-                  </div>
-                </div>
-
+              <!-- Contenidos de Pestañas de Ajustes Administrador -->
+              <div id="admin-settings-tab-saas" class="admin-settings-tab-content settings-grid" style="display: block;">
                 <!-- CARD: DATOS DE FACTURACIÓN Y CONTRATO DE CORANDAR (SaaS) -->
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
                   <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem; font-family: 'Outfit', sans-serif;">
@@ -3616,6 +3585,154 @@
                   </div>
                 </div>
 
+                <!-- CARD: SEGURIDAD DEL ADMINISTRADOR -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="shield-check" style="color: var(--primary);"></i> Seguridad del Administrador
+                  </h3>
+                  <div class="form-group">
+                    <label for="setting-admin-user">Usuario / Email de Administrador (ADMIN_USER):</label>
+                    <input type="email" id="setting-admin-user" placeholder="yoyrenfe@gmail.com" class="setting-input" style="width: 100%;">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0.5rem;">
+                      Correo electrónico de acceso a la consola de administración.
+                    </p>
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-admin-pass">Contraseña de Administrador (ADMIN_PASS):</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-admin-pass" placeholder="Contraseña de Administrador" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-admin-pass')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
+                      Contraseña segura para proteger el acceso a esta consola de administración y todos los endpoints de API críticos.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- CARD: INTERFAZ DE USUARIO -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="layout" style="color: var(--primary);"></i> Preferencias de Interfaz
+                  </h3>
+                  <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 0.25rem 0;">
+                    <input type="checkbox" id="setting-sidebar-hover" style="width: auto; height: auto; cursor: pointer; margin: 0;" onchange="toggleSidebarHoverBehavior(this.checked)">
+                    <label for="setting-sidebar-hover" style="margin-bottom: 0; cursor: pointer; user-select: none; color: #fff; font-weight: 500; font-size: 0.9rem;">
+                      Ocultar/mostrar menú lateral automáticamente al acercar el ratón al lateral izquierdo
+                    </label>
+                  </div>
+                  <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Si se activa, el menú lateral se colapsará solo y se desplegará de forma automática al posicionar el cursor en el borde izquierdo de la pantalla (solo en escritorio).
+                  </p>
+                </div>
+
+                <!-- CARD: SINCRONIZACIÓN EN TIEMPO REAL (POLLING) -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="refresh-cw" style="color: var(--primary);"></i> Sincronización en Tiempo Real
+                  </h3>
+                  <div class="form-group">
+                    <label for="setting-refresh-interval">Frecuencia de Auto-Refresco de Paneles:</label>
+                    <select id="setting-refresh-interval" class="setting-input">
+                      <option value="15">Cada 15 segundos (Refresco rápido)</option>
+                      <option value="30" selected>Cada 30 segundos (Recomendado)</option>
+                      <option value="60">Cada 60 segundos (Bajo consumo)</option>
+                      <option value="off">Desactivado (Solo carga manual)</option>
+                    </select>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
+                      Determina el intervalo de tiempo en el que los paneles de Administrador, Cliente y Comercial refrescarán silenciosamente la información (leads, citas) de forma sincronizada y bidireccional.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div id="admin-settings-tab-ai" class="admin-settings-tab-content settings-grid" style="display: none;">
+                <!-- CARD: INTELIGENCIA ARTIFICIAL -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="brain" style="color: var(--primary);"></i> Inteligencia Artificial
+                  </h3>
+                  <div class="form-group">
+                    <label for="setting-gemini-key">Gemini AI API Key:</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-gemini-key" placeholder="AIzaSy..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-gemini-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-retell-key">Retell AI API Key:</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-retell-key" placeholder="key_..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-retell-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-google-places-key">Google Places API Key (Prospección B2B):</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-google-places-key" placeholder="AIzaSy..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-google-places-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CARD: VOCES DE IA -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="mic" style="color: var(--primary);"></i> Sintetizadores de Voz IA
+                  </h3>
+                  <div class="form-group">
+                    <label for="setting-elevenlabs-key">ElevenLabs API Key:</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-elevenlabs-key" placeholder="Tu API Key de ElevenLabs" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-elevenlabs-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-cartesia-key">Cartesia API Key:</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-cartesia-key" placeholder="Tu API Key de Cartesia" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-cartesia-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="admin-settings-tab-integrations" class="admin-settings-tab-content settings-grid" style="display: none;">
+                <!-- CARD: CALENDARIO Y CLOUD -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="calendar" style="color: var(--primary);"></i> Google Calendar & OAuth
+                  </h3>
+                  <div class="form-group">
+                    <label for="setting-google-client-id">Google Client ID:</label>
+                    <input type="text" id="setting-google-client-id" placeholder="123456789-abc.apps.googleusercontent.com" class="setting-input">
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-google-client-secret">Google Client Secret:</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-google-client-secret" placeholder="GOCSPX-..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-google-client-secret')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-google-redirect-uri">URL de Redirección OAuth2:</label>
+                    <input type="text" id="setting-google-redirect-uri" placeholder="http://localhost:3000/oauth2callback" class="setting-input">
+                  </div>
+                </div>
+
                 <!-- CARD: TELEFONÍA Y SMS -->
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
                   <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
@@ -3636,6 +3753,45 @@
                   </div>
                 </div>
 
+                <!-- CARD: CONFIGURACIÓN DE RESEND (EMAILS) -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="send" style="color: var(--primary);"></i> Configuración de Resend (Emails)
+                  </h3>
+                  <div class="form-group">
+                    <label for="setting-resend-key">Resend API Key:</label>
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="setting-resend-key" placeholder="re_..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-resend-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-resend-from">Correo Emisor (From):</label>
+                    <input type="text" id="setting-resend-from" placeholder="Receptia Demos <onboarding@resend.dev>" class="setting-input">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
+                      Por defecto: <code>Receptia Demos &lt;onboarding@resend.dev&gt;</code>. Nota: onboarding@resend.dev solo permite envíos a tu propio correo verificado en Resend.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- CARD: ENVÍOS DE PRUEBA -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="mail" style="color: var(--primary);"></i> Envíos de Prueba
+                  </h3>
+                  <div class="form-group">
+                    <label for="setting-admin-test-email">Correo de Prueba del Administrador:</label>
+                    <input type="email" id="setting-admin-test-email" placeholder="admin@receptia.com" class="setting-input">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
+                      Este correo recibirá las copias de prueba del correo de captación antes de enviárselo a los clientes.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div id="admin-settings-tab-billing" class="admin-settings-tab-content settings-grid" style="display: none;">
                 <!-- CARD: SUSCRIPCIONES Y PAGOS -->
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
                   <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
@@ -3707,132 +3863,7 @@
                     </div>
                   </div>
                 </div>
-
-                <!-- CARD: VOCES DE IA -->
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="mic" style="color: var(--primary);"></i> Sintetizadores de Voz IA
-                  </h3>
-                  <div class="form-group">
-                    <label for="setting-elevenlabs-key">ElevenLabs API Key:</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-elevenlabs-key" placeholder="Tu API Key de ElevenLabs" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-elevenlabs-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="setting-cartesia-key">Cartesia API Key:</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-cartesia-key" placeholder="Tu API Key de Cartesia" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-cartesia-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- CARD: ENVÍOS DE PRUEBA -->
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="mail" style="color: var(--primary);"></i> Envíos de Prueba
-                  </h3>
-                  <div class="form-group">
-                    <label for="setting-admin-test-email">Correo de Prueba del Administrador:</label>
-                    <input type="email" id="setting-admin-test-email" placeholder="admin@receptia.com" class="setting-input">
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
-                      Este correo recibirá las copias de prueba del correo de captación antes de enviárselo a los clientes.
-                    </p>
-                  </div>
-                </div>
-
-                <!-- CARD: CONFIGURACIÓN DE RESEND (EMAILS) -->
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="send" style="color: var(--primary);"></i> Configuración de Resend (Emails)
-                  </h3>
-                  <div class="form-group">
-                    <label for="setting-resend-key">Resend API Key:</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-resend-key" placeholder="re_..." class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-resend-key')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="setting-resend-from">Correo Emisor (From):</label>
-                    <input type="text" id="setting-resend-from" placeholder="Receptia Demos <onboarding@resend.dev>" class="setting-input">
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
-                      Por defecto: <code>Receptia Demos &lt;onboarding@resend.dev&gt;</code>. Nota: onboarding@resend.dev solo permite envíos a tu propio correo verificado en Resend.
-                    </p>
-                  </div>
-                </div>
-
-                <!-- CARD: SEGURIDAD DEL ADMINISTRADOR -->
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="shield-check" style="color: var(--primary);"></i> Seguridad del Administrador
-                  </h3>
-                  <div class="form-group">
-                    <label for="setting-admin-user">Usuario / Email de Administrador (ADMIN_USER):</label>
-                    <input type="email" id="setting-admin-user" placeholder="yoyrenfe@gmail.com" class="setting-input" style="width: 100%;">
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0.5rem;">
-                      Correo electrónico de acceso a la consola de administración.
-                    </p>
-                  </div>
-                  <div class="form-group">
-                    <label for="setting-admin-pass">Contraseña de Administrador (ADMIN_PASS):</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-admin-pass" placeholder="Contraseña de Administrador" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-admin-pass')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
-                    </div>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
-                      Contraseña segura para proteger el acceso a esta consola de administración y todos los endpoints de API críticos.
-                    </p>
-                  </div>
-                </div>
-
-                <!-- CARD: INTERFAZ DE USUARIO -->
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="layout" style="color: var(--primary);"></i> Preferencias de Interfaz
-                  </h3>
-                  <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 0.25rem 0;">
-                    <input type="checkbox" id="setting-sidebar-hover" style="width: auto; height: auto; cursor: pointer; margin: 0;" onchange="toggleSidebarHoverBehavior(this.checked)">
-                    <label for="setting-sidebar-hover" style="margin-bottom: 0; cursor: pointer; user-select: none; color: #fff; font-weight: 500; font-size: 0.9rem;">
-                      Ocultar/mostrar menú lateral automáticamente al acercar el ratón al lateral izquierdo
-                    </label>
-                  </div>
-                  <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0; line-height: 1.4;">
-                    Si se activa, el menú lateral se colapsará solo y se desplegará de forma automática al posicionar el cursor en el borde izquierdo de la pantalla (solo en escritorio).
-                  </p>
-                </div>
-
-                <!-- CARD: SINCRONIZACIÓN EN TIEMPO REAL (POLLING) -->
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                  <h3 style="color: #fff; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="refresh-cw" style="color: var(--primary);"></i> Sincronización en Tiempo Real
-                  </h3>
-                  <div class="form-group">
-                    <label for="setting-refresh-interval">Frecuencia de Auto-Refresco de Paneles:</label>
-                    <select id="setting-refresh-interval" class="setting-input">
-                      <option value="15">Cada 15 segundos (Refresco rápido)</option>
-                      <option value="30" selected>Cada 30 segundos (Recomendado)</option>
-                      <option value="60">Cada 60 segundos (Bajo consumo)</option>
-                      <option value="off">Desactivado (Solo carga manual)</option>
-                    </select>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
-                      Determina el intervalo de tiempo en el que los paneles de Administrador, Cliente y Comercial refrescarán silenciosamente la información (leads, citas) de forma sincronizada y bidireccional.
-                    </p>
-                  </div>
-                </div>
-
               </div>
-
               <!-- BOTÓN DE GUARDAR -->
               <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
                 <button type="submit" class="btn" style="min-width: 200px;">
@@ -5266,7 +5297,7 @@
       } else if (tabName === 'accounting') {
         fetchTenants();
         fetchTransactions();
-        fetchComercialesPayoutsHistory(); // Cargar historial de pagos de comerciales en contabilidad
+        fetchComercialesPayoutsHistory();
       } else if (tabName === 'contracts') {
         fetchContracts();
       } else if (tabName === 'billing') {
@@ -5279,6 +5310,7 @@
         fetchComerciales();
       } else if (tabName === 'settings') {
         fetchSettings();
+        switchAdminSettingsTab('admin-settings-tab-saas');
       } else if (tabName === 'global-knowledge') {
         fetchGlobalKnowledge();
       } else if (tabName === 'dashboard') {
@@ -5288,6 +5320,35 @@
       } else if (tabName === 'promotions') {
         fetchReferralsConfig();
         switchPromoSubtab('config');
+      }
+    }
+
+    function switchAdminSettingsTab(tabId) {
+      // Ocultar todas las sub-pestañas de ajustes
+      document.querySelectorAll('.admin-settings-tab-content').forEach(el => {
+        el.style.display = 'none';
+      });
+      // Quitar clase active-tab a todos los botones de sub-pestaña
+      document.querySelectorAll('#tab-settings .settings-tab-btn').forEach(btn => {
+        btn.classList.remove('active-tab');
+        btn.style.color = 'var(--text-muted)';
+      });
+      // Mostrar la pestaña activa
+      const activeContent = document.getElementById(tabId);
+      if (activeContent) {
+        activeContent.style.display = 'grid';
+      }
+      // Marcar botón activo
+      let btnId = '';
+      if (tabId === 'admin-settings-tab-saas') btnId = 'btn-admin-tab-saas';
+      if (tabId === 'admin-settings-tab-ai') btnId = 'btn-admin-tab-ai';
+      if (tabId === 'admin-settings-tab-integrations') btnId = 'btn-admin-tab-integrations';
+      if (tabId === 'admin-settings-tab-billing') btnId = 'btn-admin-tab-billing';
+      
+      const activeBtn = document.getElementById(btnId);
+      if (activeBtn) {
+        activeBtn.classList.add('active-tab');
+        activeBtn.style.color = '#fff';
       }
     }
 
