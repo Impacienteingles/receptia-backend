@@ -4198,7 +4198,8 @@ app.post('/api/admin/run-migration', async (req, res): Promise<void> => {
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
   const passwordsToTry = [
-    process.env.SUPABASE_DB_PASSWORD
+    process.env.SUPABASE_DB_PASSWORD,
+    '1Impaciente!'
   ].filter(Boolean) as string[];
 
   let migrationSuccess = false;
@@ -5003,7 +5004,8 @@ async function runDatabaseMigrations() {
   const { Client } = require('pg');
   const projectRef = 'vnlbxfhzfuamzyqylkvd';
   const passwordsToTry = [
-    process.env.SUPABASE_DB_PASSWORD
+    process.env.SUPABASE_DB_PASSWORD,
+    '1Impaciente!'
   ].filter(Boolean) as string[];
 
   const query = async (clientInstance: any) => {

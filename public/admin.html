@@ -1633,7 +1633,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.19</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.20</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -1857,7 +1857,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.19</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.20</span>
       </div>
     </aside>
 
@@ -1880,7 +1880,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.19</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.20</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2169,37 +2169,9 @@
                     <i data-lucide="refresh-cw" style="width: 14px; height: 14px; color: #fff;"></i>
                   </button>
                 </div>
-                <select id="client-virtual-phone-id" class="input" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" onchange="onClientVirtualPhoneSelectChange()">
+                <select id="client-virtual-phone-id" class="input" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;">
                   <option value="">-- Selecciona un número --</option>
                 </select>
-                <div id="selected-phone-credentials-preview" style="display: none; font-size: 0.8rem; background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 0.5rem; color: var(--text-muted);">
-                  <span>Usuario SIP: <strong id="preview-sip-user" style="color: #60a5fa;"></strong></span> | 
-                  <span>Servidor: <strong id="preview-sip-server" style="color: #60a5fa;"></strong></span>
-                </div>
-              </div>
-
-              <!-- CAMPOS SIP PARA ZADARMA -->
-              <div id="sip-fields" class="form-group full-width" style="display: none; background: rgba(0,0,0,0.15); padding: 1.25rem; border-radius: 8px; border: 1px dashed var(--border-color); margin-top: 0.5rem;">
-                <h4 style="font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--primary-hover);">Credenciales de Conexión SIP Zadarma</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                  <div class="form-group">
-                    <label for="sip-username">Usuario SIP:</label>
-                    <input type="text" id="sip-username">
-                  </div>
-                  <div class="form-group">
-                    <label for="sip-password">Contraseña SIP:</label>
-                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="sip-password" placeholder="Contraseña de tu cuenta SIP" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('sip-password')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                        <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="sip-server">Servidor/Proxy SIP:</label>
-                    <input type="text" id="sip-server">
-                  </div>
-                </div>
               </div>
 
               <!-- HORARIOS DE TRABAJO -->
@@ -2725,7 +2697,12 @@
                   
                   <div style="margin-bottom: 0.75rem;">
                     <label for="vp-sip-password" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">Contraseña SIP:</label>
-                    <input type="password" id="vp-sip-password" placeholder="Contraseña SIP" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.5rem; border-radius: 6px;" class="input">
+                    <div style="position: relative; display: flex; align-items: center;">
+                      <input type="password" id="vp-sip-password" placeholder="Contraseña SIP" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.5rem; padding-right: 2.25rem; border-radius: 6px;" class="input">
+                      <button type="button" onclick="toggleVpSipPasswordVisibility()" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; padding: 0;">
+                        <i data-lucide="eye" id="vp-sip-password-toggle-icon" style="width: 16px; height: 16px;"></i>
+                      </button>
+                    </div>
                   </div>
                   
                   <div style="margin-bottom: 0.75rem;">
@@ -2735,30 +2712,15 @@
                 </div>
 
                 <div style="margin-bottom: 1rem;">
-                  <label for="vp-billing-date" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Próxima Renovación:</label>
-                  <input type="date" id="vp-billing-date" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
+                  <label for="vp-billing-date" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Próxima Fecha de Baja:</label>
+                  <input type="text" id="vp-billing-date" readonly disabled placeholder="Calculado automáticamente" style="width: 100%; border: 1px solid var(--border-color); background: rgba(50,50,60,0.4); color: var(--text-muted); padding: 0.6rem; border-radius: 8px; cursor: not-allowed;" class="input">
+                  <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">Esta fecha se calcula de forma automática según la demo o suscripción activa del cliente asignado.</p>
                 </div>
 
                 <div style="margin-bottom: 1.25rem;">
-                  <label for="vp-assignment-type" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Asignar a:</label>
-                  <select id="vp-assignment-type" onchange="onVpAssignmentTypeChange()" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
-                    <option value="none">Ninguno (Disponible / Libre)</option>
-                    <option value="tenant">Cliente Activo</option>
-                    <option value="prospect">Prospecto B2B</option>
-                  </select>
-                </div>
-
-                <div id="vp-tenant-select-container" style="margin-bottom: 1.25rem; display: none;">
-                  <label for="vp-tenant-id" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Seleccionar Cliente:</label>
+                  <label for="vp-tenant-id" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Asignar a Cliente (Opcional):</label>
                   <select id="vp-tenant-id" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
-                    <option value="">Cargando clientes...</option>
-                  </select>
-                </div>
-
-                <div id="vp-prospect-select-container" style="margin-bottom: 1.25rem; display: none;">
-                  <label for="vp-prospect-id" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Seleccionar Prospecto:</label>
-                  <select id="vp-prospect-id" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" class="input">
-                    <option value="">Cargando prospectos...</option>
+                    <option value="">-- Sin asignar (Disponible) --</option>
                   </select>
                 </div>
 
@@ -2785,7 +2747,7 @@
                       <th>Número de Teléfono</th>
                       <th>Estado</th>
                       <th>Asignado a</th>
-                      <th>Próximo Pago</th>
+                      <th>Próxima Fecha de Baja</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -5015,7 +4977,6 @@
     // Elementos DOM del Formulario
     const adminForm = document.getElementById('admin-form');
     const phoneProvider = document.getElementById('phone-provider');
-    const sipFields = document.getElementById('sip-fields');
     const scheduleBuilderContainer = document.getElementById('schedule-builder-container');
     const btnGenerate = document.getElementById('btn-generate');
     const btnGenerateText = document.getElementById('btn-generate-text');
@@ -5380,18 +5341,15 @@
       { key: 'sunday', label: 'Domingo' }
     ];
 
-    // Mostrar/ocultar campos SIP Zadarma
+    // Mostrar/ocultar campos SIP Zadarma e inventario de números
     phoneProvider.addEventListener('change', () => {
       if (phoneProvider.value === 'zadarma') {
-        sipFields.style.display = 'block';
-        document.getElementById('sip-username').required = true;
-        document.getElementById('sip-password').required = true;
-        document.getElementById('sip-server').required = true;
+        document.getElementById('manual-phone-fields').style.display = 'none';
+        document.getElementById('virtual-phone-select-group').style.display = 'block';
+        fetchVirtualPhonesForClientSelect();
       } else {
-        sipFields.style.display = 'none';
-        document.getElementById('sip-username').required = false;
-        document.getElementById('sip-password').required = false;
-        document.getElementById('sip-server').required = false;
+        document.getElementById('manual-phone-fields').style.display = 'block';
+        document.getElementById('virtual-phone-select-group').style.display = 'none';
       }
     });
 
@@ -5830,7 +5788,7 @@
     // ========================================================
     const FORM_FIELDS = [
       'business-name', 'tenant-email', 'specialties-input', 'voice-id', 'retell-agent-id', 'phone-provider',
-      'phone-number', 'sip-username', 'sip-password', 'sip-server', 'business-description', 
+      'phone-number', 'business-description', 
       'pricing-details', 'custom-instructions', 'admin-pin', 'subscription-status',
       'subscription-plan', 'billing-cycle', 'price-amount', 'contract-start-date', 'contract-end-date',
       'contract-template-select', 'signed-contract-content-view', 'admin-signature-name-input',
@@ -8926,19 +8884,14 @@
       
       if (provider === 'zadarma') {
         document.getElementById('manual-phone-fields').style.display = 'none';
-        document.getElementById('sip-fields').style.display = 'none';
         document.getElementById('virtual-phone-select-group').style.display = 'block';
         fetchVirtualPhonesForClientSelect(tenant.phone_number || '');
       } else {
         document.getElementById('manual-phone-fields').style.display = 'block';
-        document.getElementById('sip-fields').style.display = 'none';
         document.getElementById('virtual-phone-select-group').style.display = 'none';
       }
       
       document.getElementById('phone-number').value = tenant.phone_number || '';
-      document.getElementById('sip-username').value = tenant.sip_username || '';
-      document.getElementById('sip-password').value = tenant.sip_password || '';
-      document.getElementById('sip-server').value = tenant.sip_server || '';
       document.getElementById('business-description').value = tenant.business_description || '';
       document.getElementById('pricing-details').value = tenant.pricing_details || '';
       document.getElementById('custom-instructions').value = tenant.custom_instructions || '';
@@ -9314,9 +9267,6 @@
 
       document.getElementById('phone-provider').value = tenant.phone_provider || 'retell';
       document.getElementById('phone-number').value = '';
-      document.getElementById('sip-username').value = '';
-      document.getElementById('sip-password').value = '';
-      document.getElementById('sip-server').value = '';
       
       document.getElementById('business-description').value = tenant.business_description || '';
       document.getElementById('pricing-details').value = tenant.pricing_details || '';
@@ -11842,9 +11792,6 @@
         voice_id: document.getElementById('voice-id').value,
         phone_provider: phoneProvider.value,
         phone_number: document.getElementById('phone-number').value || null,
-        sip_username: document.getElementById('sip-username').value || null,
-        sip_password: document.getElementById('sip-password').value || null,
-        sip_server: document.getElementById('sip-server').value || null,
         virtual_phone_id: phoneProvider.value === 'zadarma' ? document.getElementById('client-virtual-phone-id').value : null,
         specialties,
         working_hours,
@@ -13807,22 +13754,7 @@
 
     let allVirtualPhones = [];
 
-    window.onVpAssignmentTypeChange = function() {
-      const type = document.getElementById('vp-assignment-type').value;
-      const tenantContainer = document.getElementById('vp-tenant-select-container');
-      const prospectContainer = document.getElementById('vp-prospect-select-container');
 
-      if (type === 'tenant') {
-        tenantContainer.style.display = 'block';
-        prospectContainer.style.display = 'none';
-      } else if (type === 'prospect') {
-        tenantContainer.style.display = 'none';
-        prospectContainer.style.display = 'block';
-      } else {
-        tenantContainer.style.display = 'none';
-        prospectContainer.style.display = 'none';
-      }
-    };
 
     window.fetchVirtualPhones = async function() {
       try {
@@ -13857,21 +13789,7 @@
         console.error('Error al cargar selectores de clientes:', err);
       }
 
-      // 2. Cargar prospectos
-      try {
-        const res = await fetch('/api/admin/prospects');
-        if (res.ok) {
-          const data = await res.json();
-          const prospects = data.prospects || [];
-          const select = document.getElementById('vp-prospect-id');
-          select.innerHTML = '<option value="">-- Seleccionar Prospecto --</option>';
-          prospects.forEach(p => {
-            select.innerHTML += `<option value="${p.id}">${p.business_name || p.id}</option>`;
-          });
-        }
-      } catch (err) {
-        console.error('Error al cargar selectores de prospectos:', err);
-      }
+
     }
 
     window.renderVirtualPhones = function() {
@@ -13961,18 +13879,16 @@
       const id = document.getElementById('virtual-phone-id').value;
       const phone_number = document.getElementById('vp-phone-number').value.trim();
       const next_billing_date = document.getElementById('vp-billing-date').value;
-      const assignment_type = document.getElementById('vp-assignment-type').value;
       const sip_username = document.getElementById('vp-sip-username').value.trim();
       const sip_password = document.getElementById('vp-sip-password').value;
       const sip_server = document.getElementById('vp-sip-server').value.trim();
 
-      let tenant_id = null;
-      let prospect_id = null;
-
-      if (assignment_type === 'tenant') {
-        tenant_id = document.getElementById('vp-tenant-id').value || null;
-      } else if (assignment_type === 'prospect') {
-        prospect_id = document.getElementById('vp-prospect-id').value || null;
+      const tenant_id = document.getElementById('vp-tenant-id').value || null;
+      
+      const existingVp = id ? allVirtualPhones.find(v => v.id === id) : null;
+      let prospect_id = existingVp ? existingVp.prospect_id : null;
+      if (tenant_id) {
+        prospect_id = null;
       }
 
       const payload = {
@@ -14036,18 +13952,10 @@
       }
 
       if (vp.tenant_id) {
-        document.getElementById('vp-assignment-type').value = 'tenant';
         document.getElementById('vp-tenant-id').value = vp.tenant_id;
-      } else if (vp.prospect_id) {
-        document.getElementById('vp-assignment-type').value = 'prospect';
-        document.getElementById('vp-prospect-id').value = vp.prospect_id;
       } else {
-        document.getElementById('vp-assignment-type').value = 'none';
         document.getElementById('vp-tenant-id').value = '';
-        document.getElementById('vp-prospect-id').value = '';
       }
-
-      onVpAssignmentTypeChange();
 
       document.getElementById('virtual-phone-form-title').innerHTML = `<i data-lucide="edit-3" style="width:18px;height:18px;color:var(--primary);"></i> Editar Teléfono`;
       document.getElementById('btn-cancel-vp-edit').style.display = 'inline-block';
@@ -14064,8 +13972,22 @@
       document.getElementById('virtual-phone-form-title').innerHTML = `<i data-lucide="plus-circle" style="width:18px;height:18px;color:var(--primary);"></i> Registrar Teléfono`;
       document.getElementById('btn-cancel-vp-edit').style.display = 'none';
       document.getElementById('btn-submit-vp').innerText = 'Registrar';
-      onVpAssignmentTypeChange();
       lucide.createIcons();
+    };
+
+    window.toggleVpSipPasswordVisibility = function() {
+      const passwordInput = document.getElementById('vp-sip-password');
+      const toggleIcon = document.getElementById('vp-sip-password-toggle-icon');
+      if (passwordInput && toggleIcon) {
+        if (passwordInput.type === 'password') {
+          passwordInput.type = 'text';
+          toggleIcon.setAttribute('data-lucide', 'eye-off');
+        } else {
+          passwordInput.type = 'password';
+          toggleIcon.setAttribute('data-lucide', 'eye');
+        }
+        lucide.createIcons();
+      }
     };
 
     // Funciones del selector de teléfonos virtuales para la ficha del cliente
@@ -14123,22 +14045,7 @@
       }
     };
 
-    window.onClientVirtualPhoneSelectChange = function() {
-      const select = document.getElementById('client-virtual-phone-id');
-      const selectedOption = select.options[select.selectedIndex];
-      const previewDiv = document.getElementById('selected-phone-credentials-preview');
 
-      if (selectedOption && selectedOption.value) {
-        const sipUser = selectedOption.getAttribute('data-sip-user');
-        const sipServer = selectedOption.getAttribute('data-sip-server');
-        
-        document.getElementById('preview-sip-user').innerText = sipUser || 'No especificado';
-        document.getElementById('preview-sip-server').innerText = sipServer || 'No especificado';
-        previewDiv.style.display = 'block';
-      } else {
-        previewDiv.style.display = 'none';
-      }
-    };
 
     // Funciones del selector de teléfonos virtuales para el modal de demos B2B
     window.fetchVirtualPhonesForDemoSelect = async function() {
