@@ -284,7 +284,7 @@ router.post('/auth/recover', async (req: Request, res: Response): Promise<void> 
     if (resendApiKey && resendApiKey !== 'YOUR_RESEND_API_KEY') {
       try {
         await axios.post('https://api.resend.com/emails', {
-          from: resendFrom,
+          from: `"Soporte Receptia" <receptia@corandar.com>`,
           to: normalizedEmail,
           subject: 'Recuperación de Contraseña Comercial - Receptia',
           html: htmlContent
