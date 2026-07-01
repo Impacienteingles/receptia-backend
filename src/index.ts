@@ -1793,32 +1793,41 @@ app.post('/api/payments/cancel-subscription', async (req, res): Promise<void> =>
       return;
     }
 
-    // Si tiene suscripción activa en Stripe, intentar cancelarla en Stripe
+    let contractEndDateStr = new Date().toISOString().split('T')[0];
+    let computedStatus = 'cancelled';
+
+    // Si tiene suscripción activa en Stripe, intentar cancelarla al final del periodo en Stripe
     if (tenant.stripe_customer_id) {
       try {
         const stripe = await getStripeClient();
         const subscriptions = await stripe.subscriptions.list({
           customer: tenant.stripe_customer_id,
-          status: 'active',
-          limit: 1
+          limit: 5
         });
         
-        if (subscriptions.data.length > 0) {
-          await stripe.subscriptions.cancel(subscriptions.data[0].id);
-          console.log(`[Stripe] Cancelada suscripción ${subscriptions.data[0].id} para el cliente ${tenant_id}`);
+        const activeSub = subscriptions.data.find(sub => sub.status === 'active' || sub.status === 'trialing');
+        
+        if (activeSub) {
+          const updatedSub = await stripe.subscriptions.update(activeSub.id, {
+            cancel_at_period_end: true
+          });
+          console.log(`[Stripe] Programada cancelación al final del periodo para suscripción ${activeSub.id} del cliente ${tenant_id}`);
+          
+          const periodEnd = new Date((updatedSub as any).current_period_end * 1000);
+          contractEndDateStr = periodEnd.toISOString().split('T')[0];
+          computedStatus = tenant.subscription_status || 'active';
         }
       } catch (stripeErr: any) {
-        console.warn('⚠️ No se pudo cancelar la suscripción en Stripe (puede que ya estuviera cancelada):', stripeErr.message);
+        console.warn('⚠️ No se pudo actualizar la suscripción en Stripe:', stripeErr.message);
       }
     }
 
-    // Actualizar el inquilino en la base de datos a estado cancelado
-    const todayStr = new Date().toISOString().split('T')[0];
+    // Actualizar el inquilino en la base de datos
     const { error: updErr } = await supabase
       .from('tenants')
       .update({
-        subscription_status: 'cancelled',
-        contract_end_date: todayStr
+        subscription_status: computedStatus,
+        contract_end_date: contractEndDateStr
       })
       .eq('id', tenant_id);
 
