@@ -412,7 +412,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
 
         <p>Además de esta presentación en audio, le hemos configurado una <span class="highlight">Demostración Real e Interactiva</span> de su receptor virtual de llamadas en su <strong>Panel de Control de Cliente</strong> privado.</p>
         
-        <p>Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña <span class="highlight">"Llamadas IA"</span>. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: <strong style="color: #60a5fa; font-family: monospace; font-size: 1.1em; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">Receptia123!</strong>.</p>
+        <p>Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña <span class="highlight">"Llamadas IA"</span>. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: <strong style="color: #60a5fa; font-family: monospace; font-size: 1.1em; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">12345678</strong>.</p>
 
         <!-- Beneficios en tarjetas -->
         <div class="benefit-card">
