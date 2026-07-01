@@ -1022,6 +1022,17 @@
       }
     }
     
+    /* Estilos de pestañas de ajustes */
+    .settings-tab-btn.active-tab {
+      background: rgba(139, 92, 246, 0.15) !important;
+      border: 1px solid rgba(139, 92, 246, 0.3) !important;
+      color: #fff !important;
+    }
+    .settings-tab-btn:hover:not(.active-tab) {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #fff !important;
+    }
+
     /* Estilos para el Modal Personalizado (Alert / Confirm) */
     #custom-modal {
       display: none;
@@ -1240,14 +1251,21 @@
   <div class="modal" id="pin-modal" style="display: none;">
     <div class="modal-content" style="text-align: center; gap: 1.25rem; width: 90%; max-width: 400px; padding: 2.5rem; border-radius: 20px;">
       <img src="/receptia_logo.png" alt="Logo Receptia" style="width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-      <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0;">Panel Protegido</h3>
+      <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+        Panel Protegido
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.3</span>
+      </h3>
       <p id="pin-description" style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Por favor, introduce tu contraseña de acceso para gestionar tu agenda de citas.</p>
       
       <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%; text-align: left; margin: 0.5rem 0;">
         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <label style="color: #fff; font-size: 0.8rem; font-weight: 600;">Usuario / Email del Cliente</label>
+          <input type="email" id="client-login-email" style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); color: #fff; font-size: 0.9rem;" placeholder="ejemplo@negocio.com" required>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
           <label style="color: #fff; font-size: 0.8rem; font-weight: 600;">Contraseña de Acceso</label>
           <div style="position: relative; display: flex; align-items: center; width: 100%;">
-            <input type="password" id="pin-input" style="width: 100%; padding: 0.75rem 1rem; padding-right: 2.5rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); color: #fff; font-size: 0.9rem;" placeholder="Contraseña de cliente" required autofocus>
+            <input type="password" id="pin-input" style="width: 100%; padding: 0.75rem 1rem; padding-right: 2.5rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); color: #fff; font-size: 0.9rem;" placeholder="Contraseña de cliente" required>
             <button type="button" onclick="togglePasswordVisibility('pin-input')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
               <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
             </button>
@@ -2386,7 +2404,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.2</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.3</span>
           <button onclick="handleClientLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2990,7 +3008,158 @@
             </h2>
             
             <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
-              
+            <!-- Selector de Pestañas de Ajustes -->
+            <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+              <button type="button" onclick="switchSettingsTab('settings-tab-ia')" class="settings-tab-btn active-tab" id="btn-tab-ia" style="background: none; border: none; padding: 0.6rem 1rem; border-radius: 8px; color: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; transition: all 0.2s;">
+                <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i> Asistente IA
+              </button>
+              <button type="button" onclick="switchSettingsTab('settings-tab-agenda')" class="settings-tab-btn" id="btn-tab-agenda" style="background: none; border: none; padding: 0.6rem 1rem; border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; transition: all 0.2s;">
+                <i data-lucide="calendar" style="width: 16px; height: 16px;"></i> Agenda e Integraciones
+              </button>
+              <button type="button" onclick="switchSettingsTab('settings-tab-canales')" class="settings-tab-btn" id="btn-tab-canales" style="background: none; border: none; padding: 0.6rem 1rem; border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; transition: all 0.2s;">
+                <i data-lucide="message-square" style="width: 16px; height: 16px;"></i> Canales y Mensajería
+              </button>
+              <button type="button" onclick="switchSettingsTab('settings-tab-seguridad')" class="settings-tab-btn" id="btn-tab-seguridad" style="background: none; border: none; padding: 0.6rem 1rem; border-radius: 8px; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; transition: all 0.2s;">
+                <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i> Seguridad y Cierres
+              </button>
+            </div>
+
+            <!-- Contenidos de Pestañas -->
+            <div id="settings-tab-ia" class="settings-tab-content" style="display: flex; flex-direction: column; gap: 1.5rem;">
+              <!-- Sección Llamada de Prueba IA (Sandbox WebRTC) -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%); border-color: rgba(139, 92, 246, 0.2);">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="sparkles" style="color: var(--primary-hover); width: 20px; height: 20px;"></i>
+                  Llamada de Prueba WebRTC (Sandbox)
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Llama y conversa directamente con tu asistente de voz IA desde el navegador para probar su comportamiento y afinar sus respuestas en tiempo real antes del uso telefónico.
+                </p>
+                 <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                   <button class="btn" onclick="startClientWebRTCCall()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; background: var(--primary); border: none; cursor: pointer; color: #fff;">
+                     <i data-lucide="phone"></i>
+                     Iniciar Llamada de Prueba
+                   </button>
+                   <div id="demo-trials-count" style="display: none; font-size: 0.85rem; font-weight: 500;"></div>
+                 </div>
+              </div>
+
+              <!-- Configuración de Personalidad de la IA -->
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="sliders" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Personalidad del Asistente de Voz IA
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Ajusta la actitud, la velocidad y el enfoque de tu asistente virtual de voz para que se adapte perfectamente al estilo de tu marca y al tipo de atención al cliente deseado.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 1.5rem;">
+                  <!-- Tone Slider -->
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                      <label for="setting-personality-tone" style="color: #fff; font-size: 0.9rem; font-weight: 500;">Tono de Voz y Cercanía</label>
+                      <span id="tone-value-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">Neutro</span>
+                    </div>
+                    <input type="range" id="setting-personality-tone" min="1" max="5" value="3" step="1" oninput="updateToneLabel(this.value)" style="width: 100%; accent-color: var(--primary); height: 6px; border-radius: 3px; outline: none; background: rgba(255, 255, 255, 0.1); cursor: pointer;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                      <span>Muy Formal (Usted)</span>
+                      <span>Neutro</span>
+                      <span>Muy Cercano (Tú)</span>
+                    </div>
+                  </div>
+
+                  <!-- Focus Slider -->
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                      <label for="setting-personality-focus" style="color: #fff; font-size: 0.9rem; font-weight: 500;">Enfoque de la Conversación</label>
+                      <span id="focus-value-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">Equilibrado</span>
+                    </div>
+                    <input type="range" id="setting-personality-focus" min="1" max="5" value="3" step="1" oninput="updateFocusLabel(this.value)" style="width: 100%; accent-color: var(--primary); height: 6px; border-radius: 3px; outline: none; background: rgba(255, 255, 255, 0.1); cursor: pointer;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                      <span>Empatía Máxima</span>
+                      <span>Equilibrado</span>
+                      <span>Eficiencia Máxima</span>
+                    </div>
+                  </div>
+
+                  <!-- Speed Slider -->
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                      <label for="setting-personality-speed" style="color: #fff; font-size: 0.9rem; font-weight: 500;">Velocidad del Habla</label>
+                      <span id="speed-value-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">Normal (1.0x)</span>
+                    </div>
+                    <input type="range" id="setting-personality-speed" min="0.8" max="1.2" value="1.0" step="0.05" oninput="updateSpeedLabel(this.value)" style="width: 100%; accent-color: var(--primary); height: 6px; border-radius: 3px; outline: none; background: rgba(255, 255, 255, 0.1); cursor: pointer;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                      <span>Lenta (0.8x)</span>
+                      <span>Normal (1.0x)</span>
+                      <span>Rápida (1.2x)</span>
+                    </div>
+                  </div>
+                </div>
+                <button class="btn btn-secondary" onclick="savePersonalitySettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                  <i data-lucide="save"></i>
+                  Guardar Personalidad IA
+                </button>
+              </div>
+
+              <!-- Clonación de Voz Express (Click & Clone) -->
+              <div id="voice-clone-container" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                  <i data-lucide="mic" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Clonación de Voz Express (Click & Clone)
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                  Clona tu propia voz o la de un locutor en sólo 30 segundos usando ElevenLabs. Puedes grabar directamente desde tu micrófono o subir un archivo de audio (.mp3 o .wav).
+                </p>
+                
+                <div style="background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <!-- Source Choice -->
+                  <div style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
+                    <label style="color: #fff; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                      <input type="radio" name="voice-clone-source" value="record" checked onchange="toggleVoiceSource(this.value)"> Grabar Micrófono
+                    </label>
+                    <label style="color: #fff; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                      <input type="radio" name="voice-clone-source" value="upload" onchange="toggleVoiceSource(this.value)"> Subir Archivo Audio
+                    </label>
+                  </div>
+
+                  <!-- Name Input -->
+                  <div>
+                    <label for="setting-voice-clone-name" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Nombre para tu Voz Clonada:</label>
+                    <input type="text" id="setting-voice-clone-name" placeholder="ej. Voz de Jose - Peluquero Principal" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+                  </div>
+
+                  <!-- Recorder Container -->
+                  <div id="clone-source-record" style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1);">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                      <button id="btn-record-voice" class="btn" onclick="toggleAudioRecording()" style="background: #ef4444; color: #fff; border: none; height: 42px; border-radius: 50%; width: 42px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">
+                        <i id="record-icon" data-lucide="mic" style="width: 20px; height: 20px;"></i>
+                      </button>
+                      <span id="record-status" style="font-size: 0.85rem; color: var(--text-muted);">Haz clic para empezar a grabar (mínimo 10s, sugerido 30s)</span>
+                    </div>
+                    <div id="recording-timer" style="display: none; font-family: monospace; font-size: 1.1rem; color: #f87171; font-weight: bold;">00:00</div>
+                    <audio id="audio-preview-player" controls style="display: none; width: 100%; margin-top: 0.5rem;"></audio>
+                  </div>
+
+                  <!-- Upload Container -->
+                  <div id="clone-source-upload" style="display: none; flex-direction: column; gap: 0.5rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1);">
+                    <label for="voice-upload-file" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Selecciona un archivo de voz de buena calidad (.wav o .mp3):</label>
+                    <input type="file" id="voice-upload-file" accept="audio/*" onchange="handleVoiceFileSelected()" style="color: #fff; font-size: 0.85rem; cursor: pointer;">
+                    <div id="upload-file-info" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;"></div>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <button id="btn-submit-voice-clone" class="btn" onclick="startVoiceCloningProcess()" disabled style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; background: var(--primary); border: none; cursor: not-allowed; color: #fff; opacity: 0.5;">
+                    <i data-lucide="cloud-upload"></i>
+                    Clonar y Aplicar Voz
+                  </button>
+                  <span id="voice-clone-progress-text" style="font-size: 0.8rem; font-weight: 500; color: var(--primary);"></span>
+                </div>
+              </div>
+            </div>
+
+            <div id="settings-tab-agenda" class="settings-tab-content" style="display: none; flex-direction: column; gap: 1.5rem;">
               <!-- Sección Google Calendar -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
@@ -3012,70 +3181,74 @@
                 </div>
               </div>
 
-              <!-- Sección Llamada de Prueba IA (Sandbox WebRTC) -->
-              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%); border-color: rgba(139, 92, 246, 0.2);">
-                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
-                  <i data-lucide="sparkles" style="color: var(--primary-hover); width: 20px; height: 20px;"></i>
-                  Llamada de Prueba WebRTC (Sandbox)
-                </h3>
-                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Llama y conversa directamente con tu asistente de voz IA desde el navegador para probar su comportamiento y afinar sus respuestas en tiempo real antes del uso telefónico.
-                </p>
-                 <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                   <button class="btn" onclick="startClientWebRTCCall()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; background: var(--primary); border: none; cursor: pointer; color: #fff;">
-                     <i data-lucide="phone"></i>
-                     Iniciar Llamada de Prueba
-                   </button>
-                   <div id="demo-trials-count" style="display: none; font-size: 0.85rem; font-weight: 500;"></div>
-                 </div>
-              </div>
-
-              <!-- Sección Modo Vacaciones -->
+              <!-- Sección Optimización de Agenda (Agenda Dinámica) -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
-                  <i data-lucide="palm-tree" style="color: var(--primary); width: 20px; height: 20px;"></i>
-                  Modo Vacaciones y Cierres Temporales
+                  <i data-lucide="sparkles" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Agenda Inteligente y Optimización de Huecos 📅
                 </h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Activa el modo vacaciones para indicarle a la IA que el negocio está cerrado. La IA lo comunicará amablemente al teléfono pero permitirá agendar citas para después del cierre.
+                  Habilita la optimización dinámica de huecos. El sistema priorizará la reserva de citas adyacentes a bloques ya ocupados (o al inicio/fin del día), evitando dejar ranuras huérfanas aisladas que dificultan el agendamiento de citas más largas.
                 </p>
-                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <input type="checkbox" id="setting-vacation-mode" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;">
-                    <label for="setting-vacation-mode" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0;">Activar Modo Vacaciones / Cierre</label>
-                  </div>
-                  <div>
-                    <label for="setting-vacation-message" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem; text-align: left;">Mensaje Explicativo de Vacaciones (Motivo de cierre, fecha de reapertura):</label>
-                    <textarea id="setting-vacation-message" rows="3" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; resize: vertical; box-sizing: border-box; font-family: inherit;" placeholder="ej. Estaremos cerrados por vacaciones del 1 al 15 de agosto. Volvemos el lunes 16 de agosto. Puedes programar tu cita a partir de esa fecha."></textarea>
-                  </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+                  <input type="checkbox" id="setting-agenda-optimization-enabled" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;">
+                  <label for="setting-agenda-optimization-enabled" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0;">Activar Optimización de Agenda Dinámica</label>
                 </div>
-                <button class="btn btn-secondary" onclick="saveVacationSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                
+                <button class="btn btn-secondary" onclick="saveAgendaOptimizationSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
                   <i data-lucide="save"></i>
-                  Guardar Estado de Vacaciones
+                  Guardar Optimización de Agenda
                 </button>
               </div>
 
-              <!-- Sección Desvío de Llamadas / Soporte Humano -->
+              <!-- Sección Integración de Agenda (PMS Local) -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
-                  <i data-lucide="phone-forwarded" style="color: var(--primary); width: 20px; height: 20px;"></i>
-                  Soporte Humano y Desvío de Llamadas
+                  <i data-lucide="database" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Integración de Agenda (PMS Local / Escritorio) 🔌
                 </h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Configura un número de teléfono (gerente, encargado o soporte) para que el asistente de voz IA pueda transferir la llamada de inmediato si el cliente lo solicita o si la IA no logra resolver una consulta compleja.
+                  Si utilizas software local en tu servidor físico (ej. Gesden o Dentrix), puedes conectar tu agenda local en tiempo real con Receptia. Habilita esta opción para generar un token de sincronización y configurar tu agente de sincronización local.
                 </p>
-                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem;">
                   <div>
-                    <label for="setting-transfer-phone" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem; text-align: left;">Número de Teléfono del Encargado / Desvío (formato internacional, ej. +34600000000):</label>
-                    <input type="text" id="setting-transfer-phone" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; box-sizing: border-box; font-family: inherit;" placeholder="ej. +34600112233">
+                    <label for="setting-pms-database-type" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Tipo de Software de Gestión (PMS):</label>
+                    <select id="setting-pms-database-type" onchange="togglePMSTokenVisibility(this.value)" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+                      <option value="none">Sin Integración (Usar Google Calendar Cloud)</option>
+                      <option value="gesden">Gesden (SQL Server)</option>
+                      <option value="dentrix">Dentrix</option>
+                      <option value="other">Otro Software Local</option>
+                    </select>
+                  </div>
+                  
+                  <div id="pms-sync-token-container" style="display: none;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Token de Sincronización PMS:</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                      <input type="text" id="setting-pms-sync-token" readonly style="flex: 1; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); padding: 0.5rem; font-size: 0.85rem; height: 38px; box-sizing: border-box; font-family: monospace;">
+                      <button class="btn" onclick="generateNewPMSToken()" style="background: var(--primary); color: #fff; height: 38px; white-space: nowrap;">Generar Token</button>
+                    </div>
+                    
+                    <div id="pms-agent-command-container" style="margin-top: 1rem;">
+                      <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Instrucción de Ejecución en tu Servidor Local:</label>
+                      <div style="position: relative;">
+                        <textarea id="setting-pms-command" readonly rows="2" style="width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); padding: 0.5rem; font-size: 0.8rem; resize: none; box-sizing: border-box; font-family: monospace; line-height: 1.4;"></textarea>
+                        <button onclick="copyPMSCommand()" style="position: absolute; right: 8px; bottom: 8px; background: var(--primary); color: #fff; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
+                          <i data-lucide="copy" style="width: 12px; height: 12px;"></i> Copiar Comando
+                        </button>
+                      </div>
+                      <span id="pms-last-sync-time" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; display: block;">Última sincronización exitosa: Nunca</span>
+                    </div>
                   </div>
                 </div>
-                <button class="btn btn-secondary" onclick="saveTransferSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                
+                <button class="btn btn-secondary" onclick="savePMSConfigSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
                   <i data-lucide="save"></i>
-                  Guardar Teléfono de Desvío
+                  Guardar Ajustes PMS
                 </button>
               </div>
+            </div>
 
+            <div id="settings-tab-canales" class="settings-tab-content" style="display: none; flex-direction: column; gap: 1.5rem;">
               <!-- Sección Canales y Módulos Avanzados SaaS -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
@@ -3250,120 +3423,6 @@
                 </div>
               </div>
 
-              <!-- Configuración de Personalidad de la IA -->
-              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
-                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
-                  <i data-lucide="sliders" style="color: var(--primary); width: 20px; height: 20px;"></i>
-                  Personalidad del Asistente de Voz IA
-                </h3>
-                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Ajusta la actitud, la velocidad y el enfoque de tu asistente virtual de voz para que se adapte perfectamente al estilo de tu marca y al tipo de atención al cliente deseado.
-                </p>
-                <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 1.5rem;">
-                  <!-- Tone Slider -->
-                  <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                      <label for="setting-personality-tone" style="color: #fff; font-size: 0.9rem; font-weight: 500;">Tono de Voz y Cercanía</label>
-                      <span id="tone-value-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">Neutro</span>
-                    </div>
-                    <input type="range" id="setting-personality-tone" min="1" max="5" value="3" step="1" oninput="updateToneLabel(this.value)" style="width: 100%; accent-color: var(--primary); height: 6px; border-radius: 3px; outline: none; background: rgba(255, 255, 255, 0.1); cursor: pointer;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                      <span>Muy Formal (Usted)</span>
-                      <span>Neutro</span>
-                      <span>Muy Cercano (Tú)</span>
-                    </div>
-                  </div>
-
-                  <!-- Focus Slider -->
-                  <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                      <label for="setting-personality-focus" style="color: #fff; font-size: 0.9rem; font-weight: 500;">Enfoque de la Conversación</label>
-                      <span id="focus-value-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">Equilibrado</span>
-                    </div>
-                    <input type="range" id="setting-personality-focus" min="1" max="5" value="3" step="1" oninput="updateFocusLabel(this.value)" style="width: 100%; accent-color: var(--primary); height: 6px; border-radius: 3px; outline: none; background: rgba(255, 255, 255, 0.1); cursor: pointer;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                      <span>Empatía Máxima</span>
-                      <span>Equilibrado</span>
-                      <span>Eficiencia Máxima</span>
-                    </div>
-                  </div>
-
-                  <!-- Speed Slider -->
-                  <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                      <label for="setting-personality-speed" style="color: #fff; font-size: 0.9rem; font-weight: 500;">Velocidad del Habla</label>
-                      <span id="speed-value-label" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">Normal (1.0x)</span>
-                    </div>
-                    <input type="range" id="setting-personality-speed" min="0.8" max="1.2" value="1.0" step="0.05" oninput="updateSpeedLabel(this.value)" style="width: 100%; accent-color: var(--primary); height: 6px; border-radius: 3px; outline: none; background: rgba(255, 255, 255, 0.1); cursor: pointer;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                      <span>Lenta (0.8x)</span>
-                      <span>Normal (1.0x)</span>
-                      <span>Rápida (1.2x)</span>
-                    </div>
-                  </div>
-                </div>
-                <button class="btn btn-secondary" onclick="savePersonalitySettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
-                  <i data-lucide="save"></i>
-                  Guardar Personalidad IA
-                </button>
-              </div>
-
-              <!-- Clonación de Voz Express (Click & Clone) -->
-              <div id="voice-clone-container" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
-                <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
-                  <i data-lucide="mic" style="color: var(--primary); width: 20px; height: 20px;"></i>
-                  Clonación de Voz Express (Click & Clone)
-                </h3>
-                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Clona tu propia voz o la de un locutor en sólo 30 segundos usando ElevenLabs. Puedes grabar directamente desde tu micrófono o subir un archivo de audio (.mp3 o .wav).
-                </p>
-                
-                <div style="background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
-                  <!-- Source Choice -->
-                  <div style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
-                    <label style="color: #fff; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
-                      <input type="radio" name="voice-clone-source" value="record" checked onchange="toggleVoiceSource(this.value)"> Grabar Micrófono
-                    </label>
-                    <label style="color: #fff; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
-                      <input type="radio" name="voice-clone-source" value="upload" onchange="toggleVoiceSource(this.value)"> Subir Archivo Audio
-                    </label>
-                  </div>
-
-                  <!-- Name Input -->
-                  <div>
-                    <label for="setting-voice-clone-name" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Nombre para tu Voz Clonada:</label>
-                    <input type="text" id="setting-voice-clone-name" placeholder="ej. Voz de Jose - Peluquero Principal" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
-                  </div>
-
-                  <!-- Recorder Container -->
-                  <div id="clone-source-record" style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1);">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                      <button id="btn-record-voice" class="btn" onclick="toggleAudioRecording()" style="background: #ef4444; color: #fff; border: none; height: 42px; border-radius: 50%; width: 42px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);">
-                        <i id="record-icon" data-lucide="mic" style="width: 20px; height: 20px;"></i>
-                      </button>
-                      <span id="record-status" style="font-size: 0.85rem; color: var(--text-muted);">Haz clic para empezar a grabar (mínimo 10s, sugerido 30s)</span>
-                    </div>
-                    <div id="recording-timer" style="display: none; font-family: monospace; font-size: 1.1rem; color: #f87171; font-weight: bold;">00:00</div>
-                    <audio id="audio-preview-player" controls style="display: none; width: 100%; margin-top: 0.5rem;"></audio>
-                  </div>
-
-                  <!-- Upload Container -->
-                  <div id="clone-source-upload" style="display: none; flex-direction: column; gap: 0.5rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1);">
-                    <label for="voice-upload-file" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Selecciona un archivo de voz de buena calidad (.wav o .mp3):</label>
-                    <input type="file" id="voice-upload-file" accept="audio/*" onchange="handleVoiceFileSelected()" style="color: #fff; font-size: 0.85rem; cursor: pointer;">
-                    <div id="upload-file-info" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;"></div>
-                  </div>
-                </div>
-
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <button id="btn-submit-voice-clone" class="btn" onclick="startVoiceCloningProcess()" disabled style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; background: var(--primary); border: none; cursor: not-allowed; color: #fff; opacity: 0.5;">
-                    <i data-lucide="cloud-upload"></i>
-                    Clonar y Aplicar Voz
-                  </button>
-                  <span id="voice-clone-progress-text" style="font-size: 0.8rem; font-weight: 500; color: var(--primary);"></span>
-                </div>
-              </div>
-
               <!-- Sección Missed Call Text-Back -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
@@ -3425,70 +3484,52 @@
                   Guardar Ajustes Chatbot
                 </button>
               </div>
+            </div>
 
-              <!-- Sección Optimización de Agenda (Agenda Dinámica) -->
+            <div id="settings-tab-seguridad" class="settings-tab-content" style="display: none; flex-direction: column; gap: 1.5rem;">
+              <!-- Sección Modo Vacaciones -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
-                  <i data-lucide="sparkles" style="color: var(--primary); width: 20px; height: 20px;"></i>
-                  Agenda Inteligente y Optimización de Huecos 📅
+                  <i data-lucide="palm-tree" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Modo Vacaciones y Cierres Temporales
                 </h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Habilita la optimización dinámica de huecos. El sistema priorizará la reserva de citas adyacentes a bloques ya ocupados (o al inicio/fin del día), evitando dejar ranuras huérfanas aisladas que dificultan el agendamiento de citas más largas.
+                  Activa el modo vacaciones para indicarle a la IA que el negocio está cerrado. La IA lo comunicará amablemente al teléfono pero permitirá agendar citas para después del cierre.
                 </p>
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
-                  <input type="checkbox" id="setting-agenda-optimization-enabled" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;">
-                  <label for="setting-agenda-optimization-enabled" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0;">Activar Optimización de Agenda Dinámica</label>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="setting-vacation-mode" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;">
+                    <label for="setting-vacation-mode" style="color: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 500; margin: 0;">Activar Modo Vacaciones / Cierre</label>
+                  </div>
+                  <div>
+                    <label for="setting-vacation-message" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem; text-align: left;">Mensaje Explicativo de Vacaciones (Motivo de cierre, fecha de reapertura):</label>
+                    <textarea id="setting-vacation-message" rows="3" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; resize: vertical; box-sizing: border-box; font-family: inherit;" placeholder="ej. Estaremos cerrados por vacaciones del 1 al 15 de agosto. Volvemos el lunes 16 de agosto. Puedes programar tu cita a partir de esa fecha."></textarea>
+                  </div>
                 </div>
-                
-                <button class="btn btn-secondary" onclick="saveAgendaOptimizationSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                <button class="btn btn-secondary" onclick="saveVacationSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
                   <i data-lucide="save"></i>
-                  Guardar Optimización de Agenda
+                  Guardar Estado de Vacaciones
                 </button>
               </div>
 
-              <!-- Sección Integración de Agenda (PMS Local) -->
+              <!-- Sección Desvío de Llamadas / Soporte Humano -->
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
-                  <i data-lucide="database" style="color: var(--primary); width: 20px; height: 20px;"></i>
-                  Integración de Agenda (PMS Local / Escritorio) 🔌
+                  <i data-lucide="phone-forwarded" style="color: var(--primary); width: 20px; height: 20px;"></i>
+                  Soporte Humano y Desvío de Llamadas
                 </h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Si utilizas software local en tu servidor físico (ej. Gesden o Dentrix), puedes conectar tu agenda local en tiempo real con Receptia. Habilita esta opción para generar un token de sincronización y configurar tu agente de sincronización local.
+                  Configura un número de teléfono (gerente, encargado o soporte) para que el asistente de voz IA pueda transferir la llamada de inmediato si el cliente lo solicita o si la IA no logra resolver una consulta compleja.
                 </p>
-                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem;">
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
                   <div>
-                    <label for="setting-pms-database-type" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Tipo de Software de Gestión (PMS):</label>
-                    <select id="setting-pms-database-type" onchange="togglePMSTokenVisibility(this.value)" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
-                      <option value="none">Sin Integración (Usar Google Calendar Cloud)</option>
-                      <option value="gesden">Gesden (SQL Server)</option>
-                      <option value="dentrix">Dentrix</option>
-                      <option value="other">Otro Software Local</option>
-                    </select>
-                  </div>
-                  
-                  <div id="pms-sync-token-container" style="display: none;">
-                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Token de Sincronización PMS:</label>
-                    <div style="display: flex; gap: 0.5rem;">
-                      <input type="text" id="setting-pms-sync-token" readonly style="flex: 1; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); padding: 0.5rem; font-size: 0.85rem; height: 38px; box-sizing: border-box; font-family: monospace;">
-                      <button class="btn" onclick="generateNewPMSToken()" style="background: var(--primary); color: #fff; height: 38px; white-space: nowrap;">Generar Token</button>
-                    </div>
-                    
-                    <div id="pms-agent-command-container" style="margin-top: 1rem;">
-                      <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Instrucción de Ejecución en tu Servidor Local:</label>
-                      <div style="position: relative;">
-                        <textarea id="setting-pms-command" readonly rows="2" style="width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); padding: 0.5rem; font-size: 0.8rem; resize: none; box-sizing: border-box; font-family: monospace; line-height: 1.4;"></textarea>
-                        <button onclick="copyPMSCommand()" style="position: absolute; right: 8px; bottom: 8px; background: var(--primary); color: #fff; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
-                          <i data-lucide="copy" style="width: 12px; height: 12px;"></i> Copiar Comando
-                        </button>
-                      </div>
-                      <span id="pms-last-sync-time" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; display: block;">Última sincronización exitosa: Nunca</span>
-                    </div>
+                    <label for="setting-transfer-phone" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem; text-align: left;">Número de Teléfono del Encargado / Desvío (formato internacional, ej. +34600000000):</label>
+                    <input type="text" id="setting-transfer-phone" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; box-sizing: border-box; font-family: inherit;" placeholder="ej. +34600112233">
                   </div>
                 </div>
-                
-                <button class="btn btn-secondary" onclick="savePMSConfigSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
+                <button class="btn btn-secondary" onclick="saveTransferSettings()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255, 255, 255, 0.05); color: #fff;">
                   <i data-lucide="save"></i>
-                  Guardar Ajustes PMS
+                  Guardar Teléfono de Desvío
                 </button>
               </div>
 
@@ -3525,7 +3566,7 @@
                   <p id="admin-privacy-warning-text" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.3;"></p>
                 </div>
               </div>
-
+            </div>
             </div>
           </div>
         </div>
@@ -6002,8 +6043,11 @@
         fetchClientReferralsData();
       }
 
-      if (tabId === 'settings' && currentTenant && !!currentTenant.whatsapp_reminders_enabled) {
-        startWhatsappStatusPolling();
+      if (tabId === 'settings') {
+        switchSettingsTab('settings-tab-ia');
+        if (currentTenant && !!currentTenant.whatsapp_reminders_enabled) {
+          startWhatsappStatusPolling();
+        }
       } else {
         stopWhatsappStatusPolling();
       }
@@ -6011,6 +6055,37 @@
       // Cerrar sidebar en móviles
       const sidebar = document.getElementById('sidebar-menu');
       if (sidebar) sidebar.classList.remove('open');
+    }
+
+    function switchSettingsTab(tabId) {
+      // Hide all settings tabs
+      document.querySelectorAll('.settings-tab-content').forEach(el => {
+        el.style.display = 'none';
+      });
+      // Remove active-tab class from all buttons
+      document.querySelectorAll('.settings-tab-btn').forEach(btn => {
+        btn.classList.remove('active-tab');
+        btn.style.color = 'var(--text-muted)';
+      });
+      // Show active tab content
+      const activeContent = document.getElementById(tabId);
+      if (activeContent) {
+        activeContent.style.display = 'flex';
+        activeContent.style.flexDirection = 'column';
+        activeContent.style.gap = '1.5rem';
+      }
+      // Add active-tab class to selected button
+      let btnId = '';
+      if (tabId === 'settings-tab-ia') btnId = 'btn-tab-ia';
+      if (tabId === 'settings-tab-agenda') btnId = 'btn-tab-agenda';
+      if (tabId === 'settings-tab-canales') btnId = 'btn-tab-canales';
+      if (tabId === 'settings-tab-seguridad') btnId = 'btn-tab-seguridad';
+      
+      const activeBtn = document.getElementById(btnId);
+      if (activeBtn) {
+        activeBtn.classList.add('active-tab');
+        activeBtn.style.color = '#fff';
+      }
     }
     
     function toggleSidebar() {
@@ -6048,7 +6123,31 @@
 
     async function handleClientRecoverPassword(e) {
       if (e) e.preventDefault();
-      await showCustomAlert('Para recuperar tu contraseña de acceso, por favor contacta con el administrador del sistema.', 'Recuperación de Contraseña', 'info');
+      
+      const emailInput = document.getElementById('client-login-email');
+      const email = emailInput ? emailInput.value.trim() : '';
+      
+      if (!email) {
+        await showCustomAlert('Por favor, escribe primero tu correo de cliente en el campo Usuario / Email del Cliente y luego pulsa en ¿Olvidaste tu contraseña?.', 'Recuperación de Contraseña', 'warning');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/auth/recover-pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        
+        if (response.ok) {
+          await showCustomAlert('Si el correo electrónico coincide con un cliente registrado, hemos enviado un mensaje a tu email con la contraseña de acceso.', 'Recuperación de Contraseña', 'success');
+        } else {
+          const data = await response.json();
+          await showCustomAlert(data.error || 'Error al procesar la recuperación de contraseña.', 'Error', 'error');
+        }
+      } catch (err) {
+        await showCustomAlert('Error de red al intentar recuperar la contraseña.', 'Error', 'error');
+      }
     }
 
     function handleClientLogout() {
@@ -6066,8 +6165,18 @@
       }
       
       pinModal.style.display = 'flex';
+      
+      const emailInput = document.getElementById('client-login-email');
+      if (emailInput && tenant && tenant.email) {
+        emailInput.value = tenant.email;
+      }
+
       setTimeout(() => {
-        if (pinInput) pinInput.focus();
+        if (emailInput && !emailInput.value) {
+          emailInput.focus();
+        } else if (pinInput) {
+          pinInput.focus();
+        }
       }, 100);
       
       const pinRememberEl = document.getElementById('pin-remember');
@@ -6100,7 +6209,16 @@
     // Validar o registrar la Contraseña
     async function handlePinSubmit(tenant) {
       if (isSubmittingPin) return;
+      
+      const emailInput = document.getElementById('client-login-email');
+      const email = emailInput ? emailInput.value.trim() : '';
       const pin = pinInput.value.trim();
+      
+      if (!email) {
+        showToast('Por favor, introduce tu correo electrónico.', 'error');
+        if (emailInput) emailInput.focus();
+        return;
+      }
       
       if (!tenant.admin_pin) {
         // Validación estricta para nueva contraseña
@@ -6129,7 +6247,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              email: tenant.email,
+              email: email,
               business_name: tenant.business_name,
               admin_pin: pin
             })
@@ -6161,7 +6279,7 @@
           const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: tenant.email, pin: pin })
+            body: JSON.stringify({ email: email, pin: pin })
           });
           
           if (response.ok) {

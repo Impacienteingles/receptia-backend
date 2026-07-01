@@ -372,7 +372,7 @@ app.post('/api/auth/login', authLimiter, async (req, res): Promise<void> => {
   }
 });
 
-// Endpoint para recuperación automática de PIN mediante envío de correo SMTP
+// Endpoint para recuperación automática de Contraseña/PIN mediante envío de correo SMTP
 app.post('/api/auth/recover-pin', authLimiter, async (req, res): Promise<void> => {
   const { email } = req.body;
   if (!email) {
@@ -396,7 +396,7 @@ app.post('/api/auth/recover-pin', authLimiter, async (req, res): Promise<void> =
     }
 
     if (!tenant.admin_pin) {
-      res.status(400).json({ error: 'Esta cuenta aún no tiene un PIN configurado en el sistema.' });
+      res.status(400).json({ error: 'Esta cuenta aún no tiene una contraseña configurada en el sistema.' });
       return;
     }
 
@@ -436,21 +436,21 @@ app.post('/api/auth/recover-pin', authLimiter, async (req, res): Promise<void> =
       const mailOptions = {
         from: `"Soporte Receptia" <${mailFrom}>`,
         to: email.trim().toLowerCase(),
-        subject: `Recuperación de PIN - Receptia`,
+        subject: `Recuperación de Contraseña - Receptia`,
         html: `
           <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
             <div style="text-align: center; margin-bottom: 24px;">
-              <h2 style="color: #7c3aed; margin: 0; font-size: 24px;">Receptia Mobile</h2>
+              <h2 style="color: #7c3aed; margin: 0; font-size: 24px;">Receptia</h2>
               <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Recuperación de credenciales</p>
             </div>
             <div style="font-size: 16px; color: #1e293b; line-height: 1.6; margin-bottom: 24px;">
               <p>Hola, <strong>${tenant.business_name}</strong>:</p>
-              <p>Hemos recibido una solicitud para recuperar tu PIN de acceso al panel de cliente de Receptia Mobile.</p>
+              <p>Hemos recibido una solicitud para recuperar tu contraseña de acceso al panel de cliente de Receptia.</p>
               <div style="text-align: center; background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin: 24px 0;">
-                <p style="font-size: 13px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">Tu PIN de acceso es:</p>
+                <p style="font-size: 13px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">Tu contraseña de acceso es:</p>
                 <p style="font-size: 36px; font-weight: bold; color: #1e293b; letter-spacing: 0.1em; margin: 8px 0 0 0;">${tenant.admin_pin}</p>
               </div>
-              <p style="font-size: 14px; color: #64748b;">Si no has solicitado esta recuperación, por favor te sugerimos cambiar tu PIN desde el panel de control o ponerte en contacto con soporte.</p>
+              <p style="font-size: 14px; color: #64748b;">Si no has solicitado esta recuperación, por favor te sugerimos cambiar tu contraseña desde el panel de control o ponerte en contacto con soporte.</p>
             </div>
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin-bottom: 20px;" />
             <div style="text-align: center; font-size: 12px; color: #94a3b8;">
@@ -461,7 +461,7 @@ app.post('/api/auth/recover-pin', authLimiter, async (req, res): Promise<void> =
       };
 
       await transporter.sendMail(mailOptions);
-      res.json({ success: true, message: 'Tu PIN de acceso ha sido enviado automáticamente a tu correo electrónico registrado.' });
+      res.json({ success: true, message: 'Tu contraseña de acceso ha sido enviada automáticamente a tu correo electrónico registrado.' });
     } else {
       res.status(500).json({ error: 'El servicio de envío de correos no está configurado en el servidor.' });
     }
