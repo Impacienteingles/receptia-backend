@@ -360,7 +360,83 @@ Algo ha ido mal. Por favor, inténtalo de nuevo o escríbenos a hola@receptia.co
     </div>
   </section>
 
-<script type="module">var e=document.getElementById(`lead-form`),t=document.getElementById(`submit-btn`),n=document.getElementById(`submit-text`),r=document.getElementById(`submit-spinner`),i=document.getElementById(`submit-arrow`),a=document.getElementById(`form-success`),o=document.getElementById(`form-error`);e?.addEventListener(`submit`,async s=>{if(s.preventDefault(),!e)return;t?.setAttribute(`disabled`,`true`),n&&(n.textContent=`Enviando…`),r?.classList.remove(`hidden`),i?.classList.add(`hidden`),a?.classList.add(`hidden`),o?.classList.add(`hidden`);let c=Object.fromEntries(new FormData(e).entries());try{let t=window.__RECEPTIA_LEAD_ENDPOINT__||`/api/lead`,n=await fetch(t,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify(c)}).catch(()=>null);(!n||!n.ok)&&(await new Promise(e=>setTimeout(e,800)),console.log(`[Receptia] Lead capturado (simulado):`,c)),a?.classList.remove(`hidden`),e.reset()}catch(e){console.error(`Error al enviar:`,e),o?.classList.remove(`hidden`)}finally{t?.removeAttribute(`disabled`),n&&(n.textContent=`Empezar 7 días gratis`),r?.classList.add(`hidden`),i?.classList.remove(`hidden`)}});</script> </main> <footer class="relative mt-32 border-t border-white/5 bg-surface-1/50"> <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16"> <div class="grid grid-cols-2 md:grid-cols-6 gap-8 lg:gap-12"> <!-- Brand block --> <div class="col-span-2"> <a href="/" class="flex items-center gap-2 mb-4"> <img src="/logo.png" alt="Receptia" class="h-8 w-auto" width="120" height="36"> <span class="font-outfit font-extrabold text-lg md:text-xl text-white tracking-tight" style="font-family: 'Outfit', sans-serif; font-weight: 800; letter-spacing: -0.02em;">Receptia</span> </a> <p class="text-sm text-gray-400 max-w-xs leading-relaxed mb-4">
+<script type="module">
+  const form = document.getElementById('lead-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const submitText = document.getElementById('submit-text');
+  const submitSpinner = document.getElementById('submit-spinner');
+  const submitArrow = document.getElementById('submit-arrow');
+  const successEl = document.getElementById('form-success');
+  const errorEl = document.getElementById('form-error');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form) return;
+
+    // Reset messages
+    successEl?.classList.add('hidden');
+    errorEl?.classList.add('hidden');
+
+    // Get field values
+    const name = document.getElementById('name')?.value?.trim();
+    const company = document.getElementById('company')?.value?.trim();
+    const email = document.getElementById('email')?.value?.trim();
+    const sector = document.getElementById('sector')?.value;
+
+    // Validation
+    if (!name || !company || !email || !sector) {
+      if (errorEl) {
+        errorEl.textContent = 'Por favor, rellena todos los campos obligatorios (Nombre, Negocio, Email profesional y Sector).';
+        errorEl.classList.remove('hidden');
+      }
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      if (errorEl) {
+        errorEl.textContent = 'Por favor, introduce un correo electrónico profesional válido.';
+        errorEl.classList.remove('hidden');
+      }
+      return;
+    }
+
+    // Submit form
+    submitBtn?.setAttribute('disabled', 'true');
+    if (submitText) submitText.textContent = 'Enviando…';
+    submitSpinner?.classList.remove('hidden');
+    submitArrow?.classList.add('hidden');
+
+    const formData = Object.fromEntries(new FormData(form).entries());
+    try {
+      const endpoint = window.__RECEPTIA_LEAD_ENDPOINT__ || '/api/lead';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      }).catch(() => null);
+
+      if (!response || !response.ok) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+        console.log('[Receptia] Lead capturado (simulado):', formData);
+      }
+
+      successEl?.classList.remove('hidden');
+      form.reset();
+    } catch (err) {
+      console.error('Error al enviar:', err);
+      if (errorEl) {
+        errorEl.textContent = 'Algo ha ido mal. Por favor, inténtalo de nuevo o escríbenos a hola@receptia.corandar.com.';
+        errorEl.classList.remove('hidden');
+      }
+    } finally {
+      submitBtn?.removeAttribute('disabled');
+      if (submitText) submitText.textContent = 'Empezar 7 días gratis';
+      submitSpinner?.classList.add('hidden');
+      submitArrow?.classList.remove('hidden');
+    }
+  });
+</script> </main> <footer class="relative mt-32 border-t border-white/5 bg-surface-1/50"> <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16"> <div class="grid grid-cols-2 md:grid-cols-6 gap-8 lg:gap-12"> <!-- Brand block --> <div class="col-span-2"> <a href="/" class="flex items-center gap-2 mb-4"> <img src="/logo.png" alt="Receptia" class="h-8 w-auto" width="120" height="36"> <span class="font-outfit font-extrabold text-lg md:text-xl text-white tracking-tight" style="font-family: 'Outfit', sans-serif; font-weight: 800; letter-spacing: -0.02em;">Receptia</span> </a> <p class="text-sm text-gray-400 max-w-xs leading-relaxed mb-4">
 La recepcionista virtual de voz con IA para clínicas, peluquerías, dentistas y asesorías en España. Construido por Corandar.
 </p> <p class="text-xs text-gray-500"> <span class="inline-flex items-center gap-1.5"> <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
 Todos los sistemas operativos

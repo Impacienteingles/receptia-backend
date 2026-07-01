@@ -6394,7 +6394,9 @@
     }
     function openPlansModal() {
       document.getElementById('plans-modal').style.display = 'flex';
-      fetchPlans();
+      setTimeout(() => {
+        fetchPlans();
+      }, 100);
     }
 
     function closePlansModal() {
@@ -6743,7 +6745,9 @@
 
       if (accessBlocked) {
         expiredOverlay.style.display = 'flex';
-        fetchPlans();
+        setTimeout(() => {
+          fetchPlans();
+        }, 100);
         return;
       }
 
