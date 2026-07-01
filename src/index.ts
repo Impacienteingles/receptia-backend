@@ -433,70 +433,139 @@ app.post('/api/auth/recover-pin', authLimiter, async (req, res): Promise<void> =
       return;
     }
 
-    // Configurar transporte SMTP modular de Nodemailer reutilizando las variables del .env
-    let transporter = null;
-    let mailFrom = '';
+    const resendApiKey = await getSettingVal('RESEND_API_KEY') || process.env.RESEND_API_KEY;
+    const resendFrom = await getSettingVal('RESEND_FROM_EMAIL') || process.env.RESEND_FROM_EMAIL || 'Receptia Demos <onboarding@resend.dev>';
 
-    if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        },
-        connectionTimeout: 5000,
-        greetingTimeout: 5000,
-        socketTimeout: 5000
-      });
-      mailFrom = process.env.SMTP_USER;
-    } else if (process.env.GOOGLE_EMAIL && process.env.GOOGLE_PASSWORD) {
-      transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.GOOGLE_EMAIL,
-          pass: process.env.GOOGLE_PASSWORD
-        },
-        connectionTimeout: 5000,
-        greetingTimeout: 5000,
-        socketTimeout: 5000
-      });
-      mailFrom = process.env.GOOGLE_EMAIL;
+    const htmlContent = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 540px; margin: 40px auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);">
+        
+        <!-- HEADER CON LOGOS -->
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 24px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
+          <tr>
+            <td align="center" style="vertical-align: middle;">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="vertical-align: middle; padding-right: 12px;">
+                    <img src="https://receptia.corandar.com/logo.png" alt="Receptia" style="height: 32px; width: auto; display: block; border: 0;" />
+                  </td>
+                  <td style="vertical-align: middle; border-left: 1px solid #cbd5e1; height: 24px; padding-right: 12px;">&nbsp;</td>
+                  <td style="vertical-align: middle; background-color: #ffffff; padding: 4px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    <img src="https://receptia.corandar.com/corandar-logo.png" alt="Corandar Logo" style="height: 18px; width: auto; display: block; border: 0;" />
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- CONTENIDO -->
+        <div style="font-size: 15px; color: #334155; line-height: 1.6; margin-bottom: 24px;">
+          <p style="margin-top: 0; font-size: 16px; font-weight: 600; color: #0f172a;">Hola, <strong>${tenant.business_name}</strong>:</p>
+          <p>Hemos recibido una solicitud para recuperar tu contraseña de acceso al panel de cliente de Receptia.</p>
+          
+          <div style="text-align: center; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #cbd5e1; padding: 24px; border-radius: 12px; margin: 24px 0;">
+            <p style="font-size: 12px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Tu contraseña de acceso es:</p>
+            <p style="font-size: 32px; font-weight: 700; color: #7c3aed; letter-spacing: 0.05em; margin: 10px 0 0 0; font-family: Courier, monospace;">${tenant.admin_pin}</p>
+          </div>
+          
+          <p style="font-size: 13px; color: #64748b; margin-bottom: 0;">Si no has solicitado este correo, por favor cambia tu contraseña desde el panel de control o ponte en contacto con soporte.</p>
+        </div>
+
+        <!-- FOOTER -->
+        <hr style="border: none; border-top: 1px solid #f1f5f9; margin-top: 24px; margin-bottom: 16px;" />
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td align="center" style="font-size: 12px; color: #94a3b8;">
+              © 2026 <a href="https://corandar.com" style="color: #7c3aed; text-decoration: none; font-weight: 500;">Corandar S.L.</a> · Todos los derechos reservados.
+            </td>
+          </tr>
+        </table>
+
+      </div>
+    `;
+
+    let emailSent = false;
+
+    // 1. Intentar con Resend si está configurado
+    if (resendApiKey && resendApiKey !== 'YOUR_RESEND_API_KEY') {
+      try {
+        await axios.post('https://api.resend.com/emails', {
+          from: resendFrom,
+          to: email.trim().toLowerCase(),
+          subject: 'Recuperación de Contraseña - Receptia',
+          html: htmlContent
+        }, {
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        emailSent = true;
+      } catch (resendErr: any) {
+        console.error('[auth/recover-pin] Error al enviar con Resend:', resendErr.response?.data || resendErr.message);
+      }
     }
 
-    if (transporter && mailFrom) {
-      const mailOptions = {
-        from: `"Soporte Receptia" <${mailFrom}>`,
-        to: email.trim().toLowerCase(),
-        subject: `Recuperación de Contraseña - Receptia`,
-        html: `
-          <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
-            <div style="text-align: center; margin-bottom: 24px;">
-              <h2 style="color: #7c3aed; margin: 0; font-size: 24px;">Receptia</h2>
-              <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Recuperación de credenciales</p>
-            </div>
-            <div style="font-size: 16px; color: #1e293b; line-height: 1.6; margin-bottom: 24px;">
-              <p>Hola, <strong>${tenant.business_name}</strong>:</p>
-              <p>Hemos recibido una solicitud para recuperar tu contraseña de acceso al panel de cliente de Receptia.</p>
-              <div style="text-align: center; background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin: 24px 0;">
-                <p style="font-size: 13px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">Tu contraseña de acceso es:</p>
-                <p style="font-size: 36px; font-weight: bold; color: #1e293b; letter-spacing: 0.1em; margin: 8px 0 0 0;">${tenant.admin_pin}</p>
-              </div>
-              <p style="font-size: 14px; color: #64748b;">Si no has solicitado esta recuperación, por favor te sugerimos cambiar tu contraseña desde el panel de control o ponerte en contacto con soporte.</p>
-            </div>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin-bottom: 20px;" />
-            <div style="text-align: center; font-size: 12px; color: #94a3b8;">
-              <p>© 2026 Receptia. Todos los derechos reservados.</p>
-            </div>
-          </div>
-        `
-      };
+    // 2. Si no se envió, intentar con SMTP / Gmail
+    if (!emailSent) {
+      const smtpHost = await getSettingVal('SMTP_HOST') || process.env.SMTP_HOST;
+      const smtpPort = parseInt((await getSettingVal('SMTP_PORT')) || process.env.SMTP_PORT || '587');
+      const smtpSecure = (await getSettingVal('SMTP_SECURE')) === 'true' || process.env.SMTP_SECURE === 'true';
+      const smtpUser = await getSettingVal('SMTP_USER') || process.env.SMTP_USER;
+      const smtpPass = await getSettingVal('SMTP_PASS') || process.env.SMTP_PASS;
 
-      await transporter.sendMail(mailOptions);
+      let transporter = null;
+      let mailFrom = '';
+
+      if (smtpHost && smtpPort && smtpUser && smtpPass) {
+        transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpSecure,
+          auth: {
+            user: smtpUser,
+            pass: smtpPass
+          },
+          connectionTimeout: 5000,
+          connectionTimeoutMs: 5000
+        } as any);
+        mailFrom = smtpUser;
+      } else {
+        const googleEmail = await getSettingVal('GOOGLE_EMAIL') || process.env.GOOGLE_EMAIL;
+        const googlePassword = await getSettingVal('GOOGLE_PASSWORD') || process.env.GOOGLE_PASSWORD;
+        if (googleEmail && googlePassword) {
+          transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: googleEmail,
+              pass: googlePassword
+            },
+            connectionTimeout: 5000
+          } as any);
+          mailFrom = googleEmail;
+        }
+      }
+
+      if (transporter && mailFrom) {
+        try {
+          const mailOptions = {
+            from: `"Soporte Receptia" <${mailFrom}>`,
+            to: email.trim().toLowerCase(),
+            subject: 'Recuperación de Contraseña - Receptia',
+            html: htmlContent
+          };
+          await transporter.sendMail(mailOptions);
+          emailSent = true;
+        } catch (smtpErr: any) {
+          console.error('[auth/recover-pin] Error al enviar con SMTP:', smtpErr.message);
+        }
+      }
+    }
+
+    if (emailSent) {
       res.json({ success: true, message: 'Tu contraseña de acceso ha sido enviada automáticamente a tu correo electrónico registrado.' });
     } else {
-      res.status(500).json({ error: 'El servicio de envío de correos no está configurado en el servidor.' });
+      res.status(500).json({ error: 'El servicio de envío de correos no está configurado o falló el envío.' });
     }
   } catch (err: any) {
     res.status(500).json({ error: err.message });
