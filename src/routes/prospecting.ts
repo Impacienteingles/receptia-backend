@@ -988,6 +988,9 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
       }
     }
 
+    const htmlKey = `outreach_html_${id}`;
+    const { data: htmlVal } = await supabase.from('settings').select('value').eq('key', htmlKey).maybeSingle();
+
     console.log(`[Prospecting API] Enviando correo de outreach para ${prospect.business_name} (Test: ${isTest}) a ${recipient}...`);
     const emailSent = await sendOutreachEmail({
       prospectId: isTest ? undefined : (id as string),
@@ -999,7 +1002,8 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
       sector: prospect.sector || 'general',
       subject: emailSubject,
       bodyOverride: body,
-      voiceId: voiceId
+      voiceId: voiceId,
+      htmlOverride: htmlVal?.value
     });
 
     if (!emailSent) {
@@ -1068,16 +1072,23 @@ Desde Corándar hemos diseñado y configurado un Agente de Voz con Inteligencia 
 
 Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.`;
 
+    const htmlKey = `outreach_html_${id}`;
+    const { data: htmlVal } = await supabase.from('settings').select('value').eq('key', htmlKey).maybeSingle();
+
     const selectedSubject = subjectVal?.value || defaultSubject;
     const selectedBody = bodyVal?.value || defaultBodyText;
 
-    const htmlContent = getOutreachEmailTemplate(
-      prospect.business_name,
-      prospect.demo_url || '#',
-      prospect.audio_url || '#',
-      prospect.sector || 'general',
-      selectedBody
-    );
+    let htmlContent = htmlVal?.value;
+    if (!htmlContent) {
+      htmlContent = getOutreachEmailTemplate(
+        prospect.business_name,
+        prospect.demo_url || '#',
+        prospect.audio_url || '#',
+        prospect.sector || 'general',
+        selectedBody,
+        selectedVoiceId
+      );
+    }
 
     res.json({
       status: 'success',
@@ -1099,7 +1110,7 @@ Este agente es capaz de atender llamadas telefónicas las 24 horas del día, res
  */
 router.post('/:id/save-outreach-settings', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { subject, body, voice_id, script } = req.body;
+  const { subject, body, voice_id, script, html } = req.body;
 
   try {
     const { data: prospect, error: fetchErr } = await supabase
@@ -1157,14 +1168,32 @@ router.post('/:id/save-outreach-settings', async (req: Request, res: Response): 
       }
     }
 
-    // Renderizar la plantilla HTML actualizada con los últimos cambios
-    const htmlContent = getOutreachEmailTemplate(
-      prospect.business_name,
-      prospect.demo_url || '#',
-      prospect.audio_url || '#',
-      prospect.sector || 'general',
-      body
-    );
+    // Guardar HTML personalizado
+    if (html !== undefined) {
+      const key = `outreach_html_${id}`;
+      const { data: existing } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+      if (existing) {
+        await supabase.from('settings').update({ value: html }).eq('key', key);
+      } else {
+        await supabase.from('settings').insert({ key, value: html });
+      }
+    }
+
+    // Obtener la vista previa actualizada del correo (respetando HTML personalizado)
+    const htmlKey = `outreach_html_${id}`;
+    const { data: htmlVal } = await supabase.from('settings').select('value').eq('key', htmlKey).maybeSingle();
+    
+    let htmlContent = htmlVal?.value;
+    if (!htmlContent) {
+      htmlContent = getOutreachEmailTemplate(
+        prospect.business_name,
+        prospect.demo_url || '#',
+        prospect.audio_url || '#',
+        prospect.sector || 'general',
+        body,
+        voice_id
+      );
+    }
 
     res.json({
       status: 'success',
@@ -1274,13 +1303,25 @@ router.post('/:id/regenerate-audio', async (req: Request, res: Response): Promis
       .eq('id', id);
 
     // Obtener la nueva vista previa del HTML del correo con el nuevo reproductor de audio y el cuerpo
-    const htmlContent = getOutreachEmailTemplate(
-      prospect.business_name,
-      prospect.demo_url,
-      audioUrl,
-      prospect.sector || 'general',
-      body
-    );
+    const htmlKey = `outreach_html_${id}`;
+    const { data: htmlVal } = await supabase.from('settings').select('value').eq('key', htmlKey).maybeSingle();
+    let htmlContent = htmlVal?.value;
+
+    if (htmlContent) {
+      if (prospect.audio_url) {
+        htmlContent = htmlContent.replaceAll(prospect.audio_url, audioUrl);
+        await supabase.from('settings').update({ value: htmlContent }).eq('key', htmlKey);
+      }
+    } else {
+      htmlContent = getOutreachEmailTemplate(
+        prospect.business_name,
+        prospect.demo_url,
+        audioUrl,
+        prospect.sector || 'general',
+        body,
+        voice_id
+      );
+    }
 
     res.json({
       status: 'success',
@@ -1289,6 +1330,55 @@ router.post('/:id/regenerate-audio', async (req: Request, res: Response): Promis
     });
   } catch (err: any) {
     console.error(`[Prospecting API ERROR] Fallo al regenerar audio de captación para prospecto ${id}:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * 8.6. Restablecer HTML de outreach por defecto (elimina la personalización)
+ */
+router.post('/:id/reset-outreach-html', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  try {
+    const key = `outreach_html_${id}`;
+    await supabase.from('settings').delete().eq('key', key);
+
+    const { data: prospect, error: fetchErr } = await supabase
+      .from('prospects')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchErr || !prospect) {
+      res.status(404).json({ error: `No se pudo encontrar el prospecto con ID: ${id}` });
+      return;
+    }
+
+    const bodyKey = `outreach_body_${id}`;
+    const voiceKey = `outreach_voice_${id}`;
+    const { data: bodyVal } = await supabase.from('settings').select('value').eq('key', bodyKey).maybeSingle();
+    const { data: voiceVal } = await supabase.from('settings').select('value').eq('key', voiceKey).maybeSingle();
+
+    const selectedVoiceId = voiceVal?.value || 'cefcb124-080b-4655-b31f-932f3ee743de';
+    const defaultBodyText = `Estimado/a responsable de ${prospect.business_name},\n\nDesde Corándar hemos diseñado y configurado un Agente de Voz con Inteligencia Artificial adaptado a las necesidades específicas de su negocio.\n\nEste agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.`;
+    const selectedBody = bodyVal?.value || defaultBodyText;
+
+    const htmlContent = getOutreachEmailTemplate(
+      prospect.business_name,
+      prospect.demo_url || '#',
+      prospect.audio_url || '#',
+      prospect.sector || 'general',
+      selectedBody,
+      selectedVoiceId
+    );
+
+    res.json({
+      status: 'success',
+      html: htmlContent
+    });
+  } catch (err: any) {
+    console.error(`[Prospecting API ERROR] Fallo al restablecer html para prospecto ${id}:`, err.message);
     res.status(500).json({ error: err.message });
   }
 });

@@ -12,6 +12,7 @@ interface SendOutreachEmailRequest {
   subject?: string;
   bodyOverride?: string;
   voiceId?: string;
+  htmlOverride?: string;
 }
 
 /**
@@ -24,7 +25,7 @@ export async function sendOutreachEmail(req: SendOutreachEmailRequest): Promise<
   const fromEmail = await getSettingVal('RESEND_FROM_EMAIL') || process.env.RESEND_FROM_EMAIL || 'Receptia Demos <onboarding@resend.dev>';
 
   const subject = req.subject || `🎙️ Hemos diseñado un Asistente de Voz IA para ${req.businessName}`;
-  let htmlContent = getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector, req.bodyOverride, req.voiceId);
+  let htmlContent = req.htmlOverride || getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector, req.bodyOverride, req.voiceId);
 
   // Inyectar píxel de seguimiento si se proveen los parámetros necesarios
   if (req.prospectId && req.originUrl) {
