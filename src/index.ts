@@ -612,8 +612,13 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
       // Crear un nuevo registro
       let attemptData: any = { ...tenantData };
       if (!attemptData.admin_pin) {
-        // Generar PIN aleatorio de 6 dígitos
-        attemptData.admin_pin = Math.floor(100000 + Math.random() * 900000).toString();
+        // Generar contraseña aleatoria de 8 caracteres
+        const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let pass = '';
+        for (let i = 0; i < 8; i++) {
+          pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        attemptData.admin_pin = pass;
       }
       const initialPin = attemptData.admin_pin;
       let retries = 10;
@@ -1541,7 +1546,12 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     } else {
       let attemptData: any = { ...tenantData };
       if (!attemptData.admin_pin) {
-        attemptData.admin_pin = Math.floor(100000 + Math.random() * 900000).toString();
+        const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let pass = '';
+        for (let i = 0; i < 8; i++) {
+          pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        attemptData.admin_pin = pass;
       }
       const initialPin = attemptData.admin_pin;
       let retries = 10;
@@ -2833,6 +2843,7 @@ const NEW_DEFAULT_PLANS = [
     price: 79.00,
     cycle: 'monthly',
     features: [
+      '100 minutos incluidos / mes',
       'Recepcionista de voz 24/7',
       'Google Calendar',
       'Voz estándar en español',
@@ -2851,6 +2862,7 @@ const NEW_DEFAULT_PLANS = [
     price: 149.00,
     cycle: 'monthly',
     features: [
+      '200 minutos incluidos / mes',
       'Todo lo de Inicial',
       'Recordatorios automáticos por WhatsApp',
       'Modo vacaciones',
@@ -2871,6 +2883,7 @@ const NEW_DEFAULT_PLANS = [
     price: 249.00,
     cycle: 'monthly',
     features: [
+      '500 minutos incluidos / mes',
       'Todo lo de Estándar',
       'Voz clonada (instant voice cloning)',
       'Campañas outbound automatizadas',
@@ -2890,6 +2903,7 @@ const NEW_DEFAULT_PLANS = [
     price: 900.00,
     cycle: 'annually',
     features: [
+      '100 minutos incluidos / mes',
       'Recepcionista de voz 24/7',
       'Google Calendar',
       'Voz estándar en español',
@@ -2908,6 +2922,7 @@ const NEW_DEFAULT_PLANS = [
     price: 1668.00,
     cycle: 'annually',
     features: [
+      '200 minutos incluidos / mes',
       'Todo lo de Inicial',
       'Recordatorios automáticos por WhatsApp',
       'Modo vacaciones',
@@ -2928,6 +2943,7 @@ const NEW_DEFAULT_PLANS = [
     price: 2748.00,
     cycle: 'annually',
     features: [
+      '500 minutos incluidos / mes',
       'Todo lo de Estándar',
       'Voz clonada (instant voice cloning)',
       'Campañas outbound automatizadas',
@@ -5017,6 +5033,22 @@ function scheduleDailyAgentSync() {
   }, 10000); // 10 segundos después del arranque
 }
 
+async function syncDefaultPlansInDatabase() {
+  console.log('🤖 [Seeder] Sincronizando planes por defecto...');
+  try {
+    for (const plan of NEW_DEFAULT_PLANS) {
+      const { error } = await supabase.from('plans').upsert(plan);
+      if (error) {
+        console.error(`[Seeder] Error al sincronizar plan ${plan.id}:`, error.message);
+      } else {
+        console.log(`[Seeder] Plan sincronizado correctamente: ${plan.id}`);
+      }
+    }
+  } catch (err: any) {
+    console.error('[Seeder] Error crítico en sincronización de planes:', err.message);
+  }
+}
+
 // Arrancar el servidor
 app.listen(PORT, () => {
   console.log(`\n========================================`);
@@ -5024,9 +5056,11 @@ app.listen(PORT, () => {
   console.log(`========================================\n`);
   
   // Ejecutar migraciones
-  runDatabaseMigrations().catch(err => {
-    console.error('[Bootstrap Migration] Error en migración inicial:', err.message);
-  });
+  runDatabaseMigrations()
+    .then(() => syncDefaultPlansInDatabase())
+    .catch(err => {
+      console.error('[Bootstrap Migration] Error en migración inicial:', err.message);
+    });
 
   // Arrancar automáticamente las sesiones activas de WhatsApp Web en segundo plano
   autoStartActiveSessions().catch(err => {

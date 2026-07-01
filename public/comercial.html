@@ -538,7 +538,7 @@
           <img src="/receptia_logo.png" alt="Receptia Logo" style="width: 40px; height: 40px; border-radius: 8px;">
           <h2 style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif;">Receptia B2B</h2>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.1.5</span></p>
+        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.0.0</span></p>
       </div>
 
       <form id="login-form" novalidate onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
@@ -547,17 +547,25 @@
           <input type="email" id="login-email" placeholder="comercial@correo.com" autocomplete="email">
         </div>
         <div class="form-group">
-          <label for="login-pin">PIN de Acceso</label>
-          <input type="text" id="login-pin" inputmode="numeric" placeholder="••••" maxlength="4" autocomplete="off" style="letter-spacing: 0.3em; text-align: center; -webkit-text-security: disc;">
+          <label for="login-pin">Contraseña de Acceso</label>
+          <div style="position: relative; display: flex; align-items: center; width: 100%;">
+            <input type="password" id="login-pin" placeholder="••••••••" autocomplete="current-password" required style="width: 100%; padding-right: 2.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); color: #fff; padding: 0.6rem; border-radius: 6px;">
+            <button type="button" onclick="togglePasswordVisibility('login-pin')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem; height: 100%;">
+              <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+            </button>
+          </div>
         </div>
         
         <div id="login-error-alert" style="display: none; color: var(--error); font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.6rem; border-radius: 6px; text-align: center;">
-          Email o PIN incorrectos. Por favor intente de nuevo.
+          Email o Contraseña incorrectos. Por favor intente de nuevo.
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: -0.25rem;">
-          <input type="checkbox" id="login-remember" style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
-          <label for="login-remember" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer; user-select: none;">Recordar mis datos de acceso</label>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -0.25rem; font-size: 0.8rem;">
+          <label style="display: flex; align-items: center; gap: 0.4rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+            <input type="checkbox" id="login-remember" style="accent-color: var(--primary);">
+            <span>Recordar mis datos de acceso</span>
+          </label>
+          <a href="#" onclick="handleCommercialRecoverPassword(event)" style="color: var(--primary); text-decoration: none; font-weight: 600;">¿Olvidaste tu contraseña?</a>
         </div>
 
         <button type="submit" class="btn" style="height: 42px; font-size: 0.95rem; justify-content: center; width: 100%; margin-top: 0.5rem;">
@@ -573,7 +581,7 @@
       <div class="logo-container">
         <img src="/receptia_logo.png" alt="Receptia Logo">
         <span>Receptia Comercial</span>
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.1.5</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.0.0</span>
       </div>
 
       <div class="user-info">
@@ -1126,7 +1134,7 @@
 
     // Inicializar
     window.addEventListener('DOMContentLoaded', async () => {
-      console.log('[Receptia Comercial v1.1.5] Inicializando panel...');
+      console.log('[Receptia Comercial v1.0.0] Inicializando panel...');
       const urlParams = new URLSearchParams(window.location.search);
       currentAccessUrl = urlParams.get('c') || '';
       console.log('[Receptia] Token de acceso detectado:', currentAccessUrl ? `"${currentAccessUrl}"` : '(ninguno)');
@@ -1168,19 +1176,6 @@
         }
       }
       lucide.createIcons();
-
-      // Auto-submit al ingresar 4 dígitos del PIN (sin pasar por submit del form)
-      const pinInput = document.getElementById('login-pin');
-      if (pinInput) {
-        pinInput.addEventListener('input', (e) => {
-          // Solo filtrar a dígitos numéricos
-          e.target.value = e.target.value.replace(/[^0-9]/g, '');
-          if (e.target.value.length === 4) {
-            console.log('[Receptia] PIN completo (4 dígitos). Auto-enviando...');
-            handleLogin(); // Llamada directa, sin evento de form submit
-          }
-        });
-      }
     });
 
     async function initLoginScreen() {
@@ -1221,14 +1216,14 @@
           currentAccessUrl = '';
           emailGroup.style.display = 'flex';
           emailInput.disabled = false;
-          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.1.5</span>`;
+          loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.0</span>`;
           emailInput.focus();
         }
       } else {
         console.log('[Receptia] Modo login manual (sin token de URL).');
         emailGroup.style.display = 'flex';
         emailInput.disabled = false;
-        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.1.5</span>`;
+        loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color); margin-left: 0.35rem; vertical-align: middle;">v1.0.0</span>`;
       }
     }
 
@@ -1249,6 +1244,11 @@
       initComercialPolling();
     }
 
+    function handleCommercialRecoverPassword(e) {
+      if (e) e.preventDefault();
+      alert('Para recuperar tu contraseña de comercial, por favor contacta con tu administrador del sistema.');
+    }
+
     // Login Handler
     async function handleLogin(e) {
       // Siempre prevenir submit nativo del formulario para evitar validación HTML5
@@ -1260,9 +1260,11 @@
       const errorAlert = document.getElementById('login-error-alert');
       errorAlert.style.display = 'none';
 
-      // Validación JS propia (en lugar de depender de HTML5 required/pattern)
-      if (!pin || pin.length < 4) {
-        console.log('[Receptia] PIN incompleto, ignorando submit.');
+      // Validación JS propia
+      if (!pin) {
+        errorAlert.innerText = 'Por favor, introduce tu contraseña.';
+        errorAlert.style.display = 'block';
+        pinInput.focus();
         return;
       }
 

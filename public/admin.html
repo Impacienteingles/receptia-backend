@@ -1620,14 +1620,28 @@
         <i data-lucide="lock" style="width: 32px; height: 32px; color: #8b5cf6;"></i>
       </div>
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0;">Introduce el PIN de seguridad global para acceder a la plataforma.</p>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0;">Inicia sesión con tus credenciales de administrador para continuar.</p>
       
-      <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem;">
-        <div style="position: relative;">
-          <input type="password" id="admin-gate-pin" placeholder="PIN de Administrador" maxlength="8" required style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); color: #fff; font-size: 1rem; text-align: center; letter-spacing: 0.25rem;">
+      <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
+        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <label style="color: #fff; font-size: 0.8rem; font-weight: 600;">Usuario / Email</label>
+          <input type="email" id="admin-gate-email" placeholder="nombre@ejemplo.com" required style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); color: #fff; font-size: 0.9rem;">
         </div>
-        <div id="admin-gate-error" style="color: var(--error); font-size: 0.85rem; display: none;">PIN incorrecto. Inténtalo de nuevo.</div>
-        <button type="submit" class="btn" style="width: 100%; padding: 0.75rem; border-radius: 8px; font-weight: 600;">Acceder al Panel</button>
+        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <label style="color: #fff; font-size: 0.8rem; font-weight: 600;">Contraseña</label>
+          <input type="password" id="admin-gate-password" placeholder="••••••••" required style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02); color: #fff; font-size: 0.9rem;">
+        </div>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; margin: 0.25rem 0;">
+          <label style="display: flex; align-items: center; gap: 0.4rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+            <input type="checkbox" id="admin-gate-remember" style="accent-color: var(--primary);">
+            <span>Recordar datos de acceso</span>
+          </label>
+          <a href="#" onclick="handleAdminRecoverPassword(event)" style="color: var(--primary); text-decoration: none; font-weight: 600;">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <div id="admin-gate-error" style="color: var(--error); font-size: 0.85rem; display: none; text-align: center;">Credenciales incorrectas. Inténtalo de nuevo.</div>
+        <button type="submit" class="btn" style="width: 100%; padding: 0.75rem; border-radius: 8px; font-weight: 600; text-align: center;">Acceder al Panel</button>
       </form>
     </div>
   </div>
@@ -1820,7 +1834,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v2.7.80</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.0</span>
       </div>
     </aside>
 
@@ -2162,9 +2176,9 @@
               </div>
 
               <div class="form-group">
-                <label for="admin-pin">PIN de acceso al Panel del Cliente (4 dígitos):</label>
+                <label for="admin-pin">Contraseña de acceso al Panel del Cliente (mín. 8 caracteres):</label>
                 <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                  <input type="password" id="admin-pin" maxlength="4" required style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                  <input type="password" id="admin-pin" placeholder="Mínimo 8 caracteres" required style="flex: 1; padding-right: 2.5rem; width: 100%;">
                   <button type="button" onclick="togglePasswordVisibility('admin-pin')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
                     <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
                   </button>
@@ -3045,8 +3059,13 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="comercial-pin">PIN de Acceso:</label>
-                  <input type="text" id="comercial-pin" required placeholder="Ej: 1234 (PIN numérico)" style="text-align: center; letter-spacing: 0.1em;">
+                  <label for="comercial-pin">Contraseña de Acceso:</label>
+                  <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="password" id="comercial-pin" required placeholder="Mínimo 8 caracteres" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                    <button type="button" onclick="togglePasswordVisibility('comercial-pin')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                      <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                    </button>
+                  </div>
                 </div>
 
                 <div class="form-group">
@@ -3745,15 +3764,22 @@
                     <i data-lucide="shield-check" style="color: var(--primary);"></i> Seguridad del Administrador
                   </h3>
                   <div class="form-group">
-                    <label for="setting-admin-pin">PIN de Acceso Global (ADMIN_PIN):</label>
+                    <label for="setting-admin-user">Usuario / Email de Administrador (ADMIN_USER):</label>
+                    <input type="email" id="setting-admin-user" placeholder="yoyrenfe@gmail.com" class="setting-input" style="width: 100%;">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0.5rem;">
+                      Correo electrónico de acceso a la consola de administración.
+                    </p>
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-admin-pass">Contraseña de Administrador (ADMIN_PASS):</label>
                     <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <input type="password" id="setting-admin-pin" placeholder="PIN de Administrador" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                      <button type="button" onclick="togglePasswordVisibility('setting-admin-pin')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                      <input type="password" id="setting-admin-pass" placeholder="Contraseña de Administrador" class="setting-input" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                      <button type="button" onclick="togglePasswordVisibility('setting-admin-pass')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
                         <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
                       </button>
                     </div>
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; margin-bottom: 0;">
-                      PIN numérico o alfanumérico para proteger el acceso a esta consola de administración y todos los endpoints de API críticos.
+                      Contraseña segura para proteger el acceso a esta consola de administración y todos los endpoints de API críticos.
                     </p>
                   </div>
                 </div>
@@ -4398,20 +4424,21 @@
         init.headers = init.headers || {};
         
         const url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
-        if (url.includes('/api/admin')) {
-          const pin = sessionStorage.getItem('admin_pin') || '';
+        if (url.includes('/api/admin') && !url.includes('/api/admin/auth/login')) {
+          const token = sessionStorage.getItem('admin_token') || localStorage.getItem('admin_token') || '';
           if (init.headers instanceof Headers) {
-            init.headers.set('x-admin-pin', pin);
+            init.headers.set('x-admin-token', token);
           } else if (Array.isArray(init.headers)) {
-            init.headers.push(['x-admin-pin', pin]);
+            init.headers.push(['x-admin-token', token]);
           } else {
-            init.headers['x-admin-pin'] = pin;
+            init.headers['x-admin-token'] = token;
           }
         }
         
         return originalFetch(input, init).then(response => {
-          if ((response.status === 401 || response.status === 403) && url.includes('/api/admin')) {
-            sessionStorage.removeItem('admin_pin');
+          if ((response.status === 401 || response.status === 403) && url.includes('/api/admin') && !url.includes('/api/admin/auth/login')) {
+            sessionStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_token');
             showAdminLoginGate(true);
           }
           return response;
@@ -4419,10 +4446,14 @@
       };
     })();
 
+    async function handleAdminRecoverPassword(e) {
+      if (e) e.preventDefault();
+      await showCustomAlert('Para restablecer la contraseña de administrador, por favor contacta con soporte o ejecuta la migración de base de datos para redefinir ADMIN_PASS.', 'Recuperación de Contraseña', 'info');
+    }
+
     function showAdminLoginGate(showError = false) {
       const overlay = document.getElementById('admin-gate-overlay');
       const errorEl = document.getElementById('admin-gate-error');
-      const pinInput = document.getElementById('admin-gate-pin');
       
       if (overlay) {
         overlay.style.display = 'flex';
@@ -4430,9 +4461,11 @@
         const loadingEl = document.getElementById('app-loading-overlay');
         if (loadingEl) loadingEl.style.display = 'none';
         
-        if (pinInput) {
-          pinInput.value = '';
-          pinInput.focus();
+        const emailInput = document.getElementById('admin-gate-email');
+        const passInput = document.getElementById('admin-gate-password');
+        if (passInput) passInput.value = '';
+        if (emailInput) {
+          emailInput.focus();
         }
         if (errorEl) {
           errorEl.style.display = showError ? 'block' : 'none';
@@ -4445,27 +4478,47 @@
 
     async function handleAdminGateSubmit(event) {
       event.preventDefault();
-      const pinInput = document.getElementById('admin-gate-pin');
-      if (!pinInput) return;
-      const pin = pinInput.value;
+      const emailEl = document.getElementById('admin-gate-email');
+      const passEl = document.getElementById('admin-gate-password');
+      const rememberEl = document.getElementById('admin-gate-remember');
       const errorEl = document.getElementById('admin-gate-error');
+      if (!emailEl || !passEl) return;
       
-      sessionStorage.setItem('admin_pin', pin);
+      const email = emailEl.value.trim();
+      const password = passEl.value;
+      const remember = rememberEl ? rememberEl.checked : false;
       
       try {
-        const response = await fetch('/api/admin/settings');
+        const response = await fetch('/api/admin/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
         if (response.ok) {
+          const data = await response.json();
+          const token = data.token;
+          
+          if (remember) {
+            localStorage.setItem('admin_token', token);
+          } else {
+            localStorage.removeItem('admin_token');
+          }
+          sessionStorage.setItem('admin_token', token);
+          
           document.getElementById('admin-gate-overlay').style.display = 'none';
           // Show loader back temporarily during load
           const loadingEl = document.getElementById('app-loading-overlay');
           if (loadingEl) loadingEl.style.display = 'flex';
           initAdminPanel();
         } else {
-          sessionStorage.removeItem('admin_pin');
+          sessionStorage.removeItem('admin_token');
+          localStorage.removeItem('admin_token');
           if (errorEl) errorEl.style.display = 'block';
         }
       } catch (err) {
-        sessionStorage.removeItem('admin_pin');
+        sessionStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_token');
         if (errorEl) errorEl.style.display = 'block';
       }
     }
@@ -6796,8 +6849,12 @@
       initSidebarHoverBehavior();
       updateThemeIcon();
       
-      const savedPin = sessionStorage.getItem('admin_pin');
-      if (!savedPin) {
+      const savedToken = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+      if (savedToken) {
+        sessionStorage.setItem('admin_token', savedToken);
+      }
+      
+      if (!savedToken) {
         showAdminLoginGate();
       } else {
         await initAdminPanel();
@@ -6861,7 +6918,8 @@
           'CORANDAR_REPRESENTATIVE': 'setting-corandar-rep',
           'CORANDAR_REPRESENTATIVE_ID': 'setting-corandar-rep-id',
           'CORANDAR_REPRESENTATIVE_ROLE': 'setting-corandar-rep-role',
-          'ADMIN_PIN': 'setting-admin-pin',
+          'ADMIN_USER': 'setting-admin-user',
+          'ADMIN_PASS': 'setting-admin-pass',
           'refresh_interval': 'setting-refresh-interval'
         };
 
@@ -6924,7 +6982,8 @@
         'CORANDAR_REPRESENTATIVE': 'setting-corandar-rep',
         'CORANDAR_REPRESENTATIVE_ID': 'setting-corandar-rep-id',
         'CORANDAR_REPRESENTATIVE_ROLE': 'setting-corandar-rep-role',
-        'ADMIN_PIN': 'setting-admin-pin',
+        'ADMIN_USER': 'setting-admin-user',
+        'ADMIN_PASS': 'setting-admin-pass',
         'refresh_interval': 'setting-refresh-interval'
       };
 
@@ -6950,10 +7009,16 @@
           throw new Error(errRes.error || 'Error al guardar los ajustes.');
         }
 
-        // Si se ha modificado el PIN del admin, actualizar en sessionStorage
-        const newPinEl = document.getElementById('setting-admin-pin');
-        if (newPinEl && newPinEl.value.trim() !== '') {
-          sessionStorage.setItem('admin_pin', newPinEl.value.trim());
+        // Si se han modificado las credenciales del admin, actualizar en sessionStorage/localStorage
+        const newUserEl = document.getElementById('setting-admin-user');
+        const newPassEl = document.getElementById('setting-admin-pass');
+        if (newUserEl && newPassEl && newUserEl.value.trim() !== '' && newPassEl.value.trim() !== '') {
+          const rawCreds = `${newUserEl.value.trim()}:${newPassEl.value}`;
+          const newToken = btoa(unescape(encodeURIComponent(rawCreds)));
+          sessionStorage.setItem('admin_token', newToken);
+          if (localStorage.getItem('admin_token')) {
+            localStorage.setItem('admin_token', newToken);
+          }
         }
 
         await showCustomAlert('Todos los ajustes e integraciones se han guardado correctamente en Supabase.', 'Ajustes Guardados', 'success');
@@ -7055,15 +7120,38 @@
           card.innerHTML = `<span class="plan-badge" style="background: var(--accent);">${plan.description}</span>`;
         }
 
-        const featuresHtml = (plan.features || []).map(feat => `<li><i data-lucide="check-circle-2"></i> ${feat}</li>`).join('');
-        
+        // Buscar si hay una característica que defina los minutos para mostrarla de forma destacada
+        const minsFeature = (plan.features || []).find(f => f.toLowerCase().includes('minutos') || f.toLowerCase().includes('min/mes') || f.toLowerCase().includes('min.'));
+        let minutesText = minsFeature || '';
+        if (!minutesText) {
+          if (plan.id.includes('inicial')) {
+            minutesText = '100 min/mes incluidos';
+          } else if (plan.id.includes('estandar')) {
+            minutesText = '200 min/mes incluidos';
+          } else if (plan.id.includes('premium')) {
+            minutesText = '500 min/mes incluidos';
+          }
+        }
+
+        const filteredFeatures = (plan.features || []).filter(feat => feat !== minutesText);
+        const featuresHtml = filteredFeatures.map(feat => `<li><i data-lucide="check-circle-2"></i> ${feat}</li>`).join('');
+
         card.innerHTML += `
           <h3 class="plan-name">${plan.name}</h3>
           <div class="plan-price" style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem;">
             <div>${plan.cycle === 'annually' ? Math.round(plan.price / 12) : Number(plan.price).toLocaleString('es-ES')}€ <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted);">/ mes</span></div>
             ${plan.cycle === 'annually' ? `<span style="font-size: 0.75rem; font-weight: 500; color: var(--success); margin-top: 0.15rem;">Facturado anualmente (${Number(plan.price).toLocaleString('es-ES')}€)</span>` : ''}
           </div>
-          <ul class="plan-features">
+          ${minutesText ? `
+          <div style="margin: 0.5rem 0 0.25rem 0; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: #34d399; padding: 0.35rem 0.65rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem; font-family: 'Outfit', sans-serif; letter-spacing: 0.03em; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.05);">
+            <span style="position: relative; display: flex; width: 6px; height: 6px;">
+              <span style="animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; position: absolute; inline-size: 100%; block-size: 100%; border-radius: 9999px; background-color: #34d399; opacity: 0.75;"></span>
+              <span style="position: relative; inline-size: 6px; block-size: 6px; border-radius: 9999px; background-color: #10b981;"></span>
+            </span>
+            <span>${minutesText.toUpperCase()}</span>
+          </div>
+          ` : ''}
+          <ul class="plan-features" style="margin-top: 0.5rem;">
             ${featuresHtml}
           </ul>
           <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
@@ -11008,6 +11096,12 @@
         return;
       }
 
+      const adminPinVal = document.getElementById('admin-pin').value.trim();
+      if (adminPinVal && adminPinVal.length < 8) {
+        showCustomAlert('La contraseña de acceso al Panel del Cliente debe tener al menos 8 caracteres.', 'Contraseña Insegura', 'warning');
+        return;
+      }
+
       // Recopilar horarios
       const working_hours = {};
       days.forEach(day => {
@@ -12273,12 +12367,19 @@
       e.preventDefault();
       
       const id = document.getElementById('comercial-id').value;
+      const pinVal = document.getElementById('comercial-pin').value.trim();
+      
+      if (pinVal.length < 8) {
+        showCustomAlert('La contraseña del agente comercial debe tener al menos 8 caracteres.', 'Contraseña Insegura', 'warning');
+        return;
+      }
+
       const payload = {
         name: document.getElementById('comercial-name').value.trim(),
         email: document.getElementById('comercial-email').value.trim(),
         phone: document.getElementById('comercial-phone').value.trim() || null,
         company: document.getElementById('comercial-company').value.trim() || null,
-        pin: document.getElementById('comercial-pin').value.trim(),
+        pin: pinVal,
         commission_mode: document.getElementById('comercial-mode').value,
         commission_value: Number(document.getElementById('comercial-value').value),
         payment_method: document.getElementById('comercial-payment-method').value,

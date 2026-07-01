@@ -439,7 +439,7 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
           ? `Demo Autogenerada (Clon de ${baseTenant.business_name})`
           : 'Plan Demo Autogenerado',
         price_amount: 0,
-        admin_pin: '0000',
+        admin_pin: 'Receptia123!',
         billing_cycle: 'monthly',
         business_description: businessDescription,
         pricing_details: pricingDetails,
