@@ -1633,7 +1633,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.15</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.16</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -1853,7 +1853,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.15</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.16</span>
       </div>
     </aside>
 
@@ -1876,7 +1876,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.15</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.16</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -9382,6 +9382,41 @@
       }
     }
 
+    function startEditProspectName(prospectId) {
+      const textSpan = document.getElementById(`business-name-text-${prospectId}`);
+      if (!textSpan) return;
+      
+      const currentName = textSpan.innerText;
+      const newName = prompt("Editar nombre del negocio:", currentName);
+      if (newName === null) return;
+      const trimmed = newName.trim();
+      if (!trimmed) {
+        showCustomAlert("El nombre del negocio no puede estar vacío.", "Error", "error");
+        return;
+      }
+      
+      fetch(`/api/admin/prospects/${prospectId}/save-outreach-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ business_name: trimmed })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Error al guardar el nombre.");
+        return res.json();
+      })
+      .then(data => {
+        const p = allProspects.find(item => item.id === prospectId);
+        if (p) p.business_name = data.business_name || trimmed;
+        renderProspectsTable();
+        showCustomAlert("Nombre del negocio actualizado con éxito.", "Guardado", "success");
+      })
+      .catch(err => {
+        showCustomAlert(err.message, "Fallo", "error");
+      });
+    }
+
     async function resendDemoEmail(prospectId, buttonEl) {
       currentProspectId = prospectId;
       if (buttonEl) {
@@ -10267,8 +10302,11 @@
               <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 0.6rem;">
                   <input type="checkbox" class="prospect-select" value="${p.id}" onchange="updateBulkActionState(this)" ${selectedProspectIds.has(p.id) ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
-                  <span style="font-weight: 600; font-size: 1.05rem; color: #fff; display: inline-flex; align-items: center; gap: 0.5rem;">
-                    ${p.business_name}
+                  <span style="font-weight: 600; font-size: 1.05rem; color: #fff; display: inline-flex; align-items: center; gap: 0.35rem;">
+                    <span id="business-name-text-${p.id}">${p.business_name}</span>
+                    <button type="button" onclick="startEditProspectName('${p.id}')" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0.15rem; display: inline-flex; align-items: center; justify-content: center; opacity: 0.65; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.65'" title="Editar nombre del negocio">
+                      <i data-lucide="edit-2" style="width: 12px; height: 12px;"></i>
+                    </button>
                     ${p.is_manual ? `<span style="font-size: 0.65rem; padding: 0.15rem 0.4rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #ccc; border-radius: 4px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">Manual</span>` : ''}
                   </span>
                 </div>
