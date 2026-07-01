@@ -9144,6 +9144,7 @@
     // ========================================================
     let allProspects = [];
     let processingProspectIds = new Set();
+    let selectedProspectIds = new Set();
     let refreshProspectsInterval = null;
     let prospectsSortField = localStorage.getItem('prospects-sort-field') || 'created_at';
     let prospectsSortDirection = localStorage.getItem('prospects-sort-direction') || 'desc';
@@ -9819,6 +9820,10 @@
           countryLeadsCount += cityData.list.length;
         });
 
+        const countryProspects = Object.values(citiesGroup).flatMap(cData => cData.list);
+        const allCountryChecked = countryProspects.length > 0 && countryProspects.every(p => selectedProspectIds.has(p.id));
+        const noneCountryChecked = countryProspects.every(p => !selectedProspectIds.has(p.id));
+
         const isCountryCollapsed = window.collapsedCountries && window.collapsedCountries[country];
 
         const countryHeader = document.createElement('div');
@@ -9826,13 +9831,18 @@
         countryHeader.onclick = () => toggleCountryAccordion(countryHeader, country);
         countryHeader.innerHTML = `
           <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <input type="checkbox" class="country-select-all" data-country="${country}" onclick="event.stopPropagation(); toggleSelectAllCountryProspects(this, '${country}')" style="width: 16px; height: 16px; cursor: pointer;">
+            <input type="checkbox" class="country-select-all" data-country="${country}" onclick="event.stopPropagation(); toggleSelectAllCountryProspects(this, '${country}')" ${allCountryChecked ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
             <i data-lucide="globe" style="color: var(--primary-light); width: 20px; height: 20px;"></i>
             <span style="font-weight: 700; color: #fff; font-size: 1.1rem;">${country}</span>
             <span class="country-badge-count">${countryLeadsCount} leads</span>
           </div>
           <i data-lucide="chevron-down" class="country-chevron-icon" style="transition: transform 0.2s ease; color: var(--text-muted); width: 20px; height: 20px; transform: ${isCountryCollapsed ? 'rotate(0deg)' : 'rotate(180deg)'};"></i>
         `;
+
+        if (!allCountryChecked && !noneCountryChecked) {
+          const cb = countryHeader.querySelector('.country-select-all');
+          if (cb) cb.indeterminate = true;
+        }
 
         const countryContent = document.createElement('div');
         countryContent.className = isCountryCollapsed ? 'country-accordion-content' : 'country-accordion-content expanded';
@@ -9844,6 +9854,9 @@
           const cityKey = `${country}:${normCity}`;
           const isCityCollapsed = window.collapsedCities && window.collapsedCities[cityKey];
           
+          const allCityChecked = prospectsList.length > 0 && prospectsList.every(p => selectedProspectIds.has(p.id));
+          const noneCityChecked = prospectsList.every(p => !selectedProspectIds.has(p.id));
+
           const accordionHeader = document.createElement('div');
           accordionHeader.className = 'city-accordion-header';
           accordionHeader.onclick = (e) => {
@@ -9852,13 +9865,18 @@
           };
           accordionHeader.innerHTML = `
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <input type="checkbox" class="prospects-city-select-all" data-city-key="${cityKey}" onclick="event.stopPropagation(); toggleSelectAllCityProspects(this, '${cityKey}')" style="width: 16px; height: 16px; cursor: pointer;">
+              <input type="checkbox" class="prospects-city-select-all" data-city-key="${cityKey}" onclick="event.stopPropagation(); toggleSelectAllCityProspects(this, '${cityKey}')" ${allCityChecked ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
               <i data-lucide="map-pin" style="color: var(--primary); width: 20px; height: 20px;"></i>
               <span style="font-weight: 600; color: #fff; font-size: 1.05rem;">${cityLabel}</span>
               <span class="city-badge-count">${prospectsList.length} leads</span>
             </div>
             <i data-lucide="chevron-down" class="chevron-icon" style="transition: transform 0.2s ease; color: var(--text-muted); width: 20px; height: 20px; transform: ${isCityCollapsed ? 'rotate(0deg)' : 'rotate(180deg)'};"></i>
           `;
+
+          if (!allCityChecked && !noneCityChecked) {
+            const cb = accordionHeader.querySelector('.prospects-city-select-all');
+            if (cb) cb.indeterminate = true;
+          }
 
           const accordionContent = document.createElement('div');
           accordionContent.className = isCityCollapsed ? 'city-accordion-content' : 'city-accordion-content expanded';
@@ -10143,7 +10161,7 @@
               <!-- Fila 1: Checkbox + Nombre, Teléfono, Comercial -->
               <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 0.6rem;">
-                  <input type="checkbox" class="prospect-select" value="${p.id}" onchange="updateBulkActionState(this)" style="width: 16px; height: 16px; cursor: pointer;">
+                  <input type="checkbox" class="prospect-select" value="${p.id}" onchange="updateBulkActionState(this)" ${selectedProspectIds.has(p.id) ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
                   <span style="font-weight: 600; font-size: 1.05rem; color: #fff; display: inline-flex; align-items: center; gap: 0.5rem;">
                     ${p.business_name}
                     ${p.is_manual ? `<span style="font-size: 0.65rem; padding: 0.15rem 0.4rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #ccc; border-radius: 4px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">Manual</span>` : ''}
@@ -10225,7 +10243,14 @@
       const accordionHeader = master.closest('.city-accordion-header');
       const accordionContent = accordionHeader.nextElementSibling;
       const checkboxes = accordionContent.querySelectorAll('.prospect-select');
-      checkboxes.forEach(cb => cb.checked = master.checked);
+      checkboxes.forEach(cb => {
+        cb.checked = master.checked;
+        if (master.checked) {
+          selectedProspectIds.add(cb.value);
+        } else {
+          selectedProspectIds.delete(cb.value);
+        }
+      });
       
       // Update country select-all state
       const countryContent = accordionHeader.closest('.country-accordion-content');
@@ -10247,7 +10272,14 @@
       
       // Check/uncheck all prospect checkboxes inside this country
       const checkboxes = countryContent.querySelectorAll('.prospect-select');
-      checkboxes.forEach(cb => cb.checked = master.checked);
+      checkboxes.forEach(cb => {
+        cb.checked = master.checked;
+        if (master.checked) {
+          selectedProspectIds.add(cb.value);
+        } else {
+          selectedProspectIds.delete(cb.value);
+        }
+      });
       
       // Check/uncheck all city select-all checkboxes inside this country
       const citySelectAlls = countryContent.querySelectorAll('.prospects-city-select-all');
@@ -10259,6 +10291,12 @@
 
     function updateBulkActionState(changedCheckbox) {
       if (!changedCheckbox) return;
+      
+      if (changedCheckbox.checked) {
+        selectedProspectIds.add(changedCheckbox.value);
+      } else {
+        selectedProspectIds.delete(changedCheckbox.value);
+      }
       
       const card = changedCheckbox.closest('.prospect-card');
       if (!card) return;
