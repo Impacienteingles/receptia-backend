@@ -4115,6 +4115,32 @@
       }
     }
 
+    // Interceptar fetch para inyectar automáticamente el PIN de cliente en las cabeceras de peticiones del panel
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+      const urlStr = String(url);
+      const savedPin = sessionStorage.getItem('current_tenant_pin') || localStorage.getItem('current_tenant_pin') || '';
+      
+      if (savedPin && (
+        urlStr.includes('/api/client/') ||
+        urlStr.includes('/api/tenants/') ||
+        urlStr.includes('/api/campaigns') ||
+        urlStr.includes('/api/payments/') ||
+        urlStr.includes('/api/integrations/') ||
+        urlStr.includes('/api/appointments')
+      )) {
+        options = options || {};
+        options.headers = options.headers || {};
+        
+        if (options.headers instanceof Headers) {
+          options.headers.set('x-client-pin', savedPin);
+        } else {
+          options.headers['x-client-pin'] = savedPin;
+        }
+      }
+      return originalFetch.call(this, url, options);
+    };
+
     // Estado global
     let currentTenant = null;
     let allAppointments = [];

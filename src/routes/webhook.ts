@@ -171,7 +171,11 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
                            tenantDetails.business_name.toLowerCase().includes('barber')
                          ));
     const slotDurationMin = isPeluqueria ? 15 : 30;
-    const applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14';
+    let workingHoursObj = tenantDetails.working_hours;
+    if (typeof workingHoursObj === 'string') {
+      try { workingHoursObj = JSON.parse(workingHoursObj); } catch (e) {}
+    }
+    const applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14' || !!workingHoursObj?.apply_break_rule;
 
     console.log(`Buscando disponibilidad para la fecha: ${date} (Tenant: ${tenantId}) (Calendario: ${calendarId}) (Slot: ${slotDurationMin}m) (BreakRule: ${applyBreakRule})`);
     const freeSlots = await listFreeSlots(
@@ -712,7 +716,11 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
                            tenantDetails.business_name.toLowerCase().includes('barber')
                          ));
     const slotDurationMin = isPeluqueria ? 15 : 30;
-    const applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14';
+    let workingHoursObj = tenantDetails.working_hours;
+    if (typeof workingHoursObj === 'string') {
+      try { workingHoursObj = JSON.parse(workingHoursObj); } catch (e) {}
+    }
+    const applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14' || !!workingHoursObj?.apply_break_rule;
 
     // 2. Comprobar disponibilidad para el nuevo hueco
     const freeSlots = await listFreeSlots(

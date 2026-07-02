@@ -145,6 +145,76 @@ async function requireAdminPin(req: any, res: any, next: any) {
 
 app.use('/api/admin', requireAdminPin);
 
+// Middleware de seguridad para validar el PIN del cliente
+async function requireClientPin(req: any, res: any, next: any) {
+  if (req.method === 'OPTIONS') {
+    next();
+    return;
+  }
+
+  const url = req.originalUrl || req.url || '';
+
+  // Omitir endpoints públicos que no requieren autenticación de PIN
+  if (
+    url.includes('/api/auth/login') ||
+    url.includes('/api/auth/recover-pin') ||
+    url.includes('/api/payments/webhook') ||
+    url.includes('/api/public/') ||
+    url.includes('/api/prospecting/get-tenant-public') ||
+    url.includes('/api/chat/widget') ||
+    url.includes('/api/admin/') ||
+    url.includes('/api/webhook') ||
+    url.includes('/api/comercial') ||
+    url.includes('/api/lead')
+  ) {
+    next();
+    return;
+  }
+
+  // Obtener tenantId de params, body o query
+  const tenantId = req.params.tenant_id || req.params.id || req.body.tenant_id || req.body.tenantId || req.query.tenant_id || req.query.tenantId || req.query.id;
+
+  if (!tenantId) {
+    // Si la ruta no especifica tenant_id (por ejemplo, /api/plans o /api/referrals/config), es pública.
+    next();
+    return;
+  }
+
+  // Permitir si es el administrador global
+  const adminToken = req.headers['x-admin-token'] || req.query.admin_token;
+  const dbPass = await getSettingVal('ADMIN_PASS');
+  const expectedAdminPass = dbPass || process.env.ADMIN_PASS || '1Impaciente!';
+  if (adminToken && adminToken === expectedAdminPass) {
+    next();
+    return;
+  }
+
+  const clientPin = req.headers['x-client-pin'] || req.query.pin || req.body.pin;
+  if (!clientPin) {
+    res.status(401).json({ error: 'No autorizado: PIN de acceso del cliente ausente.' });
+    return;
+  }
+
+  try {
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('admin_pin')
+      .eq('id', tenantId)
+      .maybeSingle();
+
+    if (!tenant || tenant.admin_pin !== clientPin) {
+      res.status(403).json({ error: 'No autorizado: PIN de acceso del cliente incorrecto.' });
+      return;
+    }
+
+    next();
+  } catch (err: any) {
+    res.status(500).json({ error: 'Error interno de validación de PIN: ' + err.message });
+  }
+}
+
+app.use('/api', requireClientPin);
+
 // Endpoint para autenticación de administrador global
 app.post('/api/admin/auth/login', async (req, res): Promise<void> => {
   const { email, password } = req.body;
@@ -2396,8 +2466,14 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
   try {
     const stripe = await getStripeClient();
     let event;
+    const requestHost = req.get('host') || '';
+    const isProduction = process.env.NODE_ENV === 'production' || (requestHost && !requestHost.includes('localhost') && !requestHost.includes('127.0.0.1'));
     if (webhookSecret) {
       event = stripe.webhooks.constructEvent((req as any).rawBody, sig, webhookSecret);
+    } else if (isProduction) {
+      console.error('❌ Error de seguridad crítico: STRIPE_WEBHOOK_SECRET no está configurado en producción. Rechazando webhook.');
+      res.status(400).send('Webhook secret no configurado en producción.');
+      return;
     } else {
       console.warn('⚠️ STRIPE_WEBHOOK_SECRET no está configurado. Procesando webhook sin verificar firma (¡solo usar en desarrollo!).');
       event = req.body;
@@ -5400,7 +5476,7 @@ async function syncDefaultPlansInDatabase() {
 // Arrancar el servidor
 app.listen(PORT, () => {
   console.log(`\n========================================`);
-  console.log(` Servidor SanaSalud escuchando en: http://localhost:${PORT}`);
+  console.log(` Servidor Receptia escuchando en: http://localhost:${PORT}`);
   console.log(`========================================\n`);
   
   // Ejecutar migraciones

@@ -1781,7 +1781,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.29</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.30</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2005,7 +2005,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.29</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.30</span>
       </div>
     </aside>
 
@@ -2028,7 +2028,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.29</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.30</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2396,6 +2396,14 @@
                   <input type="checkbox" id="email-notifications-enabled" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="saveDraftToLocalStorage()">
                   <label for="email-notifications-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                     Habilitar Notificaciones por Correo Electrónico ✉️
+                  </label>
+                </div>
+
+                <!-- 2.5. Regla de descansos (Break Rule) -->
+                <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(59, 130, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
+                  <input type="checkbox" id="client-apply-break-rule" style="width: 18px; height: 18px; accent-color: var(--primary);">
+                  <label for="client-apply-break-rule" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    Regla de descansos (Evitar citas consecutivas sin pausa) ☕
                   </label>
                 </div>
 
@@ -9473,6 +9481,12 @@
       document.getElementById('whatsapp-reminders-enabled').checked = !!tenant.whatsapp_reminders_enabled;
       document.getElementById('email-notifications-enabled').checked = tenant.email_notifications_enabled !== false;
       document.getElementById('enable-multi-professional').checked = !!tenant.enable_multi_professional;
+      
+      let workingHoursObj = tenant.working_hours || {};
+      if (typeof workingHoursObj === 'string') {
+        try { workingHoursObj = JSON.parse(workingHoursObj); } catch(e) {}
+      }
+      document.getElementById('client-apply-break-rule').checked = !!workingHoursObj.apply_break_rule;
       const kbUrlVal = tenant.knowledge_base_url || '';
       document.getElementById('knowledge-base-url').value = kbUrlVal;
       document.getElementById('knowledge-base-content').value = tenant.knowledge_base_content || '';
@@ -9803,6 +9817,12 @@
       document.getElementById('whatsapp-reminders-enabled').checked = !!tenant.whatsapp_reminders_enabled;
       document.getElementById('email-notifications-enabled').checked = tenant.email_notifications_enabled !== false;
       document.getElementById('enable-multi-professional').checked = !!tenant.enable_multi_professional;
+      
+      let workingHoursObj = tenant.working_hours || {};
+      if (typeof workingHoursObj === 'string') {
+        try { workingHoursObj = JSON.parse(workingHoursObj); } catch(e) {}
+      }
+      document.getElementById('client-apply-break-rule').checked = !!workingHoursObj.apply_break_rule;
       document.getElementById('knowledge-base-url').value = tenant.knowledge_base_url || '';
       document.getElementById('knowledge-base-content').value = tenant.knowledge_base_content || '';
       
@@ -11940,6 +11960,7 @@
       document.getElementById('whatsapp-reminders-enabled').checked = false;
       document.getElementById('email-notifications-enabled').checked = false;
       document.getElementById('enable-multi-professional').checked = false;
+      document.getElementById('client-apply-break-rule').checked = false;
       document.getElementById('knowledge-base-url').value = '';
       document.getElementById('knowledge-base-content').value = '';
       const testPhoneEl = document.getElementById('admin-whatsapp-test-phone');
@@ -12153,6 +12174,8 @@
 
         working_hours[day.key] = shifts;
       });
+      
+      working_hours.apply_break_rule = document.getElementById('client-apply-break-rule').checked;
 
       // Recopilar especialidades
       const specialties = document.getElementById('specialties-input').value

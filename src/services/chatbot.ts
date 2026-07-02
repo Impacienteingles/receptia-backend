@@ -274,7 +274,11 @@ export async function processChatbotMessage(
                                      tenant.business_name.toLowerCase().includes('barber')
                                    ));
               const slotDurationMin = isPeluqueria ? 15 : 30;
-              const applyBreakRule = tenant.id === '62d1ed82-287c-4329-941b-50b578c15b14';
+              let workingHoursObj = tenant.working_hours;
+              if (typeof workingHoursObj === 'string') {
+                try { workingHoursObj = JSON.parse(workingHoursObj); } catch (e) {}
+              }
+              const applyBreakRule = tenant.id === '62d1ed82-287c-4329-941b-50b578c15b14' || !!workingHoursObj?.apply_break_rule;
 
               const freeSlots = await listFreeSlots(
                 tenant.google_refresh_token,
