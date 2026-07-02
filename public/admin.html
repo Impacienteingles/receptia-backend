@@ -1781,7 +1781,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.28</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.29</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2005,7 +2005,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.28</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.29</span>
       </div>
     </aside>
 
@@ -2028,7 +2028,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.28</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.29</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2743,10 +2743,22 @@
                   <i data-lucide="refresh-cw" style="width:13px;height:13px;"></i> Actualizar
                 </button>
               </div>
+              <!-- Barra de acciones masivas -->
+              <div id="archived-bulk-actions-bar" style="display:none; align-items:center; gap:1rem; background:rgba(139, 92, 246, 0.1); border:1px solid rgba(139, 92, 246, 0.2); padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; box-sizing:border-box;">
+                <span id="archived-selected-count" style="font-weight:600; color:#fff; font-size:0.85rem;">0 seleccionados</span>
+                <button class="btn btn-secondary" onclick="restoreSelectedArchivedTenants()" style="padding:0.4rem 0.75rem; font-size:0.8rem; height:auto; color:#4ade80; border-color:rgba(74, 222, 128, 0.3); display:inline-flex; align-items:center; gap:0.25rem;">
+                  <i data-lucide="rotate-ccw" style="width:13px;height:13px;"></i> Recuperar Seleccionados
+                </button>
+                <button class="btn btn-secondary" onclick="deleteSelectedArchivedTenantsPermanently()" style="padding:0.4rem 0.75rem; font-size:0.8rem; height:auto; color:#f87171; border-color:rgba(248, 113, 113, 0.3); display:inline-flex; align-items:center; gap:0.25rem;">
+                  <i data-lucide="trash-2" style="width:13px;height:13px;"></i> Eliminar Seleccionados
+                </button>
+              </div>
+
               <div class="table-responsive">
                 <table>
                   <thead>
                     <tr>
+                      <th style="width: 40px; text-align: center;"><input type="checkbox" id="archived-select-all" onclick="toggleSelectAllArchived(this)" style="width:16px; height:16px; cursor:pointer; accent-color: var(--primary);"></th>
                       <th>Negocio</th>
                       <th>Email</th>
                       <th>Plan</th>
@@ -5525,14 +5537,9 @@
 
     // Mostrar/ocultar campos SIP Zadarma e inventario de números
     phoneProvider.addEventListener('change', () => {
-      if (phoneProvider.value === 'zadarma') {
-        document.getElementById('manual-phone-fields').style.display = 'none';
-        document.getElementById('virtual-phone-select-group').style.display = 'block';
-        fetchVirtualPhonesForClientSelect();
-      } else {
-        document.getElementById('manual-phone-fields').style.display = 'block';
-        document.getElementById('virtual-phone-select-group').style.display = 'none';
-      }
+      document.getElementById('manual-phone-fields').style.display = 'none';
+      document.getElementById('virtual-phone-select-group').style.display = 'block';
+      fetchVirtualPhonesForClientSelect();
     });
 
     // Cambiar de pestaña en el formulario de cliente
@@ -8939,14 +8946,14 @@
 
     async function fetchArchivedTenants() {
       const tbody = document.getElementById('archived-clients-tbody');
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:2rem;">Cargando historial...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:2rem;">Cargando historial...</td></tr>';
       try {
         const response = await fetch('/api/admin/tenants/archived');
         if (!response.ok) throw new Error('Error al obtener historial.');
         const archived = await response.json();
         renderArchivedTable(archived);
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:1.5rem;">Error: ' + err.message + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:1.5rem;">Error: ' + err.message + '</td></tr>';
       }
     }
 
@@ -8954,7 +8961,7 @@
       const tbody = document.getElementById('archived-clients-tbody');
       tbody.innerHTML = '';
       if (archivedList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:2rem;">No hay clientes archivados.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:2rem;">No hay clientes archivados.</td></tr>';
         return;
       }
       const reasonLabels = { non_payment: '💸 Impago', voluntary_cancel: '🤝 Baja voluntaria', fraud: '⚠️ Fraude/Incidencia', other: '📋 Otro' };
@@ -8962,7 +8969,8 @@
         const archivedDate = tenant.archived_at ? new Date(tenant.archived_at).toLocaleDateString('es-ES') : '-';
         const reason = reasonLabels[tenant.archived_reason] || tenant.archived_reason || '-';
         const row = document.createElement('tr');
-        row.innerHTML = '<td style="font-weight:600; color:#fff;">' + tenant.business_name + '</td>' +
+        row.innerHTML = '<td style="text-align: center;"><input type="checkbox" class="archived-row-select" value="' + tenant.id + '" data-name="' + tenant.business_name.replace(/"/g, '&quot;') + '" onchange="updateArchivedBulkActionsUI()" style="width:16px; height:16px; cursor:pointer; accent-color: var(--primary);"></td>' +
+          '<td style="font-weight:600; color:#fff;">' + tenant.business_name + '</td>' +
           '<td style="color:var(--text-muted);">' + tenant.email + '</td>' +
           '<td>' + (tenant.subscription_plan || '-') + '</td>' +
           '<td style="color:var(--text-muted); font-size:0.85rem;">' + archivedDate + '</td>' +
@@ -8977,6 +8985,129 @@
       });
       lucide.createIcons();
     }
+
+    window.toggleSelectAllArchived = function(masterCheckbox) {
+      const checkboxes = document.querySelectorAll('.archived-row-select');
+      checkboxes.forEach(cb => {
+        cb.checked = masterCheckbox.checked;
+      });
+      updateArchivedBulkActionsUI();
+    };
+
+    window.updateArchivedBulkActionsUI = function() {
+      const checkboxes = document.querySelectorAll('.archived-row-select');
+      const selected = Array.from(checkboxes).filter(cb => cb.checked);
+      const bar = document.getElementById('archived-bulk-actions-bar');
+      const countSpan = document.getElementById('archived-selected-count');
+      const masterCheckbox = document.getElementById('archived-select-all');
+      
+      if (masterCheckbox) {
+        masterCheckbox.checked = checkboxes.length > 0 && selected.length === checkboxes.length;
+      }
+
+      if (selected.length > 0) {
+        bar.style.display = 'flex';
+        countSpan.innerText = `${selected.length} cliente${selected.length > 1 ? 's' : ''} seleccionado${selected.length > 1 ? 's' : ''}`;
+      } else {
+        bar.style.display = 'none';
+      }
+    };
+
+    window.restoreSelectedArchivedTenants = async function() {
+      const selectedCbs = Array.from(document.querySelectorAll('.archived-row-select')).filter(cb => cb.checked);
+      if (selectedCbs.length === 0) return;
+      
+      const names = selectedCbs.map(cb => cb.getAttribute('data-name')).join(', ');
+      const confirmed = await showCustomConfirm(`¿Recuperar a los siguientes ${selectedCbs.length} clientes? Se moverán a activos en estado Trial.<br><br><strong>${names}</strong>`, 'Recuperar Clientes', 'help-circle');
+      if (!confirmed) return;
+      
+      showProgressModal('Recuperando clientes...', `Iniciando proceso para ${selectedCbs.length} clientes...`);
+      let successCount = 0;
+      
+      const progressStepsList = document.getElementById('progress-steps-list');
+      for (let i = 0; i < selectedCbs.length; i++) {
+        const cb = selectedCbs[i];
+        const tenantId = cb.value;
+        const tenantName = cb.getAttribute('data-name');
+        
+        if (progressStepsList) {
+          progressStepsList.innerHTML += `<li><span style="color: var(--text-muted);">[${i + 1}/${selectedCbs.length}] Recuperando ${tenantName}...</span></li>`;
+        }
+        
+        try {
+          const response = await fetch(`/api/admin/tenants/${tenantId}/restore`, { method: 'PATCH' });
+          if (response.ok) {
+            successCount++;
+          } else {
+            console.error(`Error al recuperar ${tenantName}`);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      
+      closeProgressModal();
+      await fetchArchivedTenants();
+      await fetchTenants();
+      
+      // Reset toggle checkbox
+      const masterCheckbox = document.getElementById('archived-select-all');
+      if (masterCheckbox) masterCheckbox.checked = false;
+      updateArchivedBulkActionsUI();
+      
+      await showCustomAlert(`Se han recuperado ${successCount} de ${selectedCbs.length} clientes correctamente.`, 'Proceso Finalizado', 'success');
+    };
+
+    window.deleteSelectedArchivedTenantsPermanently = async function() {
+      const selectedCbs = Array.from(document.querySelectorAll('.archived-row-select')).filter(cb => cb.checked);
+      if (selectedCbs.length === 0) return;
+      
+      const names = selectedCbs.map(cb => cb.getAttribute('data-name')).join(', ');
+      const confirmed = await showCustomConfirm(`¿Estás seguro de que deseas eliminar permanentemente a los siguientes ${selectedCbs.length} clientes?<br><br><strong>${names}</strong><br><br>Esta acción es COMPLETAMENTE IRREVERSIBLE.`, 'Eliminar Permanentemente', 'warning');
+      if (!confirmed) return;
+      
+      const securityPrompt = await showCustomPrompt('ATENCIÓN: Para confirmar la eliminación masiva definitiva, escribe la palabra "ELIMINAR" en mayúsculas:', '', 'Confirmación de Seguridad', 'alert-triangle');
+      if (securityPrompt !== 'ELIMINAR') {
+        await showCustomAlert('Confirmación incorrecta. La eliminación ha sido cancelada.', 'Cancelado', 'info');
+        return;
+      }
+      
+      showProgressModal('Eliminando clientes...', `Iniciando proceso para ${selectedCbs.length} clientes...`);
+      let successCount = 0;
+      
+      const progressStepsList = document.getElementById('progress-steps-list');
+      for (let i = 0; i < selectedCbs.length; i++) {
+        const cb = selectedCbs[i];
+        const tenantId = cb.value;
+        const tenantName = cb.getAttribute('data-name');
+        
+        if (progressStepsList) {
+          progressStepsList.innerHTML += `<li><span style="color: var(--text-muted);">[${i + 1}/${selectedCbs.length}] Eliminando ${tenantName}...</span></li>`;
+        }
+        
+        try {
+          const response = await fetch(`/api/admin/tenants/${tenantId}`, { method: 'DELETE' });
+          if (response.ok) {
+            successCount++;
+          } else {
+            console.error(`Error al eliminar ${tenantName}`);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      
+      closeProgressModal();
+      await fetchArchivedTenants();
+      await fetchTenants();
+      
+      // Reset toggle checkbox
+      const masterCheckbox = document.getElementById('archived-select-all');
+      if (masterCheckbox) masterCheckbox.checked = false;
+      updateArchivedBulkActionsUI();
+      
+      await showCustomAlert(`Se han eliminado permanentemente ${successCount} de ${selectedCbs.length} clientes del sistema.`, 'Eliminación Completada', 'success');
+    };
 
     function openSuspendConfirm(tenantId, tenantName) {
       pendingActionTenantId = tenantId;
@@ -9212,14 +9343,9 @@
       const provider = tenant.phone_provider || 'retell';
       document.getElementById('phone-provider').value = provider;
       
-      if (provider === 'zadarma') {
-        document.getElementById('manual-phone-fields').style.display = 'none';
-        document.getElementById('virtual-phone-select-group').style.display = 'block';
-        fetchVirtualPhonesForClientSelect(tenant.phone_number || '', tenant.virtual_phone_id || null);
-      } else {
-        document.getElementById('manual-phone-fields').style.display = 'block';
-        document.getElementById('virtual-phone-select-group').style.display = 'none';
-      }
+      document.getElementById('manual-phone-fields').style.display = 'none';
+      document.getElementById('virtual-phone-select-group').style.display = 'block';
+      fetchVirtualPhonesForClientSelect(tenant.phone_number || '', null);
       
       document.getElementById('phone-number').value = tenant.phone_number || '';
       document.getElementById('business-description').value = tenant.business_description || '';
@@ -11756,8 +11882,9 @@
       editingTenantId = null;
       isContractManuallyEdited = false;
       
-      document.getElementById('manual-phone-fields').style.display = 'block';
-      document.getElementById('virtual-phone-select-group').style.display = 'none';
+      document.getElementById('manual-phone-fields').style.display = 'none';
+      document.getElementById('virtual-phone-select-group').style.display = 'block';
+      fetchVirtualPhonesForClientSelect();
       
       formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Nuevo Cliente`;
       btnGenerateText.innerText = 'Generar Agente IA y Registrar';
@@ -12187,7 +12314,7 @@
         voice_id: document.getElementById('voice-id').value,
         phone_provider: phoneProvider.value,
         phone_number: document.getElementById('phone-number').value || null,
-        virtual_phone_id: phoneProvider.value === 'zadarma' ? document.getElementById('client-virtual-phone-id').value : null,
+        virtual_phone_id: document.getElementById('client-virtual-phone-id').value || null,
         specialties,
         working_hours,
         business_description: document.getElementById('business-description').value,

@@ -1568,7 +1568,7 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
     let resolvedSipPassword = sip_password;
     let resolvedSipServer = sip_server;
 
-    if (phone_provider === 'zadarma' && virtual_phone_id) {
+    if (virtual_phone_id) {
       addStep('1B. Buscando número de teléfono virtual en el inventario...');
       const { data: vp } = await supabase
         .from('virtual_phones')
@@ -1578,9 +1578,11 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
 
       if (vp) {
         resolvedPhoneNumber = vp.phone_number;
-        resolvedSipUsername = vp.sip_username;
-        resolvedSipPassword = vp.sip_password;
-        resolvedSipServer = vp.sip_server;
+        if (phone_provider === 'zadarma') {
+          resolvedSipUsername = vp.sip_username;
+          resolvedSipPassword = vp.sip_password;
+          resolvedSipServer = vp.sip_server;
+        }
         addStep(`1C. Teléfono virtual ${vp.phone_number} seleccionado correctamente.`);
       } else {
         addStep('⚠️ Advertencia: No se encontró el teléfono virtual en el inventario. Se usarán valores manuales.');
@@ -1710,8 +1712,7 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       client_whatsapp_provider: client_whatsapp_provider !== undefined ? client_whatsapp_provider : (existing ? existing.client_whatsapp_provider : 'qr'),
       twilio_account_sid: twilio_account_sid !== undefined ? twilio_account_sid : (existing ? existing.twilio_account_sid : null),
       twilio_auth_token: twilio_auth_token !== undefined ? twilio_auth_token : (existing ? existing.twilio_auth_token : null),
-      twilio_whatsapp_number: twilio_whatsapp_number !== undefined ? twilio_whatsapp_number : (existing ? existing.twilio_whatsapp_number : null),
-      virtual_phone_id: phone_provider === 'zadarma' ? (virtual_phone_id || null) : null
+      twilio_whatsapp_number: twilio_whatsapp_number !== undefined ? twilio_whatsapp_number : (existing ? existing.twilio_whatsapp_number : null)
     };
 
     if (existing && existingBlockAdminAccess) {
@@ -2089,8 +2090,8 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
           .update({ tenant_id: null, status: 'available' })
           .eq('tenant_id', tenant.id);
 
-        // Si se seleccionó un teléfono Zadarma del inventario, asociarlo ahora
-        if (phone_provider === 'zadarma' && virtual_phone_id) {
+        // Si se seleccionó un teléfono del inventario, asociarlo ahora
+        if (virtual_phone_id) {
           // A. Obtener el número de teléfono del virtual phone para limpiar otros tenants
           const { data: vpToAssign } = await supabase
             .from('virtual_phones')
@@ -2110,7 +2111,6 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
                 sip_server: null
               })
               .eq('phone_number', vpToAssign.phone_number)
-              .eq('phone_provider', 'zadarma')
               .neq('id', tenant.id);
           }
 
