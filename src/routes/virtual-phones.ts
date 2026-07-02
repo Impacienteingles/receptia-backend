@@ -86,10 +86,22 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
     // Si se asignó a un tenant, actualizar el registro del tenant con los datos del teléfono y SIP
     if (cleanTenantId && vp) {
+      // Primero, limpiar este número de cualquier otro tenant que lo tenga configurado
+      await supabase
+        .from('tenants')
+        .update({
+          phone_number: null,
+          phone_provider: 'retell',
+          sip_username: null,
+          sip_password: null,
+          sip_server: null
+        })
+        .eq('phone_number', vp.phone_number)
+        .eq('phone_provider', 'zadarma');
+
       const { error: tenantUpdErr } = await supabase
         .from('tenants')
         .update({
-          virtual_phone_id: vp.id,
           phone_number: vp.phone_number,
           phone_provider: 'zadarma',
           sip_username: vp.sip_username,
@@ -177,7 +189,6 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
       const { error: oldTenantErr } = await supabase
         .from('tenants')
         .update({
-          virtual_phone_id: null,
           phone_number: null,
           phone_provider: 'retell',
           sip_username: null,
@@ -193,10 +204,22 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
 
     // B. Actualizar el nuevo tenant asignado con la información del teléfono y SIP
     if (cleanTenantId && vp) {
+      // Primero, limpiar este número de cualquier otro tenant que lo tenga configurado
+      await supabase
+        .from('tenants')
+        .update({
+          phone_number: null,
+          phone_provider: 'retell',
+          sip_username: null,
+          sip_password: null,
+          sip_server: null
+        })
+        .eq('phone_number', vp.phone_number)
+        .eq('phone_provider', 'zadarma');
+
       const { error: newTenantErr } = await supabase
         .from('tenants')
         .update({
-          virtual_phone_id: vp.id,
           phone_number: vp.phone_number,
           phone_provider: 'zadarma',
           sip_username: vp.sip_username,
@@ -246,7 +269,6 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
       const { error: tenantClearErr } = await supabase
         .from('tenants')
         .update({
-          virtual_phone_id: null,
           phone_number: null,
           phone_provider: 'retell',
           sip_username: null,

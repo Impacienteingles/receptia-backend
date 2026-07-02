@@ -2091,6 +2091,29 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
 
         // Si se seleccionó un teléfono Zadarma del inventario, asociarlo ahora
         if (phone_provider === 'zadarma' && virtual_phone_id) {
+          // A. Obtener el número de teléfono del virtual phone para limpiar otros tenants
+          const { data: vpToAssign } = await supabase
+            .from('virtual_phones')
+            .select('phone_number')
+            .eq('id', virtual_phone_id)
+            .maybeSingle();
+
+          if (vpToAssign) {
+            // B. Limpiar la configuración de cualquier otro tenant que tuviera asignado este número
+            await supabase
+              .from('tenants')
+              .update({
+                phone_number: null,
+                phone_provider: 'retell',
+                sip_username: null,
+                sip_password: null,
+                sip_server: null
+              })
+              .eq('phone_number', vpToAssign.phone_number)
+              .eq('phone_provider', 'zadarma')
+              .neq('id', tenant.id);
+          }
+
           const phoneBillingDate = computedStatus === 'trial' ? computedTrialEndsAt : (contract_end_date || null);
           
           await supabase
