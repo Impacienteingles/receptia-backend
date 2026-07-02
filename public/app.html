@@ -5833,6 +5833,8 @@
     let clientRetellInstance = null;
     let clientCallTimer = null;
     let clientCallSeconds = 0;
+    let clientCallWarningTimeout = null;
+    let clientCallLimitTimeout = null;
 
     async function startClientWebRTCCall() {
       if (!currentTenant || !currentTenant.retell_agent_id) {
@@ -5926,6 +5928,26 @@
             const secs = String(clientCallSeconds % 60).padStart(2, '0');
             durationText.innerText = `${mins}:${secs}`;
           }, 1000);
+
+          // Límite de 2 minutos (120s) para llamadas Sandbox
+          // A los 100 segundos (quedando 20s) se emite la advertencia por voz
+          clientCallWarningTimeout = setTimeout(() => {
+            console.log('[WebRTC Client] Reproduciendo advertencia de finalización de llamada...');
+            if ('speechSynthesis' in window) {
+              const msg = new SpeechSynthesisUtterance("Se está llegando al final de la llamada de prueba.");
+              msg.lang = "es-ES";
+              const voices = window.speechSynthesis.getVoices();
+              const esVoice = voices.find(v => v.lang.startsWith('es'));
+              if (esVoice) msg.voice = esVoice;
+              window.speechSynthesis.speak(msg);
+            }
+          }, 100000); // 100 segundos
+          
+          clientCallLimitTimeout = setTimeout(() => {
+            console.log('[WebRTC Client] Límite de 2 minutos alcanzado. Cortando llamada.');
+            showToast('Llamada de prueba finalizada por límite de tiempo de 2 minutos.', 'info');
+            stopClientWebRTCCall(true);
+          }, 120000); // 120 segundos
         });
 
         clientRetellInstance.on('call_ended', () => {
@@ -5971,6 +5993,15 @@
       if (clientCallTimer) {
         clearInterval(clientCallTimer);
         clientCallTimer = null;
+      }
+
+      if (clientCallWarningTimeout) {
+        clearTimeout(clientCallWarningTimeout);
+        clientCallWarningTimeout = null;
+      }
+      if (clientCallLimitTimeout) {
+        clearTimeout(clientCallLimitTimeout);
+        clientCallLimitTimeout = null;
       }
 
       if (clientRetellInstance) {

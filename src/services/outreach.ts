@@ -397,7 +397,7 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
         <!-- Tarjeta de Mockup del Reproductor de Audio -->
         <a href="${audioUrl}" class="dashboard-mockup" target="_blank">
           <div class="mockup-header">
-            <span class="mockup-title">🔊 Presentación Telefónica de ${voiceName}</span>
+            <span class="mockup-title">🔊 Presentación Telefónica de ${cleanVoiceName}</span>
             <span class="mockup-status">
               <span class="status-dot"></span> LISTO PARA ESCUCHAR
             </span>
@@ -407,13 +407,13 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
               <span class="play-icon"></span>
             </div>
             <div class="mockup-button-text">Escuchar demo de audio</div>
-            <div class="mockup-subtext">Haga clic aquí para escuchar cómo se presentará ${voiceName} al atender a sus clientes.</div>
+            <div class="mockup-subtext">Haga clic aquí para escuchar cómo se presentará ${cleanVoiceName} al atender a sus clientes.</div>
           </div>
         </a>
 
         <p>Además de esta presentación en audio, le hemos configurado una <span class="highlight">Demostración Real e Interactiva</span> de su receptor virtual de llamadas en su <strong>Panel de Control de Cliente</strong> privado.</p>
         
-        <p>Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña <span class="highlight">"Llamadas IA"</span>. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: <strong style="color: #60a5fa; font-family: monospace; font-size: 1.1em; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">12345678</strong>.</p>
+        <p>Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña <span class="highlight">"Llamadas IA"</span>. Además, podrá realizar hasta 5 llamadas de prueba gratuitas accediendo a la opción <span class="highlight">Ajustes</span>, pestaña <span class="highlight">Asistente IA</span> y haciendo clic en <span class="highlight">Llamada de Prueba WebRTC Sandbox</span>. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: <strong style="color: #60a5fa; font-family: monospace; font-size: 1.1em; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">12345678</strong>.</p>
 
         <!-- Beneficios en tarjetas -->
         <div class="benefit-card">
