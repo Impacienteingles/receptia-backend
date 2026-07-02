@@ -1777,7 +1777,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.36</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.37</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2001,7 +2001,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.36</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.37</span>
       </div>
     </aside>
 
@@ -2024,7 +2024,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.36</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.37</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2345,7 +2345,7 @@
                     <div class="custom-select-dropdown" id="custom-select-vp-dropdown">
                       <div class="custom-select-search-box">
                         <input type="text" id="client-virtual-phone-search" placeholder="Filtrar números..." oninput="filterClientVirtualPhonesDropdown(this.value)">
-                        <button type="button" onclick="fetchVirtualPhonesForClientSelect()" title="Actualizar inventario" style="display: flex; align-items: center; justify-content: center;">
+                        <button type="button" onclick="window.fetchVirtualPhonesForClientSelect()" title="Actualizar inventario" style="display: flex; align-items: center; justify-content: center;">
                           <i data-lucide="refresh-cw" style="width: 14px; height: 14px; color: #fff;"></i>
                         </button>
                       </div>
@@ -2928,7 +2928,7 @@
             <div class="card" style="padding: 1.5rem; border-radius: 12px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border-color);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 1rem;">
                 <input type="text" id="vp-search" placeholder="Filtrar números..." style="max-width: 320px; flex: 1; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" oninput="renderVirtualPhones()">
-                <button onclick="fetchVirtualPhones()" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.6rem 1rem;">
+                <button onclick="window.fetchVirtualPhones()" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.6rem 1rem;">
                   <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Actualizar
                 </button>
               </div>
@@ -5549,7 +5549,7 @@
     phoneProvider.addEventListener('change', () => {
       document.getElementById('manual-phone-fields').style.display = 'none';
       document.getElementById('virtual-phone-select-group').style.display = 'block';
-      fetchVirtualPhonesForClientSelect();
+      window.fetchVirtualPhonesForClientSelect();
     });
 
     // Cambiar de pestaña en el formulario de cliente
@@ -5880,7 +5880,7 @@
         fetchReferralsConfig();
         switchPromoSubtab('config');
       } else if (tabName === 'virtual-phones') {
-        fetchVirtualPhones();
+        window.fetchVirtualPhones();
       }
     }
 
@@ -9355,7 +9355,7 @@
       
       document.getElementById('manual-phone-fields').style.display = 'none';
       document.getElementById('virtual-phone-select-group').style.display = 'block';
-      fetchVirtualPhonesForClientSelect(tenant.phone_number || '', null);
+      window.fetchVirtualPhonesForClientSelect(tenant.phone_number || '', null);
       
       document.getElementById('phone-number').value = tenant.phone_number || '';
       document.getElementById('business-description').value = tenant.business_description || '';
@@ -11625,7 +11625,7 @@
       await populateBaseTenantSelect(select);
 
       // Cargar inventario de teléfonos libres para la demo B2B
-      await fetchVirtualPhonesForDemoSelect();
+      await window.fetchVirtualPhonesForDemoSelect();
 
       // Mostrar modal
       document.getElementById('prospect-demo-modal').style.display = 'flex';
@@ -12001,7 +12001,7 @@
       
       document.getElementById('manual-phone-fields').style.display = 'none';
       document.getElementById('virtual-phone-select-group').style.display = 'block';
-      fetchVirtualPhonesForClientSelect();
+      window.fetchVirtualPhonesForClientSelect();
       
       formCardTitleText.innerHTML = `<i data-lucide="plus-circle"></i> Nuevo Cliente`;
       btnGenerateText.innerText = 'Generar Agente IA y Registrar';
@@ -14664,7 +14664,7 @@
 
         showCustomAlert(id ? 'Teléfono virtual actualizado correctamente.' : 'Teléfono virtual registrado correctamente.', 'Éxito', 'success');
         cancelVpEdit();
-        fetchVirtualPhones();
+        window.fetchVirtualPhones();
       } catch (err) {
         console.error('Error al guardar teléfono:', err);
         showCustomAlert(err.message, 'Error', 'error');
@@ -14717,7 +14717,7 @@
 
         showCustomAlert('Teléfono virtual actualizado correctamente.', 'Éxito', 'success');
         window.editingVpId = null;
-        fetchVirtualPhones();
+        window.fetchVirtualPhones();
       } catch (err) {
         console.error('Error al guardar teléfono en línea:', err);
         showCustomAlert(err.message, 'Error', 'error');
@@ -14911,7 +14911,7 @@
         if (!res.ok) throw new Error(json.error || 'Error al eliminar el teléfono virtual');
 
         showCustomAlert('Teléfono virtual eliminado correctamente.', 'Eliminado', 'success');
-        fetchVirtualPhones();
+        window.fetchVirtualPhones();
       } catch (err) {
         console.error('Error al eliminar teléfono:', err);
         showCustomAlert(err.message, 'Error', 'error');

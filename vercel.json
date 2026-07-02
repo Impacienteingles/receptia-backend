@@ -7,8 +7,16 @@
       "destination": "https://corandar.onrender.com/api/:path*"
     },
     {
+      "source": "/auth",
+      "destination": "https://corandar.onrender.com/auth"
+    },
+    {
       "source": "/auth/:path*",
       "destination": "https://corandar.onrender.com/auth/:path*"
+    },
+    {
+      "source": "/oauth2callback",
+      "destination": "https://corandar.onrender.com/oauth2callback"
     }
   ]
 }
