@@ -14,7 +14,8 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
         *,
         tenants:tenant_id (
           id,
-          business_name
+          business_name,
+          contract_end_date
         ),
         prospects:prospect_id (
           id,

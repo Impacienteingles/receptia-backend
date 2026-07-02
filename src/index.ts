@@ -321,7 +321,7 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
       
       // Always redact PIN if not verified client request
       if (!isClientRequest) {
-        t.admin_pin = '****';
+        t.admin_pin = t.admin_pin ? '****' : '';
       }
 
       if (t.block_admin_access && !isClientRequest) {
@@ -1212,7 +1212,7 @@ app.get('/api/admin/tenants', async (req, res): Promise<void> => {
       
       if (t.block_admin_access && !isClientRequest) {
         // Redact sensitive details for admin
-        t.admin_pin = '****';
+        t.admin_pin = t.admin_pin ? '****' : '';
         t.custom_instructions = 'Acceso bloqueado por privacidad del cliente';
         t.business_description = 'Acceso bloqueado por privacidad del cliente';
         t.pricing_details = 'Acceso bloqueado por privacidad del cliente';
