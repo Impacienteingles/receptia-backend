@@ -527,6 +527,10 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
       }
 
       if (tenantErr || !newTenant) {
+        const errMsg = tenantErr?.message || '';
+        if (errMsg.includes('tenants_email_key') || (errMsg.includes('unique constraint') && errMsg.includes('email'))) {
+          throw new Error('El correo electrónico suministrado ya está registrado para otro cliente o demo activa. Por favor, especifica un correo electrónico único.');
+        }
         throw new Error(`Fallo al crear el tenant de demo: ${tenantErr?.message}`);
       }
 

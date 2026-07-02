@@ -21,5 +21,9 @@
 - [x] Backend: Save both `outreach_body` and `outreach_body_extra` keys dynamically in `settings` table.
 - [x] Backend: Update endpoints `/preview-email`, `/save-outreach-settings`, `/regenerate-audio`, and `/resend-email` to accept, persist, and apply the dual body structure.
 - [x] Template: Position `${bodyExtraHtml}` dynamically below the demo cards in `src/services/outreach.ts` template to maintain layout structure.
-- [x] Version: Increment visual version to `v1.0.33` in `public/admin.html` and semantic version to `1.8.43` in `package.json`.
+- [x] B2B Flow: Disable automatic emailing on pipeline execution, keeping prospect status at `audio_generated` on successful demo setup.
+- [x] Table Actions: Split row buttons to "Previsualizar Correo" and conditional "Enviar Correo" (disabled by default, enabled upon "Dar Visto Bueno" in preview modal).
+- [x] Send Count: Increment `emails_sent_count` in the database upon manual send, updating row button to "Reenviar Correo (Enviado N veces)" and keeping it enabled.
+- [x] Default Text: Include markdown bold formatting (`**`) in default outreach email text templates.
+- [x] Version: Increment visual version to `v1.0.34` in `public/admin.html` and semantic version to `1.8.44` in `package.json`.
 - [x] Verification: Build project, deploy to Render (`npm run deploy`) and Vercel (`npx vercel --prod --yes`).

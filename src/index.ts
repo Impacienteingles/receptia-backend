@@ -165,14 +165,15 @@ async function requireClientPin(req: any, res: any, next: any) {
     url.includes('/api/admin/') ||
     url.includes('/api/webhook') ||
     url.includes('/api/comercial') ||
-    url.includes('/api/lead')
+    url.includes('/api/lead') ||
+    url.includes('/api/outreach/track-open')
   ) {
     next();
     return;
   }
 
   // Obtener tenantId de params, body o query
-  const tenantId = req.params.tenant_id || req.params.id || req.body.tenant_id || req.body.tenantId || req.query.tenant_id || req.query.tenantId || req.query.id;
+  const tenantId = req.params?.tenant_id || req.params?.id || req.body?.tenant_id || req.body?.tenantId || req.query?.tenant_id || req.query?.tenantId || req.query?.id;
 
   if (!tenantId) {
     // Si la ruta no especifica tenant_id (por ejemplo, /api/plans o /api/referrals/config), es pública.
@@ -181,7 +182,7 @@ async function requireClientPin(req: any, res: any, next: any) {
   }
 
   // Permitir si es el administrador global
-  const adminToken = req.headers['x-admin-token'] || req.query.admin_token;
+  const adminToken = req.headers?.['x-admin-token'] || req.query?.admin_token;
   const dbPass = await getSettingVal('ADMIN_PASS');
   const expectedAdminPass = dbPass || process.env.ADMIN_PASS || '1Impaciente!';
   if (adminToken && adminToken === expectedAdminPass) {
@@ -189,7 +190,7 @@ async function requireClientPin(req: any, res: any, next: any) {
     return;
   }
 
-  const clientPin = req.headers['x-client-pin'] || req.query.pin || req.body.pin;
+  const clientPin = req.headers?.['x-client-pin'] || req.query?.pin || req.body?.pin;
   if (!clientPin) {
     res.status(401).json({ error: 'No autorizado: PIN de acceso del cliente ausente.' });
     return;

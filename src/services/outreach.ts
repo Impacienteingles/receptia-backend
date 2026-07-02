@@ -77,7 +77,7 @@ export async function sendOutreachEmail(req: SendOutreachEmailRequest): Promise<
  */
 export function parseBodyToHtml(text: string): string {
   const cleanText = text.replace(/\r\n/g, '\n');
-  const processedText = cleanText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  const processedText = cleanText.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #ffffff;">$1</strong>');
   const paragraphs = processedText.split(/\n\s*\n/);
   return paragraphs
     .map(p => {
