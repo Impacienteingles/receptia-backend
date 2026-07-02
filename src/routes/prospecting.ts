@@ -1121,7 +1121,11 @@ router.get('/:id/preview-email', async (req: Request, res: Response): Promise<vo
 
 Desde Corándar hemos diseñado y configurado un Agente de Voz con Inteligencia Artificial adaptado a las necesidades específicas de su negocio.
 
-Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.`;
+Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.
+
+Además de esta presentación en audio, le hemos configurado una Demostración Real e Interactiva de su receptor virtual de llamadas en su Panel de Control de Cliente privado.
+
+Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña "Llamadas IA". Además, podrá realizar hasta 5 llamadas de prueba gratuitas accediendo a la opción Ajustes, pestaña Asistente IA y haciendo clic en Llamada de Prueba WebRTC Sandbox. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: 12345678.`;
 
     const htmlKey = `outreach_html_${id}`;
     const { data: htmlVal } = await supabase.from('settings').select('value').eq('key', htmlKey).maybeSingle();
