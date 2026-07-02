@@ -1712,17 +1712,18 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       client_whatsapp_provider: client_whatsapp_provider !== undefined ? client_whatsapp_provider : (existing ? existing.client_whatsapp_provider : 'qr'),
       twilio_account_sid: twilio_account_sid !== undefined ? twilio_account_sid : (existing ? existing.twilio_account_sid : null),
       twilio_auth_token: twilio_auth_token !== undefined ? twilio_auth_token : (existing ? existing.twilio_auth_token : null),
-      twilio_whatsapp_number: twilio_whatsapp_number !== undefined ? twilio_whatsapp_number : (existing ? existing.twilio_whatsapp_number : null)
+      twilio_whatsapp_number: twilio_whatsapp_number !== undefined ? twilio_whatsapp_number : (existing ? existing.twilio_whatsapp_number : null),
+      virtual_phone_id: phone_provider === 'zadarma' ? (virtual_phone_id || null) : null
     };
 
     if (existing && existingBlockAdminAccess) {
-      tenantData.admin_pin = existing.admin_pin;
-      tenantData.custom_instructions = existing.custom_instructions;
-      tenantData.business_description = existing.business_description;
-      tenantData.pricing_details = existing.pricing_details;
-      tenantData.specialties = existing.specialties;
-      tenantData.vacation_message = existing.vacation_message;
-      tenantData.knowledge_base_content = existing.knowledge_base_content;
+      if (admin_pin === '****') tenantData.admin_pin = existing.admin_pin;
+      if (custom_instructions === 'Acceso bloqueado por privacidad del cliente') tenantData.custom_instructions = existing.custom_instructions;
+      if (business_description === 'Acceso bloqueado por privacidad del cliente') tenantData.business_description = existing.business_description;
+      if (pricing_details === 'Acceso bloqueado por privacidad del cliente') tenantData.pricing_details = existing.pricing_details;
+      if (specialties && specialties.length === 0) tenantData.specialties = existing.specialties;
+      if (vacation_message === 'Acceso bloqueado') tenantData.vacation_message = existing.vacation_message;
+      if (knowledge_base_content === 'Acceso bloqueado') tenantData.knowledge_base_content = existing.knowledge_base_content;
     }
 
     const hasImmediateCol = existing ? ('whatsapp_immediate_notification_enabled' in existing) : false;

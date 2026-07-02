@@ -464,6 +464,104 @@
       display: grid !important;
     }
 
+    /* Custom Searchable Dropdown styles */
+    .custom-select-container {
+      position: relative;
+      width: 100%;
+    }
+    .custom-select-trigger {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 1rem;
+      background: rgba(20, 20, 30, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+      height: 42px;
+    }
+    .custom-select-trigger:hover {
+      border-color: var(--primary);
+    }
+    .custom-select-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      margin-top: 0.5rem;
+      background: #111827;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      padding: 0.5rem;
+      animation: fadeIn 0.15s ease;
+      box-sizing: border-box;
+    }
+    .custom-select-dropdown.active {
+      display: block;
+    }
+    .custom-select-search-box {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 0.5rem;
+      box-sizing: border-box;
+    }
+    .custom-select-search-box input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.5rem;
+      color: #fff;
+      font-size: 0.85rem;
+      box-sizing: border-box;
+    }
+    .custom-select-search-box button {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.5rem;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      width: 32px;
+      height: 32px;
+    }
+    .custom-select-options {
+      max-height: 200px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .custom-select-option {
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+      box-sizing: border-box;
+      text-align: left;
+    }
+    .custom-select-option:hover {
+      background: rgba(139, 92, 246, 0.1);
+      color: #fff;
+    }
+    .custom-select-option.selected {
+      background: var(--primary);
+      color: #fff;
+    }
+
     .form-group {
       display: flex;
       flex-direction: column;
@@ -1674,7 +1772,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.22</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.23</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -1898,7 +1996,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.22</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.23</span>
       </div>
     </aside>
 
@@ -1921,7 +2019,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.22</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.23</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2230,17 +2328,29 @@
                 </div>
 
                 <!-- DESPLEGABLE CON BUSCADOR DE TELÉFONOS VIRTUALES ZADARMA (INVENTARIO) -->
-                <div class="form-group" id="virtual-phone-select-group" style="display: none;">
-                  <label for="client-virtual-phone-id">Número de Teléfono Zadarma (Inventario):</label>
-                  <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                    <input type="text" id="client-virtual-phone-search" placeholder="Filtrar números..." style="flex: 1; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" oninput="filterClientVirtualPhonesDropdown()" class="input">
-                    <button type="button" class="btn btn-secondary" onclick="fetchVirtualPhonesForClientSelect()" style="padding: 0.6rem 0.8rem; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;" title="Actualizar inventario">
-                      <i data-lucide="refresh-cw" style="width: 14px; height: 14px; color: #fff;"></i>
-                    </button>
+                <div class="form-group" id="virtual-phone-select-group" style="display: none; position: relative;">
+                  <label>Número de Teléfono Zadarma (Inventario):</label>
+                  <div class="custom-select-container" id="virtual-phone-custom-select">
+                    <!-- Trigger -->
+                    <div class="custom-select-trigger" onclick="toggleVirtualPhoneDropdown()">
+                      <span id="custom-select-phone-val">-- Selecciona un número --</span>
+                      <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
+                    </div>
+                    <!-- Dropdown Panel -->
+                    <div class="custom-select-dropdown" id="custom-select-vp-dropdown">
+                      <div class="custom-select-search-box">
+                        <input type="text" id="client-virtual-phone-search" placeholder="Filtrar números..." oninput="filterClientVirtualPhonesDropdown(this.value)">
+                        <button type="button" onclick="fetchVirtualPhonesForClientSelect()" title="Actualizar inventario" style="display: flex; align-items: center; justify-content: center;">
+                          <i data-lucide="refresh-cw" style="width: 14px; height: 14px; color: #fff;"></i>
+                        </button>
+                      </div>
+                      <div class="custom-select-options" id="custom-select-vp-options">
+                        <!-- Las opciones se inyectan dinámicamente -->
+                      </div>
+                    </div>
                   </div>
-                  <select id="client-virtual-phone-id" class="input" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;">
-                    <option value="">-- Selecciona un número --</option>
-                  </select>
+                  <!-- Hidden input to hold the actual selected ID -->
+                  <input type="hidden" id="client-virtual-phone-id" value="">
                 </div>
               </div>
 
@@ -2542,9 +2652,6 @@
               <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; grid-column: span 2; width: 100%; box-sizing: border-box;">
                 <button type="button" class="btn btn-secondary" id="btn-client-cancel" style="flex: 1; min-width: 120px; border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="handleClientCancelButton()">
                   <i data-lucide="x-circle"></i> Cancelar
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="saveFormDraftManual()" id="btn-client-draft" style="flex: 1; min-width: 150px;">
-                  <i data-lucide="save"></i> Guardar Borrador Local
                 </button>
                 <button type="button" class="btn" id="btn-client-activate" style="flex: 1; min-width: 150px; background: #10b981; color: #fff; border-color: #10b981;" onclick="handleClientActivateButton()">
                   <i data-lucide="check-circle"></i> Activar
@@ -9011,16 +9118,16 @@
         : `<i data-lucide="edit-3"></i> Editar Cliente: ${tenant.business_name}`;
       btnGenerateText.innerText = 'Guardar Cambios';
 
-      // Deshabilitar campos si está bloqueado por privacidad
-      document.getElementById('specialties-input').disabled = isBlocked;
-      document.getElementById('business-description').disabled = isBlocked;
-      document.getElementById('pricing-details').disabled = isBlocked;
-      document.getElementById('custom-instructions').disabled = isBlocked;
-      document.getElementById('admin-pin').disabled = isBlocked;
-      document.getElementById('voice-id').disabled = isBlocked;
-      document.getElementById('voice-speed').disabled = isBlocked;
-      document.getElementById('voice-temperature').disabled = isBlocked;
-      document.getElementById('voice-responsiveness').disabled = isBlocked;
+      // Asegurar que los campos estén editables para el administrador
+      document.getElementById('specialties-input').disabled = false;
+      document.getElementById('business-description').disabled = false;
+      document.getElementById('pricing-details').disabled = false;
+      document.getElementById('custom-instructions').disabled = false;
+      document.getElementById('admin-pin').disabled = false;
+      document.getElementById('voice-id').disabled = false;
+      document.getElementById('voice-speed').disabled = false;
+      document.getElementById('voice-temperature').disabled = false;
+      document.getElementById('voice-responsiveness').disabled = false;
 
       // Rellenar campos comunes
       document.getElementById('business-name').value = tenant.business_name || '';
@@ -9042,7 +9149,7 @@
       if (voiceLockCheckbox) {
         voiceLockCheckbox.checked = isVoiceLocked;
       }
-      toggleVoiceInputsLock(isBlocked || isVoiceLocked);
+      toggleVoiceInputsLock(isVoiceLocked);
       document.getElementById('business-sector').value = tenant.business_sector || 'general';
       
       // Auto-check terms and privacy (RGPD) for existing client
@@ -9064,7 +9171,7 @@
       if (provider === 'zadarma') {
         document.getElementById('manual-phone-fields').style.display = 'none';
         document.getElementById('virtual-phone-select-group').style.display = 'block';
-        fetchVirtualPhonesForClientSelect(tenant.phone_number || '');
+        fetchVirtualPhonesForClientSelect(tenant.phone_number || '', tenant.virtual_phone_id || null);
       } else {
         document.getElementById('manual-phone-fields').style.display = 'block';
         document.getElementById('virtual-phone-select-group').style.display = 'none';
@@ -14001,81 +14108,116 @@
 
       filtered.forEach(vp => {
         const tr = document.createElement('tr');
+        tr.id = `vp-row-${vp.id}`;
         
+        const isEditing = window.editingVpId === vp.id;
         const isAvailable = vp.status === 'available' || !vp.tenant_id;
         
-        // Apply subtle green background if free/available
-        if (isAvailable) {
+        if (isAvailable && !isEditing) {
           tr.style.background = 'rgba(16, 185, 129, 0.04)';
         }
 
-        // Phone Number Column
-        const numberTd = `<td><span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; font-family: monospace; background: rgba(255,255,255,0.05); color: #fff;">${vp.phone_number}</span></td>`;
-
-        // SIP Username
-        const sipUserTd = `<td><span style="font-family: monospace; font-size: 0.85rem; color: #fff;">${vp.sip_username || '-'}</span></td>`;
-
-        // SIP Password with individual show/hide
-        const sipPasswordTd = `
-          <td>
-            <div style="display: flex; align-items: center; gap: 0.4rem; justify-content: flex-start;">
-              <span id="vp-pwd-mask-${vp.id}" style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">${vp.sip_password ? '••••••••' : '-'}</span>
-              <span id="vp-pwd-text-${vp.id}" style="display: none; font-family: monospace; font-size: 0.85rem; color: #fff;">${vp.sip_password || ''}</span>
-              ${vp.sip_password ? `
-                <button type="button" onclick="toggleVpRowPasswordVisibility('${vp.id}')" style="background: none; border: none; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; padding: 0.2rem; margin: 0;" title="Mostrar/Ocultar contraseña">
-                  <i data-lucide="eye" id="vp-pwd-icon-${vp.id}" style="width: 14px; height: 14px;"></i>
+        if (isEditing) {
+          tr.style.background = 'rgba(139, 92, 246, 0.08)';
+          
+          const numberTd = `<td><input type="text" id="inline-vp-phone-${vp.id}" value="${vp.phone_number}" style="width: 100%; border: 1px solid var(--border-color); background: rgba(0,0,0,0.3); color: #fff; padding: 0.35rem 0.5rem; border-radius: 6px; font-family: monospace; box-sizing: border-box; height: 32px;"></td>`;
+          const sipUserTd = `<td><input type="text" id="inline-vp-sipuser-${vp.id}" value="${vp.sip_username || ''}" style="width: 100%; border: 1px solid var(--border-color); background: rgba(0,0,0,0.3); color: #fff; padding: 0.35rem 0.5rem; border-radius: 6px; font-family: monospace; box-sizing: border-box; height: 32px;"></td>`;
+          const sipPasswordTd = `<td><input type="text" id="inline-vp-sippass-${vp.id}" value="${vp.sip_password || ''}" style="width: 100%; border: 1px solid var(--border-color); background: rgba(0,0,0,0.3); color: #fff; padding: 0.35rem 0.5rem; border-radius: 6px; font-family: monospace; box-sizing: border-box; height: 32px;"></td>`;
+          const sipServerTd = `<td><input type="text" id="inline-vp-sipserver-${vp.id}" value="${vp.sip_server || ''}" style="width: 100%; border: 1px solid var(--border-color); background: rgba(0,0,0,0.3); color: #fff; padding: 0.35rem 0.5rem; border-radius: 6px; font-family: monospace; box-sizing: border-box; height: 32px;"></td>`;
+          
+          let tenantOptions = `<option value="">-- Sin asignar (Disponible) --</option>`;
+          allTenants.forEach(t => {
+            const isSel = vp.tenant_id === t.id ? 'selected' : '';
+            tenantOptions += `<option value="${t.id}" ${isSel}>Cliente: ${t.business_name}</option>`;
+          });
+          const assignedTd = `<td><select id="inline-vp-tenant-${vp.id}" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.9); color: #fff; padding: 0.35rem; border-radius: 6px; box-sizing: border-box; height: 32px;">${tenantOptions}</select></td>`;
+          
+          const billingTd = `<td><input type="text" value="${vp.next_billing_date ? vp.next_billing_date.split('T')[0] : 'Calculado automáticamente'}" style="width: 100%; border: 1px solid var(--border-color); background: rgba(50,50,60,0.4); color: var(--text-muted); padding: 0.35rem; border-radius: 6px; cursor: not-allowed; box-sizing: border-box; height: 32px;" disabled readonly></td>`;
+          
+          const actionsTd = `
+            <td>
+              <div style="display: flex; gap: 0.5rem;">
+                <button onclick="saveInlineVirtualPhone('${vp.id}')" class="btn-action" title="Guardar" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: none; padding: 0.35rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;">
+                  <i data-lucide="check" style="width: 14px; height: 14px;"></i>
                 </button>
-              ` : ''}
-            </div>
-          </td>
-        `;
-
-        // SIP Server
-        const sipServerTd = `<td><span style="font-family: monospace; font-size: 0.85rem; color: #fff;">${vp.sip_server || '-'}</span></td>`;
-
-        // Assigned to Column (badge green if free, blue if client, yellow if other)
-        let assignedToText = '';
-        if (isAvailable) {
-          assignedToText = `
-            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 600; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(16, 185, 129, 0.25);">
-              <i data-lucide="check-circle" style="width: 13px; height: 13px;"></i> Libre (Disponible)
-            </span>
+                <button onclick="cancelInlineVpEdit()" class="btn-action" title="Cancelar" style="background: rgba(239, 68, 68, 0.15); color: var(--error); border: none; padding: 0.35rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;">
+                  <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                </button>
+              </div>
+            </td>
           `;
+          
+          tr.innerHTML = numberTd + sipUserTd + sipPasswordTd + sipServerTd + assignedTd + billingTd + actionsTd;
         } else {
-          if (vp.tenants && vp.tenants.business_name) {
-            assignedToText = `<span style="color: #60a5fa; font-weight: 500;"><i data-lucide="building-2" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Cliente: ${vp.tenants.business_name}</span>`;
-          } else if (vp.prospects && vp.prospects.business_name) {
-            assignedToText = `<span style="color: var(--accent); font-weight: 500;"><i data-lucide="target" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Prospecto: ${vp.prospects.business_name}</span>`;
+          // Phone Number Column
+          const numberTd = `<td><span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; font-family: monospace; background: rgba(255,255,255,0.05); color: #fff;">${vp.phone_number}</span></td>`;
+
+          // SIP Username
+          const sipUserTd = `<td><span style="font-family: monospace; font-size: 0.85rem; color: #fff;">${vp.sip_username || '-'}</span></td>`;
+
+          // SIP Password with individual show/hide
+          const sipPasswordTd = `
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.4rem; justify-content: flex-start;">
+                <span id="vp-pwd-mask-${vp.id}" style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">${vp.sip_password ? '••••••••' : '-'}</span>
+                <span id="vp-pwd-text-${vp.id}" style="display: none; font-family: monospace; font-size: 0.85rem; color: #fff;">${vp.sip_password || ''}</span>
+                ${vp.sip_password ? `
+                  <button type="button" onclick="toggleVpRowPasswordVisibility('${vp.id}')" style="background: none; border: none; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; padding: 0.2rem; margin: 0;" title="Mostrar/Ocultar contraseña">
+                    <i data-lucide="eye" id="vp-pwd-icon-${vp.id}" style="width: 14px; height: 14px;"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          `;
+
+          // SIP Server
+          const sipServerTd = `<td><span style="font-family: monospace; font-size: 0.85rem; color: #fff;">${vp.sip_server || '-'}</span></td>`;
+
+          // Assigned to Column (badge green if free, blue if client, yellow if other)
+          let assignedToText = '';
+          if (isAvailable) {
+            assignedToText = `
+              <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 600; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(16, 185, 129, 0.25);">
+                <i data-lucide="check-circle" style="width: 13px; height: 13px;"></i> Libre (Disponible)
+              </span>
+            `;
           } else {
-            assignedToText = `<span style="color: #fbbf24; font-weight: 500;">Asignado (ID: ${vp.tenant_id || vp.prospect_id})</span>`;
+            if (vp.tenants && vp.tenants.business_name) {
+              assignedToText = `<span style="color: #60a5fa; font-weight: 500;"><i data-lucide="building-2" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Cliente: ${vp.tenants.business_name}</span>`;
+            } else if (vp.prospects && vp.prospects.business_name) {
+              assignedToText = `<span style="color: var(--accent); font-weight: 500;"><i data-lucide="target" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Prospecto: ${vp.prospects.business_name}</span>`;
+            } else {
+              assignedToText = `<span style="color: #fbbf24; font-weight: 500;">Asignado (ID: ${vp.tenant_id || vp.prospect_id})</span>`;
+            }
           }
+          const assignedTd = `<td>${assignedToText}</td>`;
+
+          // Date of Baja Column (renamed to Fecha de Baja)
+          let billingText = '<span style="color: var(--text-muted);">-</span>';
+          if (vp.next_billing_date) {
+            const date = new Date(vp.next_billing_date);
+            const formatted = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+            billingText = `<span style="font-size: 0.85rem; color: #fff;">${formatted}</span>`;
+          }
+          const billingTd = `<td>${billingText}</td>`;
+
+          // Actions
+          const actionsTd = `
+            <td>
+              <div style="display: flex; gap: 0.5rem;">
+                <button onclick="editVirtualPhone('${vp.id}')" class="btn-action" title="Editar" style="background: rgba(139, 92, 246, 0.15); color: var(--primary-hover); border: none; padding: 0.35rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;">
+                  <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
+                </button>
+                <button onclick="deleteVirtualPhone('${vp.id}')" class="btn-action" title="Eliminar" style="background: rgba(239, 68, 68, 0.15); color: var(--error); border: none; padding: 0.35rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;">
+                  <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                </button>
+              </div>
+            </td>
+          `;
+
+          tr.innerHTML = numberTd + sipUserTd + sipPasswordTd + sipServerTd + assignedTd + billingTd + actionsTd;
         }
-        const assignedTd = `<td>${assignedToText}</td>`;
 
-        // Date of Baja Column (renamed to Fecha de Baja)
-        let billingText = '<span style="color: var(--text-muted);">-</span>';
-        if (vp.next_billing_date) {
-          const date = new Date(vp.next_billing_date);
-          const formatted = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
-          billingText = `<span style="font-size: 0.85rem; color: #fff;">${formatted}</span>`;
-        }
-        const billingTd = `<td>${billingText}</td>`;
-
-        // Actions
-        const actionsTd = `
-          <td>
-            <div style="display: flex; gap: 0.5rem;">
-              <button onclick="editVirtualPhone('${vp.id}')" class="btn-action" title="Editar" style="background: rgba(139, 92, 246, 0.15); color: var(--primary-hover); border: none; padding: 0.35rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
-                <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
-              </button>
-              <button onclick="deleteVirtualPhone('${vp.id}')" class="btn-action" title="Eliminar" style="background: rgba(239, 68, 68, 0.15); color: var(--error); border: none; padding: 0.35rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
-                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-              </button>
-            </div>
-          </td>
-        `;
-
-        tr.innerHTML = numberTd + sipUserTd + sipPasswordTd + sipServerTd + assignedTd + billingTd + actionsTd;
         tbody.appendChild(tr);
       });
 
@@ -14157,36 +14299,57 @@
       }
     };
 
+    window.editingVpId = null;
+
     window.editVirtualPhone = function(id) {
-      const vp = allVirtualPhones.find(item => item.id === id);
-      if (!vp) return;
+      window.editingVpId = id;
+      renderVirtualPhones();
+    };
 
-      document.getElementById('virtual-phone-id').value = vp.id;
-      document.getElementById('vp-phone-number').value = vp.phone_number;
-      document.getElementById('vp-sip-username').value = vp.sip_username || '';
-      document.getElementById('vp-sip-password').value = vp.sip_password || '';
-      document.getElementById('vp-sip-server').value = vp.sip_server || '';
+    window.cancelInlineVpEdit = function() {
+      window.editingVpId = null;
+      renderVirtualPhones();
+    };
+
+    window.saveInlineVirtualPhone = async function(id) {
+      const phone_number = document.getElementById(`inline-vp-phone-${id}`).value.trim();
+      const sip_username = document.getElementById(`inline-vp-sipuser-${id}`).value.trim();
+      const sip_password = document.getElementById(`inline-vp-sippass-${id}`).value;
+      const sip_server = document.getElementById(`inline-vp-sipserver-${id}`).value.trim();
+      const tenant_id = document.getElementById(`inline-vp-tenant-${id}`).value || null;
       
-      if (vp.next_billing_date) {
-        const date = new Date(vp.next_billing_date);
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        document.getElementById('vp-billing-date').value = `${yyyy}-${mm}-${dd}`;
-      } else {
-        document.getElementById('vp-billing-date').value = '';
+      const existingVp = allVirtualPhones.find(v => v.id === id);
+      let prospect_id = existingVp ? existingVp.prospect_id : null;
+      if (tenant_id) {
+        prospect_id = null;
       }
 
-      if (vp.tenant_id) {
-        document.getElementById('vp-tenant-id').value = vp.tenant_id;
-      } else {
-        document.getElementById('vp-tenant-id').value = '';
-      }
+      const payload = {
+        phone_number,
+        tenant_id,
+        prospect_id,
+        sip_username: sip_username || null,
+        sip_password: sip_password || null,
+        sip_server: sip_server || null
+      };
 
-      document.getElementById('virtual-phone-form-title').innerHTML = `<i data-lucide="edit-3" style="width:18px;height:18px;color:var(--primary);"></i> Editar Teléfono`;
-      document.getElementById('btn-cancel-vp-edit').style.display = 'inline-block';
-      document.getElementById('btn-submit-vp').innerText = 'Guardar';
-      lucide.createIcons();
+      try {
+        const res = await fetch(`/api/admin/virtual-phones/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Error al actualizar el teléfono virtual');
+
+        showCustomAlert('Teléfono virtual actualizado correctamente.', 'Éxito', 'success');
+        window.editingVpId = null;
+        fetchVirtualPhones();
+      } catch (err) {
+        console.error('Error al guardar teléfono en línea:', err);
+        showCustomAlert(err.message, 'Error', 'error');
+      }
     };
 
     window.cancelVpEdit = function() {
@@ -14196,7 +14359,8 @@
       document.getElementById('vp-sip-password').value = '';
       document.getElementById('vp-sip-server').value = '';
       document.getElementById('virtual-phone-form-title').innerHTML = `<i data-lucide="plus-circle" style="width:18px;height:18px;color:var(--primary);"></i> Registrar Teléfono`;
-      document.getElementById('btn-cancel-vp-edit').style.display = 'none';
+      const btnCancel = document.getElementById('btn-cancel-vp-edit');
+      if (btnCancel) btnCancel.style.display = 'none';
       document.getElementById('btn-submit-vp').innerText = 'Registrar';
       lucide.createIcons();
     };
@@ -14219,54 +14383,122 @@
     // Funciones del selector de teléfonos virtuales para la ficha del cliente
     let allVpForSelect = [];
 
-    window.fetchVirtualPhonesForClientSelect = async function(selectedNumber = '') {
+    window.toggleVirtualPhoneDropdown = function() {
+      const dropdown = document.getElementById('custom-select-vp-dropdown');
+      if (dropdown) {
+        dropdown.classList.toggle('active');
+      }
+    };
+
+    // Cerrar el dropdown al hacer clic fuera
+    document.addEventListener('click', function(event) {
+      const container = document.getElementById('virtual-phone-custom-select');
+      if (container && !container.contains(event.target)) {
+        const dropdown = document.getElementById('custom-select-vp-dropdown');
+        if (dropdown) dropdown.classList.remove('active');
+      }
+    });
+
+    window.fetchVirtualPhonesForClientSelect = async function(selectedNumber = '', selectedId = null) {
       try {
         const res = await fetch('/api/admin/virtual-phones');
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Error al obtener teléfonos');
         allVpForSelect = json.data || [];
-        populateClientVirtualPhonesDropdown(selectedNumber);
+        populateClientVirtualPhonesDropdown(selectedNumber, selectedId);
       } catch (err) {
         console.error('Error al cargar teléfonos para selector:', err);
       }
     };
 
-    function populateClientVirtualPhonesDropdown(selectedNumber = '') {
-      const select = document.getElementById('client-virtual-phone-id');
-      select.innerHTML = '<option value="">-- Selecciona un número --</option>';
+    function populateClientVirtualPhonesDropdown(selectedNumber = '', selectedId = null) {
+      const optionsContainer = document.getElementById('custom-select-vp-options');
+      const triggerSpan = document.getElementById('custom-select-phone-val');
+      const hiddenInput = document.getElementById('client-virtual-phone-id');
+      
+      optionsContainer.innerHTML = '';
+      
+      let hasSelected = false;
+
+      // Opción por defecto
+      const defaultOpt = document.createElement('div');
+      defaultOpt.className = 'custom-select-option';
+      defaultOpt.innerText = '-- Selecciona un número --';
+      defaultOpt.onclick = function() {
+        selectVirtualPhoneOption('', '', '', '', '');
+      };
+      optionsContainer.appendChild(defaultOpt);
 
       allVpForSelect.forEach(vp => {
-        const isSelected = vp.phone_number === selectedNumber;
+        const isSelected = (selectedId && vp.id === selectedId) || 
+                           (selectedNumber && vp.phone_number === selectedNumber) ||
+                           (editingTenantId && vp.tenant_id === editingTenantId);
+                           
         if (vp.status === 'available' || isSelected) {
-          const option = document.createElement('option');
-          option.value = vp.id;
-          option.innerText = isSelected ? `${vp.phone_number} (Asignado actualmente)` : `${vp.phone_number} (Disponible)`;
-          option.setAttribute('data-phone', vp.phone_number);
-          option.setAttribute('data-sip-user', vp.sip_username || '');
-          option.setAttribute('data-sip-server', vp.sip_server || '');
+          const optDiv = document.createElement('div');
+          optDiv.className = 'custom-select-option' + (isSelected ? ' selected' : '');
+          optDiv.innerText = isSelected ? `${vp.phone_number} (Asignado actualmente)` : `${vp.phone_number} (Disponible)`;
+          optDiv.setAttribute('data-id', vp.id);
+          optDiv.setAttribute('data-phone', vp.phone_number);
+          
+          optDiv.onclick = function() {
+            selectVirtualPhoneOption(vp.id, vp.phone_number, vp.sip_username || '', vp.sip_password || '', vp.sip_server || '');
+          };
           
           if (isSelected) {
-            option.selected = true;
+            triggerSpan.innerText = `${vp.phone_number} (Asignado actualmente)`;
+            hiddenInput.value = vp.id;
+            hasSelected = true;
           }
-          select.appendChild(option);
+          optionsContainer.appendChild(optDiv);
         }
       });
+
+      if (!hasSelected) {
+        triggerSpan.innerText = '-- Selecciona un número --';
+        hiddenInput.value = '';
+      }
+      
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
-    window.filterClientVirtualPhonesDropdown = function() {
-      const query = document.getElementById('client-virtual-phone-search').value.toLowerCase().trim();
-      const select = document.getElementById('client-virtual-phone-id');
-      const options = select.options;
+    window.selectVirtualPhoneOption = function(id, phone, sipUser, sipPass, sipServer) {
+      const triggerSpan = document.getElementById('custom-select-phone-val');
+      const hiddenInput = document.getElementById('client-virtual-phone-id');
+      const dropdown = document.getElementById('custom-select-vp-dropdown');
+      
+      hiddenInput.value = id;
+      triggerSpan.innerText = phone ? `${phone} (Seleccionado)` : '-- Selecciona un número --';
+      
+      // Rellenar automáticamente el teléfono en el formulario si es Zadarma
+      document.getElementById('phone-number').value = phone || '';
+      
+      // Resaltar la opción seleccionada
+      const options = document.querySelectorAll('.custom-select-option');
+      options.forEach(opt => {
+        if (opt.getAttribute('data-id') === id && id !== '') {
+          opt.classList.add('selected');
+        } else {
+          opt.classList.remove('selected');
+        }
+      });
+      
+      if (dropdown) dropdown.classList.remove('active');
+    };
 
-      for (let i = 1; i < options.length; i++) {
-        const opt = options[i];
-        const text = opt.text.toLowerCase();
-        if (text.includes(query)) {
+    window.filterClientVirtualPhonesDropdown = function(query) {
+      const lowerQuery = query.toLowerCase().trim();
+      const options = document.querySelectorAll('#custom-select-vp-options .custom-select-option');
+      options.forEach(opt => {
+        const text = opt.innerText.toLowerCase();
+        if (text.includes(lowerQuery) || opt.innerText === '-- Selecciona un número --') {
           opt.style.display = 'block';
         } else {
           opt.style.display = 'none';
         }
-      }
+      });
     };
 
 
