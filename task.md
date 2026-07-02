@@ -28,5 +28,8 @@
 - [x] Styling: Render all email bold text (`**`) in white (`#ffffff`) color inside the outreach email body parser.
 - [x] Tags: Remove `demo_activa` from commercialTagNames and CSS definitions.
 - [x] Safety: Add whitelist entry and add optional chaining (`?.`) to `requireClientPin` middleware to fix track-open tracking pixel 500 error in production.
-- [x] Version: Increment visual version to `v1.0.35` in `public/admin.html` and semantic version to `1.8.45` in `package.json`.
+- [x] Tracking: Reset prospect's `opened_count`, `opened_at`, and `emails_sent_count` to zero when a new demo generation pipeline is triggered.
+- [x] UI State: Fix infinite spinning spinner at 75% for completed demos by mapping the `audio_generated` status as a completed progress bar (100%, purple, no spinner) in `public/admin.html`.
+- [x] Safety Stop: Implement the red "Detener" button next to "Procesando..." when status is `demo_created`, letting admins stop/reset a stuck generation safely.
+- [x] Version: Increment visual version to `v1.0.36` in `public/admin.html` and semantic version to `1.8.46` in `package.json`.
 - [x] Verification: Build project, deploy to Render (`npm run deploy`) and Vercel (`npx vercel --prod --yes`).
