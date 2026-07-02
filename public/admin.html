@@ -1781,7 +1781,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.33</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.34</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2005,7 +2005,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.33</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.34</span>
       </div>
     </aside>
 
@@ -2028,7 +2028,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.33</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.34</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -4735,8 +4735,8 @@
         <button type="button" id="send-test-email-btn" class="btn" style="padding: 0.6rem 1.25rem; border-radius: 6px; display: flex; align-items: center; gap: 0.4rem; background: #8b5cf6; border-color: #8b5cf6; color: #fff; cursor: pointer; border: none; font-weight: 600; font-size: 0.8rem;">
           <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i> Enviar Prueba a Mí
         </button>
-        <button type="button" id="confirm-send-email-btn" class="btn" style="padding: 0.6rem 1.25rem; border-radius: 6px; display: flex; align-items: center; gap: 0.4rem; background: #3b82f6; border-color: #3b82f6; color: #fff; cursor: pointer; border: none; font-weight: 600; font-size: 0.8rem;">
-          <i data-lucide="send" style="width: 15px; height: 15px;"></i> Enviar a Cliente
+        <button type="button" id="confirm-send-email-btn" class="btn" style="padding: 0.6rem 1.25rem; border-radius: 6px; display: flex; align-items: center; gap: 0.4rem; background: #10b981; border-color: #10b981; color: #fff; cursor: pointer; border: none; font-weight: 600; font-size: 0.8rem;">
+          <i data-lucide="check" style="width: 15px; height: 15px;"></i> Dar Visto Bueno
         </button>
       </div>
     </div>
@@ -9858,6 +9858,7 @@
     // SECCIÓN DE PROSPECCIÓN B2B Y DEMOS
     // ========================================================
     let allProspects = [];
+    window.approvedProspectSends = new Set(JSON.parse(localStorage.getItem('approvedProspectSends') || '[]'));
     let processingProspectIds = new Set();
     let selectedProspectIds = new Set();
     let currentProspectId = null;
@@ -10290,38 +10291,31 @@
           }
         };
 
-        // Configure the "Enviar a Cliente" button in the modal
+        // Configure the "Dar Visto Bueno" button in the modal
         const confirmBtn = document.getElementById('confirm-send-email-btn');
         confirmBtn.disabled = false;
-        confirmBtn.innerHTML = `<i data-lucide="send" style="width: 15px; height: 15px;"></i> Enviar a Cliente`;
+        confirmBtn.innerHTML = `<i data-lucide="check" style="width: 15px; height: 15px;"></i> Dar Visto Bueno`;
         confirmBtn.onclick = async () => {
           confirmBtn.disabled = true;
-          confirmBtn.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Enviando...`;
-          
-          const subject = document.getElementById('preview-email-subject-input').value;
-          const body = document.getElementById('preview-email-body-input').value;
-          const body_extra = document.getElementById('preview-email-body-extra-input').value;
+          confirmBtn.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Guardando...`;
           
           try {
-            const sendRes = await fetch(`/api/admin/prospects/${prospectId}/resend-email`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ subject, body, body_extra })
-            });
-            const sendData = await sendRes.json();
-            if (!sendRes.ok) {
-              throw new Error(sendData.error || 'Error al enviar el correo.');
-            }
-            showCustomAlert('Correo enviado con éxito al prospecto.', 'Éxito', 'success');
+            // Guardamos ajustes editados
+            await saveAndRefreshPreview(true);
+            
+            // Damos el visto bueno al prospecto
+            window.approvedProspectSends.add(prospectId);
+            localStorage.setItem('approvedProspectSends', JSON.stringify(Array.from(window.approvedProspectSends)));
+            
+            showCustomAlert('Correo de captación aprobado. Ya puedes enviarlo desde el botón de la tabla.', 'Aprobado', 'success');
             document.getElementById('email-preview-modal').style.display = 'none';
+            renderProspectsTable();
           } catch (sendErr) {
-            console.error('Error al enviar correo:', sendErr);
+            console.error('Error al aprobar correo:', sendErr);
             showCustomAlert(sendErr.message, 'Fallo', 'error');
           } finally {
             confirmBtn.disabled = false;
-            confirmBtn.innerHTML = `<i data-lucide="send" style="width: 15px; height: 15px;"></i> Enviar a Cliente`;
+            confirmBtn.innerHTML = `<i data-lucide="check" style="width: 15px; height: 15px;"></i> Dar Visto Bueno`;
             lucide.createIcons();
           }
         };
@@ -10335,8 +10329,44 @@
       } finally {
         if (buttonEl) {
           buttonEl.disabled = false;
-          buttonEl.innerHTML = `<i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Reenviar`;
+          buttonEl.innerHTML = `<i data-lucide="eye" style="width: 13px; height: 13px;"></i> Previsualizar`;
           lucide.createIcons();
+        }
+      }
+    }
+
+    async function directSendDemoEmail(prospectId, buttonEl) {
+      if (buttonEl) {
+        buttonEl.disabled = true;
+        buttonEl.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Enviando...`;
+      }
+      try {
+        const response = await fetch(`/api/admin/prospects/${prospectId}/resend-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({}) // Envia directamente usando la configuración guardada
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al enviar el correo.');
+        }
+
+        // Remover de la lista de aprobados tras el primer envío
+        if (window.approvedProspectSends) {
+          window.approvedProspectSends.delete(prospectId);
+          localStorage.setItem('approvedProspectSends', JSON.stringify(Array.from(window.approvedProspectSends)));
+        }
+
+        showCustomAlert('Correo de captación enviado con éxito al prospecto.', 'Enviado', 'success');
+        await fetchProspects();
+      } catch (err) {
+        console.error('Error al enviar correo directamente:', err);
+        showCustomAlert(err.message, 'Fallo', 'error');
+        if (buttonEl) {
+          buttonEl.disabled = false;
+          buttonEl.innerHTML = `Enviar Correo`;
         }
       }
     }
@@ -10874,22 +10904,38 @@
  
             // Botón principal de acción
             let actionBtn = '';
-            if (p.status === 'demo_created' || p.status === 'audio_generated') {
+            if (p.status === 'demo_created') {
               actionBtn = `<button class="btn btn-secondary" disabled style="opacity: 0.6; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
                              <i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--primary); border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Procesando...
                            </button>`;
-            } else if (p.status === 'email_sent') {
-              actionBtn = `<button class="btn btn-secondary" onclick="resendDemoEmail('${p.id}', this)" style="color: #60a5fa; border-color: rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Reenviar correo de demo">
-                             <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Reenviar
+            } else if (p.demo_url && p.audio_url) {
+              const previewBtn = `<button class="btn btn-secondary" onclick="resendDemoEmail('${p.id}', this)" style="color: #c084fc; border-color: rgba(192,132,252,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; margin-right: 0.35rem;" title="Previsualizar y editar correo de captación">
+                                    <i data-lucide="eye" style="width: 13px; height: 13px;"></i> Previsualizar
+                                  </button>`;
+              
+              const sendCount = p.emails_sent_count || 0;
+              let sendBtn = '';
+              if (sendCount > 0) {
+                // Reenviar - siempre habilitado
+                sendBtn = `<button class="btn btn-secondary" onclick="directSendDemoEmail('${p.id}', this)" style="color: #60a5fa; border-color: rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Reenviar correo de captación (${sendCount} envíos realizados)">
+                             <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Reenviar (${sendCount})
                            </button>`;
-            } else {
-              let emailRetryBtn = '';
-              if (p.demo_url && p.audio_url) {
-                emailRetryBtn = `<button class="btn btn-secondary" onclick="resendDemoEmail('${p.id}', this)" style="color: #c084fc; border-color: rgba(192,132,252,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; margin-right: 0.35rem;" title="Enviar o configurar email de demo">
-                                   <i data-lucide="mail" style="width: 13px; height: 13px;"></i> Enviar Email
-                                 </button>`;
+              } else {
+                // Enviar por primera vez - requiere visto bueno
+                const isApproved = window.approvedProspectSends && window.approvedProspectSends.has(p.id);
+                if (isApproved) {
+                  sendBtn = `<button class="btn" onclick="directSendDemoEmail('${p.id}', this)" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border: none; color: #fff; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Enviar correo de captación ahora">
+                               <i data-lucide="send" style="width: 13px; height: 13px;"></i> Enviar Correo
+                             </button>`;
+                } else {
+                  sendBtn = `<button class="btn" disabled style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); opacity: 0.5; cursor: not-allowed; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Debes previsualizar y dar el visto bueno al correo antes de enviar">
+                               <i data-lucide="send" style="width: 13px; height: 13px;"></i> Enviar Correo
+                             </button>`;
+                }
               }
-              actionBtn = emailRetryBtn + `<button class="btn" onclick="openDemoGenerationModal('${p.id}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #fff; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Crear demo, generar audio y enviar email">
+              actionBtn = previewBtn + sendBtn;
+            } else {
+              actionBtn = `<button class="btn" onclick="openDemoGenerationModal('${p.id}')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #fff; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Crear demo y generar alocución de audio">
                              <i data-lucide="rocket" style="width: 13px; height: 13px;"></i> Activar Demo
                            </button>`;
             }

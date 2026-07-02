@@ -17,3 +17,9 @@
 - `[x]` Modificar `public/admin.html` para consultar el endpoint seguro `/api/admin/tenants`
 - `[x]` Compilar código con `npm run build` y verificar que no existan errores
 - `[x]` Empujar y desplegar cambios a Render (vía GitHub) y Vercel (`npx vercel --prod --yes`)
+- [x] Frontend: Implement split edit textareas: `Cuerpo (Introducción)` and `Cuerpo (Instrucciones y Acceso)` under email preview modal.
+- [x] Backend: Save both `outreach_body` and `outreach_body_extra` keys dynamically in `settings` table.
+- [x] Backend: Update endpoints `/preview-email`, `/save-outreach-settings`, `/regenerate-audio`, and `/resend-email` to accept, persist, and apply the dual body structure.
+- [x] Template: Position `${bodyExtraHtml}` dynamically below the demo cards in `src/services/outreach.ts` template to maintain layout structure.
+- [x] Version: Increment visual version to `v1.0.33` in `public/admin.html` and semantic version to `1.8.43` in `package.json`.
+- [x] Verification: Build project, deploy to Render (`npm run deploy`) and Vercel (`npx vercel --prod --yes`).

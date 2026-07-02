@@ -600,50 +600,16 @@ async function runOutreachPipeline(prospectId: string, origin: string, baseTenan
       console.log(`[Pipeline] [Paso 2 Completado] Audio generado y guardado en: ${audioUrl}`);
     }
 
-    // 5. Enviar Correo de Outreach con Resend
-    console.log(`[Pipeline] [Paso 3] Enviando correo electrónico de captación...`);
-    
-    if (!email || email.includes('example.com')) {
-      throw new Error(`Email del prospecto inválido o no suministrado: ${email}`);
-    }
-
-    let voiceId = 'cefcb124-080b-4655-b31f-932f3ee743de';
-    if (tenantId) {
-      const { data: tenant } = await supabase
-        .from('tenants')
-        .select('voice_id')
-        .eq('id', tenantId)
-        .maybeSingle();
-      if (tenant?.voice_id) {
-        voiceId = tenant.voice_id;
-      }
-    }
-
-    const emailSent = await sendOutreachEmail({
-      prospectId: prospectId,
-      originUrl: origin,
-      businessName: businessName,
-      toEmail: email,
-      demoUrl: demoUrl || '',
-      audioUrl: audioUrl || '',
-      sector: sector,
-      voiceId: voiceId
-    });
-
-    if (!emailSent) {
-      throw new Error('Fallo al enviar el correo a través del proveedor de email.');
-    }
-
-    // Pipeline Completado con éxito
+    // 5. Finalizar Pipeline (Demo y Audio Listos, Email pendiente de envío manual)
     await supabase
       .from('prospects')
       .update({
-        status: 'email_sent',
+        status: 'audio_generated',
         error_details: null
       })
       .eq('id', prospectId);
 
-    console.log(`[Pipeline] 🎉 ¡Pipeline completado con éxito para ${businessName}!`);
+    console.log(`[Pipeline] 🎉 ¡Pipeline de demo y alocución de audio completado con éxito para ${businessName}!`);
   } catch (err: any) {
     console.error(`[Pipeline ERROR] Fallo en el flujo del prospecto ${prospectId}:`, err.message);
     
@@ -1080,12 +1046,13 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
     }
 
     if (!isTest) {
-      // Actualizar el estado por si acaso estaba en failed o borrador
+      const currentCount = prospect.emails_sent_count || 0;
       await supabase
         .from('prospects')
         .update({
           status: 'email_sent',
-          error_details: null
+          error_details: null,
+          emails_sent_count: currentCount + 1
         })
         .eq('id', id);
     }
@@ -1137,15 +1104,15 @@ router.get('/:id/preview-email', async (req: Request, res: Response): Promise<vo
     const selectedScript = scriptVal?.value || defaultScriptText;
 
     const defaultSubject = `🎙️ Corándar ha diseñado un Asistente de Voz IA para ${prospect.business_name}`;
-    const defaultBodyText = `Estimado/a responsable de ${prospect.business_name},
+    const defaultBodyText = `Estimado/a responsable de **${prospect.business_name}**,
 
-Desde Corándar hemos diseñado y configurado un Agente de Voz con Inteligencia Artificial adaptado a las necesidades específicas de su negocio.
+Desde **Corándar** hemos diseñado y configurado un **Agente de Voz con Inteligencia Artificial** adaptado a las necesidades específicas de su negocio.
 
-Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.`;
+Este agente es capaz de **atender llamadas telefónicas las 24 horas del día**, responder consultas detalladas sobre sus servicios, y **agendar citas** de forma completamente autónoma directamente en su calendario.`;
 
-    const defaultBodyExtraText = `Además de esta presentación en audio, le hemos configurado una Demostración Real e Interactiva de su receptor virtual de llamadas en su Panel de Control de Cliente privado.
+    const defaultBodyExtraText = `Además de esta presentación en audio, le hemos configurado una **Demostración Real e Interactiva** de su receptor virtual de llamadas en su **Panel de Control de Cliente** privado.
 
-Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña "Llamadas IA". Además, podrá realizar hasta 5 llamadas de prueba gratuitas accediendo a la opción Ajustes, pestaña Asistente IA y haciendo clic en Llamada de Prueba WebRTC Sandbox. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: 12345678.`;
+Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña **"Llamadas IA"**. Además, podrá realizar hasta **5 llamadas de prueba gratuitas** accediendo a la opción **Ajustes**, pestaña **Asistente IA** y haciendo clic en **Llamada de Prueba WebRTC Sandbox**. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: **12345678**.`;
 
     const htmlKey = `outreach_html_${id}`;
     const { data: htmlVal } = await supabase.from('settings').select('value').eq('key', htmlKey).maybeSingle();
@@ -1507,8 +1474,8 @@ router.post('/:id/reset-outreach-html', async (req: Request, res: Response): Pro
     const { data: voiceVal } = await supabase.from('settings').select('value').eq('key', voiceKey).maybeSingle();
 
     const selectedVoiceId = voiceVal?.value || 'cefcb124-080b-4655-b31f-932f3ee743de';
-    const defaultBodyText = `Estimado/a responsable de ${prospect.business_name},\n\nDesde Corándar hemos diseñado y configurado un Agente de Voz con Inteligencia Artificial adaptado a las necesidades específicas de su negocio.\n\nEste agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.`;
-    const defaultBodyExtraText = `Además de esta presentación en audio, le hemos configurado una Demostración Real e Interactiva de su receptor virtual de llamadas en su Panel de Control de Cliente privado.\n\nPara ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña "Llamadas IA". Además, podrá realizar hasta 5 llamadas de prueba gratuitas accediendo a la opción Ajustes, pestaña Asistente IA y haciendo clic en Llamada de Prueba WebRTC Sandbox. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: 12345678.`;
+    const defaultBodyText = `Estimado/a responsable de **${prospect.business_name}**,\n\nDesde **Corándar** hemos diseñado y configurado un **Agente de Voz con Inteligencia Artificial** adaptado a las necesidades específicas de su negocio.\n\nEste agente es capaz de **atender llamadas telefónicas las 24 horas del día**, responder consultas detalladas sobre sus servicios, y **agendar citas** de forma completamente autónoma directamente en su calendario.`;
+    const defaultBodyExtraText = `Además de esta presentación en audio, le hemos configurado una **Demostración Real e Interactiva** de su receptor virtual de llamadas en su **Panel de Control de Cliente** privado.\n\nPara ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña **"Llamadas IA"** o vaya a la opción **Ajustes**, pestaña **Asistente IA** y haga clic en **Llamada de Prueba WebRTC Sandbox** para realizar hasta **5 llamadas de prueba gratuitas**. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: **12345678**.`;
     
     const selectedBody = bodyVal?.value || defaultBodyText;
     const selectedBodyExtra = bodyExtraVal?.value || defaultBodyExtraText;
