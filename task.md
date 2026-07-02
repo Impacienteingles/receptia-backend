@@ -25,5 +25,8 @@
 - [x] Table Actions: Split row buttons to "Previsualizar Correo" and conditional "Enviar Correo" (disabled by default, enabled upon "Dar Visto Bueno" in preview modal).
 - [x] Send Count: Increment `emails_sent_count` in the database upon manual send, updating row button to "Reenviar Correo (Enviado N veces)" and keeping it enabled.
 - [x] Default Text: Include markdown bold formatting (`**`) in default outreach email text templates.
-- [x] Version: Increment visual version to `v1.0.34` in `public/admin.html` and semantic version to `1.8.44` in `package.json`.
+- [x] Styling: Render all email bold text (`**`) in white (`#ffffff`) color inside the outreach email body parser.
+- [x] Tags: Remove `demo_activa` from commercialTagNames and CSS definitions.
+- [x] Safety: Add whitelist entry and add optional chaining (`?.`) to `requireClientPin` middleware to fix track-open tracking pixel 500 error in production.
+- [x] Version: Increment visual version to `v1.0.35` in `public/admin.html` and semantic version to `1.8.45` in `package.json`.
 - [x] Verification: Build project, deploy to Render (`npm run deploy`) and Vercel (`npx vercel --prod --yes`).

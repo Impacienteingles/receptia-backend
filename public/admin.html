@@ -1777,7 +1777,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.35</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.36</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2001,7 +2001,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.35</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.36</span>
       </div>
     </aside>
 
@@ -2024,7 +2024,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.35</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.36</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -9872,7 +9872,7 @@
         
         // Clean up completed/failed prospects and extract custom sectors
         allProspects.forEach(p => {
-          if (p.status === 'email_sent' || p.status === 'failed') {
+          if (p.status === 'email_sent' || p.status === 'audio_generated' || p.status === 'failed') {
             processingProspectIds.delete(p.id);
           }
           if (p.sector) {
@@ -9884,7 +9884,7 @@
         renderProspectsTable();
 
         // Controlar si hay algún prospecto en estado de procesamiento (para auto-refrescar)
-        const hasProcessing = allProspects.some(p => p.status === 'demo_created' || p.status === 'audio_generated' || processingProspectIds.has(p.id));
+        const hasProcessing = allProspects.some(p => p.status === 'demo_created' || processingProspectIds.has(p.id));
         if (hasProcessing) {
           if (!refreshProspectsInterval) {
             console.log('[Prospecting] Iniciando intervalo de auto-refresco...');
@@ -10367,6 +10367,43 @@
       }
     }
 
+    async function stopDemoGeneration(prospectId, buttonEl) {
+      const confirmReset = await showCustomConfirm('¿Deseas detener la generación de esta demo y poder iniciarla de nuevo?', 'Detener Generación', 'warning');
+      if (!confirmReset) return;
+
+      if (buttonEl) {
+        buttonEl.disabled = true;
+        buttonEl.innerHTML = `<i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid currentColor; border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Deteniendo...`;
+      }
+
+      try {
+        const response = await fetch(`/api/admin/prospects/${prospectId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            status: 'failed',
+            error_details: 'Generación detenida manualmente por el administrador.'
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al detener la generación.');
+
+        showCustomAlert('Generación de demo detenida con éxito. Ahora puedes volver a activarla.', 'Detenida', 'success');
+        await fetchProspects();
+      } catch (err) {
+        console.error('Error al detener la demo:', err);
+        showCustomAlert(err.message, 'Fallo', 'error');
+        if (buttonEl) {
+          buttonEl.disabled = false;
+          buttonEl.innerHTML = `<i data-lucide="square" style="width: 11px; height: 11px;"></i> Detener`;
+          lucide.createIcons();
+        }
+      }
+    }
+
     async function deleteProspect(id) {
       const confirmDelete = await showCustomConfirm('¿Estás seguro de que deseas eliminar este prospecto? Si tiene una demo creada, también se eliminará su configuración.', 'Eliminar Prospecto', 'warning');
       if (!confirmDelete) return;
@@ -10807,11 +10844,11 @@
               isSpinning = true;
               animateClass = 'progress-bar-animate-demo-created';
             } else if (p.status === 'audio_generated') {
-              progressPercent = 75;
-              progressColor = '#c084fc'; // morado
-              statusText = 'Audio Generado (75%)';
-              isSpinning = true;
-              animateClass = 'progress-bar-animate-audio-generated';
+              progressPercent = 100;
+              progressColor = '#a78bfa'; // violeta
+              statusText = 'Demo Generada';
+              isSpinning = false;
+              animateClass = '';
             } else if (p.status === 'email_sent') {
               progressPercent = 100;
               progressColor = '#34d399'; // verde
@@ -10900,9 +10937,16 @@
             // Botón principal de acción
             let actionBtn = '';
             if (p.status === 'demo_created') {
-              actionBtn = `<button class="btn btn-secondary" disabled style="opacity: 0.6; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
-                             <i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--primary); border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Procesando...
-                           </button>`;
+              actionBtn = `
+                <div style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                  <button class="btn btn-secondary" disabled style="opacity: 0.6; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
+                    <i class="spinner-small spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--primary); border-radius:50%; border-top-color:transparent; animation: spin 1s linear infinite; margin-right:4px;"></i> Procesando...
+                  </button>
+                  <button class="btn btn-secondary" onclick="stopDemoGeneration('${p.id}', this)" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;" title="Detener generación y permitir reiniciar">
+                    <i data-lucide="square" style="width: 11px; height: 11px;"></i> Detener
+                  </button>
+                </div>
+              `;
             } else if (p.demo_url && p.audio_url) {
               const previewBtn = `<button class="btn btn-secondary" onclick="resendDemoEmail('${p.id}', this)" style="color: #c084fc; border-color: rgba(192,132,252,0.3); display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; margin-right: 0.35rem;" title="Previsualizar y editar correo de captación">
                                     <i data-lucide="eye" style="width: 13px; height: 13px;"></i> Previsualizar
@@ -11910,7 +11954,7 @@
         doc.setFont('helvetica', 'normal');
         let statusText = 'No Activada';
         if (p.status === 'demo_created') statusText = 'Creada / Procesando Audio';
-        else if (p.status === 'audio_generated') statusText = 'Audio Generado / Enviando Email';
+        else if (p.status === 'audio_generated') statusText = 'Demo Generada / Lista';
         else if (p.status === 'email_sent') statusText = 'Demo Enviada Exitosamente';
         else if (p.status === 'failed') statusText = 'Error en Generación';
         

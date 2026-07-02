@@ -318,7 +318,13 @@ router.post('/trigger-pipeline', async (req: Request, res: Response): Promise<vo
   try {
     await supabase
       .from('prospects')
-      .update({ status: 'extracted', error_details: null })
+      .update({ 
+        status: 'extracted', 
+        error_details: null,
+        opened_count: 0,
+        opened_at: null,
+        emails_sent_count: 0
+      })
       .eq('id', prospect_id);
   } catch (resetErr: any) {
     console.warn(`[Pipeline Reset WARNING] No se pudo reiniciar el estado del prospecto ${prospect_id}:`, resetErr.message);
