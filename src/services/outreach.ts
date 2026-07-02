@@ -11,6 +11,7 @@ interface SendOutreachEmailRequest {
   sector: string;
   subject?: string;
   bodyOverride?: string;
+  bodyExtraOverride?: string;
   voiceId?: string;
   htmlOverride?: string;
 }
@@ -25,7 +26,7 @@ export async function sendOutreachEmail(req: SendOutreachEmailRequest): Promise<
   const fromEmail = await getSettingVal('RESEND_FROM_EMAIL') || process.env.RESEND_FROM_EMAIL || 'Receptia Demos <onboarding@resend.dev>';
 
   const subject = req.subject || `🎙️ Hemos diseñado un Asistente de Voz IA para ${req.businessName}`;
-  let htmlContent = req.htmlOverride || getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector, req.bodyOverride, req.voiceId);
+  let htmlContent = req.htmlOverride || getOutreachEmailTemplate(req.businessName, req.demoUrl, req.audioUrl, req.sector, req.bodyOverride, req.voiceId, req.bodyExtraOverride);
 
   // Inyectar píxel de seguimiento si se proveen los parámetros necesarios
   if (req.prospectId && req.originUrl) {
@@ -89,7 +90,7 @@ export function parseBodyToHtml(text: string): string {
 /**
  * Plantilla HTML de correo premium y responsive
  */
-export function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUrl: string, sector: string, bodyOverride?: string, voiceId?: string): string {
+export function getOutreachEmailTemplate(businessName: string, demoUrl: string, audioUrl: string, sector: string, bodyOverride?: string, voiceId?: string, bodyExtraOverride?: string): string {
   let voiceName = 'Elena IA';
   if (voiceId) {
     const vId = voiceId.toLowerCase();
@@ -106,6 +107,8 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
   const sectorTerm = sector.toLowerCase() === 'abogados' ? 'sus clientes' : 'sus pacientes';
   
   let bodyHtml = '';
+  let bodyExtraHtml = '';
+
   if (bodyOverride) {
     bodyHtml = parseBodyToHtml(bodyOverride);
   } else {
@@ -115,7 +118,13 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
         <p>Desde <span class="highlight">Corándar</span> hemos diseñado y configurado un <span class="highlight">Agente de Voz con Inteligencia Artificial</span> adaptado a las necesidades específicas de su negocio.</p>
         
         <p>Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.</p>
+    `;
+  }
 
+  if (bodyExtraOverride) {
+    bodyExtraHtml = parseBodyToHtml(bodyExtraOverride);
+  } else if (!bodyOverride) {
+    bodyExtraHtml = `
         <p>Además de esta presentación en audio, le hemos configurado una <span class="highlight">Demostración Real e Interactiva</span> de su receptor virtual de llamadas en su <strong>Panel de Control de Cliente</strong> privado.</p>
         
         <p>Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña <span class="highlight">"Llamadas IA"</span>. Además, podrá realizar hasta 5 llamadas de prueba gratuitas accediendo a la opción <span class="highlight">Ajustes</span>, pestaña <span class="highlight">Asistente IA</span> y haciendo clic en <span class="highlight">Llamada de Prueba WebRTC Sandbox</span>. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: <strong style="color: #60a5fa; font-family: monospace; font-size: 1.1em; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">12345678</strong>.</p>
@@ -414,6 +423,9 @@ export function getOutreachEmailTemplate(businessName: string, demoUrl: string, 
             <div class="mockup-subtext">Haga clic aquí para escuchar cómo se presentará ${cleanVoiceName} al atender a sus clientes.</div>
           </div>
         </a>
+
+        ${bodyExtraHtml}
+
 
         <!-- Beneficios en tarjetas -->
         <div class="benefit-card">

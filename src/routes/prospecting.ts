@@ -961,7 +961,7 @@ router.post('/delete-bulk', async (req: Request, res: Response): Promise<void> =
  */
 router.post('/:id/resend-email', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { subject, body, to_email_override } = req.body;
+  const { subject, body, body_extra, to_email_override } = req.body;
 
   try {
     const { data: prospect, error: fetchErr } = await supabase
@@ -994,6 +994,17 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
         await supabase.from('settings').update({ value: body }).eq('key', key);
       } else {
         await supabase.from('settings').insert({ key, value: body });
+      }
+    }
+
+    // Guardar body_extra en settings si viene en la petición
+    if (body_extra !== undefined) {
+      const key = `outreach_body_extra_${id}`;
+      const { data: existing } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+      if (existing) {
+        await supabase.from('settings').update({ value: body_extra }).eq('key', key);
+      } else {
+        await supabase.from('settings').insert({ key, value: body_extra });
       }
     }
 
@@ -1042,6 +1053,12 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
     const htmlKey = `outreach_html_${id}`;
     const { data: htmlVal } = await supabase.from('settings').select('value').eq('key', htmlKey).maybeSingle();
 
+    let savedBodyExtra = body_extra;
+    if (savedBodyExtra === undefined) {
+      const { data: beVal } = await supabase.from('settings').select('value').eq('key', `outreach_body_extra_${id}`).maybeSingle();
+      savedBodyExtra = beVal?.value;
+    }
+
     console.log(`[Prospecting API] Enviando correo de outreach para ${prospect.business_name} (Test: ${isTest}) a ${recipient}...`);
     const emailSent = await sendOutreachEmail({
       prospectId: isTest ? undefined : (id as string),
@@ -1053,6 +1070,7 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
       sector: prospect.sector || 'general',
       subject: emailSubject,
       bodyOverride: body,
+      bodyExtraOverride: savedBodyExtra,
       voiceId: voiceId,
       htmlOverride: htmlVal?.value
     });
@@ -1105,12 +1123,14 @@ router.get('/:id/preview-email', async (req: Request, res: Response): Promise<vo
     const scriptKey = `outreach_script_${id}`;
     const subjectKey = `outreach_subject_${id}`;
     const bodyKey = `outreach_body_${id}`;
+    const bodyExtraKey = `outreach_body_extra_${id}`;
 
     // Obtener valores personalizados guardados en settings
     const { data: voiceVal } = await supabase.from('settings').select('value').eq('key', voiceKey).maybeSingle();
     const { data: scriptVal } = await supabase.from('settings').select('value').eq('key', scriptKey).maybeSingle();
     const { data: subjectVal } = await supabase.from('settings').select('value').eq('key', subjectKey).maybeSingle();
     const { data: bodyVal } = await supabase.from('settings').select('value').eq('key', bodyKey).maybeSingle();
+    const { data: bodyExtraVal } = await supabase.from('settings').select('value').eq('key', bodyExtraKey).maybeSingle();
 
     const selectedVoiceId = voiceVal?.value || 'cefcb124-080b-4655-b31f-932f3ee743de'; // Elena por defecto
     const defaultScriptText = `Hola, muy buenas. Desde Corándar hemos diseñado un asistente de voz inteligente a medida para su negocio, ${prospect.business_name}. Este asistente ya está listo para atender sus llamadas, resolver dudas de sus clientes y gestionar sus citas las veinticuatro horas del día. Además, contará con un período de prueba totalmente gratuito de siete días. Le hemos preparado una simulación de llamada real en su panel de cliente, y puede consultar más información sobre nosotros en la web de Corándar. Acceda hoy mismo utilizando el enlace de este correo y su contraseña temporal: uno dos tres cuatro cinco seis siete ocho. También le invitamos a probar nuestra calculadora de ROI integrada en su panel, con la que podrá estimar el ahorro mensual y las citas que recuperará con Receptia. ¡Esperamos que le guste!`;
@@ -1121,9 +1141,9 @@ router.get('/:id/preview-email', async (req: Request, res: Response): Promise<vo
 
 Desde Corándar hemos diseñado y configurado un Agente de Voz con Inteligencia Artificial adaptado a las necesidades específicas de su negocio.
 
-Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.
+Este agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.`;
 
-Además de esta presentación en audio, le hemos configurado una Demostración Real e Interactiva de su receptor virtual de llamadas en su Panel de Control de Cliente privado.
+    const defaultBodyExtraText = `Además de esta presentación en audio, le hemos configurado una Demostración Real e Interactiva de su receptor virtual de llamadas en su Panel de Control de Cliente privado.
 
 Para ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña "Llamadas IA". Además, podrá realizar hasta 5 llamadas de prueba gratuitas accediendo a la opción Ajustes, pestaña Asistente IA y haciendo clic en Llamada de Prueba WebRTC Sandbox. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: 12345678.`;
 
@@ -1132,6 +1152,7 @@ Para ver el historial, el simulador y las grabaciones, acceda a su panel desde e
 
     const selectedSubject = subjectVal?.value || defaultSubject;
     const selectedBody = bodyVal?.value || defaultBodyText;
+    const selectedBodyExtra = bodyExtraVal?.value || defaultBodyExtraText;
 
     let htmlContent = htmlVal?.value;
     if (!htmlContent) {
@@ -1141,7 +1162,8 @@ Para ver el historial, el simulador y las grabaciones, acceda a su panel desde e
         prospect.audio_url || '#',
         prospect.sector || 'general',
         selectedBody,
-        selectedVoiceId
+        selectedVoiceId,
+        selectedBodyExtra
       );
     }
 
@@ -1149,6 +1171,7 @@ Para ver el historial, el simulador y las grabaciones, acceda a su panel desde e
       status: 'success',
       subject: selectedSubject,
       body: selectedBody,
+      body_extra: selectedBodyExtra,
       to: prospect.email,
       html: htmlContent,
       voice_id: selectedVoiceId,
@@ -1166,7 +1189,7 @@ Para ver el historial, el simulador y las grabaciones, acceda a su panel desde e
  */
 router.post('/:id/save-outreach-settings', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { subject, body, voice_id, script, html, business_name } = req.body;
+  const { subject, body, body_extra, voice_id, script, html, business_name } = req.body;
 
   try {
     if (business_name !== undefined && business_name.trim() !== '') {
@@ -1209,6 +1232,17 @@ router.post('/:id/save-outreach-settings', async (req: Request, res: Response): 
       }
     }
 
+    // Guardar Cuerpo Extra
+    if (body_extra !== undefined) {
+      const key = `outreach_body_extra_${id}`;
+      const { data: existing } = await supabase.from('settings').select('value').eq('key', key).maybeSingle();
+      if (existing) {
+        await supabase.from('settings').update({ value: body_extra }).eq('key', key);
+      } else {
+        await supabase.from('settings').insert({ key, value: body_extra });
+      }
+    }
+
     // Guardar Voz
     if (voice_id !== undefined) {
       const key = `outreach_voice_${id}`;
@@ -1248,13 +1282,30 @@ router.post('/:id/save-outreach-settings', async (req: Request, res: Response): 
     
     let htmlContent = htmlVal?.value;
     if (!htmlContent) {
+      let savedBody = body;
+      if (savedBody === undefined) {
+        const { data: bVal } = await supabase.from('settings').select('value').eq('key', `outreach_body_${id}`).maybeSingle();
+        savedBody = bVal?.value;
+      }
+      let savedBodyExtra = body_extra;
+      if (savedBodyExtra === undefined) {
+        const { data: beVal } = await supabase.from('settings').select('value').eq('key', `outreach_body_extra_${id}`).maybeSingle();
+        savedBodyExtra = beVal?.value;
+      }
+      let savedVoice = voice_id;
+      if (savedVoice === undefined) {
+        const { data: vVal } = await supabase.from('settings').select('value').eq('key', `outreach_voice_${id}`).maybeSingle();
+        savedVoice = vVal?.value || 'cefcb124-080b-4655-b31f-932f3ee743de';
+      }
+
       htmlContent = getOutreachEmailTemplate(
         prospect.business_name,
         prospect.demo_url || '#',
         prospect.audio_url || '#',
         prospect.sector || 'general',
-        body,
-        voice_id
+        savedBody,
+        savedVoice,
+        savedBodyExtra
       );
     }
 
@@ -1274,7 +1325,7 @@ router.post('/:id/save-outreach-settings', async (req: Request, res: Response): 
  */
 router.post('/:id/regenerate-audio', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { voice_id, script, subject, body, business_name } = req.body;
+  const { voice_id, script, subject, body, body_extra, business_name } = req.body;
 
   try {
     if (business_name !== undefined && business_name.trim() !== '') {
@@ -1367,6 +1418,22 @@ router.post('/:id/regenerate-audio', async (req: Request, res: Response): Promis
       }
     }
 
+    // Upsert para Cuerpo Extra si viene en la petición
+    if (body_extra !== undefined) {
+      const bodyExtraKey = `outreach_body_extra_${id}`;
+      const { data: existingBodyExtra } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', bodyExtraKey)
+        .maybeSingle();
+
+      if (existingBodyExtra) {
+        await supabase.from('settings').update({ value: body_extra }).eq('key', bodyExtraKey);
+      } else {
+        await supabase.from('settings').insert({ key: bodyExtraKey, value: body_extra });
+      }
+    }
+
     // Actualizar la URL de audio en el prospecto
     await supabase
       .from('prospects')
@@ -1384,13 +1451,19 @@ router.post('/:id/regenerate-audio', async (req: Request, res: Response): Promis
         await supabase.from('settings').update({ value: htmlContent }).eq('key', htmlKey);
       }
     } else {
+      let savedBodyExtra = body_extra;
+      if (savedBodyExtra === undefined) {
+        const { data: beVal } = await supabase.from('settings').select('value').eq('key', `outreach_body_extra_${id}`).maybeSingle();
+        savedBodyExtra = beVal?.value;
+      }
       htmlContent = getOutreachEmailTemplate(
         prospect.business_name,
         prospect.demo_url,
         audioUrl,
         prospect.sector || 'general',
         body,
-        voice_id
+        voice_id,
+        savedBodyExtra
       );
     }
 
@@ -1427,13 +1500,18 @@ router.post('/:id/reset-outreach-html', async (req: Request, res: Response): Pro
     }
 
     const bodyKey = `outreach_body_${id}`;
+    const bodyExtraKey = `outreach_body_extra_${id}`;
     const voiceKey = `outreach_voice_${id}`;
     const { data: bodyVal } = await supabase.from('settings').select('value').eq('key', bodyKey).maybeSingle();
+    const { data: bodyExtraVal } = await supabase.from('settings').select('value').eq('key', bodyExtraKey).maybeSingle();
     const { data: voiceVal } = await supabase.from('settings').select('value').eq('key', voiceKey).maybeSingle();
 
     const selectedVoiceId = voiceVal?.value || 'cefcb124-080b-4655-b31f-932f3ee743de';
     const defaultBodyText = `Estimado/a responsable de ${prospect.business_name},\n\nDesde Corándar hemos diseñado y configurado un Agente de Voz con Inteligencia Artificial adaptado a las necesidades específicas de su negocio.\n\nEste agente es capaz de atender llamadas telefónicas las 24 horas del día, responder consultas detalladas sobre sus servicios, y agendar citas de forma completamente autónoma directamente en su calendario.`;
+    const defaultBodyExtraText = `Además de esta presentación en audio, le hemos configurado una Demostración Real e Interactiva de su receptor virtual de llamadas en su Panel de Control de Cliente privado.\n\nPara ver el historial, el simulador y las grabaciones, acceda a su panel desde el enlace de abajo y vaya a la pestaña "Llamadas IA". Además, podrá realizar hasta 5 llamadas de prueba gratuitas accediendo a la opción Ajustes, pestaña Asistente IA y haciendo clic en Llamada de Prueba WebRTC Sandbox. Para iniciar sesión, utilice su correo electrónico y su contraseña de acceso temporal: 12345678.`;
+    
     const selectedBody = bodyVal?.value || defaultBodyText;
+    const selectedBodyExtra = bodyExtraVal?.value || defaultBodyExtraText;
 
     const htmlContent = getOutreachEmailTemplate(
       prospect.business_name,
@@ -1441,7 +1519,8 @@ router.post('/:id/reset-outreach-html', async (req: Request, res: Response): Pro
       prospect.audio_url || '#',
       prospect.sector || 'general',
       selectedBody,
-      selectedVoiceId
+      selectedVoiceId,
+      selectedBodyExtra
     );
 
     res.json({
