@@ -423,6 +423,47 @@
       }
     }
 
+    /* Estilos para pestañas del formulario de cliente */
+    .client-form-tabs {
+      display: flex;
+      gap: 0.25rem;
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      grid-column: span 2;
+    }
+    .form-tab-btn {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      color: var(--text-muted);
+      padding: 0.65rem 1.15rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+      transition: all 0.2s ease;
+      font-family: 'Outfit', sans-serif;
+    }
+    .form-tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .form-tab-btn.active {
+      color: #fff;
+      background: rgba(139, 92, 246, 0.08);
+      border-color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      box-shadow: inset 0 2px 0 var(--primary);
+    }
+    .form-tab-content {
+      display: none !important;
+    }
+    .form-tab-content.active {
+      display: grid !important;
+    }
+
     .form-group {
       display: flex;
       flex-direction: column;
@@ -1633,7 +1674,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.21</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.22</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -1857,7 +1898,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.21</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.22</span>
       </div>
     </aside>
 
@@ -1880,7 +1921,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.21</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.22</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2047,444 +2088,470 @@
               </button>
             </h2>
 
-            <form id="admin-form" class="form-grid">
-              
-              <!-- DATOS DEL NEGOCIO -->
-              <div class="section-divider">
-                <i data-lucide="building"></i> Información Comercial
-              </div>
-
-              <div class="form-group">
-                <label for="business-name">Nombre del Negocio / Cliente:</label>
-                <input type="text" id="business-name" required>
-              </div>
-
-              <div class="form-group">
-                <label for="tenant-email">Email Único de Registro:</label>
-                <input type="email" id="tenant-email" required>
-              </div>
-
-              <div class="form-group full-width">
-                <label for="specialties-input">Servicios / Especialidades (separados por comas):</label>
-                <input type="text" id="specialties-input" required>
-              </div>
-
-              <div class="form-group">
-                <label for="business-sector">Sector del Negocio (para cálculo de ahorro ROI):</label>
-                <select id="business-sector">
-                  <option value="general">General / Comercio</option>
-                  <option value="peluqueria">Peluquería / Estética / Spa</option>
-                  <option value="dental">Clínica Dental</option>
-                  <option value="medica">Clínica Médica / Fisioterapia</option>
-                  <option value="oficina">Asesoría / Consultora / Oficina</option>
-                  <option value="restaurante">Hostelería / Restaurante</option>
-                  <option value="veterinaria">Veterinaria</option>
-                </select>
-              </div>
-
-              <!-- CONFIGURACIÓN DE VOZ -->
-              <div class="section-divider">
-                <i data-lucide="mic"></i> Voz y Telefonía
-              </div>
-
-              <!-- Catálogo de Voces Premium -->
-              <div class="form-group" style="grid-column: span 2;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                  <label style="margin: 0; display: block;">Catálogo de Voces Premium:</label>
-                  <button type="button" class="btn btn-secondary" onclick="openVoiceCatalogManager()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; height: 30px; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">
-                    <i data-lucide="settings" style="width: 14px; height: 14px;"></i> Gestionar Catálogo
-                  </button>
-                </div>
-                
-                <!-- Grid de selección de voces -->
-                <div id="voice-catalog-grid">
-                  <!-- Se renderiza dinámicamente -->
-                </div>
-
-                <!-- Toggle para usar ID personalizado -->
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem;">
-                  <input type="checkbox" id="custom-voice-toggle" style="width: 16px; height: 16px; accent-color: var(--primary);" onchange="toggleCustomVoiceInput()">
-                  <label for="custom-voice-toggle" style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; margin: 0;">Usar ID de Voz personalizado (ElevenLabs/Cartesia)</label>
-                </div>
-                
-                <!-- Input oculto/personalizado -->
-                <div id="custom-voice-input-container" style="display: none; margin-top: 0.75rem;">
-                  <input type="text" id="voice-id" value="cartesia-Sofia" placeholder="Pega el ID de ElevenLabs o Cartesia" required oninput="onCustomVoiceIdInput()">
-                </div>
-              </div>
-              
-              <!-- Ajustes de Velocidad, Naturalidad y Pausas (Sliders) -->
-              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; margin-top: 0.75rem; grid-column: span 2;">
-                <div>
-                  <label for="voice-speed" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Velocidad de Habla: <span id="voice-speed-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
-                  <input type="range" id="voice-speed" min="0.8" max="1.2" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-speed-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof updateVoicePlaybackRate === 'function') updateVoicePlaybackRate(this.value); if (typeof onSpeedChange === 'function') onSpeedChange(this.value);">
-                </div>
-                <div>
-                  <label for="voice-temperature" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Naturalidad / Variabilidad: <span id="voice-temperature-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
-                  <input type="range" id="voice-temperature" min="0.5" max="1.5" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-temperature-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof onTemperatureChange === 'function') onTemperatureChange(this.value);">
-                </div>
-                <div>
-                  <label for="voice-responsiveness" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Pausas de Respuesta: <span id="voice-responsiveness-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
-                  <input type="range" id="voice-responsiveness" min="0.0" max="1.0" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-responsiveness-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof onResponsivenessChange === 'function') onResponsivenessChange(this.value);">
-                </div>
-              </div>
-
-              <!-- Bloqueo de configuración de voz en el panel de administrador -->
-              <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; grid-column: span 2; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.75rem 1rem; border-radius: 8px;">
-                <input type="checkbox" id="voice-locked-toggle" style="width: 16px; height: 16px; accent-color: var(--error);" onchange="toggleVoiceInputsLock(this.checked)">
-                <label for="voice-locked-toggle" style="color: #fca5a5; font-size: 0.85rem; cursor: pointer; margin: 0; display: flex; align-items: center; gap: 0.35rem;">
-                  <i data-lucide="lock" style="width: 14px; height: 14px;"></i> Bloquear configuración de voz en este panel (Evitar modificaciones accidentales)
-                </label>
-              </div>
-
-              <div class="form-group" id="agent-id-group">
-                <label for="retell-agent-id">ID de Agente Retell AI:</label>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <input type="text" id="retell-agent-id" placeholder="Autogenerado al crear o introduce ID existente" style="flex: 1; padding: 0.8rem;">
-                  <button type="button" class="btn" id="btn-test-webrtc-call" onclick="startWebRTCCallFromForm()" style="padding: 0.8rem 1rem; display: none; white-space: nowrap; align-items: center; gap: 0.25rem; background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%);">
-                    <i data-lucide="phone" style="width: 16px; height: 16px;"></i> Probar
-                  </button>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="phone-provider">Proveedor de Telefonía:</label>
-                <select id="phone-provider">
-                  <option value="retell">Retell AI (Auto-Compra Directa)</option>
-                  <option value="zadarma">Zadarma (Conexión SIP Manual)</option>
-                </select>
-              </div>
-
-              <div class="form-group" id="manual-phone-fields">
-                <label for="phone-number">Número de Teléfono Asignado / Desvío:</label>
-                <input type="text" id="phone-number">
-              </div>
-
-              <!-- DESPLEGABLE CON BUSCADOR DE TELÉFONOS VIRTUALES ZADARMA (INVENTARIO) -->
-              <div class="form-group" id="virtual-phone-select-group" style="display: none;">
-                <label for="client-virtual-phone-id">Número de Teléfono Zadarma (Inventario):</label>
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                  <input type="text" id="client-virtual-phone-search" placeholder="Filtrar números..." style="flex: 1; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" oninput="filterClientVirtualPhonesDropdown()" class="input">
-                  <button type="button" class="btn btn-secondary" onclick="fetchVirtualPhonesForClientSelect()" style="padding: 0.6rem 0.8rem; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;" title="Actualizar inventario">
-                    <i data-lucide="refresh-cw" style="width: 14px; height: 14px; color: #fff;"></i>
-                  </button>
-                </div>
-                <select id="client-virtual-phone-id" class="input" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;">
-                  <option value="">-- Selecciona un número --</option>
-                </select>
-              </div>
-
-              <!-- HORARIOS DE TRABAJO -->
-              <div class="section-divider">
-                <i data-lucide="calendar"></i> Constructor de Horarios de Trabajo (Flexibilidad Total)
-              </div>
-
-              <div class="form-group full-width">
-                <div class="schedule-builder" id="schedule-builder-container">
-                  <!-- Generado dinámicamente -->
-                </div>
-              </div>
-
-
-
-              <!-- CONFIGURACIÓN DE CONTRATACIÓN Y SEGURIDAD -->
-              <div class="section-divider">
-                <i data-lucide="key-round"></i> Contratación y Seguridad
-              </div>
-
-              <div class="form-group">
-                <label for="admin-pin">Contraseña de acceso al Panel del Cliente (mín. 8 caracteres):</label>
-                <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                  <input type="password" id="admin-pin" placeholder="Mínimo 8 caracteres" required value="12345678" style="flex: 1; padding-right: 2.5rem; width: 100%;">
-                  <button type="button" onclick="togglePasswordVisibility('admin-pin')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
-                    <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; grid-column: span 2; background: rgba(139, 92, 246, 0.05); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(139, 92, 246, 0.2); margin: 0.5rem 0;">
-                <input type="checkbox" id="is-trial-checkbox" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="handleTrialCheckboxChange()">
-                <label for="is-trial-checkbox" style="color: #fff; cursor: pointer; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                  <i data-lucide="sparkles" style="width: 16px; height: 16px; color: var(--primary-hover);"></i>
-                  Activar Período de Prueba de 7 Días (Demo de Uso Gratuito)
-                </label>
-              </div>
-
-              <div class="form-group">
-                <label for="subscription-status">Estado del Contrato / SaaS:</label>
-                <select id="subscription-status">
-                  <option value="active">Activo 🟢</option>
-                  <option value="paused">Pausado 🟡</option>
-                  <option value="cancelled">Cancelado 🔴</option>
-                  <option value="trial">Período de Prueba 🧪</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="subscription-plan">Plan Contratado:</label>
-                <select id="subscription-plan" onchange="autoFillPlanPrice()">
-                  <option value="Plan Inicial Mensual">Plan Inicial Mensual (79€/mes)</option>
-                  <option value="Plan Estándar Mensual">Plan Estándar Mensual (149€/mes)</option>
-                  <option value="Plan Premium Mensual">Plan Premium Mensual (249€/mes)</option>
-                  <option value="Plan Inicial Anual">Plan Inicial Anual (900€/año - 75€/mes)</option>
-                  <option value="Plan Estándar Anual">Plan Estándar Anual (1668€/año - 139€/mes)</option>
-                  <option value="Plan Premium Anual">Plan Premium Anual (2748€/año - 229€/mes)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="billing-cycle">Ciclo de Facturación:</label>
-                <select id="billing-cycle">
-                  <option value="monthly">Mensual</option>
-                  <option value="annually">Anual</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="price-amount">Precio Facturado (€):</label>
-                <input type="number" id="price-amount" step="0.01" value="149.00" required>
-              </div>
-
-              <div class="form-group">
-                <label for="contract-start-date">Fecha de Alta / Inicio:</label>
-                <input type="text" id="contract-start-date" placeholder="Seleccionar Fecha..." required style="cursor: pointer;">
-              </div>
-
-              <div class="form-group">
-                <label for="contract-end-date">Fecha de Baja / Cancelación (Opcional):</label>
-                <input type="text" id="contract-end-date" placeholder="Seleccionar Fecha..." style="cursor: pointer;">
-              </div>
-
-              <div class="form-group">
-                <label for="contract-template-select">Contrato Asociado:</label>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <select id="contract-template-select" style="flex: 1;">
-                    <option value="">Sin Contrato Asociado</option>
-                    <!-- Cargado dinámicamente -->
-                  </select>
-                  <button type="button" class="btn btn-secondary" id="btn-download-selected-template" style="display: none; padding: 0.8rem; height: 100%; align-items: center; justify-content: center; min-width: 48px;" onclick="downloadTemplateContractPDF()" title="Descargar modelo en PDF">
-                    <i data-lucide="download" style="width: 18px; height: 18px;"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- DATOS DE CONTRATACIÓN ESPECÍFICOS DEL CLIENTE -->
-              <div class="form-group full-width" id="client-contract-variables-container" style="display: none; background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 0.5rem; gap: 1rem; flex-direction: column;">
-                <h4 style="margin: 0; font-size: 0.95rem; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.35rem; font-family: 'Outfit', sans-serif;">
-                  <i data-lucide="file-signature" style="width: 16px; height: 16px; color: var(--primary);"></i> Datos de Contratación del Cliente
-                </h4>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                  <div class="form-group">
-                    <label for="client-contract-legal-name">Razón Social / Nombre Completo del Cliente:</label>
-                    <input type="text" id="client-contract-legal-name" placeholder="ej. Peluquería Carlos Romero, S.L." oninput="autoCompileContract()">
-                  </div>
-                  <div class="form-group">
-                    <label for="client-contract-tax-id">C.I.F. / N.I.F. del Cliente:</label>
-                    <input type="text" id="client-contract-tax-id" placeholder="ej. B-12345678 o 12345678X" oninput="autoCompileContract()">
-                  </div>
-                  <div class="form-group" style="grid-column: span 2;">
-                    <label for="client-contract-address">Domicilio Social Completo del Cliente:</label>
-                    <input type="text" id="client-contract-address" placeholder="ej. Calle Mayor 12, Piso 1B, 28001 Madrid, España" oninput="autoCompileContract()">
-                  </div>
-                  <div class="form-group">
-                    <label for="client-contract-rep-name">Nombre Representante Legal Cliente:</label>
-                    <input type="text" id="client-contract-rep-name" placeholder="ej. Carlos Romero López" oninput="autoCompileContract()">
-                  </div>
-                  <div class="form-group">
-                    <label for="client-contract-rep-id">D.N.I. / N.I.F. Representante Cliente:</label>
-                    <input type="text" id="client-contract-rep-id" placeholder="ej. 87654321Y" oninput="autoCompileContract()">
-                  </div>
-                  <div class="form-group">
-                    <label for="client-contract-rep-role">Cargo del Representante Cliente:</label>
-                    <input type="text" id="client-contract-rep-role" placeholder="ej. Administrador Único, Propietario, etc." oninput="autoCompileContract()">
-                  </div>
-                  <div class="form-group">
-                    <label for="client-contract-signing-city">Ciudad de Firma del Contrato:</label>
-                    <input type="text" id="client-contract-signing-city" placeholder="Madrid" value="Madrid" oninput="autoCompileContract()">
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-group full-width" id="signed-contract-field-container" style="display: none; background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 0.5rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Contrato Personalizado / Firmado (Autogenerado / Personalizado):</label>
-                
-                <!-- Pestañas del visor de contrato -->
-                <div class="contract-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-                  <button type="button" class="tab-btn" id="tab-contract-preview" onclick="switchContractTab('preview')" style="background: var(--primary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 0.25rem;">
-                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i> Vista Previa (Formateado)
-                  </button>
-                  <button type="button" class="tab-btn" id="tab-contract-edit" onclick="switchContractTab('edit')" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 0.25rem;">
-                    <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i> Editar Texto (Markdown)
-                  </button>
-                </div>
-
-                <!-- Vista previa formateada -->
-                <div id="signed-contract-preview-view" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 6px; max-height: 350px; overflow-y: auto; font-family: inherit; font-size: 0.9rem; line-height: 1.6; color: #e5e7eb; margin-bottom: 0.75rem; white-space: normal;">
-                  <!-- Se rellena dinámicamente -->
-                </div>
-
-                <!-- Textarea para edición manual (oculto por defecto) -->
-                <textarea id="signed-contract-content-view" rows="8" placeholder="Aquí aparecerá el contrato redactado con los datos del cliente..." style="font-family: inherit; line-height: 1.5; margin-bottom: 0.75rem; display: none; width: 100%; box-sizing: border-box; background: rgba(0, 0, 0, 0.2); color: #fff; border: 1px solid var(--border-color); padding: 0.75rem; border-radius: 6px;"></textarea>
-                
-                <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.15); padding: 1rem; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
-                  <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <button type="button" class="btn btn-secondary" onclick="downloadSignedContractPDF()" style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; padding: 0.5rem 0.75rem;">
-                      <i data-lucide="download" style="width: 14px; height: 14px;"></i> Descargar PDF
-                    </button>
-                    
-                    <button type="button" class="btn btn-secondary" id="btn-send-contract-email" onclick="sendContractByEmail()" style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; padding: 0.5rem 0.75rem;">
-                      <i data-lucide="mail" style="width: 14px; height: 14px;"></i> Enviar por Email
-                    </button>
-
-                    <button type="button" class="btn btn-secondary" id="btn-recompile-contract" onclick="forceRecompileContract()" style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; padding: 0.5rem 0.75rem; border-color: var(--primary); color: #fff;">
-                      <i data-lucide="refresh-cw" style="width: 14px; height: 14px; color: var(--primary);"></i> Recompilar
-                    </button>
-                  </div>
-                  
-                  <div style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem;">
-                    <span style="color: var(--text-muted);">Envío:</span>
-                    <span id="badge-contract-email-status" class="badge" style="background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.2);">No Enviado</span>
-                  </div>
-                </div>
-
-                <!-- Firmas Digitales en el Formulario -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-                  <div>
-                    <h5 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: var(--primary-hover); display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="signature" style="width: 14px; height: 14px;"></i> Firma Administrador</h5>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                      <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; cursor: pointer; color: #fff; margin: 0;">
-                        <input type="checkbox" id="admin-sign-checkbox" onchange="saveDraftToLocalStorage()" style="width: 16px; height: 16px; accent-color: var(--primary);"> Firmar Contrato Digitalmente
-                      </label>
-                      <input type="text" id="admin-signature-name-input" placeholder="Nombre completo del firmante admin" oninput="saveDraftToLocalStorage()" style="padding: 0.5rem; font-size: 0.8rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: #fff;">
-                    </div>
-                  </div>
-                  <div>
-                    <h5 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: var(--success); display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="signature" style="width: 14px; height: 14px;"></i> Firma Cliente</h5>
-                    <div id="client-signature-status-view" style="font-size: 0.85rem; color: var(--text-muted); background: rgba(0,0,0,0.1); padding: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); min-height: 52px; display: flex; align-items: center;">
-                      Pendiente de firma del cliente a distancia.
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- CONFIGURACIÓN DE PROPUESTAS DE ÉXITO SAAS -->
-              <div class="section-divider" style="grid-column: span 2;">
-                <i data-lucide="sparkles"></i> Módulos Avanzados SaaS (Éxito Comercial)
-              </div>
-
-              <!-- 1. WhatsApp Reminders -->
-              <div class="form-group" style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(16, 185, 129, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(16, 185, 129, 0.2); grid-column: span 2;">
-                <div style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem;">
-                  <input type="checkbox" id="whatsapp-reminders-enabled" style="width: 18px; height: 18px; accent-color: var(--success);" onchange="saveDraftToLocalStorage();">
-                  <label for="whatsapp-reminders-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                    Habilitar Recordatorios automáticos de WhatsApp 💬
-                  </label>
-                </div>
-              </div>
-
-              <!-- 1b. Email Notifications -->
-              <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(59, 130, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
-                <input type="checkbox" id="email-notifications-enabled" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="saveDraftToLocalStorage()">
-                <label for="email-notifications-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                  Habilitar Notificaciones por Correo Electrónico ✉️
-                </label>
-              </div>
-
-
-
-              <!-- 3. Multi-Professional -->
-              <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(139, 92, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(139, 92, 246, 0.2); grid-column: span 2;">
-                <input type="checkbox" id="enable-multi-professional" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="toggleMultiProfessionalInput()">
-                <label for="enable-multi-professional" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                  Soporte Multi-Profesional y Multi-Calendario 👥
-                </label>
-              </div>
-
-              <div class="form-group full-width" id="multi-professional-container" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
-                <label style="font-weight: 600; color: #fff; margin-bottom: 0.75rem; display: block;">Gestionar Profesionales / Empleados:</label>
-                <div id="professionals-list-builder" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
-                  <!-- Se inyectarán los profesionales agregados aquí -->
-                </div>
-                <button type="button" class="btn btn-secondary" onclick="addProfessionalRow()" style="padding: 0.5rem 1rem; font-size: 0.85rem; width: fit-content;">
-                  <i data-lucide="plus"></i> Agregar Profesional
+            <form id="admin-form" onsubmit="return false;">
+              <!-- PESTAÑAS DE NAVEGACIÓN -->
+              <div class="client-form-tabs">
+                <button type="button" class="form-tab-btn active" onclick="switchFormTab('business')" id="tab-btn-business">
+                  <i data-lucide="building" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 0.25rem;"></i> Negocio
+                </button>
+                <button type="button" class="form-tab-btn" onclick="switchFormTab('voice')" id="tab-btn-voice">
+                  <i data-lucide="mic" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 0.25rem;"></i> Voz y Teléfono
+                </button>
+                <button type="button" class="form-tab-btn" onclick="switchFormTab('modules')" id="tab-btn-modules">
+                  <i data-lucide="brain" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 0.25rem;"></i> Módulos e IA
+                </button>
+                <button type="button" class="form-tab-btn" onclick="switchFormTab('billing')" id="tab-btn-billing">
+                  <i data-lucide="file-text" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 0.25rem;"></i> Facturación
                 </button>
               </div>
 
-              <!-- 4. Knowledge Base (Base de Conocimientos) -->
-              <div class="section-divider">
-                <i data-lucide="brain"></i> Base de Conocimientos y Entrenamiento de la IA
+              <!-- PESTAÑA 1: DATOS DEL NEGOCIO -->
+              <div id="form-tab-content-business" class="form-tab-content form-grid active">
+                <div class="section-divider">
+                  <i data-lucide="building"></i> Información Comercial
+                </div>
+
+                <div class="form-group">
+                  <label for="business-name">Nombre del Negocio / Cliente:</label>
+                  <input type="text" id="business-name" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="tenant-email">Email Único de Registro:</label>
+                  <input type="email" id="tenant-email" required>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="specialties-input">Servicios / Especialidades (separados por comas):</label>
+                  <input type="text" id="specialties-input" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="business-sector">Sector del Negocio (para cálculo de ahorro ROI):</label>
+                  <select id="business-sector">
+                    <option value="general">General / Comercio</option>
+                    <option value="peluqueria">Peluquería / Estética / Spa</option>
+                    <option value="dental">Clínica Dental</option>
+                    <option value="medica">Clínica Médica / Fisioterapia</option>
+                    <option value="oficina">Asesoría / Consultora / Oficina</option>
+                    <option value="restaurante">Hostelería / Restaurante</option>
+                    <option value="veterinaria">Veterinaria</option>
+                  </select>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="business-description">Información / Descripción General del Negocio (Inyectada en el prompt):</label>
+                  <textarea id="business-description" rows="3" required placeholder="Describe tu negocio e información general útil para el agente..."></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="pricing-details">Tarifas y Precios (para que los informe la IA de viva voz):</label>
+                  <textarea id="pricing-details" rows="3" required placeholder="Precios y detalles de los servicios principales..."></textarea>
+                </div>
               </div>
 
-              <div class="form-group full-width">
-                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                  <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--primary);"></i>
-                  Subir Documento de Base de Conocimiento (PDF):
-                </label>
-                <div style="display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); padding: 1rem; border-radius: 8px;">
-                  <input type="file" id="kb-pdf-file" accept="application/pdf" style="display: none;" onchange="handleKBPdfUpload(this)">
-                  <button type="button" class="btn btn-secondary" onclick="document.getElementById('kb-pdf-file').click()" style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer;">
-                    <i data-lucide="upload-cloud"></i> Seleccionar PDF
-                  </button>
-                  <span id="kb-pdf-name" style="color: var(--text-muted); font-size: 0.85rem;">Ningún archivo seleccionado</span>
-                  <button type="button" class="btn btn-secondary" id="btn-remove-pdf" onclick="removeKBPdf()" style="display: none; padding: 0.35rem 0.6rem; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
-                    <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+              <!-- PESTAÑA 2: CONFIGURACIÓN DE VOZ -->
+              <div id="form-tab-content-voice" class="form-tab-content form-grid">
+                <div class="section-divider">
+                  <i data-lucide="mic"></i> Voz y Telefonía
+                </div>
+
+                <!-- Catálogo de Voces Premium -->
+                <div class="form-group" style="grid-column: span 2;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label style="margin: 0; display: block;">Catálogo de Voces Premium:</label>
+                    <button type="button" class="btn btn-secondary" onclick="openVoiceCatalogManager()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; height: 30px; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color);">
+                      <i data-lucide="settings" style="width: 14px; height: 14px;"></i> Gestionar Catálogo
+                    </button>
+                  </div>
+                  
+                  <!-- Grid de selección de voces -->
+                  <div id="voice-catalog-grid">
+                    <!-- Se renderiza dinámicamente -->
+                  </div>
+
+                  <!-- Toggle para usar ID personalizado -->
+                  <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem;">
+                    <input type="checkbox" id="custom-voice-toggle" style="width: 16px; height: 16px; accent-color: var(--primary);" onchange="toggleCustomVoiceInput()">
+                    <label for="custom-voice-toggle" style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; margin: 0;">Usar ID de Voz personalizado (ElevenLabs/Cartesia)</label>
+                  </div>
+                  
+                  <!-- Input oculto/personalizado -->
+                  <div id="custom-voice-input-container" style="display: none; margin-top: 0.75rem;">
+                    <input type="text" id="voice-id" value="cartesia-Sofia" placeholder="Pega el ID de ElevenLabs o Cartesia" required oninput="onCustomVoiceIdInput()">
+                  </div>
+                </div>
+                
+                <!-- Ajustes de Velocidad, Naturalidad y Pausas (Sliders) -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; margin-top: 0.75rem; grid-column: span 2;">
+                  <div>
+                    <label for="voice-speed" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Velocidad de Habla: <span id="voice-speed-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
+                    <input type="range" id="voice-speed" min="0.8" max="1.2" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-speed-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof updateVoicePlaybackRate === 'function') updateVoicePlaybackRate(this.value); if (typeof onSpeedChange === 'function') onSpeedChange(this.value);">
+                  </div>
+                  <div>
+                    <label for="voice-temperature" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Naturalidad / Variabilidad: <span id="voice-temperature-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
+                    <input type="range" id="voice-temperature" min="0.5" max="1.5" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-temperature-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof onTemperatureChange === 'function') onTemperatureChange(this.value);">
+                  </div>
+                  <div>
+                    <label for="voice-responsiveness" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Pausas de Respuesta: <span id="voice-responsiveness-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
+                    <input type="range" id="voice-responsiveness" min="0.0" max="1.0" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-responsiveness-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof onResponsivenessChange === 'function') onResponsivenessChange(this.value);">
+                  </div>
+                </div>
+
+                <!-- Bloqueo de configuración de voz en el panel de administrador -->
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; grid-column: span 2; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.75rem 1rem; border-radius: 8px;">
+                  <input type="checkbox" id="voice-locked-toggle" style="width: 16px; height: 16px; accent-color: var(--error);" onchange="toggleVoiceInputsLock(this.checked)">
+                  <label for="voice-locked-toggle" style="color: #fca5a5; font-size: 0.85rem; cursor: pointer; margin: 0; display: flex; align-items: center; gap: 0.35rem;">
+                    <i data-lucide="lock" style="width: 14px; height: 14px;"></i> Bloquear configuración de voz en este panel (Evitar modificaciones accidentales)
+                  </label>
+                </div>
+
+                <div class="form-group" id="agent-id-group">
+                  <label for="retell-agent-id">ID de Agente Retell AI:</label>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="text" id="retell-agent-id" placeholder="Autogenerado al crear o introduce ID existente" style="flex: 1; padding: 0.8rem;">
+                    <button type="button" class="btn" id="btn-test-webrtc-call" onclick="startWebRTCCallFromForm()" style="padding: 0.8rem 1rem; display: none; white-space: nowrap; align-items: center; gap: 0.25rem; background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%);">
+                      <i data-lucide="phone" style="width: 16px; height: 16px;"></i> Probar
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="phone-provider">Proveedor de Telefonía:</label>
+                  <select id="phone-provider">
+                    <option value="retell">Retell AI (Auto-Compra Directa)</option>
+                    <option value="zadarma">Zadarma (Conexión SIP Manual)</option>
+                  </select>
+                </div>
+
+                <div class="form-group" id="manual-phone-fields">
+                  <label for="phone-number">Número de Teléfono Asignado / Desvío:</label>
+                  <input type="text" id="phone-number">
+                </div>
+
+                <!-- DESPLEGABLE CON BUSCADOR DE TELÉFONOS VIRTUALES ZADARMA (INVENTARIO) -->
+                <div class="form-group" id="virtual-phone-select-group" style="display: none;">
+                  <label for="client-virtual-phone-id">Número de Teléfono Zadarma (Inventario):</label>
+                  <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <input type="text" id="client-virtual-phone-search" placeholder="Filtrar números..." style="flex: 1; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" oninput="filterClientVirtualPhonesDropdown()" class="input">
+                    <button type="button" class="btn btn-secondary" onclick="fetchVirtualPhonesForClientSelect()" style="padding: 0.6rem 0.8rem; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;" title="Actualizar inventario">
+                      <i data-lucide="refresh-cw" style="width: 14px; height: 14px; color: #fff;"></i>
+                    </button>
+                  </div>
+                  <select id="client-virtual-phone-id" class="input" style="width: 100%; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;">
+                    <option value="">-- Selecciona un número --</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- PESTAÑA 3: MÓDULOS E IA -->
+              <div id="form-tab-content-modules" class="form-tab-content form-grid">
+                <!-- HORARIOS DE TRABAJO -->
+                <div class="section-divider">
+                  <i data-lucide="calendar"></i> Constructor de Horarios de Trabajo
+                </div>
+
+                <div class="form-group full-width">
+                  <div class="schedule-builder" id="schedule-builder-container">
+                    <!-- Generado dinámicamente -->
+                  </div>
+                </div>
+
+                <!-- CONFIGURACIÓN DE PROPUESTAS DE ÉXITO SAAS -->
+                <div class="section-divider" style="grid-column: span 2;">
+                  <i data-lucide="sparkles"></i> Módulos Avanzados SaaS
+                </div>
+
+                <!-- 1. WhatsApp Reminders -->
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(16, 185, 129, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(16, 185, 129, 0.2); grid-column: span 2;">
+                  <div style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="whatsapp-reminders-enabled" style="width: 18px; height: 18px; accent-color: var(--success);" onchange="saveDraftToLocalStorage();">
+                    <label for="whatsapp-reminders-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                      Habilitar Recordatorios automáticos de WhatsApp 💬
+                    </label>
+                  </div>
+                </div>
+
+                <!-- 1b. Email Notifications -->
+                <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(59, 130, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
+                  <input type="checkbox" id="email-notifications-enabled" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="saveDraftToLocalStorage()">
+                  <label for="email-notifications-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    Habilitar Notificaciones por Correo Electrónico ✉️
+                  </label>
+                </div>
+
+                <!-- 3. Multi-Professional -->
+                <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(139, 92, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(139, 92, 246, 0.2); grid-column: span 2;">
+                  <input type="checkbox" id="enable-multi-professional" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="toggleMultiProfessionalInput()">
+                  <label for="enable-multi-professional" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    Soporte Multi-Profesional y Multi-Calendario 👥
+                  </label>
+                </div>
+
+                <div class="form-group full-width" id="multi-professional-container" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
+                  <label style="font-weight: 600; color: #fff; margin-bottom: 0.75rem; display: block;">Gestionar Profesionales / Empleados:</label>
+                  <div id="professionals-list-builder" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                    <!-- Se inyectarán los profesionales agregados aquí -->
+                  </div>
+                  <button type="button" class="btn btn-secondary" onclick="addProfessionalRow()" style="padding: 0.5rem 1rem; font-size: 0.85rem; width: fit-content;">
+                    <i data-lucide="plus"></i> Agregar Profesional
                   </button>
                 </div>
-                <!-- Barra de Progreso de Subida de PDF -->
-                <div id="kb-pdf-progress-container" style="display: none; margin-top: 0.75rem;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                    <span id="kb-pdf-progress-label" style="font-size: 0.75rem; color: var(--primary-light);">Subiendo documento PDF...</span>
-                    <span id="kb-pdf-progress-percent" style="font-size: 0.75rem; font-weight: bold; color: var(--primary-light);">0%</span>
+
+                <!-- 4. Knowledge Base (Base de Conocimientos) -->
+                <div class="section-divider">
+                  <i data-lucide="brain"></i> Base de Conocimientos y Entrenamiento
+                </div>
+
+                <div class="form-group full-width">
+                  <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                    Subir Documento de Base de Conocimiento (PDF):
+                  </label>
+                  <div style="display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); padding: 1rem; border-radius: 8px;">
+                    <input type="file" id="kb-pdf-file" accept="application/pdf" style="display: none;" onchange="handleKBPdfUpload(this)">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('kb-pdf-file').click()" style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+                      <i data-lucide="upload-cloud"></i> Seleccionar PDF
+                    </button>
+                    <span id="kb-pdf-name" style="color: var(--text-muted); font-size: 0.85rem;">Ningún archivo seleccionado</span>
+                    <button type="button" class="btn btn-secondary" id="btn-remove-pdf" onclick="removeKBPdf()" style="display: none; padding: 0.35rem 0.6rem; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
+                      <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                    </button>
                   </div>
-                  <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; border: 1px solid var(--border-color);">
-                    <div id="kb-pdf-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%); transition: width 0.3s ease; border-radius: 3px;"></div>
+                  <!-- Barra de Progreso de Subida de PDF -->
+                  <div id="kb-pdf-progress-container" style="display: none; margin-top: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                      <span id="kb-pdf-progress-label" style="font-size: 0.75rem; color: var(--primary-light);">Subiendo documento PDF...</span>
+                      <span id="kb-pdf-progress-percent" style="font-size: 0.75rem; font-weight: bold; color: var(--primary-light);">0%</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; border: 1px solid var(--border-color);">
+                      <div id="kb-pdf-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%); transition: width 0.3s ease; border-radius: 3px;"></div>
+                    </div>
+                  </div>
+                  <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">Sube un archivo PDF (hasta 5MB) con información adicional. El sistema extraerá el texto y lo inyectará directamente en la base de conocimientos abajo.</p>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="knowledge-base-url">URL Web o Ruta de la Base de Conocimientos:</label>
+                  <input type="text" id="knowledge-base-url" placeholder="ej. https://clinicacarlosromero.com o autogenerado por PDF" oninput="saveDraftToLocalStorage()">
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="knowledge-base-content">Información de Entrenamiento Adicional (Preguntas frecuentes, texto extraído del PDF, detalles):</label>
+                  <textarea id="knowledge-base-content" rows="4" placeholder="ej. ¿Ofrecen parking gratuito? Sí, en el parking de la plaza de Gracia..." oninput="saveDraftToLocalStorage()"></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="custom-instructions">Reglas y Comportamiento Específico para la IA (Instrucciones personalizadas):</label>
+                  <textarea id="custom-instructions" rows="3" placeholder="Instrucciones específicas sobre el tono, cómo contestar o reglas obligatorias..."></textarea>
+                </div>
+              </div>
+
+              <!-- PESTAÑA 4: CONTRATO Y FACTURACIÓN -->
+              <div id="form-tab-content-billing" class="form-tab-content form-grid">
+                <div class="section-divider">
+                  <i data-lucide="key-round"></i> Contratación y Seguridad
+                </div>
+
+                <div class="form-group">
+                  <label for="admin-pin">Contraseña de acceso al Panel del Cliente (mín. 8 caracteres):</label>
+                  <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="password" id="admin-pin" placeholder="Mínimo 8 caracteres" required value="12345678" style="flex: 1; padding-right: 2.5rem; width: 100%;">
+                    <button type="button" onclick="togglePasswordVisibility('admin-pin')" style="position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem;">
+                      <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                    </button>
                   </div>
                 </div>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">Sube un archivo PDF (hasta 5MB) con información adicional. El sistema extraerá el texto y lo inyectará directamente en la base de conocimientos abajo.</p>
-              </div>
 
-              <div class="form-group full-width">
-                <label for="knowledge-base-url">URL Web o Ruta de la Base de Conocimientos:</label>
-                <input type="text" id="knowledge-base-url" placeholder="ej. https://clinicacarlosromero.com o autogenerado por PDF" oninput="saveDraftToLocalStorage()">
-              </div>
+                <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; grid-column: span 2; background: rgba(139, 92, 246, 0.05); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(139, 92, 246, 0.2); margin: 0.5rem 0;">
+                  <input type="checkbox" id="is-trial-checkbox" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="handleTrialCheckboxChange()">
+                  <label for="is-trial-checkbox" style="color: #fff; cursor: pointer; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="sparkles" style="width: 16px; height: 16px; color: var(--primary-hover);"></i>
+                    Activar Período de Prueba de 7 Días (Demo de Uso Gratuito)
+                  </label>
+                </div>
 
-              <div class="form-group full-width">
-                <label for="knowledge-base-content">Información de Entrenamiento Adicional (Preguntas frecuentes, texto extraído del PDF, detalles):</label>
-                <textarea id="knowledge-base-content" rows="4" placeholder="ej. ¿Ofrecen parking gratuito? Sí, en el parking de la plaza de Gracia..." oninput="saveDraftToLocalStorage()"></textarea>
-              </div>
+                <div class="form-group">
+                  <label for="subscription-status">Estado del Contrato / SaaS:</label>
+                  <select id="subscription-status">
+                    <option value="active">Activo 🟢</option>
+                    <option value="paused">Pausado 🟡</option>
+                    <option value="cancelled">Cancelado 🔴</option>
+                    <option value="trial">Período de Prueba 🧪</option>
+                  </select>
+                </div>
 
-              <div class="form-group full-width">
-                <label for="business-description">Información / Descripción General del Negocio (Inyectada en el prompt):</label>
-                <textarea id="business-description" rows="3" required placeholder="Describe tu negocio e información general útil para el agente..."></textarea>
-              </div>
+                <div class="form-group">
+                  <label for="subscription-plan">Plan Contratado:</label>
+                  <select id="subscription-plan" onchange="autoFillPlanPrice(); autoCalculateContractEndDate();">
+                    <option value="Plan Inicial Mensual">Plan Inicial Mensual (79€/mes)</option>
+                    <option value="Plan Estándar Mensual">Plan Estándar Mensual (149€/mes)</option>
+                    <option value="Plan Premium Mensual">Plan Premium Mensual (249€/mes)</option>
+                    <option value="Plan Inicial Anual">Plan Inicial Anual (900€/año - 75€/mes)</option>
+                    <option value="Plan Estándar Anual">Plan Estándar Anual (1668€/año - 139€/mes)</option>
+                    <option value="Plan Premium Anual">Plan Premium Anual (2748€/año - 229€/mes)</option>
+                  </select>
+                </div>
 
-              <div class="form-group full-width">
-                <label for="pricing-details">Tarifas y Precios (para que los informe la IA de viva voz):</label>
-                <textarea id="pricing-details" rows="3" required placeholder="Precios y detalles de los servicios principales..."></textarea>
-              </div>
+                <div class="form-group">
+                  <label for="billing-cycle">Ciclo de Facturación:</label>
+                  <select id="billing-cycle">
+                    <option value="monthly">Mensual</option>
+                    <option value="annually">Anual</option>
+                  </select>
+                </div>
 
-              <div class="form-group full-width">
-                <label for="custom-instructions">Reglas y Comportamiento Específico para la IA (Instrucciones personalizadas):</label>
-                <textarea id="custom-instructions" rows="3" placeholder="Instrucciones específicas sobre el tono, cómo contestar o reglas obligatorias..."></textarea>
+                <div class="form-group">
+                  <label for="price-amount">Precio Facturado (€):</label>
+                  <input type="number" id="price-amount" step="0.01" value="149.00" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="contract-start-date">Fecha de Alta / Inicio:</label>
+                  <input type="text" id="contract-start-date" placeholder="Seleccionar Fecha..." required style="cursor: pointer;">
+                </div>
+
+                <div class="form-group">
+                  <label for="contract-end-date">Fecha de Baja (Opcional):</label>
+                  <input type="text" id="contract-end-date" placeholder="Seleccionar Fecha..." style="cursor: pointer;">
+                </div>
+
+                <div class="form-group">
+                  <label for="contract-template-select">Contrato Asociado:</label>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <select id="contract-template-select" style="flex: 1;">
+                      <option value="">Sin Contrato Asociado</option>
+                      <!-- Cargado dinámicamente -->
+                    </select>
+                    <button type="button" class="btn btn-secondary" id="btn-download-selected-template" style="display: none; padding: 0.8rem; height: 100%; align-items: center; justify-content: center; min-width: 48px;" onclick="downloadTemplateContractPDF()" title="Descargar modelo en PDF">
+                      <i data-lucide="download" style="width: 18px; height: 18px;"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- DATOS DE CONTRATACIÓN ESPECÍFICOS DEL CLIENTE -->
+                <div class="form-group full-width" id="client-contract-variables-container" style="display: none; background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 0.5rem; gap: 1rem; flex-direction: column;">
+                  <h4 style="margin: 0; font-size: 0.95rem; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.35rem; font-family: 'Outfit', sans-serif;">
+                    <i data-lucide="file-signature" style="width: 16px; height: 16px; color: var(--primary);"></i> Datos de Contratación del Cliente
+                  </h4>
+                  
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                      <label for="client-contract-legal-name">Razón Social / Nombre Completo del Cliente:</label>
+                      <input type="text" id="client-contract-legal-name" placeholder="ej. Peluquería Carlos Romero, S.L." oninput="autoCompileContract()">
+                    </div>
+                    <div class="form-group">
+                      <label for="client-contract-tax-id">C.I.F. / N.I.F. del Cliente:</label>
+                      <input type="text" id="client-contract-tax-id" placeholder="ej. B-12345678 o 12345678X" oninput="autoCompileContract()">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                      <label for="client-contract-address">Domicilio Social Completo del Cliente:</label>
+                      <input type="text" id="client-contract-address" placeholder="ej. Calle Mayor 12, Piso 1B, 28001 Madrid, España" oninput="autoCompileContract()">
+                    </div>
+                    <div class="form-group">
+                      <label for="client-contract-rep-name">Nombre Representante Legal Cliente:</label>
+                      <input type="text" id="client-contract-rep-name" placeholder="ej. Carlos Romero López" oninput="autoCompileContract()">
+                    </div>
+                    <div class="form-group">
+                      <label for="client-contract-rep-id">D.N.I. / N.I.F. Representante Cliente:</label>
+                      <input type="text" id="client-contract-rep-id" placeholder="ej. 87654321Y" oninput="autoCompileContract()">
+                    </div>
+                    <div class="form-group">
+                      <label for="client-contract-rep-role">Cargo del Representante Cliente:</label>
+                      <input type="text" id="client-contract-rep-role" placeholder="ej. Administrador Único, Propietario, etc." oninput="autoCompileContract()">
+                    </div>
+                    <div class="form-group">
+                      <label for="client-contract-signing-city">Ciudad de Firma del Contrato:</label>
+                      <input type="text" id="client-contract-signing-city" placeholder="Madrid" value="Madrid" oninput="autoCompileContract()">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group full-width" id="signed-contract-field-container" style="display: none; background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 0.5rem;">
+                  <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Contrato Personalizado / Firmado (Autogenerado / Personalizado):</label>
+                  
+                  <!-- Pestañas del visor de contrato -->
+                  <div class="contract-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                    <button type="button" class="tab-btn" id="tab-contract-preview" onclick="switchContractTab('preview')" style="background: var(--primary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 0.25rem;">
+                      <i data-lucide="eye" style="width: 14px; height: 14px;"></i> Vista Previa (Formateado)
+                    </button>
+                    <button type="button" class="tab-btn" id="tab-contract-edit" onclick="switchContractTab('edit')" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 500; display: flex; align-items: center; gap: 0.25rem;">
+                      <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i> Editar Texto (Markdown)
+                    </button>
+                  </div>
+
+                  <!-- Vista previa formateada -->
+                  <div id="signed-contract-preview-view" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 6px; max-height: 350px; overflow-y: auto; font-family: inherit; font-size: 0.9rem; line-height: 1.6; color: #e5e7eb; margin-bottom: 0.75rem; white-space: normal;">
+                    <!-- Se rellena dinámicamente -->
+                  </div>
+
+                  <!-- Textarea para edición manual (oculto por defecto) -->
+                  <textarea id="signed-contract-content-view" rows="8" placeholder="Aquí aparecerá el contrato redactado con los datos del cliente..." style="font-family: inherit; line-height: 1.5; margin-bottom: 0.75rem; display: none; width: 100%; box-sizing: border-box; background: rgba(0, 0, 0, 0.2); color: #fff; border: 1px solid var(--border-color); padding: 0.75rem; border-radius: 6px;"></textarea>
+                  
+                  <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.15); padding: 1rem; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 1rem;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                      <button type="button" class="btn btn-secondary" onclick="downloadSignedContractPDF()" style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; padding: 0.5rem 0.75rem;">
+                        <i data-lucide="download" style="width: 14px; height: 14px;"></i> Descargar PDF
+                      </button>
+                      
+                      <button type="button" class="btn btn-secondary" id="btn-send-contract-email" onclick="sendContractByEmail()" style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; padding: 0.5rem 0.75rem;">
+                        <i data-lucide="mail" style="width: 14px; height: 14px;"></i> Enviar por Email
+                      </button>
+
+                      <button type="button" class="btn btn-secondary" id="btn-recompile-contract" onclick="forceRecompileContract()" style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; padding: 0.5rem 0.75rem; border-color: var(--primary); color: #fff;">
+                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px; color: var(--primary);"></i> Recompilar
+                      </button>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem;">
+                      <span style="color: var(--text-muted);">Envío:</span>
+                      <span id="badge-contract-email-status" class="badge" style="background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.2);">No Enviado</span>
+                    </div>
+                  </div>
+
+                  <!-- Firmas Digitales en el Formulario -->
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <div>
+                      <h5 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: var(--primary-hover); display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="signature" style="width: 14px; height: 14px;"></i> Firma Administrador</h5>
+                      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; cursor: pointer; color: #fff; margin: 0;">
+                          <input type="checkbox" id="admin-sign-checkbox" onchange="saveDraftToLocalStorage()" style="width: 16px; height: 16px; accent-color: var(--primary);"> Firmar Contrato Digitalmente
+                        </label>
+                        <input type="text" id="admin-signature-name-input" placeholder="Nombre completo del firmante admin" oninput="saveDraftToLocalStorage()" style="padding: 0.5rem; font-size: 0.8rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 4px; color: #fff;">
+                      </div>
+                    </div>
+                    <div>
+                      <h5 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: var(--success); display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="signature" style="width: 14px; height: 14px;"></i> Firma Cliente</h5>
+                      <div id="client-signature-status-view" style="font-size: 0.85rem; color: var(--text-muted); background: rgba(0,0,0,0.1); padding: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); min-height: 52px; display: flex; align-items: center;">
+                        Pendiente de firma del cliente a distancia.
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Aceptación de Términos y Privacidad (RGPD) -->
-              <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 0.5rem; background: rgba(239, 68, 68, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(239, 68, 68, 0.2); margin-top: 1rem; box-sizing: border-box;">
+              <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 0.5rem; background: rgba(239, 68, 68, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(239, 68, 68, 0.2); margin-top: 1.5rem; box-sizing: border-box; grid-column: span 2;">
                 <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; color: #fff; margin: 0;">
                   <input type="checkbox" id="accept-terms-privacy" required style="width: 16px; height: 16px; accent-color: var(--primary);">
-                  Acepto los <a href="/aviso-legal" target="_blank" style="color: var(--primary); text-decoration: underline;">Términos de Servicio</a> y la <a href="/politica-de-privacidad" target="_blank" style="color: var(--primary); text-decoration: underline;">Política de Privacidad</a> (RGPD)
+                  Acepto los <a href="/aviso-legal.html" target="_blank" style="color: var(--primary); text-decoration: underline;">Términos de Servicio</a> y la <a href="/politica-de-privacidad.html" target="_blank" style="color: var(--primary); text-decoration: underline;">Política de Privacidad</a> (RGPD)
                 </label>
               </div>
 
               <!-- ACCIONES -->
-              <div class="form-actions">
-                <button type="submit" class="btn" id="btn-generate" style="flex: 1;">
+              <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; grid-column: span 2; width: 100%; box-sizing: border-box;">
+                <button type="button" class="btn btn-secondary" id="btn-client-cancel" style="flex: 1; min-width: 120px; border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="handleClientCancelButton()">
+                  <i data-lucide="x-circle"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="saveFormDraftManual()" id="btn-client-draft" style="flex: 1; min-width: 150px;">
+                  <i data-lucide="save"></i> Guardar Borrador Local
+                </button>
+                <button type="button" class="btn" id="btn-client-activate" style="flex: 1; min-width: 150px; background: #10b981; color: #fff; border-color: #10b981;" onclick="handleClientActivateButton()">
+                  <i data-lucide="check-circle"></i> Activar
+                </button>
+                <button type="button" class="btn" id="btn-generate" style="flex: 1; min-width: 180px;" onclick="submitAdminFormManually()">
                   <i data-lucide="sparkles"></i>
                   <span id="btn-generate-text">Generar Agente IA y Registrar</span>
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="saveFormDraftManual()">
-                  <i data-lucide="save"></i> Guardar Borrador Local
                 </button>
               </div>
 
@@ -4776,6 +4843,9 @@
       altFormat: "d/m/Y",
       disableMobile: true,
       onChange: function() {
+        if (typeof autoCalculateContractEndDate === 'function') {
+          autoCalculateContractEndDate();
+        }
         saveDraftToLocalStorage();
       }
     });
@@ -5352,6 +5422,110 @@
       }
     });
 
+    // Cambiar de pestaña en el formulario de cliente
+    window.switchFormTab = function(tabId) {
+      // Ocultar todos los contenidos de pestaña del formulario
+      document.querySelectorAll('.form-tab-content').forEach(el => {
+        el.classList.remove('active');
+      });
+      // Mostrar el contenido de la pestaña seleccionada
+      const activeContent = document.getElementById('form-tab-content-' + tabId);
+      if (activeContent) {
+        activeContent.classList.add('active');
+      }
+      // Desactivar todos los botones de pestaña
+      document.querySelectorAll('.form-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      // Activar el botón de la pestaña seleccionada
+      const activeBtn = document.getElementById('tab-btn-' + tabId);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+      }
+    };
+
+    // Calcular automáticamente la fecha de baja basada en la fecha de alta/inicio y el plan
+    window.autoCalculateContractEndDate = function() {
+      const startDateVal = document.getElementById('contract-start-date').value;
+      const isTrial = document.getElementById('is-trial-checkbox').checked;
+      const planVal = document.getElementById('subscription-plan').value;
+      const endDateInput = document.getElementById('contract-end-date');
+
+      if (!startDateVal) return;
+
+      const parts = startDateVal.split('-');
+      const yyyy = parseInt(parts[0], 10);
+      const mm = parseInt(parts[1], 10) - 1; // mes 0-indexado
+      const dd = parseInt(parts[2], 10);
+      let endDate = new Date(yyyy, mm, dd);
+
+      if (isNaN(endDate.getTime())) return;
+
+      if (isTrial) {
+        endDate.setDate(endDate.getDate() + 7);
+      } else {
+        const planName = planVal.toLowerCase();
+        if (planName.includes('anual') || planName.includes('año') || planName.includes('year')) {
+          endDate.setFullYear(endDate.getFullYear() + 1);
+        } else {
+          endDate.setMonth(endDate.getMonth() + 1);
+        }
+      }
+
+      // Formatear como YYYY-MM-DD
+      const year = endDate.getFullYear();
+      const month = String(endDate.getMonth() + 1).padStart(2, '0');
+      const day = String(endDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+
+      endDateInput.value = formattedDate;
+      if (window.fpContractEnd) {
+        window.fpContractEnd.setDate(formattedDate);
+      }
+      
+      saveDraftToLocalStorage();
+    };
+
+    // Botones de acción del formulario de clientes
+    window.handleClientCancelButton = function() {
+      if (document.getElementById('edit-client-modal').style.display === 'flex') {
+        closeEditClientModal();
+      } else {
+        resetProvisioningForm();
+        switchTab('clients');
+      }
+    };
+
+    window.handleClientActivateButton = function() {
+      // Poner estado del contrato como activo
+      const subStatusSelect = document.getElementById('subscription-status');
+      if (subStatusSelect) {
+        subStatusSelect.value = 'active';
+      }
+      
+      // Desactivar período de prueba
+      const trialCheckbox = document.getElementById('is-trial-checkbox');
+      if (trialCheckbox) {
+        trialCheckbox.checked = false;
+        const priceAmountInput = document.getElementById('price-amount');
+        if (priceAmountInput) priceAmountInput.disabled = false;
+      }
+      
+      // Auto-rellenar precio y fecha de baja
+      autoFillPlanPrice();
+      autoCalculateContractEndDate();
+      
+      // Enviar el formulario
+      submitAdminFormManually();
+    };
+
+    window.submitAdminFormManually = function() {
+      const form = document.getElementById('admin-form');
+      if (form) {
+        form.requestSubmit();
+      }
+    };
+
     // Auto-rellenar precio según el Plan
     function autoFillPlanPrice() {
       const planName = subPlan.value;
@@ -5399,6 +5573,7 @@
         priceAmount.disabled = false;
         autoFillPlanPrice();
       }
+      autoCalculateContractEndDate();
       saveDraftToLocalStorage();
     }
 
@@ -5413,6 +5588,7 @@
         priceAmount.disabled = false;
         autoFillPlanPrice();
       }
+      autoCalculateContractEndDate();
       saveDraftToLocalStorage();
     });
 
@@ -8823,13 +8999,17 @@
 
       editingTenantId = tenant.id;
       
+      if (typeof switchFormTab === 'function') {
+        switchFormTab('business');
+      }
+      
       const isBlocked = !!tenant.block_admin_access || !!tenant.admin_access_blocked;
       
       // Cambiar encabezado y botón
       formCardTitleText.innerHTML = isBlocked 
         ? `<i data-lucide="edit-3"></i> Editar Cliente: ${tenant.business_name} <span style="background: #f87171; color: white; font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; margin-left: 0.5rem; display: inline-block;">🔒 PRIVADO (Acceso Restringido)</span>`
         : `<i data-lucide="edit-3"></i> Editar Cliente: ${tenant.business_name}`;
-      btnGenerateText.innerText = isBlocked ? 'Guardar Cambios de Facturación' : 'Guardar Cambios del Cliente';
+      btnGenerateText.innerText = 'Guardar Cambios';
 
       // Deshabilitar campos si está bloqueado por privacidad
       document.getElementById('specialties-input').disabled = isBlocked;
@@ -11418,6 +11598,9 @@
 
     // Resetear el formulario de aprovisionamiento a su estado original
     function resetProvisioningForm() {
+      if (typeof switchFormTab === 'function') {
+        switchFormTab('business');
+      }
       adminForm.reset();
       editingTenantId = null;
       isContractManuallyEdited = false;

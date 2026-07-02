@@ -1715,6 +1715,16 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
       twilio_whatsapp_number: twilio_whatsapp_number !== undefined ? twilio_whatsapp_number : (existing ? existing.twilio_whatsapp_number : null)
     };
 
+    if (existing && existingBlockAdminAccess) {
+      tenantData.admin_pin = existing.admin_pin;
+      tenantData.custom_instructions = existing.custom_instructions;
+      tenantData.business_description = existing.business_description;
+      tenantData.pricing_details = existing.pricing_details;
+      tenantData.specialties = existing.specialties;
+      tenantData.vacation_message = existing.vacation_message;
+      tenantData.knowledge_base_content = existing.knowledge_base_content;
+    }
+
     const hasImmediateCol = existing ? ('whatsapp_immediate_notification_enabled' in existing) : false;
     if (hasImmediateCol) {
       tenantData.whatsapp_immediate_notification_enabled = whatsapp_immediate_notification_enabled !== undefined ? !!whatsapp_immediate_notification_enabled : (existing ? existing.whatsapp_immediate_notification_enabled : true);
