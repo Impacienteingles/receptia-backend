@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.receptia.commercial.app-merged_res-20:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.receptia.commercial.app-main-22:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.receptia.commercial.app-merged_res-20:/layout_activity_main.xml.flat",
+        "source": "com.receptia.commercial.app-main-22:/layout/activity_main.xml"
+    }
+]

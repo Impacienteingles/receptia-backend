@@ -2940,8 +2940,9 @@
 
             <!-- TABLA DE INVENTARIO -->
             <div class="card" style="padding: 1.5rem; border-radius: 12px; background: rgba(30, 30, 40, 0.6); backdrop-filter: blur(10px); border: 1px solid var(--border-color);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 1rem;">
-                <input type="text" id="vp-search" placeholder="Filtrar números..." style="max-width: 320px; flex: 1; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" oninput="renderVirtualPhones()">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;">
+                <input type="text" id="vp-search" placeholder="Filtrar por número..." style="max-width: 250px; flex: 1; min-width: 150px; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" oninput="renderVirtualPhones()">
+                <input type="text" id="vp-filter-assigned" placeholder="Filtrar por asignado a..." style="max-width: 250px; flex: 1; min-width: 150px; border: 1px solid var(--border-color); background: rgba(20,20,30,0.5); color: #fff; padding: 0.6rem; border-radius: 8px;" oninput="renderVirtualPhones()">
                 <button onclick="window.fetchVirtualPhones()" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.6rem 1rem;">
                   <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Actualizar
                 </button>
@@ -14458,11 +14459,22 @@
       tbody.innerHTML = '';
 
       const query = document.getElementById('vp-search').value.toLowerCase().trim();
+      const assignedQuery = document.getElementById('vp-filter-assigned').value.toLowerCase().trim();
       const filtered = allVirtualPhones.filter(vp => {
+        // Filter by phone number
         const numMatch = vp.phone_number.toLowerCase().includes(query);
-        const tenantMatch = vp.tenants && vp.tenants.business_name && vp.tenants.business_name.toLowerCase().includes(query);
-        const prospectMatch = vp.prospects && vp.prospects.business_name && vp.prospects.business_name.toLowerCase().includes(query);
-        return numMatch || tenantMatch || prospectMatch;
+        
+        // Filter by assigned to (tenant or prospect)
+        let assignedText = '';
+        if (vp.tenants && vp.tenants.business_name) {
+          assignedText = vp.tenants.business_name.toLowerCase();
+        } else if (vp.prospects && vp.prospects.business_name) {
+          assignedText = vp.prospects.business_name.toLowerCase();
+        }
+        const assignedMatch = !assignedQuery || assignedText.includes(assignedQuery);
+        
+        // Both filters must match
+        return numMatch && assignedMatch;
       });
 
       // Update stats
