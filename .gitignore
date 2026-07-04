@@ -8,3 +8,11 @@ scratch/
 
 .vercel
 .env*
+android-app/app/build/
+android-app-client/app/build/
+android-app-commercial/app/build/
+android-app/.gradle/
+android-app-client/.gradle/
+android-app-commercial/.gradle/
+1.- Ejecutables/
+.DS_Store
