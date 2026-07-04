@@ -1,0 +1,22 @@
+{
+  "name": "Receptia Comercial",
+  "short_name": "Receptia",
+  "description": "Panel comercial de Receptia",
+  "start_url": "/comercial.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#7c3aed",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/receptia_logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/receptia_logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
