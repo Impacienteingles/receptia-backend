@@ -36,3 +36,8 @@
 - [x] Disconnect Handler: Wire "Desconectar" button to prompt for confirmation and trigger `POST /api/tenants/:id/disconnect-calendar`, cleaning refresh tokens and updating UI.
 - [x] Version: Increment visual version to `v1.0.13` in `public/app.html` and semantic version to `1.8.47` in `package.json`.
 - [x] Verification: Build project, deploy to Render (`npm run deploy`) and Vercel (`npx vercel --prod --yes`).
+- [x] Vercel Routing: Add exact rewrites in `vercel.json` for `/oauth2callback` and `/auth` so Vercel redirects OAuth callbacks to Render backend, fixing Google Calendar 404 error.
+- [x] Virtual Phone Dropdown: Fix unassigned virtual phone status in the database from `'assigned'` to `'available'` so that it correctly appears in the client selection dropdown list.
+- [x] Virtual Phone Action: Expose `fetchVirtualPhones`, `fetchVirtualPhonesForClientSelect`, and `fetchVirtualPhonesForDemoSelect` under the global `window` scope in `public/admin.html` to prevent ReferenceErrors on "Actualizar" clicks.
+- [x] Version: Increment visual version to `v1.0.37` in `public/admin.html` and semantic version to `1.8.48` in `package.json`.
+- [x] Verification: Build project, deploy to Render (`npm run deploy`) and Vercel (`npx vercel --prod --yes`).
