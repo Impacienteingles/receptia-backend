@@ -93,6 +93,24 @@ app.use(express.static(path.join(process.cwd(), 'public'), {
   }
 }));
 
+// Serve PWA manifest files explicitly
+app.get('/manifest.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.sendFile(path.join(process.cwd(), 'public', 'manifest.json'));
+});
+app.get('/manifest-app.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.sendFile(path.join(process.cwd(), 'public', 'manifest-app.json'));
+});
+app.get('/manifest-comercial.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.sendFile(path.join(process.cwd(), 'public', 'manifest-comercial.json'));
+});
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.sendFile(path.join(process.cwd(), 'public', 'sw.js'));
+});
+
 // Helper functions for storing block_admin_access in settings table
 async function getBlockAdminAccess(tenantId: string): Promise<boolean> {
   if (!tenantId) return false;
