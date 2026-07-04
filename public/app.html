@@ -2131,7 +2131,7 @@
           }
           sessionStorage.setItem('current_tenant_pin', pin);
           closeLandingLoginModal();
-          window.location.href = `/?tenant_id=${data.tenant_id}`;
+          window.location.href = `/app.html?tenant_id=${data.tenant_id}`;
         } else {
           throw new Error('Respuesta inválida del servidor.');
         }
