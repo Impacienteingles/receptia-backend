@@ -14,6 +14,8 @@ import comercialPanelRouter from './routes/comercial-panel';
 import optimizationRouter from './routes/optimization';
 import referralsRouter from './routes/referrals';
 import virtualPhonesRouter from './routes/virtual-phones';
+import zadarmaRouter from './routes/zadarma';
+import elevenlabsRouter from './routes/elevenlabs';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
 import { supabase, getSettingVal, clearSettingsCache } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName, createRetellAgentForTenant } from './services/retell';
@@ -5102,6 +5104,8 @@ app.use('/api/comercial', comercialPanelRouter);
 app.use('/api/optimization', optimizationRouter);
 app.use('/api/referrals', referralsRouter);
 app.use('/api/admin/virtual-phones', virtualPhonesRouter);
+app.use('/api/admin/zadarma', zadarmaRouter);
+app.use('/api/admin/elevenlabs', elevenlabsRouter);
 
 
 
