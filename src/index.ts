@@ -16,7 +16,7 @@ import referralsRouter from './routes/referrals';
 import virtualPhonesRouter from './routes/virtual-phones';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
 import { supabase, getSettingVal, clearSettingsCache } from './services/supabase';
-import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName } from './services/retell';
+import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName, createRetellAgentForTenant } from './services/retell';
 import { createStripeCheckoutSession, createStripePortalSession, getStripeClient, createStripeAddonCheckoutSession } from './services/stripe';
 import axios from 'axios';
 import { sendWhatsAppMessage } from './services/whatsapp';
@@ -4275,6 +4275,46 @@ app.post('/api/admin/sync-retell', async (req, res): Promise<void> => {
     res.json({ success: true, message: 'Agente de Retell AI sincronizado exitosamente.' });
   } catch (err: any) {
     console.error('Error al sincronizar inquilino con Retell:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST: Crear un nuevo agente en Retell AI en caliente para un cliente existente
+app.post('/api/admin/tenants/:id/create-retell-agent', async (req, res): Promise<void> => {
+  const { id } = req.params;
+  try {
+    const { data: tenant, error } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !tenant) {
+      res.status(404).json({ error: 'Inquilino no encontrado.' });
+      return;
+    }
+
+    let webhookBaseUrl = process.env.WEBHOOK_BASE_URL;
+    if (!webhookBaseUrl) {
+      const host = req.get('host') || '';
+      const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
+      webhookBaseUrl = `${protocol}://${host}`;
+    }
+
+    console.log(`[Hot Provisioning] Creando nuevo agente en Retell AI para ${tenant.email} (UUID: ${id})...`);
+    const agentId = await createRetellAgentForTenant(tenant, webhookBaseUrl);
+
+    // Actualizar retell_agent_id en Supabase
+    const { error: dbErr } = await supabase
+      .from('tenants')
+      .update({ retell_agent_id: agentId })
+      .eq('id', id);
+
+    if (dbErr) throw dbErr;
+
+    res.json({ success: true, agent_id: agentId });
+  } catch (err: any) {
+    console.error('Error al crear agente en Retell:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
