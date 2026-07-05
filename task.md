@@ -40,4 +40,11 @@
 - [x] Virtual Phone Dropdown: Fix unassigned virtual phone status in the database from `'assigned'` to `'available'` so that it correctly appears in the client selection dropdown list.
 - [x] Virtual Phone Action: Expose `fetchVirtualPhones`, `fetchVirtualPhonesForClientSelect`, and `fetchVirtualPhonesForDemoSelect` under the global `window` scope in `public/admin.html` to prevent ReferenceErrors on "Actualizar" clicks.
 - [x] Version: Increment visual version to `v1.0.37` in `public/admin.html` and semantic version to `1.8.48` in `package.json`.
-- [x] Verification: Build project, deploy to Render (`npm run deploy`) and Vercel (`npx vercel --prod --yes`).
+- [x] Backend: Implement `POST /api/admin/tenants/:id/create-retell-agent` endpoint in `src/index.ts`
+- [x] Frontend: Modify `selectVoice` function in `public/admin.html` to decouple card selection from Retell Agent ID
+- [x] Frontend: Add the "Crear en Retell AI" button to the client form in `public/admin.html`
+- [x] Frontend: Implement the `handleProvisionRetellAgentButton()` function in `public/admin.html`
+- [x] Config: Increment semantic version in `package.json` to `1.8.49`
+- [x] Config: Update visual version to `v1.1.1` in `public/admin.html`
+- [x] Verify: Build the project and deploy to Render and Vercel
+

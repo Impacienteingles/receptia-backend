@@ -295,9 +295,20 @@ export async function listFreeSlots(
     const slotEnd = slotStart + stepMs;
 
     const isBusy = events.some((event: any) => {
-      if (!event.start?.dateTime || !event.end?.dateTime) return false;
-      const eventStart = new Date(event.start.dateTime).getTime();
-      const eventEnd = new Date(event.end.dateTime).getTime();
+      if (event.transparency === 'transparent') return false;
+
+      let eventStart: number;
+      let eventEnd: number;
+
+      if (event.start?.dateTime && event.end?.dateTime) {
+        eventStart = new Date(event.start.dateTime).getTime();
+        eventEnd = new Date(event.end.dateTime).getTime();
+      } else if (event.start?.date && event.end?.date) {
+        eventStart = getMadridDate(event.start.date, '00:00').getTime();
+        eventEnd = getMadridDate(event.end.date, '00:00').getTime();
+      } else {
+        return false;
+      }
 
       // Comprobar solapamiento
       return (slotStart < eventEnd && slotEnd > eventStart);
