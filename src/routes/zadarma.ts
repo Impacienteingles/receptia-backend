@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import * as crypto from 'crypto';
 import * as querystring from 'querystring';
-import { getSettingVal } from '../services/supabase';
+import { supabase, getSettingVal } from '../services/supabase';
 
 const router = Router();
 
@@ -144,16 +144,77 @@ router.post('/numbers/buy', async (req: Request, res: Response) => {
     if (!creds) {
       return res.status(400).json({ error: 'Credenciales de Zadarma no configuradas en el sistema' });
     }
-    const { number_id } = req.body;
+    const { number_id, phone_number, tenant_id, period, autorenew_period } = req.body;
     if (!number_id) {
       return res.status(400).json({ error: 'El parámetro number_id es obligatorio' });
     }
+    if (!phone_number) {
+      return res.status(400).json({ error: 'El parámetro phone_number es obligatorio' });
+    }
 
-    // Connect the direct number
-    const data = await callZadarma('/v1/direct_numbers/', creds.user, creds.secret, 'POST', { number_id });
+    // Connect the direct number via Zadarma
+    const buyParams: any = {
+      number_id,
+      period: period || 'month',
+      autorenew_period: autorenew_period || 'month'
+    };
+
+    const data = await callZadarma('/v1/direct_numbers/', creds.user, creds.secret, 'POST', buyParams);
+
+    // Calculate billing renewal date
+    const nextBilling = new Date();
+    if (autorenew_period === 'year') {
+      nextBilling.setFullYear(nextBilling.getFullYear() + 1);
+    } else {
+      nextBilling.setMonth(nextBilling.getMonth() + 1);
+    }
+
+    // Ensure phone number has '+' prefix for virtual_phones storage
+    let formattedPhone = phone_number.trim();
+    if (!formattedPhone.startsWith('+')) {
+      formattedPhone = '+' + formattedPhone;
+    }
+
+    // Clean Zadarma username (digits only)
+    const sipUsername = formattedPhone.replace(/\+/g, '');
+
+    // Upsert virtual phone number
+    const { error: vpError } = await supabase
+      .from('virtual_phones')
+      .upsert({
+        phone_number: formattedPhone,
+        status: tenant_id ? 'assigned' : 'available',
+        tenant_id: tenant_id || null,
+        sip_username: sipUsername,
+        sip_server: 'sip.rtc.elevenlabs.io',
+        next_billing_date: nextBilling.toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'phone_number'
+      });
+
+    if (vpError) {
+      console.error('Error inserting purchased number into virtual_phones:', vpError.message);
+    }
+
+    // If assigned to a tenant, update the tenant record
+    if (tenant_id) {
+      const { error: tenantErr } = await supabase
+        .from('tenants')
+        .update({
+          phone: formattedPhone,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tenant_id);
+
+      if (tenantErr) {
+        console.error('Error updating tenant phone number:', tenantErr.message);
+      }
+    }
+
     res.json({
       status: 'success',
-      message: 'Número contratado con éxito',
+      message: 'Número contratado y registrado con éxito',
       details: data
     });
   } catch (error: any) {
@@ -161,6 +222,7 @@ router.post('/numbers/buy', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Error al contratar el número virtual en Zadarma', details: error.response?.data || error.message });
   }
 });
+
 
 // Export helper for route updates
 export { callZadarma, getCredentials };
