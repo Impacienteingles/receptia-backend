@@ -1267,7 +1267,7 @@
       <img src="/receptia_logo.png" alt="Logo Receptia" style="width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Panel Protegido
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.15</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.16</span>
       </h3>
       <p id="pin-description" style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Por favor, introduce tu contraseña de acceso para gestionar tu agenda de citas.</p>
       
@@ -2418,7 +2418,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.15</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.16</span>
           <button onclick="handleClientLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -3286,29 +3286,32 @@
                   <div class="form-group" style="flex: 1.5; min-width: 140px;">
                     <label for="block-recurrence" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Frecuencia / Repetición:</label>
                     <select id="block-recurrence" onchange="toggleBlockedHoursFormFields(this.value)" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
-                      <option value="none">Una Sola Vez (Fecha fija)</option>
-                      <option value="weekly">Semanal (Día de la semana)</option>
-                      <option value="monthly">Mensual (Día del mes)</option>
-                      <option value="always">Siempre (Todos los días)</option>
+                      <option value="daily">Diario (Seleccionar días)</option>
+                      <option value="weekly">Semanal (Bloquear toda la semana)</option>
+                      <option value="monthly">Mensual (Bloquear todo el mes)</option>
+                      <option value="always">Siempre (Bloquear todos los días)</option>
                     </select>
                   </div>
 
-                  <div class="form-group" id="block-date-group" style="flex: 1.5; min-width: 130px;">
-                    <label for="block-date" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Fecha:</label>
-                    <input type="date" id="block-date" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+                  <!-- Campo de días para Diario -->
+                  <div class="form-group" id="block-daily-group" style="flex: 1.5; min-width: 140px;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Días Seleccionados:</label>
+                    <button type="button" onclick="openMultiDateModal()" class="btn btn-outline" id="block-days-label" style="width: 100%; height: 38px; font-size: 0.85rem; font-weight: 500; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: #fff; text-align: left; display: flex; align-items: center; gap: 0.4rem; padding: 0 0.75rem; font-family: inherit;">
+                      <i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                      <span>Seleccionar Días...</span>
+                    </button>
                   </div>
 
-                  <div class="form-group" id="block-day-of-week-group" style="display: none; flex: 1.5; min-width: 130px;">
-                    <label for="block-day-of-week" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Día de la Semana:</label>
-                    <select id="block-day-of-week" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
-                      <option value="1">Lunes</option>
-                      <option value="2">Martes</option>
-                      <option value="3">Miércoles</option>
-                      <option value="4">Jueves</option>
-                      <option value="5">Viernes</option>
-                      <option value="6">Sábado</option>
-                      <option value="0">Domingo</option>
-                    </select>
+                  <!-- Campo de semana para Semanal -->
+                  <div class="form-group" id="block-week-group" style="display: none; flex: 1.5; min-width: 145px;">
+                    <label for="block-week" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Seleccionar Semana:</label>
+                    <input type="week" id="block-week" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.85rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+                  </div>
+
+                  <!-- Campo de mes para Mensual -->
+                  <div class="form-group" id="block-month-group" style="display: none; flex: 1.5; min-width: 145px;">
+                    <label for="block-month" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Seleccionar Mes:</label>
+                    <input type="month" id="block-month" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.85rem; height: 38px; box-sizing: border-box; font-family: inherit;">
                   </div>
 
                   <div class="form-group" style="flex: 1; min-width: 95px;">
@@ -3322,13 +3325,6 @@
                   </div>
 
                   <div style="width: 100%; display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.75rem;">
-                    <!-- Opción de Duplicación Rápida -->
-                    <button type="button" class="btn btn-secondary" onclick="addMultipleBlockedHours('week')" style="height: 38px; font-size: 0.85rem; padding: 0 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff; display: inline-flex; align-items: center; gap: 0.35rem;">
-                      <i data-lucide="copy" style="width:14px;height:14px;"></i> Bloquear Toda la Semana
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="addMultipleBlockedHours('month')" style="height: 38px; font-size: 0.85rem; padding: 0 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff; display: inline-flex; align-items: center; gap: 0.35rem;">
-                      <i data-lucide="calendar-days" style="width:14px;height:14px;"></i> Bloquear Todo el Mes
-                    </button>
                     <button type="button" class="btn" onclick="createNewBlockedHour()" style="height: 38px; font-size: 0.85rem; padding: 0 1.25rem; border-radius: 8px; background: var(--success); color: #fff; display: inline-flex; align-items: center; gap: 0.35rem;">
                       <i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Bloquear Horario
                     </button>
@@ -3360,6 +3356,45 @@
                   <div id="blocked-hours-empty" style="text-align: center; color: var(--text-muted); padding: 2rem; display: none;">
                     <i data-lucide="shield-check" style="width: 24px; height: 24px; margin: 0 auto 0.5rem; display: block; opacity: 0.5;"></i>
                     No tienes ningún bloque de tiempo bloqueado actualmente.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Modal de selección de múltiples fechas (Calendario) -->
+              <div class="modal" id="multi-date-modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+                <div style="background: #111827; border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 1rem;">
+                  <h3 style="color: #fff; margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
+                    <i data-lucide="calendar" style="color: var(--primary);"></i>
+                    Seleccionar Días a Bloquear
+                  </h3>
+                  
+                  <!-- Selector de Mes/Año de Navegación -->
+                  <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 8px;">
+                    <button type="button" onclick="navigateMultiCalendar(-1)" style="background: none; border: none; color: #fff; cursor: pointer; padding: 0.25rem;"><i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i></button>
+                    <span id="multi-calendar-month-year" style="color: #fff; font-weight: 600; font-size: 0.9rem;">Julio 2026</span>
+                    <button type="button" onclick="navigateMultiCalendar(1)" style="background: none; border: none; color: #fff; cursor: pointer; padding: 0.25rem;"><i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i></button>
+                  </div>
+
+                  <!-- Cuadrícula de Calendario -->
+                  <div>
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: bold; color: var(--text-muted); margin-bottom: 0.5rem;">
+                      <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
+                    </div>
+                    <div id="multi-calendar-days" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; text-align: center;">
+                      <!-- Dinámico -->
+                    </div>
+                  </div>
+
+                  <div style="font-size: 0.8rem; color: var(--text-muted); max-height: 80px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <strong>Días seleccionados:</strong>
+                    <div id="multi-calendar-selected-list" style="margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                      <!-- Lista de tags -->
+                    </div>
+                  </div>
+
+                  <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeMultiDateModal()" style="height: 38px; font-size: 0.85rem;">Cancelar</button>
+                    <button type="button" class="btn" onclick="confirmMultiDateSelection()" style="height: 38px; font-size: 0.85rem; background: var(--primary);">Confirmar Selección</button>
                   </div>
                 </div>
               </div>
@@ -5087,21 +5122,179 @@
     }
 
     // --- GESTIÓN DE HORAS BLOQUEADAS (BLOCKED HOURS) ---
+    let currentMultiCalendarMonth = new Date().getMonth();
+    let currentMultiCalendarYear = new Date().getFullYear();
+    let selectedBlockedDates = [];
+
     window.toggleBlockedHoursFormFields = function(recurrence) {
-      const dateGroup = document.getElementById('block-date-group');
-      const dayOfWeekGroup = document.getElementById('block-day-of-week-group');
+      const dailyGroup = document.getElementById('block-daily-group');
+      const weekGroup = document.getElementById('block-week-group');
+      const monthGroup = document.getElementById('block-month-group');
       
-      if (recurrence === 'none' || recurrence === 'monthly') {
-        dateGroup.style.display = 'block';
-        dayOfWeekGroup.style.display = 'none';
-      } else if (recurrence === 'weekly') {
-        dateGroup.style.display = 'none';
-        dayOfWeekGroup.style.display = 'block';
-      } else {
-        // always
-        dateGroup.style.display = 'none';
-        dayOfWeekGroup.style.display = 'none';
+      if (dailyGroup) dailyGroup.style.display = recurrence === 'daily' ? 'block' : 'none';
+      if (weekGroup) weekGroup.style.display = recurrence === 'weekly' ? 'block' : 'none';
+      if (monthGroup) monthGroup.style.display = recurrence === 'monthly' ? 'block' : 'none';
+    };
+
+    window.openMultiDateModal = function() {
+      const modal = document.getElementById('multi-date-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        renderMultiCalendar();
       }
+    };
+
+    window.closeMultiDateModal = function() {
+      const modal = document.getElementById('multi-date-modal');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.navigateMultiCalendar = function(direction) {
+      currentMultiCalendarMonth += direction;
+      if (currentMultiCalendarMonth < 0) {
+        currentMultiCalendarMonth = 11;
+        currentMultiCalendarYear--;
+      } else if (currentMultiCalendarMonth > 11) {
+        currentMultiCalendarMonth = 0;
+        currentMultiCalendarYear++;
+      }
+      renderMultiCalendar();
+    };
+
+    function renderMultiCalendar() {
+      const monthNames = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+      ];
+      
+      const headerSpan = document.getElementById('multi-calendar-month-year');
+      if (headerSpan) headerSpan.innerText = `${monthNames[currentMultiCalendarMonth]} ${currentMultiCalendarYear}`;
+      
+      const daysContainer = document.getElementById('multi-calendar-days');
+      if (!daysContainer) return;
+      daysContainer.innerHTML = '';
+      
+      // Primer día del mes
+      const firstDay = new Date(currentMultiCalendarYear, currentMultiCalendarMonth, 1);
+      let startDayOfWeek = firstDay.getDay();
+      if (startDayOfWeek === 0) startDayOfWeek = 6; // Domingo
+      else startDayOfWeek--; // Lunes a Sábado
+      
+      // Cantidad de días en el mes
+      const daysInMonth = new Date(currentMultiCalendarYear, currentMultiCalendarMonth + 1, 0).getDate();
+      
+      // Renderizar celdas vacías de alineación
+      for (let i = 0; i < startDayOfWeek; i++) {
+        const emptyDiv = document.createElement('div');
+        daysContainer.appendChild(emptyDiv);
+      }
+      
+      // Renderizar botones de días
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayBtn = document.createElement('button');
+        dayBtn.type = 'button';
+        dayBtn.innerText = day;
+        
+        const formattedDate = `${currentMultiCalendarYear}-${String(currentMultiCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        // Estilos base
+        dayBtn.style.background = 'none';
+        dayBtn.style.border = 'none';
+        dayBtn.style.color = '#fff';
+        dayBtn.style.padding = '0.5rem 0';
+        dayBtn.style.cursor = 'pointer';
+        dayBtn.style.fontSize = '0.85rem';
+        dayBtn.style.borderRadius = '50%';
+        dayBtn.style.width = '32px';
+        dayBtn.style.height = '32px';
+        dayBtn.style.margin = '0 auto';
+        dayBtn.style.display = 'flex';
+        dayBtn.style.alignItems = 'center';
+        dayBtn.style.justifyContent = 'center';
+        dayBtn.style.transition = 'all 0.15s';
+        
+        if (selectedBlockedDates.includes(formattedDate)) {
+          dayBtn.style.background = 'var(--primary)';
+          dayBtn.style.color = '#fff';
+        } else {
+          dayBtn.onmouseover = () => dayBtn.style.background = 'rgba(255,255,255,0.08)';
+          dayBtn.onmouseout = () => {
+            if (!selectedBlockedDates.includes(formattedDate)) {
+              dayBtn.style.background = 'none';
+            }
+          };
+        }
+        
+        dayBtn.onclick = () => {
+          toggleBlockedDate(formattedDate);
+        };
+        
+        daysContainer.appendChild(dayBtn);
+      }
+      
+      renderSelectedDatesList();
+    }
+
+    function toggleBlockedDate(dateStr) {
+      const index = selectedBlockedDates.indexOf(dateStr);
+      if (index > -1) {
+        selectedBlockedDates.splice(index, 1);
+      } else {
+        selectedBlockedDates.push(dateStr);
+      }
+      renderMultiCalendar();
+    }
+
+    function renderSelectedDatesList() {
+      const listContainer = document.getElementById('multi-calendar-selected-list');
+      if (!listContainer) return;
+      listContainer.innerHTML = '';
+      
+      if (selectedBlockedDates.length === 0) {
+        listContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.75rem;">Ningún día seleccionado</span>';
+        return;
+      }
+      
+      selectedBlockedDates.sort().forEach(dateStr => {
+        const [y, m, d] = dateStr.split('-');
+        const tag = document.createElement('span');
+        tag.style.background = 'rgba(139, 92, 246, 0.15)';
+        tag.style.color = 'var(--primary-light)';
+        tag.style.padding = '0.15rem 0.4rem';
+        tag.style.borderRadius = '4px';
+        tag.style.fontSize = '0.75rem';
+        tag.style.display = 'inline-flex';
+        tag.style.alignItems = 'center';
+        tag.style.gap = '0.2rem';
+        
+        tag.innerHTML = `${d}/${m}/${y} <i data-lucide="x" onclick="event.stopPropagation(); removeBlockedDate('${dateStr}')" style="width: 12px; height: 12px; cursor: pointer; opacity: 0.7;"></i>`;
+        listContainer.appendChild(tag);
+      });
+      
+      lucide.createIcons();
+    }
+
+    window.removeBlockedDate = function(dateStr) {
+      const index = selectedBlockedDates.indexOf(dateStr);
+      if (index > -1) {
+        selectedBlockedDates.splice(index, 1);
+        renderMultiCalendar();
+      }
+    };
+
+    window.confirmMultiDateSelection = function() {
+      const label = document.getElementById('block-days-label');
+      if (label) {
+        if (selectedBlockedDates.length > 0) {
+          label.innerHTML = `<i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--success);"></i> <span>${selectedBlockedDates.length} días seleccionados</span>`;
+          label.style.color = 'var(--success)';
+        } else {
+          label.innerHTML = `<i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i> <span>Seleccionar Días...</span>`;
+          label.style.color = '#fff';
+        }
+      }
+      lucide.createIcons();
+      closeMultiDateModal();
     };
 
     window.fetchBlockedHours = async function() {
@@ -5118,9 +5311,36 @@
       }
     };
 
+    function formatWeekInterval(mondayStr) {
+      if (!mondayStr || !mondayStr.includes('-')) return 'Semanal';
+      try {
+        const monday = new Date(mondayStr + 'T00:00:00');
+        const sunday = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000);
+        const format = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        return `Semanal (Semana del ${format(monday)} al ${format(sunday)})`;
+      } catch (e) {
+        return `Semanal (${mondayStr})`;
+      }
+    }
+
+    function formatMonthInterval(dateStr) {
+      if (!dateStr || !dateStr.includes('-')) return 'Mensual';
+      try {
+        const d = new Date(dateStr + 'T00:00:00');
+        const monthNames = [
+          "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+          "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+        return `Mensual (Mes completo: ${monthNames[d.getMonth()]} ${d.getFullYear()})`;
+      } catch (e) {
+        return `Mensual (${dateStr})`;
+      }
+    }
+
     function renderBlockedHours(rules) {
       const tbody = document.getElementById('blocked-hours-tbody');
       const emptyDiv = document.getElementById('blocked-hours-empty');
+      if (!tbody) return;
       tbody.innerHTML = '';
       
       const selectAllCb = document.getElementById('select-all-blocked-hours');
@@ -5129,37 +5349,25 @@
       }
       
       if (rules.length === 0) {
-        emptyDiv.style.display = 'block';
+        if (emptyDiv) emptyDiv.style.display = 'block';
         updateDeleteSelectedButtonState();
         return;
       }
-      emptyDiv.style.display = 'none';
+      if (emptyDiv) emptyDiv.style.display = 'none';
       
-      const dayLabels = {
-        '1': 'Lunes',
-        '2': 'Martes',
-        '3': 'Miércoles',
-        '4': 'Jueves',
-        '5': 'Viernes',
-        '6': 'Sábado',
-        '0': 'Domingo'
-      };
-
       rules.forEach(rule => {
         const tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid var(--border-color)';
         
-        // Recurrence text
         let recurrenceText = '';
         if (rule.recurrence === 'none') {
-          recurrenceText = `Una sola vez (${rule.block_date})`;
+          recurrenceText = `Diario (${rule.block_date})`;
         } else if (rule.recurrence === 'always') {
           recurrenceText = 'Siempre (Todos los días)';
         } else if (rule.recurrence === 'weekly') {
-          recurrenceText = `Semanal (${dayLabels[String(rule.day_of_week)] || 'Día ' + rule.day_of_week})`;
+          recurrenceText = formatWeekInterval(rule.block_date);
         } else if (rule.recurrence === 'monthly') {
-          const dayOfM = rule.block_date ? new Date(rule.block_date + 'T00:00:00').getDate() : '';
-          recurrenceText = `Mensual (Día ${dayOfM} de cada mes)`;
+          recurrenceText = formatMonthInterval(rule.block_date);
         }
 
         const checkboxTd = `
@@ -5174,9 +5382,6 @@
         const actionsTd = `
           <td style="padding: 0.75rem 1rem; text-align: right;">
             <div style="display: inline-flex; gap: 0.4rem;">
-              <button onclick="duplicateBlockedHourPrompt('${rule.id}')" title="Duplicar regla" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.3rem 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem;">
-                <i data-lucide="copy" style="width: 12px; height: 12px;"></i> Duplicar
-              </button>
               <button onclick="deleteBlockedHour('${rule.id}')" title="Eliminar bloqueo" style="background: rgba(239, 68, 68, 0.15); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 6px; padding: 0.3rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
                 <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
               </button>
@@ -5252,11 +5457,54 @@
       }
     };
 
+    // Funciones de cálculo de fechas para Semanal y Mensual
+    function getDatesFromWeekString(weekStr) {
+      const [year, weekNum] = weekStr.split('-W').map(Number);
+      const jan4 = new Date(year, 0, 4);
+      const jan4Day = jan4.getDay() === 0 ? 7 : jan4.getDay();
+      const mondayW1 = new Date(jan4.getTime() - (jan4Day - 1) * 24 * 60 * 60 * 1000);
+      const targetMonday = new Date(mondayW1.getTime() + (weekNum - 1) * 7 * 24 * 60 * 60 * 1000);
+      
+      const dates = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(targetMonday.getTime() + i * 24 * 60 * 60 * 1000);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        dates.push(`${yyyy}-${mm}-${dd}`);
+      }
+      return dates;
+    }
+
+    function getDatesFromMonthString(monthStr) {
+      const [year, month] = monthStr.split('-').map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      
+      const dates = [];
+      for (let d = 1; d <= daysInMonth; d++) {
+        const mm = String(month).padStart(2, '0');
+        const dd = String(d).padStart(2, '0');
+        dates.push(`${year}-${mm}-${dd}`);
+      }
+      return dates;
+    }
+
+    function getMondayOfWeekString(weekStr) {
+      const [year, weekNum] = weekStr.split('-W').map(Number);
+      const jan4 = new Date(year, 0, 4);
+      const jan4Day = jan4.getDay() === 0 ? 7 : jan4.getDay();
+      const mondayW1 = new Date(jan4.getTime() - (jan4Day - 1) * 24 * 60 * 60 * 1000);
+      const targetMonday = new Date(mondayW1.getTime() + (weekNum - 1) * 7 * 24 * 60 * 60 * 1000);
+      
+      const yyyy = targetMonday.getFullYear();
+      const mm = String(targetMonday.getMonth() + 1).padStart(2, '0');
+      const dd = String(targetMonday.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
     window.createNewBlockedHour = async function() {
       const title = document.getElementById('block-title').value.trim() || 'Bloqueado';
       const recurrence = document.getElementById('block-recurrence').value;
-      const block_date = document.getElementById('block-date').value;
-      const day_of_week = document.getElementById('block-day-of-week').value;
       const start_time = document.getElementById('block-start-time').value;
       const end_time = document.getElementById('block-end-time').value;
 
@@ -5264,13 +5512,43 @@
         showToast('Hora de inicio y fin requeridas.', 'error');
         return;
       }
-      if (recurrence === 'none' && !block_date) {
-        showToast('Por favor, selecciona una fecha fija.', 'error');
-        return;
-      }
       if (start_time >= end_time) {
         showToast('La hora de fin debe ser posterior a la de inicio.', 'error');
         return;
+      }
+
+      let dates = [];
+      let payload = { title, start_time, end_time };
+
+      if (recurrence === 'daily') {
+        if (selectedBlockedDates.length === 0) {
+          showToast('Por favor, selecciona al menos un día en el calendario.', 'error');
+          return;
+        }
+        dates = [...selectedBlockedDates];
+        payload.dates = dates;
+      } else if (recurrence === 'weekly') {
+        const weekStr = document.getElementById('block-week').value;
+        if (!weekStr) {
+          showToast('Por favor, selecciona una semana.', 'error');
+          return;
+        }
+        payload.recurrence = 'weekly';
+        payload.block_date = getMondayOfWeekString(weekStr);
+        payload.day_of_week = null;
+      } else if (recurrence === 'monthly') {
+        const monthStr = document.getElementById('block-month').value;
+        if (!monthStr) {
+          showToast('Por favor, selecciona un mes.', 'error');
+          return;
+        }
+        payload.recurrence = 'monthly';
+        payload.block_date = `${monthStr}-01`;
+        payload.day_of_week = null;
+      } else if (recurrence === 'always') {
+        payload.recurrence = 'always';
+        payload.block_date = null;
+        payload.day_of_week = null;
       }
 
       try {
@@ -5278,20 +5556,20 @@
         const response = await fetch(`/api/tenants/${tenantId}/blocked-hours`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title,
-            recurrence,
-            block_date: recurrence === 'none' || recurrence === 'monthly' ? block_date : null,
-            day_of_week: recurrence === 'weekly' ? Number(day_of_week) : null,
-            start_time,
-            end_time
-          })
+          body: JSON.stringify(payload)
         });
 
         if (!response.ok) throw new Error('Error al registrar el bloqueo.');
         
         showToast('Horario bloqueado con éxito.', 'success');
         document.getElementById('block-title').value = '';
+        selectedBlockedDates = [];
+        const label = document.getElementById('block-days-label');
+        if (label) {
+          label.innerHTML = `<i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i> <span>Seleccionar Días...</span>`;
+          label.style.color = '#fff';
+        }
+        lucide.createIcons();
         fetchBlockedHours();
       } catch (err) {
         showToast(err.message, 'error');
@@ -5308,108 +5586,6 @@
         });
         if (!response.ok) throw new Error('No se pudo eliminar el bloqueo.');
         showToast('Bloqueo eliminado.');
-        fetchBlockedHours();
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    };
-
-    window.duplicateBlockedHourPrompt = async function(id) {
-      const mode = prompt(
-        "¿Cómo deseas duplicar este bloqueo?\nEscribe el número correspondiente:\n" +
-        "1. Duplicar para otra fecha determinada (Una Sola Vez)\n" +
-        "2. Duplicar como Semanal (Todos los Lunes, Martes, etc.)\n" +
-        "3. Duplicar para Siempre (Todos los días)"
-      );
-
-      if (!mode) return;
-
-      let payload = {};
-
-      if (mode === '1') {
-        const newDate = prompt("Introduce la fecha en formato YYYY-MM-DD:");
-        if (!newDate) return;
-        payload = { recurrence: 'none', block_date: newDate, day_of_week: null };
-      } else if (mode === '2') {
-        const day = prompt("Introduce el número del día (1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado, 0=Domingo):");
-        if (day === null || day === '') return;
-        payload = { recurrence: 'weekly', day_of_week: Number(day), block_date: null };
-      } else if (mode === '3') {
-        payload = { recurrence: 'always', block_date: null, day_of_week: null };
-      } else {
-        showToast('Opción inválida', 'error');
-        return;
-      }
-
-      try {
-        showToast('Duplicando regla...');
-        const response = await fetch(`/api/tenants/${tenantId}/blocked-hours/${id}/duplicate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!response.ok) throw new Error('No se pudo duplicar.');
-        showToast('Regla duplicada con éxito.', 'success');
-        fetchBlockedHours();
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    };
-
-    window.addMultipleBlockedHours = async function(type) {
-      const title = document.getElementById('block-title').value.trim() || 'Bloqueado';
-      const start_time = document.getElementById('block-start-time').value;
-      const end_time = document.getElementById('block-end-time').value;
-      const block_date = document.getElementById('block-date').value;
-
-      if (!start_time || !end_time) {
-        showToast('Hora de inicio y fin requeridas.', 'error');
-        return;
-      }
-      if (start_time >= end_time) {
-        showToast('La hora de fin debe ser posterior a la de inicio.', 'error');
-        return;
-      }
-
-      try {
-        showToast('Creando bloqueos múltiples...');
-        
-        if (type === 'week') {
-          const days = [1, 2, 3, 4, 5, 6, 0];
-          for (const d of days) {
-            await fetch(`/api/tenants/${tenantId}/blocked-hours`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                title,
-                recurrence: 'weekly',
-                day_of_week: d,
-                start_time,
-                end_time
-              })
-            });
-          }
-          showToast('Bloqueos semanales creados con éxito para todos los días.', 'success');
-        } else if (type === 'month') {
-          if (!block_date) {
-            showToast('Por favor, selecciona una fecha base en el formulario para determinar el día del mes.', 'error');
-            return;
-          }
-          await fetch(`/api/tenants/${tenantId}/blocked-hours`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              title,
-              recurrence: 'monthly',
-              block_date,
-              start_time,
-              end_time
-            })
-          });
-          showToast('Bloqueo mensual creado con éxito para este día del mes.', 'success');
-        }
-        
-        document.getElementById('block-title').value = '';
         fetchBlockedHours();
       } catch (err) {
         showToast(err.message, 'error');
@@ -6696,12 +6872,12 @@
 
       if (!tenant.admin_pin) {
         // No tiene contraseña, pedir establecer una nueva (registro inicial del cliente)
-        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.15</span>`;
+        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.16</span>`;
         pinDescription.innerText = 'Este es tu primer acceso. Crea una contraseña segura de al menos 8 caracteres para proteger tu panel de citas.';
         btnPinSubmit.innerText = 'Establecer Contraseña y Entrar';
       } else {
         // Ya tiene contraseña, pedirla
-        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.15</span>`;
+        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.16</span>`;
         pinDescription.innerText = 'Introduce tu contraseña de acceso para autorizar el ingreso al panel.';
         btnPinSubmit.innerText = 'Acceder al Panel';
       }

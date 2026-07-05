@@ -23,13 +23,33 @@ function isSlotBlocked(slotTimeStr: string, queryDateStr: string, rules: any[]):
       } else if (rule.recurrence === 'always') {
         matchesDate = true;
       } else if (rule.recurrence === 'weekly') {
-        if (rule.day_of_week !== null && rule.day_of_week !== undefined) {
+        if (rule.block_date && rule.block_date.includes('-')) {
+          // Bloqueo de semana completa específica (block_date guarda el lunes de esa semana)
+          const mondayDate = new Date(rule.block_date + 'T00:00:00');
+          const sundayDate = new Date(mondayDate.getTime() + 6 * 24 * 60 * 60 * 1000);
+          const qTime = queryDate.getTime();
+          const mTime = mondayDate.getTime();
+          const sTime = sundayDate.getTime();
+
+          if (qTime >= mTime && qTime <= sTime) {
+            matchesDate = true;
+          }
+        } else if (rule.day_of_week !== null && rule.day_of_week !== undefined) {
           if (Number(rule.day_of_week) === queryDayOfWeek) {
             matchesDate = true;
           }
         }
       } else if (rule.recurrence === 'monthly') {
-        if (rule.block_date) {
+        if (rule.block_date && rule.block_date.includes('-')) {
+          // Bloqueo de mes completo específico (block_date es el primer día de ese mes, ej. 2026-07-01)
+          const [rYear, rMonth] = rule.block_date.split('-');
+          const qYear = queryDate.getFullYear();
+          const qMonth = queryDate.getMonth() + 1;
+
+          if (Number(rYear) === qYear && Number(rMonth) === qMonth) {
+            matchesDate = true;
+          }
+        } else if (rule.block_date) {
           const ruleDayOfMonth = new Date(rule.block_date + 'T00:00:00').getDate();
           if (ruleDayOfMonth === queryDayOfMonth) {
             matchesDate = true;

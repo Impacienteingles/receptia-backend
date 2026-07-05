@@ -3829,7 +3829,7 @@ app.get('/api/tenants/:tenant_id/blocked-hours', async (req, res): Promise<void>
 // 5E. Crear hora bloqueada
 app.post('/api/tenants/:tenant_id/blocked-hours', async (req, res): Promise<void> => {
   const { tenant_id } = req.params;
-  const { title, block_date, start_time, end_time, recurrence, day_of_week } = req.body;
+  const { title, block_date, start_time, end_time, recurrence, day_of_week, dates } = req.body;
 
   if (!start_time || !end_time) {
     res.status(400).json({ error: 'La hora de inicio y fin son obligatorias.' });
@@ -3837,23 +3837,42 @@ app.post('/api/tenants/:tenant_id/blocked-hours', async (req, res): Promise<void
   }
 
   try {
-    const { data, error } = await supabase
-      .from('blocked_hours')
-      .insert({
+    if (Array.isArray(dates) && dates.length > 0) {
+      const insertRows = dates.map(d => ({
         tenant_id,
         title: title || 'Bloqueado',
-        block_date: block_date || null,
+        block_date: d,
         start_time,
         end_time,
-        recurrence: recurrence || 'none',
-        day_of_week: day_of_week !== undefined && day_of_week !== null ? Number(day_of_week) : null
-      })
-      .select()
-      .single();
+        recurrence: 'none',
+        day_of_week: null
+      }));
 
-    if (error) throw error;
+      const { data, error } = await supabase
+        .from('blocked_hours')
+        .insert(insertRows)
+        .select();
 
-    res.json({ status: 'success', data });
+      if (error) throw error;
+      res.json({ status: 'success', data });
+    } else {
+      const { data, error } = await supabase
+        .from('blocked_hours')
+        .insert({
+          tenant_id,
+          title: title || 'Bloqueado',
+          block_date: block_date || null,
+          start_time,
+          end_time,
+          recurrence: recurrence || 'none',
+          day_of_week: day_of_week !== undefined && day_of_week !== null ? Number(day_of_week) : null
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      res.json({ status: 'success', data });
+    }
   } catch (err: any) {
     console.error('Error al crear hora bloqueada:', err.message);
     res.status(500).json({ error: err.message });
