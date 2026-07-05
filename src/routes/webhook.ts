@@ -192,7 +192,12 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
     const durationMinutes = calculateDuration(specialty, tenantId);
     const numBlocksNeeded = Math.ceil(durationMinutes / slotDurationMin);
 
-    if (numBlocksNeeded > 1 && freeSlots.length > 0) {
+    if (tenantId === '62d1ed82-287c-4329-941b-50b578c15b14') {
+      // Para Carlos Romero, no filtramos por bloques consecutivos de duración en la API,
+      // para que el LLM reciba todos los huecos individuales de 15 minutos y pueda 
+      // gestionar reservas grupales o sugerir divisiones de turnos de forma inteligente.
+      filteredSlots = freeSlots;
+    } else if (numBlocksNeeded > 1 && freeSlots.length > 0) {
       const resultSlots: string[] = [];
       for (let i = 0; i < freeSlots.length; i++) {
         const currentSlot = freeSlots[i];
