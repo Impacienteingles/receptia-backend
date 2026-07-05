@@ -115,7 +115,7 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
     console.log('Webhook recibido para get-availability:', JSON.stringify(req.body));
     
     // Retell AI pasa los argumentos en req.body.args
-    const args = req.body.args || {};
+    const args = req.body.args || req.body || {};
     const date = args.date;
     const professional = args.professional; // Opcional de la IA
 
@@ -242,7 +242,7 @@ router.post('/obtener-recuerdo-cliente', async (req: Request, res: Response): Pr
     console.log('[Webhook Recuerdos] Recibida consulta de recuerdos...');
     
     // Retell AI envía metadatos de la llamada en req.body
-    const args = req.body.args || {};
+    const args = req.body.args || req.body || {};
     
     // Resolver el teléfono del llamante desde varios posibles campos de Retell
     let phone = args.phone || req.body.caller_phone || req.body.user_phone_number || req.body.from_number || '';
@@ -376,7 +376,7 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
   try {
     console.log('Webhook recibido para book-appointment:', JSON.stringify(req.body));
     
-    const args = req.body.args || {};
+    const args = req.body.args || req.body || {};
     const { date, time, name, email, phone, specialty, professional } = args;
 
     if (!date || !time || !name || !phone || !specialty) {
@@ -429,7 +429,7 @@ router.post('/verify-payment', async (req: Request, res: Response): Promise<void
   try {
     console.log('Webhook recibido para verify-payment:', JSON.stringify(req.body));
     
-    const args = req.body.args || {};
+    const args = req.body.args || req.body || {};
     const { phone } = args;
 
     if (!phone) {
@@ -488,7 +488,7 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
   try {
     console.log('Webhook recibido para cancel-appointment:', JSON.stringify(req.body));
     
-    const args = req.body.args || {};
+    const args = req.body.args || req.body || {};
     const { date, email, phone, time } = args;
 
     if (!date || !phone) {
@@ -626,7 +626,7 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
   try {
     console.log('Webhook recibido para reschedule-appointment:', JSON.stringify(req.body));
     
-    const args = req.body.args || {};
+    const args = req.body.args || req.body || {};
     const { original_date, new_date, new_time, email, phone, original_time } = args;
 
     if (!original_date || !new_date || !new_time || !phone) {

@@ -294,6 +294,11 @@ export async function listFreeSlots(
     const slotStart = slot.getTime();
     const slotEnd = slotStart + stepMs;
 
+    // Evitar ofrecer huecos en el pasado para el día de hoy
+    if (slotStart < Date.now()) {
+      continue;
+    }
+
     const isBusy = events.some((event: any) => {
       if (event.transparency === 'transparent') return false;
 
