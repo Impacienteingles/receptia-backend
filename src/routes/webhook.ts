@@ -250,7 +250,8 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
       tenantDetails.working_hours,
       calendarId,
       slotDurationMin,
-      applyBreakRule
+      applyBreakRule,
+      !!tenantDetails.agenda_optimization_enabled || !!workingHoursObj?.agenda_optimization_enabled
     );
 
     // Obtener horas bloqueadas de Supabase
@@ -840,7 +841,8 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
       tenantDetails.working_hours,
       appToReschedule.google_calendar_id || 'primary',
       slotDurationMin,
-      applyBreakRule
+      applyBreakRule,
+      !!tenantDetails.agenda_optimization_enabled || !!workingHoursObj?.agenda_optimization_enabled
     );
 
     const durationMinutes = calculateDuration(appToReschedule.specialty, tenantId);

@@ -403,6 +403,9 @@ app.get('/api/tenants', async (req, res): Promise<void> => {
       t.whatsapp_immediate_notification_enabled = t.whatsapp_immediate_notification_enabled !== undefined && t.whatsapp_immediate_notification_enabled !== null
         ? t.whatsapp_immediate_notification_enabled
         : (workingHoursObj?.whatsapp_immediate_notification_enabled !== false);
+      t.agenda_optimization_enabled = t.agenda_optimization_enabled !== undefined && t.agenda_optimization_enabled !== null
+        ? t.agenda_optimization_enabled
+        : !!workingHoursObj?.agenda_optimization_enabled;
         
       t.block_admin_access = blockedTenantIds.has(t.id);
 
@@ -841,7 +844,7 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
     if (whatsapp_immediate_notification_enabled !== undefined && hasImmediateCol) {
       tenantData.whatsapp_immediate_notification_enabled = !!whatsapp_immediate_notification_enabled;
     }
-    if (client_enable_multi_professional !== undefined || client_enable_no_show_deposits !== undefined || whatsapp_immediate_notification_enabled !== undefined) {
+    if (client_enable_multi_professional !== undefined || client_enable_no_show_deposits !== undefined || whatsapp_immediate_notification_enabled !== undefined || agenda_optimization_enabled !== undefined) {
       let workingHoursObj: any = {};
       if (existing && existing.working_hours) {
         workingHoursObj = typeof existing.working_hours === 'string' 
@@ -856,6 +859,9 @@ app.post('/api/tenants', async (req, res): Promise<void> => {
       }
       if (whatsapp_immediate_notification_enabled !== undefined) {
         workingHoursObj.whatsapp_immediate_notification_enabled = !!whatsapp_immediate_notification_enabled;
+      }
+      if (agenda_optimization_enabled !== undefined) {
+        workingHoursObj.agenda_optimization_enabled = !!agenda_optimization_enabled;
       }
       tenantData.working_hours = workingHoursObj;
     }

@@ -145,7 +145,7 @@ export async function processBookingFlow(
     calendarId,
     slotDurationMin,
     applyBreakRule,
-    !!tenantDetails.agenda_optimization_enabled
+    !!tenantDetails.agenda_optimization_enabled || !!workingHoursObj?.agenda_optimization_enabled
   );
 
   const durationMinutes = calculateDuration(specialty, tenantId);
