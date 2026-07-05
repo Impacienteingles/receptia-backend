@@ -1267,7 +1267,7 @@
       <img src="/receptia_logo.png" alt="Logo Receptia" style="width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Panel Protegido
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.14</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.15</span>
       </h3>
       <p id="pin-description" style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Por favor, introduce tu contraseña de acceso para gestionar tu agenda de citas.</p>
       
@@ -2418,7 +2418,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.14</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.15</span>
           <button onclick="handleClientLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -3276,31 +3276,31 @@
                   Establece ciertos bloques de tiempo en los que el agente de voz de IA <strong>no podrá programar ninguna cita</strong>. Útil para almuerzos, reuniones fijas, vacaciones o días feriados.
                 </p>
 
-                <!-- Formulario de creación de bloqueo -->
-                <div style="background: rgba(0,0,0,0.15); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                  <div class="form-group">
+                <!-- Formulario de creación de bloqueo en una línea -->
+                <div style="background: rgba(0,0,0,0.15); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: row; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
+                  <div class="form-group" style="flex: 2; min-width: 140px;">
                     <label for="block-title" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Motivo / Título:</label>
-                    <input type="text" id="block-title" placeholder="Ej. Almuerzo, Reunión..." style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box;">
+                    <input type="text" id="block-title" placeholder="Ej. Almuerzo, Reunión..." style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
                   </div>
 
-                  <div class="form-group">
+                  <div class="form-group" style="flex: 1.5; min-width: 140px;">
                     <label for="block-recurrence" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Frecuencia / Repetición:</label>
-                    <select id="block-recurrence" onchange="toggleBlockedHoursFormFields(this.value)" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box;">
+                    <select id="block-recurrence" onchange="toggleBlockedHoursFormFields(this.value)" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
                       <option value="none">Una Sola Vez (Fecha fija)</option>
-                      <option value="weekly">Semanal (Día específico de la semana)</option>
-                      <option value="monthly">Mensual (Mismo día del mes)</option>
+                      <option value="weekly">Semanal (Día de la semana)</option>
+                      <option value="monthly">Mensual (Día del mes)</option>
                       <option value="always">Siempre (Todos los días)</option>
                     </select>
                   </div>
 
-                  <div class="form-group" id="block-date-group">
+                  <div class="form-group" id="block-date-group" style="flex: 1.5; min-width: 130px;">
                     <label for="block-date" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Fecha:</label>
-                    <input type="date" id="block-date" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box;">
+                    <input type="date" id="block-date" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
                   </div>
 
-                  <div class="form-group" id="block-day-of-week-group" style="display: none;">
+                  <div class="form-group" id="block-day-of-week-group" style="display: none; flex: 1.5; min-width: 130px;">
                     <label for="block-day-of-week" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Día de la Semana:</label>
-                    <select id="block-day-of-week" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box;">
+                    <select id="block-day-of-week" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
                       <option value="1">Lunes</option>
                       <option value="2">Martes</option>
                       <option value="3">Miércoles</option>
@@ -3311,17 +3311,17 @@
                     </select>
                   </div>
 
-                  <div class="form-group">
+                  <div class="form-group" style="flex: 1; min-width: 95px;">
                     <label for="block-start-time" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Hora de Inicio:</label>
-                    <input type="time" id="block-start-time" value="14:00" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box;">
+                    <input type="time" id="block-start-time" value="14:00" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
                   </div>
 
-                  <div class="form-group">
+                  <div class="form-group" style="flex: 1; min-width: 95px;">
                     <label for="block-end-time" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Hora de Fin:</label>
-                    <input type="time" id="block-end-time" value="16:00" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box;">
+                    <input type="time" id="block-end-time" value="16:00" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.9rem; height: 38px; box-sizing: border-box; font-family: inherit;">
                   </div>
 
-                  <div style="grid-column: 1 / -1; display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.25rem;">
+                  <div style="width: 100%; display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.75rem;">
                     <!-- Opción de Duplicación Rápida -->
                     <button type="button" class="btn btn-secondary" onclick="addMultipleBlockedHours('week')" style="height: 38px; font-size: 0.85rem; padding: 0 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff; display: inline-flex; align-items: center; gap: 0.35rem;">
                       <i data-lucide="copy" style="width:14px;height:14px;"></i> Bloquear Toda la Semana
@@ -3335,15 +3335,22 @@
                   </div>
                 </div>
 
-                <!-- Tabla de Bloqueos Vigentes -->
+                <!-- Tabla de Bloqueos Vigentes con Multi-selección -->
                 <div style="overflow-x: auto; margin-top: 0.5rem; border: 1px solid var(--border-color); border-radius: 8px;">
                   <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
                     <thead>
                       <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border-color);">
+                        <th style="padding: 0.75rem 1rem; width: 40px; text-align: center;">
+                          <input type="checkbox" id="select-all-blocked-hours" onchange="toggleSelectAllBlockedHours(this.checked)" style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+                        </th>
                         <th style="padding: 0.75rem 1rem; color: #fff; font-weight: 600;">Motivo</th>
                         <th style="padding: 0.75rem 1rem; color: #fff; font-weight: 600;">Frecuencia / Fecha</th>
                         <th style="padding: 0.75rem 1rem; color: #fff; font-weight: 600;">Rango Horario</th>
-                        <th style="padding: 0.75rem 1rem; color: #fff; font-weight: 600; text-align: right;">Acciones</th>
+                        <th style="padding: 0.75rem 1rem; color: #fff; font-weight: 600; text-align: right; min-width: 220px;">
+                          <button id="btn-delete-selected-blocks" class="btn btn-danger" onclick="deleteSelectedBlockedHours()" disabled style="padding: 0.25rem 0.5rem; font-size: 0.75rem; height: 28px; line-height: 1; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.25rem; opacity: 0.5; cursor: not-allowed; border: 1px solid rgba(239,68,68,0.2);">
+                            <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i> Eliminar Seleccionados
+                          </button>
+                        </th>
                       </tr>
                     </thead>
                     <tbody id="blocked-hours-tbody">
@@ -5116,8 +5123,14 @@
       const emptyDiv = document.getElementById('blocked-hours-empty');
       tbody.innerHTML = '';
       
+      const selectAllCb = document.getElementById('select-all-blocked-hours');
+      if (selectAllCb) {
+        selectAllCb.checked = false;
+      }
+      
       if (rules.length === 0) {
         emptyDiv.style.display = 'block';
+        updateDeleteSelectedButtonState();
         return;
       }
       emptyDiv.style.display = 'none';
@@ -5149,6 +5162,11 @@
           recurrenceText = `Mensual (Día ${dayOfM} de cada mes)`;
         }
 
+        const checkboxTd = `
+          <td style="padding: 0.75rem 1rem; text-align: center;">
+            <input type="checkbox" class="blocked-hour-checkbox" data-id="${rule.id}" onchange="updateDeleteSelectedButtonState()" style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+          </td>
+        `;
         const titleTd = `<td style="padding: 0.75rem 1rem; color: #fff; font-weight: 500;">${rule.title || 'Bloqueado'}</td>`;
         const recurTd = `<td style="padding: 0.75rem 1rem; color: var(--text-muted);">${recurrenceText}</td>`;
         const timeTd = `<td style="padding: 0.75rem 1rem; color: #fff; font-family: monospace;">${rule.start_time.substring(0, 5)} - ${rule.end_time.substring(0, 5)}</td>`;
@@ -5166,12 +5184,73 @@
           </td>
         `;
         
-        tr.innerHTML = titleTd + recurTd + timeTd + actionsTd;
+        tr.innerHTML = checkboxTd + titleTd + recurTd + timeTd + actionsTd;
         tbody.appendChild(tr);
       });
       
+      updateDeleteSelectedButtonState();
       lucide.createIcons();
     }
+
+    window.toggleSelectAllBlockedHours = function(checked) {
+      const checkboxes = document.querySelectorAll('.blocked-hour-checkbox');
+      checkboxes.forEach(cb => cb.checked = checked);
+      updateDeleteSelectedButtonState();
+    };
+
+    window.updateDeleteSelectedButtonState = function() {
+      const checkboxes = document.querySelectorAll('.blocked-hour-checkbox');
+      const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+      const btn = document.getElementById('btn-delete-selected-blocks');
+      
+      if (btn) {
+        if (checkedCount > 0) {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+          btn.innerText = `Eliminar Seleccionados (${checkedCount})`;
+        } else {
+          btn.disabled = true;
+          btn.style.opacity = '0.5';
+          btn.style.cursor = 'not-allowed';
+          btn.innerText = 'Eliminar Seleccionados';
+        }
+      }
+
+      const selectAllCb = document.getElementById('select-all-blocked-hours');
+      if (selectAllCb) {
+        selectAllCb.checked = checkboxes.length > 0 && checkedCount === checkboxes.length;
+      }
+    };
+
+    window.deleteSelectedBlockedHours = async function() {
+      const checkboxes = document.querySelectorAll('.blocked-hour-checkbox');
+      const selectedIds = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.getAttribute('data-id'));
+
+      if (selectedIds.length === 0) return;
+
+      const confirmed = await showCustomConfirm(
+        `¿Estás seguro de que deseas eliminar los ${selectedIds.length} bloqueos de horario seleccionados?`,
+        'Confirmar Eliminación Múltiple',
+        'warning'
+      );
+      if (!confirmed) return;
+
+      try {
+        showToast('Eliminando bloqueos seleccionados...');
+        for (const id of selectedIds) {
+          await fetch(`/api/tenants/${tenantId}/blocked-hours/${id}`, {
+            method: 'DELETE'
+          });
+        }
+        showToast('Bloqueos eliminados con éxito.', 'success');
+        fetchBlockedHours();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
 
     window.createNewBlockedHour = async function() {
       const title = document.getElementById('block-title').value.trim() || 'Bloqueado';
@@ -5220,7 +5299,8 @@
     };
 
     window.deleteBlockedHour = async function(id) {
-      if (!confirm('¿Estás seguro de que deseas eliminar este bloqueo de horario?')) return;
+      const confirmed = await showCustomConfirm('¿Estás seguro de que deseas eliminar este bloqueo de horario?', 'Confirmar Eliminación', 'warning');
+      if (!confirmed) return;
       try {
         showToast('Eliminando bloqueo...');
         const response = await fetch(`/api/tenants/${tenantId}/blocked-hours/${id}`, {
@@ -6616,12 +6696,12 @@
 
       if (!tenant.admin_pin) {
         // No tiene contraseña, pedir establecer una nueva (registro inicial del cliente)
-        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.14</span>`;
+        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.15</span>`;
         pinDescription.innerText = 'Este es tu primer acceso. Crea una contraseña segura de al menos 8 caracteres para proteger tu panel de citas.';
         btnPinSubmit.innerText = 'Establecer Contraseña y Entrar';
       } else {
         // Ya tiene contraseña, pedirla
-        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.14</span>`;
+        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.15</span>`;
         pinDescription.innerText = 'Introduce tu contraseña de acceso para autorizar el ingreso al panel.';
         btnPinSubmit.innerText = 'Acceder al Panel';
       }
