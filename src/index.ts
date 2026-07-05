@@ -3801,6 +3801,150 @@ app.delete('/api/tenants/:tenant_id/call-logs', async (req, res): Promise<void> 
   }
 });
 
+// 5D. Obtener horas bloqueadas de un inquilino
+app.get('/api/tenants/:tenant_id/blocked-hours', async (req, res): Promise<void> => {
+  const { tenant_id } = req.params;
+  try {
+    const { data, error } = await supabase
+      .from('blocked_hours')
+      .select('*')
+      .eq('tenant_id', tenant_id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      if (error.code === '42P01') {
+        res.json({ data: [], migration_required: true });
+        return;
+      }
+      throw error;
+    }
+
+    res.json({ status: 'success', data });
+  } catch (err: any) {
+    console.error('Error al obtener horas bloqueadas:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5E. Crear hora bloqueada
+app.post('/api/tenants/:tenant_id/blocked-hours', async (req, res): Promise<void> => {
+  const { tenant_id } = req.params;
+  const { title, block_date, start_time, end_time, recurrence, day_of_week } = req.body;
+
+  if (!start_time || !end_time) {
+    res.status(400).json({ error: 'La hora de inicio y fin son obligatorias.' });
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('blocked_hours')
+      .insert({
+        tenant_id,
+        title: title || 'Bloqueado',
+        block_date: block_date || null,
+        start_time,
+        end_time,
+        recurrence: recurrence || 'none',
+        day_of_week: day_of_week !== undefined && day_of_week !== null ? Number(day_of_week) : null
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ status: 'success', data });
+  } catch (err: any) {
+    console.error('Error al crear hora bloqueada:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5F. Eliminar hora bloqueada
+app.delete('/api/tenants/:tenant_id/blocked-hours/:id', async (req, res): Promise<void> => {
+  const { tenant_id, id } = req.params;
+  try {
+    const { error } = await supabase
+      .from('blocked_hours')
+      .delete()
+      .eq('id', id)
+      .eq('tenant_id', tenant_id);
+
+    if (error) throw error;
+
+    res.json({ status: 'success', message: 'Hora bloqueada eliminada.' });
+  } catch (err: any) {
+    console.error('Error al eliminar hora bloqueada:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5G. Duplicar hora bloqueada
+app.post('/api/tenants/:tenant_id/blocked-hours/:id/duplicate', async (req, res): Promise<void> => {
+  const { tenant_id, id } = req.params;
+  const { block_date, recurrence, day_of_week } = req.body;
+
+  try {
+    const { data: original, error: fetchErr } = await supabase
+      .from('blocked_hours')
+      .select('*')
+      .eq('id', id)
+      .eq('tenant_id', tenant_id)
+      .single();
+
+    if (fetchErr || !original) {
+      res.status(404).json({ error: 'No se encontró la regla original a duplicar.' });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('blocked_hours')
+      .insert({
+        tenant_id,
+        title: original.title,
+        block_date: block_date || original.block_date,
+        start_time: original.start_time,
+        end_time: original.end_time,
+        recurrence: recurrence || original.recurrence,
+        day_of_week: day_of_week !== undefined && day_of_week !== null ? Number(day_of_week) : original.day_of_week
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ status: 'success', data });
+  } catch (err: any) {
+    console.error('Error al duplicar hora bloqueada:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5H. Proxy de audio de conversación de ElevenLabs
+app.get('/api/conversations/:conversation_id/audio', async (req, res): Promise<void> => {
+  const { conversation_id } = req.params;
+  try {
+    const elevenApiKey = await getSettingVal('ELEVENLABS_API_KEY');
+    if (!elevenApiKey) {
+      res.status(400).send('ELEVENLABS_API_KEY no configurada');
+      return;
+    }
+
+    const response = await axios.get(`https://api.elevenlabs.io/v1/convai/conversations/${conversation_id}/audio`, {
+      headers: {
+        'xi-api-key': elevenApiKey
+      },
+      responseType: 'stream'
+    });
+
+    res.setHeader('Content-Type', 'audio/mpeg');
+    response.data.pipe(res);
+  } catch (err: any) {
+    console.error(`Error proxying ElevenLabs audio for ${conversation_id}:`, err.message);
+    res.status(500).send('Error al obtener el audio de la llamada');
+  }
+});
+
 // 5D. Desconectar Google Calendar de un inquilino
 app.post('/api/tenants/:tenant_id/disconnect-calendar', async (req, res): Promise<void> => {
   const { tenant_id } = req.params;
@@ -5358,6 +5502,22 @@ async function runDatabaseMigrations() {
       ADD COLUMN IF NOT EXISTS sip_username VARCHAR,
       ADD COLUMN IF NOT EXISTS sip_password VARCHAR,
       ADD COLUMN IF NOT EXISTS sip_server VARCHAR;
+    `);
+
+    // Crear tabla blocked_hours si no existe
+    await clientInstance.query(`
+      CREATE TABLE IF NOT EXISTS blocked_hours (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+        title VARCHAR DEFAULT 'Bloqueado',
+        block_date VARCHAR, -- Formato YYYY-MM-DD
+        start_time VARCHAR NOT NULL, -- Formato HH:MM
+        end_time VARCHAR NOT NULL, -- Formato HH:MM
+        recurrence VARCHAR DEFAULT 'none', -- 'none', 'weekly', 'monthly', 'always'
+        day_of_week INTEGER, -- 0 (Domingo) a 6 (Sábado) para semanal
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
     `);
 
     // 3. Notificar a PostgREST

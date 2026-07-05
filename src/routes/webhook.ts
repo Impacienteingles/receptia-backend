@@ -7,6 +7,52 @@ import { processBookingFlow } from '../services/booking-flow';
 
 const router = Router();
 
+function isSlotBlocked(slotTimeStr: string, queryDateStr: string, rules: any[]): boolean {
+  try {
+    const queryDate = new Date(queryDateStr + 'T00:00:00');
+    const queryDayOfWeek = queryDate.getDay(); // 0 (Domingo) - 6 (Sabado)
+    const queryDayOfMonth = queryDate.getDate();
+
+    for (const rule of rules) {
+      let matchesDate = false;
+
+      if (rule.recurrence === 'none') {
+        if (rule.block_date === queryDateStr) {
+          matchesDate = true;
+        }
+      } else if (rule.recurrence === 'always') {
+        matchesDate = true;
+      } else if (rule.recurrence === 'weekly') {
+        if (rule.day_of_week !== null && rule.day_of_week !== undefined) {
+          if (Number(rule.day_of_week) === queryDayOfWeek) {
+            matchesDate = true;
+          }
+        }
+      } else if (rule.recurrence === 'monthly') {
+        if (rule.block_date) {
+          const ruleDayOfMonth = new Date(rule.block_date + 'T00:00:00').getDate();
+          if (ruleDayOfMonth === queryDayOfMonth) {
+            matchesDate = true;
+          }
+        }
+      }
+
+      if (matchesDate) {
+        const start = rule.start_time.substring(0, 5);
+        const end = rule.end_time.substring(0, 5);
+        const target = slotTimeStr.substring(0, 5);
+        if (target >= start && target < end) {
+          return true;
+        }
+      }
+    }
+  } catch (err: any) {
+    console.error('Error checking isSlotBlocked:', err.message);
+  }
+  return false;
+}
+
+
 /**
  * Función auxiliar para obtener detalles de conexión de un inquilino desde Supabase.
  */
@@ -186,8 +232,18 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
       slotDurationMin,
       applyBreakRule
     );
+
+    // Obtener horas bloqueadas de Supabase
+    const { data: dbBlockedHours } = await supabase
+      .from('blocked_hours')
+      .select('*')
+      .eq('tenant_id', tenantId);
+
+    const blockedRules = dbBlockedHours || [];
+    const nonBlockedSlots = freeSlots.filter((slot: string) => !isSlotBlocked(slot, date, blockedRules));
+
     // Filtrar huecos libres según la duración requerida de la especialidad
-    let filteredSlots = freeSlots;
+    let filteredSlots = nonBlockedSlots;
     const specialty = args.specialty || '';
     const durationMinutes = calculateDuration(specialty, tenantId);
     const numBlocksNeeded = Math.ceil(durationMinutes / slotDurationMin);
@@ -393,6 +449,21 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
 
     const tenantId = await resolveTenantId(req);
     const tenantDetails = await getTenantDetailsForWebhook(tenantId);
+
+    // Verificar si la hora está bloqueada
+    const { data: dbBlockedHours } = await supabase
+      .from('blocked_hours')
+      .select('*')
+      .eq('tenant_id', tenantId);
+
+    const blockedRules = dbBlockedHours || [];
+    if (isSlotBlocked(time, date, blockedRules)) {
+      res.json({
+        status: 'success',
+        message: `El horario de las ${time} para el ${date} está reservado/bloqueado por el administrador y no admite citas. Por favor, sugiere otro horario al paciente.`
+      });
+      return;
+    }
 
     const host = req.get('host') || '';
     const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
@@ -656,6 +727,21 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
 
     const tenantId = await resolveTenantId(req);
     const tenantDetails = await getTenantDetailsForWebhook(tenantId);
+
+    // Verificar si la hora está bloqueada
+    const { data: dbBlockedHours } = await supabase
+      .from('blocked_hours')
+      .select('*')
+      .eq('tenant_id', tenantId);
+
+    const blockedRules = dbBlockedHours || [];
+    if (isSlotBlocked(new_time, new_date, blockedRules)) {
+      res.json({
+        status: 'success',
+        message: `El horario de las ${new_time} para el ${new_date} está bloqueado por el administrador. Por favor, sugiere otro horario al paciente.`
+      });
+      return;
+    }
 
     if (!tenantDetails.google_refresh_token) {
       res.json({
@@ -1027,6 +1113,144 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
     }
   }
   res.json({ status: 'ok' });
+});
+
+function extractCallerPhone(payload: any): string {
+  const data = payload?.data || {};
+  const metadata = data.metadata || {};
+  const variables = data.variables || {};
+
+  const possibleFields = [
+    metadata.system__caller_id,
+    metadata.caller_id,
+    metadata.phone_number,
+    metadata.from,
+    variables.system__caller_id,
+    variables.caller_id
+  ];
+
+  for (const field of possibleFields) {
+    if (field && typeof field === 'string' && field.trim().length > 0) {
+      return field.trim();
+    }
+  }
+
+  return 'Desconocido';
+}
+
+router.post('/elevenlabs-events', async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log('Webhook de evento de ElevenLabs recibido:', JSON.stringify(req.body));
+    const { type, data } = req.body;
+
+    if (type === 'post_call_transcription') {
+      const conversationId = data?.conversation_id;
+      const agentId = data?.agent_id;
+
+      if (!conversationId || !agentId) {
+        res.json({ status: 'ignored', message: 'Falta conversation_id o agent_id' });
+        return;
+      }
+
+      // Evitar duplicados
+      const { data: existingLog } = await supabase
+        .from('call_logs')
+        .select('id')
+        .eq('call_id', conversationId)
+        .maybeSingle();
+
+      if (existingLog) {
+        console.log(`[ElevenLabs Webhook] Registro de llamada existente detectado (ID: ${existingLog.id}). Ignorando duplicado.`);
+        res.json({ status: 'ignored', message: 'Duplicado' });
+        return;
+      }
+
+      // Buscar inquilino por agent_id (guardado en retell_agent_id)
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('id, text_back_enabled, text_back_message, phone_number')
+        .eq('retell_agent_id', agentId)
+        .maybeSingle();
+
+      if (!tenant) {
+        console.warn(`[ElevenLabs Webhook] No se encontró inquilino para agent_id: ${agentId}`);
+        res.json({ status: 'ignored', message: 'Inquilino no encontrado' });
+        return;
+      }
+
+      const callerPhone = extractCallerPhone(req.body);
+      const durationSeconds = data?.metadata?.call_duration_secs || 0;
+      const summary = data?.analysis?.transcript_summary || data?.transcript_summary || '';
+
+      // Dar formato al array del transcript
+      let transcriptText = '';
+      if (Array.isArray(data?.transcript)) {
+        transcriptText = data.transcript.map((t: any) => {
+          const role = t.role === 'agent' ? 'Agente' : 'Usuario';
+          return `${role}: ${t.message}`;
+        }).join('\n');
+      }
+
+      // Asignar etiqueta de intención en base al resumen y éxito
+      let intentTag = 'Consulta General';
+      const summaryLower = summary.toLowerCase();
+      if (summaryLower.includes('cita agendada') || summaryLower.includes('reserva') || summaryLower.includes('agendó')) {
+        intentTag = 'Cita Agendada';
+      } else if (summaryLower.includes('reclamación') || summaryLower.includes('queja') || summaryLower.includes('molesto') || summaryLower.includes('insatisfecho')) {
+        intentTag = 'Queja';
+      } else if (durationSeconds < 10) {
+        intentTag = 'Llamada Perdida';
+      }
+
+      // Generar link de proxy local para audio
+      const host = req.get('host') || '';
+      const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
+      const recordingUrl = `${protocol}://${host}/api/conversations/${conversationId}/audio`;
+
+      // Insertar registro
+      const { error: insErr } = await supabase
+        .from('call_logs')
+        .insert({
+          tenant_id: tenant.id,
+          caller_phone: callerPhone,
+          call_duration: durationSeconds,
+          recording_url: recordingUrl,
+          transcript: transcriptText,
+          summary: summary,
+          intent_tag: intentTag,
+          call_id: conversationId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+      if (insErr) {
+        throw insErr;
+      }
+
+      console.log(`[ElevenLabs Webhook] Llamada ${conversationId} registrada exitosamente para inquilino ${tenant.id}.`);
+
+      // Alertas de insatisfacción
+      const hasQueja = intentTag === 'Queja';
+      const transcriptLower = transcriptText.toLowerCase();
+      const keywords = ['queja', 'reclamación', 'reclamacion', 'insatisfecho', 'enfadado', 'molesto', 'mal servicio', 'hoja de reclamaciones', 'decepcionado', 'fatal', 'peor', 'estafa', 'engaño'];
+      const hasKeywords = keywords.some(kw => transcriptLower.includes(kw));
+
+      if ((hasQueja || hasKeywords) && tenant.phone_number) {
+        const cleanCallerPhone = callerPhone.split('|')[0].trim();
+        console.log(`[ElevenLabs Sentiment Alert] Detectada posible queja de ${cleanCallerPhone}. Enviando alerta al administrador...`);
+        const alertMsg = `⚠️ ALERTA DE INSATISFACCIÓN EN LLAMADA (ElevenLabs) ⚠️\n\nHola, hemos detectado una posible queja o cliente molesto en una conversación de voz:\n\n🔹 Cliente: ${cleanCallerPhone}\n🔹 Resumen de la llamada: ${summary || 'Sin resumen disponible.'}\n\n📞 Puedes llamarle de vuelta pinchando aquí:\n👉 https://wa.me/${cleanCallerPhone.replace(/\+/g, '')} o tel:${cleanCallerPhone}`;
+        
+        sendWhatsAppMessage(tenant.phone_number, alertMsg, tenant.id)
+          .then(sent => console.log(`[Sentiment Alert] WhatsApp de alerta enviado al admin ${tenant.phone_number}: ${sent}`))
+          .catch(err => console.error(`[Sentiment Alert Error] Error al enviar alerta:`, err.message));
+      }
+    }
+    
+    res.json({ status: 'ok' });
+  } catch (err: any) {
+    console.error('Error en /elevenlabs-events:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;
