@@ -18,5 +18,16 @@
       "source": "/oauth2callback",
       "destination": "https://corandar.onrender.com/oauth2callback"
     }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\\.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, force-revalidate"
+        }
+      ]
+    }
   ]
 }

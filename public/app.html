@@ -7188,7 +7188,7 @@
     // Cargar datos de inquilino por ID
     async function loadTenantData(id) {
       try {
-        const savedPin = sessionStorage.getItem('current_tenant_pin') || '';
+        const savedPin = sessionStorage.getItem('current_tenant_pin') || localStorage.getItem('current_tenant_pin') || '';
         const urlParams = new URLSearchParams(window.location.search);
         const adminToken = urlParams.get('admin_token') || sessionStorage.getItem('admin_token') || '';
         
@@ -7255,55 +7255,70 @@
 
     // Comprobar la seguridad del PIN/Contraseña
     function checkPinSecurity(tenant) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const isBypass = urlParams.get('bypass_pin') === 'true' || sessionStorage.getItem('admin_token');
-      const savedPin = sessionStorage.getItem('current_tenant_pin') || localStorage.getItem('current_tenant_pin');
-      
-      if (isBypass || (savedPin && tenant.admin_pin && savedPin === tenant.admin_pin)) {
-        dismissPinModal();
-        return;
-      }
-      
-      pinModal.style.display = 'flex';
-      
-      const emailInput = document.getElementById('client-login-email');
-      if (emailInput && tenant && tenant.email) {
-        emailInput.value = tenant.email;
-      }
-
-      setTimeout(() => {
-        if (emailInput && !emailInput.value) {
-          emailInput.focus();
-        } else if (pinInput) {
-          pinInput.focus();
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isBypass = urlParams.get('bypass_pin') === 'true' || sessionStorage.getItem('admin_token');
+        const savedPin = sessionStorage.getItem('current_tenant_pin') || localStorage.getItem('current_tenant_pin');
+        
+        if (isBypass || (savedPin && tenant.admin_pin && savedPin === tenant.admin_pin)) {
+          dismissPinModal();
+          return;
         }
-      }, 100);
-      
-      const pinRememberEl = document.getElementById('pin-remember');
-      if (pinRememberEl) {
-        pinRememberEl.checked = !!localStorage.getItem('current_tenant_pin');
-      }
-
-      if (!tenant.admin_pin) {
-        // No tiene contraseña, pedir establecer una nueva (registro inicial del cliente)
-        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.27</span>`;
-        pinDescription.innerText = 'Este es tu primer acceso. Crea una contraseña segura de al menos 8 caracteres para proteger tu panel de citas.';
-        btnPinSubmit.innerText = 'Establecer Contraseña y Entrar';
-      } else {
-        // Ya tiene contraseña, pedirla
-        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.27</span>`;
-        pinDescription.innerText = 'Introduce tu contraseña de acceso para autorizar el ingreso al panel.';
-        btnPinSubmit.innerText = 'Acceder al Panel';
-      }
-
-      btnPinSubmit.onclick = () => handlePinSubmit(tenant);
-      pinInput.oninput = null; // Quitar auto-submit de 4 dígitos ya que ahora es contraseña
-      pinInput.onkeydown = (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          handlePinSubmit(tenant);
+        
+        const pinModalEl = document.getElementById('pin-modal');
+        if (pinModalEl) pinModalEl.style.display = 'flex';
+        
+        const emailInput = document.getElementById('client-login-email');
+        if (emailInput && tenant && tenant.email) {
+          emailInput.value = tenant.email;
         }
-      };
+
+        const pinInputEl = document.getElementById('pin-input');
+        const pinTitleEl = document.getElementById('pin-title');
+        const pinDescriptionEl = document.getElementById('pin-description');
+        const btnPinSubmitEl = document.getElementById('btn-pin-submit');
+
+        setTimeout(() => {
+          if (emailInput && !emailInput.value) {
+            emailInput.focus();
+          } else if (pinInputEl) {
+            pinInputEl.focus();
+          }
+        }, 100);
+        
+        const pinRememberEl = document.getElementById('pin-remember');
+        if (pinRememberEl) {
+          pinRememberEl.checked = !!localStorage.getItem('current_tenant_pin');
+        }
+
+        if (!tenant.admin_pin) {
+          // No tiene contraseña, pedir establecer una nueva (registro inicial del cliente)
+          if (pinTitleEl) pinTitleEl.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.27</span>`;
+          if (pinDescriptionEl) pinDescriptionEl.innerText = 'Este es tu primer acceso. Crea una contraseña segura de al menos 8 caracteres para proteger tu panel de citas.';
+          if (btnPinSubmitEl) btnPinSubmitEl.innerText = 'Establecer Contraseña y Entrar';
+        } else {
+          // Ya tiene contraseña, pedirla
+          if (pinTitleEl) pinTitleEl.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.27</span>`;
+          if (pinDescriptionEl) pinDescriptionEl.innerText = 'Introduce tu contraseña de acceso para autorizar el ingreso al panel.';
+          if (btnPinSubmitEl) btnPinSubmitEl.innerText = 'Acceder al Panel';
+        }
+
+        if (btnPinSubmitEl) {
+          btnPinSubmitEl.onclick = () => handlePinSubmit(tenant);
+        }
+        if (pinInputEl) {
+          pinInputEl.oninput = null; // Quitar auto-submit de 4 dígitos ya que ahora es contraseña
+          pinInputEl.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handlePinSubmit(tenant);
+            }
+          };
+        }
+      } catch (err) {
+        console.error('Error in checkPinSecurity:', err);
+        showToast('Error de seguridad del panel: ' + err.message, 'error');
+      }
     }
 
     // Validar o registrar la Contraseña

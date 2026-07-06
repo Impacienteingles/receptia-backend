@@ -177,7 +177,9 @@ async function requireClientPin(req: any, res: any, next: any) {
 
   // Omitir endpoints públicos que no requieren autenticación de PIN
   if (
+    req.path === '/tenants' ||
     req.path === '/api/tenants' ||
+    url.includes('/api/tenants') ||
     url.includes('/api/auth/login') ||
     url.includes('/api/auth/recover-pin') ||
     url.includes('/api/payments/webhook') ||
