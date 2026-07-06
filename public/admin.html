@@ -1823,7 +1823,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.1.15</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.1.16</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2051,7 +2051,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.1.15</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.1.16</span>
       </div>
     </aside>
 
@@ -2074,7 +2074,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.15</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.16</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -3920,11 +3920,22 @@
               </div>
             </div>
 
+            <!-- ACCIONES POR LOTE PARA HISTORIAL DE CAMPAÑAS -->
+            <div id="email-campaigns-bulk-actions" style="display: none; align-items: center; gap: 1rem; margin-bottom: 1.5rem; background: rgba(239, 68, 68, 0.05); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.15); width: fit-content;">
+              <span id="email-campaigns-selected-count" style="font-size: 0.85rem; color: #fff; font-weight: 500;">
+                0 campañas seleccionadas
+              </span>
+              <button class="btn btn-secondary" onclick="deleteSelectedEmailCampaigns()" style="padding: 0.4rem 0.75rem; font-size: 0.8rem; height: auto; color: #f87171; border-color: rgba(248, 113, 113, 0.3); display: inline-flex; align-items: center; gap: 0.25rem; background: transparent; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.background='transparent'">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Eliminar Seleccionadas
+              </button>
+            </div>
+
             <!-- TABLA DE HISTORIAL DE CAMPAÑAS -->
             <div class="table-responsive">
               <table>
                 <thead>
                   <tr>
+                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="campaigns-select-all" onclick="toggleSelectAllCampaigns(this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);"></th>
                     <th>Nombre de Campaña</th>
                     <th>Asunto</th>
                     <th>Plantilla</th>
@@ -3938,7 +3949,7 @@
                 </thead>
                 <tbody id="email-campaigns-tbody">
                   <tr>
-                    <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                       Cargando historial de campañas de marketing...
                     </td>
                   </tr>
@@ -6344,8 +6355,14 @@
     let emailMarketingManualEmails = [];
 
     // Cargar historial de campañas
+    // Cargar historial de campañas
     async function fetchEmailCampaigns() {
       try {
+        const selectAllCheckbox = document.getElementById('campaigns-select-all');
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+        const bulkContainer = document.getElementById('email-campaigns-bulk-actions');
+        if (bulkContainer) bulkContainer.style.display = 'none';
+
         const response = await fetch(`/api/admin/email-marketing/campaigns?_=${Date.now()}`);
         if (!response.ok) throw new Error('Error al obtener campañas');
         const campaigns = await response.json();
@@ -6353,7 +6370,7 @@
         // Renderizar tabla
         const tbody = document.getElementById('email-campaigns-tbody');
         if (campaigns.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No hay campañas de email marketing enviadas.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No hay campañas de email marketing enviadas.</td></tr>`;
           return;
         }
 
@@ -6372,6 +6389,7 @@
 
           return `
             <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="text-align: center; padding: 1rem;"><input type="checkbox" class="campaign-select-cb" value="${c.id}" onchange="updateCampaignsBulkActions()" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);"></td>
               <td style="padding: 1rem; font-weight: 600; color: #fff;">${escapeHtml(c.name)}</td>
               <td style="padding: 1rem; color: var(--text-muted);">${escapeHtml(c.subject)}</td>
               <td style="padding: 1rem; color: var(--text-muted); font-size: 0.85rem;">${templateName}</td>
@@ -6421,6 +6439,69 @@
         showToast('Error al cargar historial de campañas', 'error');
       }
     }
+
+    // Acciones por lote de Campañas de Email Marketing
+    function updateCampaignsBulkActions() {
+      const checkedBoxes = document.querySelectorAll('.campaign-select-cb:checked');
+      const container = document.getElementById('email-campaigns-bulk-actions');
+      const countEl = document.getElementById('email-campaigns-selected-count');
+      const selectAll = document.getElementById('campaigns-select-all');
+      const totalBoxes = document.querySelectorAll('.campaign-select-cb');
+
+      if (checkedBoxes.length > 0) {
+        container.style.display = 'flex';
+        countEl.innerText = `${checkedBoxes.length} campaña${checkedBoxes.length > 1 ? 's' : ''} seleccionada${checkedBoxes.length > 1 ? 's' : ''}`;
+      } else {
+        container.style.display = 'none';
+      }
+
+      if (selectAll) {
+        selectAll.checked = totalBoxes.length > 0 && checkedBoxes.length === totalBoxes.length;
+      }
+    }
+
+    function toggleSelectAllCampaigns(master) {
+      document.querySelectorAll('.campaign-select-cb').forEach(cb => {
+        cb.checked = master.checked;
+      });
+      updateCampaignsBulkActions();
+    }
+
+    async function deleteSelectedEmailCampaigns() {
+      const checkedBoxes = document.querySelectorAll('.campaign-select-cb:checked');
+      if (checkedBoxes.length === 0) return;
+
+      const ids = Array.from(checkedBoxes).map(cb => cb.value);
+      const msg = `¿Estás seguro de que deseas eliminar permanentemente las ${ids.length} campañas seleccionadas?<br><br>Se borrará también todo su historial de destinatarios, aperturas, clics y métricas asociadas de forma irreversible.`;
+      
+      const confirmed = await showCustomConfirm(msg, 'Confirmar Eliminación', 'warning');
+      if (!confirmed) return;
+
+      showProgressModal('Eliminando Campañas', 'Por favor espera mientras eliminamos las campañas seleccionadas...');
+
+      try {
+        const response = await fetch('/api/admin/email-marketing/campaigns', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-token': sessionStorage.getItem('admin_token') || localStorage.getItem('admin_token') || ''
+          },
+          body: JSON.stringify({ ids })
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Error al eliminar campañas');
+
+        closeProgressModal();
+        await showCustomAlert(`Se han eliminado ${result.deletedCount} campañas correctamente.`, 'Proceso Finalizado', 'success');
+        fetchEmailCampaigns();
+      } catch (err) {
+        closeProgressModal();
+        console.error('[deleteSelectedEmailCampaigns] Error:', err);
+        showToast('Error al eliminar campañas: ' + err.message, 'error');
+      }
+    }
+
 
     // Cargar contactos disponibles para marketing
     async function fetchEmailMarketingContacts() {

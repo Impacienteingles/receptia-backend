@@ -211,6 +211,31 @@ router.post('/campaigns', async (req: Request, res: Response): Promise<void> => 
   }
 });
 
+// DELETE /api/admin/email-marketing/campaigns - Eliminar una o varias campañas
+router.delete('/campaigns', async (req: Request, res: Response): Promise<void> => {
+  const { ids } = req.body;
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    res.status(400).json({ error: 'Debes proporcionar un array de IDs de campañas a eliminar.' });
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('email_campaigns')
+      .delete()
+      .in('id', ids);
+
+    if (error) throw error;
+
+    res.json({ success: true, deletedCount: ids.length });
+  } catch (err: any) {
+    console.error('[Email Marketing Campaigns Delete] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Función auxiliar para renderizar la plantilla HTML seleccionada
 function buildHtmlFromTemplate(templateId: string, subject: string, bodyText: string, recipientId: string, baseUrl: string): string {
   // Enlaces de tracking
