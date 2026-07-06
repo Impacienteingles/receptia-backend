@@ -411,14 +411,32 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
         agent: {
           first_message: firstMessage,
           prompt: {
-            prompt: systemPrompt
+            prompt: systemPrompt,
+            llm: 'gemini-2.5-flash',
+            temperature: 0.3
           },
-          voice: {
-            voice_id: finalVoiceId,
-            speed: tenant.personality_speed !== undefined ? Number(tenant.personality_speed) : (tenant.voice_speed !== undefined ? Number(tenant.voice_speed) : 1.09),
-            stability: tenant.voice_temperature !== undefined ? Math.max(0, Math.min(1, Number(tenant.voice_temperature) * 0.4)) : 0.40,
-            similarity_boost: 0.85
-          }
+          language: 'es'
+        },
+        tts: {
+          model_id: 'eleven_flash_v2_5',
+          voice_id: finalVoiceId,
+          speed: tenant.personality_speed !== undefined ? Number(tenant.personality_speed) : (tenant.voice_speed !== undefined ? Number(tenant.voice_speed) : 1.09),
+          stability: tenant.voice_temperature !== undefined ? Math.max(0, Math.min(1, Number(tenant.voice_temperature) * 0.4)) : 0.40,
+          similarity_boost: 0.85
+        },
+        turn: {
+          turn_timeout: 2,
+          turn_eagerness: 'eager'
+        },
+        conversation: {
+          client_events: [
+            'audio',
+            'interruption',
+            'agent_response',
+            'user_transcript',
+            'agent_response_correction',
+            'agent_tool_response'
+          ]
         }
       }
     };
