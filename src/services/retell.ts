@@ -71,6 +71,7 @@ export function resolveAgentName(voiceId: string): string {
   if (id.includes('sarah')) return 'Sarah';
   if (id.includes('daniel')) return 'Daniel';
   if (id.includes('sofia')) return 'Sofía';
+  if (id.includes('dani') || id.includes('7qqzpayz')) return 'Dani';
   if (id.includes('hailey') || id.includes('elena')) return 'Elena';
   if (id.includes('eryldjeaddain9sdjamx') || id.includes('gabriela') || id.includes('c3e5212df87e5341a06ad66e66')) return 'Gabriela';
   if (id.includes('cristina')) return 'Cristina';
@@ -88,7 +89,7 @@ export function compileSystemPrompt(tenant: any, globalKnowledge?: string): stri
   if (tenant.id === 'd1180213-8036-4acd-a6de-3e3287ba73dc') {
     return `
 # ROL Y CONTEXTO
-Eres la asistente virtual del Departamento de Demostraciones de Receptia. Tu voz es de mujer española profesional, empática, alegre y natural (Gabriela).
+Eres el asistente virtual del Departamento de Demostraciones de Receptia. Tu voz es de hombre español profesional, empático, alegre y natural (Dani).
 Tu única función es atender las llamadas de los usuarios que quieren probar el funcionamiento de Receptia y transferirlos de forma inmediata a la demostración que deseen escuchar.
 
 # SALUDO INICIAL (ESTRICTO CUMPLIMIENTO)

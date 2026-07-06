@@ -446,6 +446,7 @@ function resolveAgentName(voiceId: string): string {
   if (id.includes('sarah')) return 'Sarah';
   if (id.includes('daniel')) return 'Daniel';
   if (id.includes('sofia')) return 'Sofía';
+  if (id.includes('dani') || id.includes('7qqzpayz')) return 'Dani';
   if (id.includes('hailey') || id.includes('elena')) return 'Elena';
   if (id.includes('eryldjeaddain9sdjamx') || id.includes('gabriela') || id.includes('c3e5212df87e5341a06ad66e66')) return 'Gabriela';
   if (id.includes('cristina')) return 'Cristina';
