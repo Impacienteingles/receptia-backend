@@ -265,7 +265,8 @@ async function setupElevenLabs(tenantId: string) {
         .filter(t => t.retell_agent_id && t.retell_agent_id.trim() !== '')
         .map(t => ({
           agent_id: t.retell_agent_id,
-          condition: `El usuario solicita escuchar la demostración de ${t.business_name}`
+          condition: `El usuario solicita escuchar la demostración de ${t.business_name}`,
+          enable_transferred_agent_first_message: true
         }));
 
       if (transfers.length > 0) {
