@@ -274,6 +274,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
         conversation: {
           client_events: [
             'audio',
+            'interruption',
             'agent_response',
             'user_transcript',
             'agent_response_correction',
