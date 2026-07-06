@@ -1273,7 +1273,7 @@
       <img src="/receptia_logo.png" alt="Logo Receptia" style="width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Panel Protegido
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.19</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.20</span>
       </h3>
       <p id="pin-description" style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Por favor, introduce tu contraseña de acceso para gestionar tu agenda de citas.</p>
       
@@ -2424,7 +2424,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.19</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.20</span>
           <button onclick="handleClientLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -6105,7 +6105,8 @@
         }
 
         body.innerHTML = list.map(c => {
-          const dateStr = new Date(c.created_at).toLocaleDateString('es-ES', { hour: '2-digit', minute: '2-digit' });
+          const d = c.created_at ? new Date(c.created_at) : null;
+          const dateStr = (d && !isNaN(d.getTime())) ? d.toLocaleDateString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '-';
           let statusBadge = '';
           if (c.status === 'pending') statusBadge = '<span style="background: rgba(255,255,255,0.05); color: #fff; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Pendiente</span>';
           else if (c.status === 'running') statusBadge = '<span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; animation: pulse 2s infinite;">Llamando</span>';
@@ -7271,12 +7272,12 @@
 
       if (!tenant.admin_pin) {
         // No tiene contraseña, pedir establecer una nueva (registro inicial del cliente)
-        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.19</span>`;
+        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.20</span>`;
         pinDescription.innerText = 'Este es tu primer acceso. Crea una contraseña segura de al menos 8 caracteres para proteger tu panel de citas.';
         btnPinSubmit.innerText = 'Establecer Contraseña y Entrar';
       } else {
         // Ya tiene contraseña, pedirla
-        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.19</span>`;
+        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.20</span>`;
         pinDescription.innerText = 'Introduce tu contraseña de acceso para autorizar el ingreso al panel.';
         btnPinSubmit.innerText = 'Acceder al Panel';
       }
@@ -7953,10 +7954,23 @@
       }
     }
 
+    function safeFormatDate(dateVal) {
+      if (!dateVal) return '-';
+      const d = new Date(dateVal);
+      return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('es-ES');
+    }
+
+    function safeFormatDateTime(dateVal) {
+      if (!dateVal) return '-';
+      const d = new Date(dateVal);
+      return isNaN(d.getTime()) ? '-' : d.toLocaleString('es-ES');
+    }
+
     // Inicializar el panel de control tras autenticación
     function initializeClientDashboard() {
-      // Verificar estado de prueba y expiración
-      const trialBanner = document.getElementById('trial-banner');
+      try {
+        // Verificar estado de prueba y expiración
+        const trialBanner = document.getElementById('trial-banner');
       const expiredOverlay = document.getElementById('subscription-expired-overlay');
       
       // Reset displays
@@ -8127,7 +8141,7 @@
         txtPMSSyncToken.value = currentTenant.pms_sync_token || '';
       }
       if (pmsLastSyncEl && currentTenant.pms_last_sync) {
-        pmsLastSyncEl.innerText = `Última sincronización exitosa: ${new Date(currentTenant.pms_last_sync).toLocaleString('es-ES')}`;
+        pmsLastSyncEl.innerText = `Última sincronización exitosa: ${safeFormatDateTime(currentTenant.pms_last_sync)}`;
       }
 
       // Cargar canales de notificación
@@ -8257,14 +8271,12 @@
         const cycle = currentTenant.billing_cycle === 'annually' ? 'año' : 'mes';
         document.getElementById('lbl-sub-price').innerText = `${price.toLocaleString('es-ES')}€ / ${cycle}`;
         
-        document.getElementById('lbl-sub-start').innerText = currentTenant.contract_start_date
-          ? new Date(currentTenant.contract_start_date).toLocaleDateString('es-ES')
-          : '-';
-
+        document.getElementById('lbl-sub-start').innerText = safeFormatDate(currentTenant.contract_start_date);
+        
         const divSubEnd = document.getElementById('div-sub-end');
         if (currentTenant.contract_end_date && divSubEnd) {
           divSubEnd.style.display = 'flex';
-          document.getElementById('lbl-sub-end').innerText = new Date(currentTenant.contract_end_date).toLocaleDateString('es-ES');
+          document.getElementById('lbl-sub-end').innerText = safeFormatDate(currentTenant.contract_end_date);
         } else if (divSubEnd) {
           divSubEnd.style.display = 'none';
         }
@@ -8310,8 +8322,8 @@
                     <i data-lucide="check-circle-2" style="width: 16px; height: 16px; color: var(--success);"></i> Contrato completamente firmado.
                   </div>
                   <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                    Firmado por admin: ${currentTenant.admin_signature_name} (${new Date(currentTenant.signed_by_admin_at).toLocaleDateString('es-ES')})<br>
-                    Firmado por ti: ${currentTenant.client_signature_name} (${new Date(currentTenant.signed_by_client_at).toLocaleDateString('es-ES')})
+                    Firmado por admin: ${currentTenant.admin_signature_name} (${safeFormatDate(currentTenant.signed_by_admin_at)})<br>
+                    Firmado por ti: ${currentTenant.client_signature_name} (${safeFormatDate(currentTenant.signed_by_client_at)})
                   </div>
                 `;
               }
@@ -8583,6 +8595,9 @@
       
       // Aplicar restricciones según plan contratado
       applyPlanConstraints();
+      } catch (err) {
+        console.error('Error in initializeClientDashboard:', err);
+      }
     }
 
     function applyPlanConstraints() {
@@ -9303,14 +9318,12 @@
           const cycle = currentTenant.billing_cycle === 'annually' ? 'año' : 'mes';
           document.getElementById('lbl-sub-price').innerText = price ? `${price.toFixed(2)}€ / ${cycle}` : '0.00€';
 
-          document.getElementById('lbl-sub-start').innerText = currentTenant.contract_start_date
-            ? new Date(currentTenant.contract_start_date).toLocaleDateString('es-ES')
-            : '-';
+          document.getElementById('lbl-sub-start').innerText = safeFormatDate(currentTenant.contract_start_date);
 
           const divSubEnd = document.getElementById('div-sub-end');
           if (currentTenant.contract_end_date && divSubEnd) {
             divSubEnd.style.display = 'flex';
-            document.getElementById('lbl-sub-end').innerText = new Date(currentTenant.contract_end_date).toLocaleDateString('es-ES');
+            document.getElementById('lbl-sub-end').innerText = safeFormatDate(currentTenant.contract_end_date);
           } else if (divSubEnd) {
             divSubEnd.style.display = 'none';
           }
@@ -9356,8 +9369,8 @@
                     <i data-lucide="check-circle-2" style="width: 16px; height: 16px; color: var(--success);"></i> Contrato completamente firmado.
                   </div>
                   <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                    Firmado por admin: ${currentTenant.admin_signature_name} (${new Date(currentTenant.signed_by_admin_at).toLocaleDateString('es-ES')})<br>
-                    Firmado por ti: ${currentTenant.client_signature_name} (${new Date(currentTenant.signed_by_client_at).toLocaleDateString('es-ES')})
+                    Firmado por admin: ${currentTenant.admin_signature_name} (${safeFormatDate(currentTenant.signed_by_admin_at)})<br>
+                    Firmado por ti: ${currentTenant.client_signature_name} (${safeFormatDate(currentTenant.signed_by_client_at)})
                   </div>
                 `;
               }
@@ -11229,7 +11242,7 @@ ${cleanAudio}`;
             const consolidatedApplied = {};
             appliedCommissions.forEach(c => {
               const invId = c.applied_invoice_id || 'Factura';
-              const dateStr = new Date(c.created_at).toLocaleDateString('es-ES');
+              const dateStr = safeFormatDate(c.created_at);
               if (!consolidatedApplied[invId]) {
                 consolidatedApplied[invId] = { date: dateStr, amount: 0, invoice_id: invId };
               }

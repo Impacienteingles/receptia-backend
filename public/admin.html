@@ -4987,6 +4987,13 @@
       };
     })();
 
+    function safeFormatDate(val, options = {}) {
+      if (!val) return '-';
+      const d = new Date(val);
+      if (isNaN(d.getTime())) return '-';
+      return d.toLocaleDateString('es-ES', options);
+    }
+
     async function handleAdminRecoverPassword(e) {
       if (e) e.preventDefault();
       
@@ -8434,7 +8441,7 @@
 
       allTransactions.forEach(trans => {
         const row = document.createElement('tr');
-        const dateStr = new Date(trans.date).toLocaleDateString('es-ES');
+        const dateStr = safeFormatDate(trans.date);
         const badge = trans.type === 'expense' 
           ? `<span class="badge badge-danger">Gasto 🔴</span>`
           : `<span class="badge badge-success">Ingreso 🟢</span>`;
@@ -8465,7 +8472,7 @@
       tbody.innerHTML = '';
 
       const filtered = allTransactions.filter(trans => {
-        const dateStr = new Date(trans.date).toLocaleDateString('es-ES').toLowerCase();
+        const dateStr = safeFormatDate(trans.date).toLowerCase();
         const concept = trans.concept.toLowerCase();
         const amountStr = trans.amount.toString();
         const typeStr = trans.type === 'expense' ? 'gasto expense salida' : 'ingreso income entrada';
@@ -8479,7 +8486,7 @@
 
       filtered.forEach(trans => {
         const row = document.createElement('tr');
-        const dateStr = new Date(trans.date).toLocaleDateString('es-ES');
+        const dateStr = safeFormatDate(trans.date);
         const badge = trans.type === 'expense' 
           ? `<span class="badge badge-danger">Gasto 🔴</span>`
           : `<span class="badge badge-success">Ingreso 🟢</span>`;
@@ -12666,7 +12673,7 @@
           <td>${tenant.subscription_plan || 'Estándar'}</td>
           <td style="font-weight: 600;">${price.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
           <td>${tenant.billing_cycle === 'annually' ? 'Anual' : 'Mensual'}</td>
-          <td>${new Date(tenant.contract_start_date).toLocaleDateString('es-ES')}</td>
+          <td>${safeFormatDate(tenant.contract_start_date)}</td>
           <td><span class="badge badge-success">Pagado / Recurrente 🟢</span></td>
           <td>${actionBtn}</td>
         `;
