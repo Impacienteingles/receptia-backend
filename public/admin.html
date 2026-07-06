@@ -1823,7 +1823,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.9.43</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.9.44</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2051,7 +2051,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.9.43</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.9.44</span>
       </div>
     </aside>
 
@@ -2074,7 +2074,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.43</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.44</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -9536,10 +9536,10 @@
         const formattedType = t.type === 'income' ? 'Ingreso 🟢' : 'Gasto 🔴';
         transRowsHtml += `
           <tr>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedDate}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedConcept}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold; color: \${t.type === 'income' ? '#10B981' : '#EF4444'}">\${formattedAmount}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedType}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedDate}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedConcept}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold; color: ${t.type === 'income' ? '#10B981' : '#EF4444'}">${formattedAmount}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedType}</td>
           </tr>
         `;
       });
@@ -9554,17 +9554,17 @@
         const formattedDate = t.created_at ? new Date(t.created_at).toLocaleDateString('es-ES') : '-';
         recurrentRowsHtml += `
           <tr>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedBusiness}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedPlan}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold; color: #10B981">\${formattedAmount}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedCycle}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedDate}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedBusiness}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedPlan}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold; color: #10B981">${formattedAmount}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedCycle}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedDate}</td>
           </tr>
         `;
       });
 
       const printWindow = window.open('', '_blank');
-      printWindow.document.write(\`
+      printWindow.document.write(`
         <html>
           <head>
             <title>Informe de Contabilidad - Receptia</title>
@@ -9586,25 +9586,25 @@
           <body>
             <div class="header">
               <h1>Receptia - Informe Financiero</h1>
-              <span class="date">Fecha de Emisión: \${new Date().toLocaleDateString('es-ES')}</span>
+              <span class="date">Fecha de Emisión: ${new Date().toLocaleDateString('es-ES')}</span>
             </div>
             
             <div class="metrics">
               <div class="metric-box">
                 <div class="metric-label">MRR (Mensual)</div>
-                <div class="metric-val">\${mrrVal}</div>
+                <div class="metric-val">${mrrVal}</div>
               </div>
               <div class="metric-box">
                 <div class="metric-label">Ingresos Totales</div>
-                <div class="metric-val" style="color: #10B981;">\${totalIncomeVal}</div>
+                <div class="metric-val" style="color: #10B981;">${totalIncomeVal}</div>
               </div>
               <div class="metric-box">
                 <div class="metric-label">Gastos Totales</div>
-                <div class="metric-val" style="color: #EF4444;">\${totalExpensesVal}</div>
+                <div class="metric-val" style="color: #EF4444;">${totalExpensesVal}</div>
               </div>
               <div class="metric-box">
                 <div class="metric-label">Beneficio Neto</div>
-                <div class="metric-val">\${netProfitVal}</div>
+                <div class="metric-val">${netProfitVal}</div>
               </div>
             </div>
 
@@ -9620,7 +9620,7 @@
                 </tr>
               </thead>
               <tbody>
-                \${recurrentRowsHtml || '<tr><td colspan="5" style="text-align: center; color: #666; padding: 10px;">No hay cobros recurrentes activos.</td></tr>'}
+                ${recurrentRowsHtml || '<tr><td colspan="5" style="text-align: center; color: #666; padding: 10px;">No hay cobros recurrentes activos.</td></tr>'}
               </tbody>
             </table>
 
@@ -9635,7 +9635,7 @@
                 </tr>
               </thead>
               <tbody>
-                \${transRowsHtml || '<tr><td colspan="4" style="text-align: center; color: #666; padding: 10px;">No hay transacciones registradas.</td></tr>'}
+                ${transRowsHtml || '<tr><td colspan="4" style="text-align: center; color: #666; padding: 10px;">No hay transacciones registradas.</td></tr>'}
               </tbody>
             </table>
 
@@ -9646,10 +9646,10 @@
                   window.close();
                 };
               };
-            </script>
+            <\/script>
           </body>
         </html>
-      \`);
+      `);
       printWindow.document.close();
     }
 
