@@ -235,12 +235,17 @@ function buildHtmlFromTemplate(templateId: string, subject: string, bodyText: st
       <div style="background-color: #f3f4f6; padding: 2rem 1rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border: 1px solid #e5e7eb;">
           
-          <!-- Header con Logo de Corandar (Fondo blanco, esquinas redondeadas) -->
-          <div style="background-color: #ffffff; padding: 1.5rem; text-align: center; border-bottom: 1px solid #f3f4f6;">
-            <div style="display: inline-block; background-color: #ffffff; padding: 0.5rem 1rem; border-radius: 10px; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
-              <span style="font-weight: 800; font-size: 1.4rem; color: #111827; letter-spacing: -0.025em;">CORANDAR</span>
-            </div>
-          </div>
+          <!-- Header con logos en horizontal -->
+          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-bottom: 1px solid #f3f4f6; width: 100%;">
+            <tr>
+              <td align="left" style="padding: 1.25rem 2rem; vertical-align: middle;">
+                <img src="https://receptia.corandar.com/logo.png" alt="Receptia AI" style="height: 28px; max-width: 120px; display: block; border: 0; outline: none; object-fit: contain;">
+              </td>
+              <td align="right" style="padding: 1.25rem 2rem; vertical-align: middle;">
+                <img src="https://receptia.corandar.com/corandar-logo.png" alt="Corandar" style="height: 22px; max-width: 120px; display: block; border: 0; outline: none; object-fit: contain;">
+              </td>
+            </tr>
+          </table>
 
           <!-- Cuerpo -->
           <div style="padding: 2.5rem 2rem;">
@@ -282,6 +287,18 @@ function buildHtmlFromTemplate(templateId: string, subject: string, bodyText: st
       <div style="background-color: #0b0f19; padding: 2rem 1rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #111827; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid #1f2937;">
           
+          <!-- Header con logos en horizontal -->
+          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-bottom: 1px solid #e5e7eb; width: 100%;">
+            <tr>
+              <td align="left" style="padding: 1rem 1.5rem; vertical-align: middle;">
+                <img src="https://receptia.corandar.com/logo.png" alt="Receptia AI" style="height: 28px; max-width: 120px; display: block; border: 0; outline: none; object-fit: contain;">
+              </td>
+              <td align="right" style="padding: 1rem 1.5rem; vertical-align: middle;">
+                <img src="https://receptia.corandar.com/corandar-logo.png" alt="Corandar" style="height: 22px; max-width: 120px; display: block; border: 0; outline: none; object-fit: contain;">
+              </td>
+            </tr>
+          </table>
+
           <!-- Header con Logo de Receptia (Púrpura, esquinas redondeadas) -->
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 2rem; text-align: center;">
             <div style="display: inline-block; background-color: rgba(255,255,255,0.1); padding: 0.5rem 1.25rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);">
@@ -326,11 +343,17 @@ function buildHtmlFromTemplate(templateId: string, subject: string, bodyText: st
           
           <div style="background-color: #7c3aed; height: 6px;"></div>
           
-          <!-- Header -->
-          <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 800; font-size: 1.25rem; color: #7c3aed;">🔮 RECEPTIA NEWS</span>
-            <span style="font-size: 0.8rem; color: #9ca3af; font-weight: 500;">Boletín Mensual</span>
-          </div>
+          <!-- Header con logos en horizontal -->
+          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-bottom: 1px solid #e5e7eb; width: 100%;">
+            <tr>
+              <td align="left" style="padding: 1rem 1.5rem; vertical-align: middle;">
+                <img src="https://receptia.corandar.com/logo.png" alt="Receptia AI" style="height: 28px; max-width: 120px; display: block; border: 0; outline: none; object-fit: contain;">
+              </td>
+              <td align="right" style="padding: 1rem 1.5rem; vertical-align: middle;">
+                <img src="https://receptia.corandar.com/corandar-logo.png" alt="Corandar" style="height: 22px; max-width: 120px; display: block; border: 0; outline: none; object-fit: contain;">
+              </td>
+            </tr>
+          </table>
 
           <!-- Cuerpo -->
           <div style="padding: 2.5rem 2rem;">

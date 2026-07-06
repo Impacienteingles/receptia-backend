@@ -5026,7 +5026,7 @@
                 <label style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Mensaje / Contenido</label>
                 <span style="font-size: 0.75rem; color: var(--text-muted);">Usa <code>{{name}}</code> para el nombre.</span>
               </div>
-              <textarea id="wizard-campaign-body" placeholder="Hola {{name}},\n\nHace tiempo que no te vemos en nuestro centro. Queríamos contarte que ahora puedes agendar citas las 24 horas del día de manera inmediata pulsando en el siguiente enlace." style="height: 140px; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; font-family: inherit; resize: none;" oninput="updateWizardTemplatePreview()"></textarea>
+              <textarea id="wizard-campaign-body" placeholder="Hola {{name}}:\n\nHace tiempo que no te vemos en nuestro centro. Queríamos contarte que ahora puedes agendar citas las 24 horas del día de manera inmediata pulsando en el siguiente enlace." style="height: 140px; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; font-family: inherit; resize: none;" oninput="updateWizardTemplatePreview()"></textarea>
             </div>
           </div>
           
@@ -6480,7 +6480,7 @@
       document.getElementById('wizard-campaign-name').value = '';
       document.getElementById('wizard-campaign-subject').value = '';
       document.getElementById('wizard-campaign-template').value = 'corandar_elegant';
-      document.getElementById('wizard-campaign-body').value = '';
+      document.getElementById('wizard-campaign-body').value = 'Hola {{name}}:\n\n';
       document.getElementById('wizard-manual-emails').value = '';
       document.getElementById('wizard-contacts-search').value = '';
       document.getElementById('wizard-select-all-contacts').checked = false;
@@ -6684,11 +6684,16 @@
         previewHtml = `
           <div style="background-color: #f3f4f6; padding: 1.5rem 0.5rem; font-family: sans-serif; font-size: 14px;">
             <div style="max-width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-              <div style="background-color: #ffffff; padding: 1rem; text-align: center; border-bottom: 1px solid #f3f4f6;">
-                <div style="display: inline-block; background-color: #ffffff; padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid #e5e7eb;">
-                  <span style="font-weight: 800; font-size: 1rem; color: #111827;">CORANDAR</span>
-                </div>
-              </div>
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-bottom: 1px solid #f3f4f6; width: 100%;">
+                <tr>
+                  <td align="left" style="padding: 0.75rem 1.25rem; vertical-align: middle;">
+                    <img src="https://receptia.corandar.com/logo.png" alt="Receptia AI" style="height: 24px; max-width: 110px; display: block; border: 0; outline: none; object-fit: contain;">
+                  </td>
+                  <td align="right" style="padding: 0.75rem 1.25rem; vertical-align: middle;">
+                    <img src="https://receptia.corandar.com/corandar-logo.png" alt="Corandar" style="height: 18px; max-width: 110px; display: block; border: 0; outline: none; object-fit: contain;">
+                  </td>
+                </tr>
+              </table>
               <div style="padding: 1.5rem;">
                 <h3 style="margin: 0 0 1rem 0; font-size: 1.15rem; font-weight: 700; color: #111827;">${escapeHtml(subject)}</h3>
                 <div style="font-size: 0.9rem; color: #374151;">
@@ -6716,6 +6721,16 @@
         previewHtml = `
           <div style="background-color: #0b0f19; padding: 1.5rem 0.5rem; font-family: sans-serif; font-size: 14px;">
             <div style="max-width: 100%; background-color: #111827; border-radius: 10px; overflow: hidden; border: 1px solid #1f2937;">
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-bottom: 1px solid #e5e7eb; width: 100%;">
+                <tr>
+                  <td align="left" style="padding: 0.75rem 1.25rem; vertical-align: middle;">
+                    <img src="https://receptia.corandar.com/logo.png" alt="Receptia AI" style="height: 24px; max-width: 110px; display: block; border: 0; outline: none; object-fit: contain;">
+                  </td>
+                  <td align="right" style="padding: 0.75rem 1.25rem; vertical-align: middle;">
+                    <img src="https://receptia.corandar.com/corandar-logo.png" alt="Corandar" style="height: 18px; max-width: 110px; display: block; border: 0; outline: none; object-fit: contain;">
+                  </td>
+                </tr>
+              </table>
               <div style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 1.25rem; text-align: center;">
                 <span style="font-weight: 800; font-size: 1.1rem; color: #ffffff;">🔮 Receptia AI</span>
                 <p style="color: rgba(255,255,255,0.8); font-size: 0.75rem; margin: 0.25rem 0 0 0;">La revolución del agendamiento por IA</p>
@@ -6741,11 +6756,16 @@
         previewHtml = `
           <div style="background-color: #f9fafb; padding: 1.5rem 0.5rem; font-family: sans-serif; font-size: 14px;">
             <div style="max-width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
-              <div style="background-color: #7c3aed; height: 4px;"></div>
-              <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 800; font-size: 1rem; color: #7c3aed;">🔮 RECEPTIA NEWS</span>
-                <span style="font-size: 0.7rem; color: #9ca3af;">Boletín Mensual</span>
-              </div>
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-bottom: 1px solid #e5e7eb; width: 100%;">
+                <tr>
+                  <td align="left" style="padding: 0.75rem 1.25rem; vertical-align: middle;">
+                    <img src="https://receptia.corandar.com/logo.png" alt="Receptia AI" style="height: 24px; max-width: 110px; display: block; border: 0; outline: none; object-fit: contain;">
+                  </td>
+                  <td align="right" style="padding: 0.75rem 1.25rem; vertical-align: middle;">
+                    <img src="https://receptia.corandar.com/corandar-logo.png" alt="Corandar" style="height: 18px; max-width: 110px; display: block; border: 0; outline: none; object-fit: contain;">
+                  </td>
+                </tr>
+              </table>
               <div style="padding: 1.5rem;">
                 <h3 style="margin: 0 0 1rem 0; font-size: 1.15rem; font-weight: 700; color: #111827;">${escapeHtml(subject)}</h3>
                 <div style="font-size: 0.9rem; color: #374151;">
@@ -6909,7 +6929,8 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'admin-pin': adminToken || localStorage.getItem('admin_token') || ''
+            'x-admin-token': sessionStorage.getItem('admin_token') || localStorage.getItem('admin_token') || '',
+            'admin-pin': sessionStorage.getItem('admin_token') || localStorage.getItem('admin_token') || ''
           },
           body: JSON.stringify({
             name,
