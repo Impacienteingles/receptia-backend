@@ -1823,7 +1823,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.2.7</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.2.10</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2051,7 +2051,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.2.7</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.2.10</span>
       </div>
     </aside>
 
@@ -2074,7 +2074,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.2.7</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.2.10</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -3182,11 +3182,8 @@
                     Transacciones Extraordinarias
                   </h3>
                   <div style="display: flex; gap: 0.5rem;">
-                    <button type="button" id="btn-delete-selected-transactions" class="btn btn-secondary" onclick="deleteSelectedTransactions()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; color: var(--error); border-color: rgba(239, 68, 68, 0.2); display: none; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.1); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
+                    <button type="button" id="btn-delete-selected-transactions" class="btn btn-secondary" onclick="deleteSelectedTransactions()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; color: var(--error); border-color: rgba(239, 68, 68, 0.2); display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.1); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
                       <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Eliminar Seleccionadas (<span id="selected-transactions-count">0</span>)
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="clearAllTransactions()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; color: var(--error); border-color: rgba(239, 68, 68, 0.2); display: inline-flex; align-items: center; gap: 0.25rem; background: transparent; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.background='transparent'">
-                      <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Eliminar Todas
                     </button>
                   </div>
                 </div>
@@ -3203,11 +3200,11 @@
                         <th style="width: 40px; text-align: center;">
                           <input type="checkbox" id="transactions-select-all" onclick="toggleSelectAllTransactions(this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
                         </th>
-                        <th>Fecha</th>
+                        <th style="width: 100px;">Fecha</th>
                         <th>Concepto</th>
-                        <th>Importe</th>
-                        <th>Tipo</th>
-                        <th>Acción</th>
+                        <th style="width: 100px;">Importe</th>
+                        <th style="width: 110px;">Tipo</th>
+                        <th style="width: 60px; text-align: center;">Acción</th>
                       </tr>
                     </thead>
                     <tbody id="transactions-tbody">
@@ -3225,21 +3222,29 @@
 
             <!-- Cobros SaaS del listado de clientes -->
             <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-              <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
-                <i data-lucide="users" style="color: var(--primary);"></i>
-                Ingresos Recurrentes por Clientes SaaS
-              </h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.1rem; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
+                  <i data-lucide="users" style="color: var(--primary);"></i>
+                  Ingresos Recurrentes por Clientes SaaS
+                </h3>
+                <button type="button" id="btn-delete-selected-accounting" class="btn btn-secondary" onclick="deleteSelectedAccounting()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; color: var(--error); border-color: rgba(239, 68, 68, 0.2); display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.1); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
+                  <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Eliminar Seleccionados (<span id="selected-accounting-count">0</span>)
+                </button>
+              </div>
               <div class="table-responsive">
                 <table>
                   <thead>
                     <tr>
+                      <th style="width: 40px; text-align: center;">
+                        <input type="checkbox" id="accounting-select-all" onclick="toggleSelectAllAccounting(this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
+                      </th>
                       <th>Cliente / Negocio</th>
-                      <th>Plan</th>
-                      <th>Importe</th>
-                      <th>Ciclo</th>
-                      <th>Fecha de Alta</th>
-                      <th>Estado de Pago</th>
-                      <th>Acción</th>
+                      <th style="width: 100px;">Plan</th>
+                      <th style="width: 100px;">Importe</th>
+                      <th style="width: 80px;">Ciclo</th>
+                      <th style="width: 110px;">Fecha de Alta</th>
+                      <th style="width: 150px;">Estado de Pago</th>
+                      <th style="width: 110px; text-align: center;">Acción</th>
                     </tr>
                   </thead>
                   <tbody id="accounting-tbody">
@@ -9416,8 +9421,13 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
+      // Reset select-all checkbox
+      const master = document.getElementById('transactions-select-all');
+      if (master) master.checked = false;
+      updateDeleteSelectedButtonState();
+
       if (allTransactions.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay transacciones registradas.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay transacciones registradas.</td></tr>`;
         return;
       }
 
@@ -9432,11 +9442,14 @@
           : `+${Number(trans.amount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}`;
 
         row.innerHTML = `
-          <td>${dateStr}</td>
-          <td style="font-weight: 500; color: #fff;">${trans.concept}</td>
-          <td style="font-weight: 600; color: ${trans.type === 'expense' ? 'var(--error)' : 'var(--success)'};">${amountStr}</td>
-          <td>${badge}</td>
-          <td>
+          <td style="width: 40px; text-align: center;">
+            <input type="checkbox" class="transaction-checkbox" value="${trans.id}" onclick="updateDeleteSelectedButtonState()" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
+          </td>
+          <td style="width: 100px;">${dateStr}</td>
+          <td style="font-weight: 500; color: #fff; word-break: break-word;">${trans.concept}</td>
+          <td style="width: 100px; font-weight: 600; color: ${trans.type === 'expense' ? 'var(--error)' : 'var(--success)'};">${amountStr}</td>
+          <td style="width: 110px;">${badge}</td>
+          <td style="width: 60px; text-align: center;">
             <button class="btn btn-secondary" onclick="deleteTransaction('${trans.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: var(--error);">
               <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
             </button>
@@ -9453,6 +9466,11 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
+      // Reset select-all checkbox
+      const master = document.getElementById('transactions-select-all');
+      if (master) master.checked = false;
+      updateDeleteSelectedButtonState();
+
       const filtered = allTransactions.filter(trans => {
         const dateStr = safeFormatDate(trans.date).toLowerCase();
         const concept = trans.concept.toLowerCase();
@@ -9462,7 +9480,7 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No se encontraron transacciones.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No se encontraron transacciones.</td></tr>`;
         return;
       }
 
@@ -9477,11 +9495,14 @@
           : `+${Number(trans.amount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}`;
 
         row.innerHTML = `
-          <td>${dateStr}</td>
-          <td style="font-weight: 500; color: #fff;">${trans.concept}</td>
-          <td style="font-weight: 600; color: ${trans.type === 'expense' ? 'var(--error)' : 'var(--success)'};">${amountStr}</td>
-          <td>${badge}</td>
-          <td>
+          <td style="width: 40px; text-align: center;">
+            <input type="checkbox" class="transaction-checkbox" value="${trans.id}" onclick="updateDeleteSelectedButtonState()" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
+          </td>
+          <td style="width: 100px;">${dateStr}</td>
+          <td style="font-weight: 500; color: #fff; word-break: break-word;">${trans.concept}</td>
+          <td style="width: 100px; font-weight: 600; color: ${trans.type === 'expense' ? 'var(--error)' : 'var(--success)'};">${amountStr}</td>
+          <td style="width: 110px;">${badge}</td>
+          <td style="width: 60px; text-align: center;">
             <button class="btn btn-secondary" onclick="deleteTransaction('${trans.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-color: rgba(239, 68, 68, 0.2); color: var(--error);">
               <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
             </button>
@@ -9613,6 +9634,144 @@
         fetchTransactions();
       } catch (err) {
         await showCustomAlert('Error al vaciar contabilidad: ' + err.message, 'Error', 'error');
+      }
+    }
+
+    function toggleSelectAllTransactions(master) {
+      const checkboxes = document.querySelectorAll('.transaction-checkbox');
+      checkboxes.forEach(cb => cb.checked = master.checked);
+      updateDeleteSelectedButtonState();
+    }
+
+    function updateDeleteSelectedButtonState() {
+      const checkboxes = document.querySelectorAll('.transaction-checkbox:checked');
+      const count = checkboxes.length;
+      const btn = document.getElementById('btn-delete-selected-transactions');
+      const countLabel = document.getElementById('selected-transactions-count');
+      if (btn) {
+        btn.disabled = count === 0;
+        btn.style.opacity = count > 0 ? '1' : '0.5';
+        btn.style.cursor = count > 0 ? 'pointer' : 'not-allowed';
+      }
+      if (countLabel) {
+        countLabel.textContent = count;
+      }
+    }
+
+    async function deleteSelectedTransactions() {
+      const checkboxes = document.querySelectorAll('.transaction-checkbox:checked');
+      const ids = Array.from(checkboxes).map(cb => cb.value);
+      if (ids.length === 0) return;
+
+      const confirmDelete = await showCustomConfirm(`¿Estás seguro de que deseas eliminar las ${ids.length} transacciones seleccionadas?`, 'Eliminar Seleccionadas', 'warning');
+      if (!confirmDelete) return;
+
+      if (isMigrationPending) {
+        allTransactions = allTransactions.filter(t => !ids.includes(t.id));
+        renderTransactionsTable();
+        renderAccountingMetrics();
+        // Reset check all
+        const master = document.getElementById('transactions-select-all');
+        if (master) master.checked = false;
+        updateDeleteSelectedButtonState();
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/transactions', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+
+        if (!response.ok) {
+          const resData = await response.json();
+          throw new Error(resData.error || 'Error al eliminar las transacciones seleccionadas.');
+        }
+
+        // Reset check all
+        const master = document.getElementById('transactions-select-all');
+        if (master) master.checked = false;
+        updateDeleteSelectedButtonState();
+
+        fetchTransactions();
+      } catch (err) {
+        await showCustomAlert('Error al eliminar transacciones seleccionadas: ' + err.message, 'Error', 'error');
+      }
+    }
+
+    function toggleSelectAllAccounting(master) {
+      const checkboxes = document.querySelectorAll('.accounting-checkbox');
+      checkboxes.forEach(cb => cb.checked = master.checked);
+      updateDeleteSelectedAccountingButtonState();
+    }
+
+    function updateDeleteSelectedAccountingButtonState() {
+      const checkboxes = document.querySelectorAll('.accounting-checkbox:checked');
+      const count = checkboxes.length;
+      const btn = document.getElementById('btn-delete-selected-accounting');
+      const countLabel = document.getElementById('selected-accounting-count');
+      if (btn) {
+        btn.disabled = count === 0;
+        btn.style.opacity = count > 0 ? '1' : '0.5';
+        btn.style.cursor = count > 0 ? 'pointer' : 'not-allowed';
+      }
+      if (countLabel) {
+        countLabel.textContent = count;
+      }
+    }
+
+    async function deleteSelectedAccounting() {
+      const checkboxes = document.querySelectorAll('.accounting-checkbox:checked');
+      const ids = Array.from(checkboxes).map(cb => cb.value);
+      if (ids.length === 0) return;
+
+      const confirmDelete = await showCustomConfirm(`¿Estás seguro de que deseas eliminar permanentemente los ${ids.length} clientes seleccionados del sistema?\n\nEsta acción es COMPLETAMENTE IRREVERSIBLE. Se borrarán todos sus datos, incluyendo citas, llamadas, configuraciones de negocio y sus agentes en ElevenLabs.`, 'Eliminar Permanentemente', 'warning');
+      if (!confirmDelete) return;
+
+      const securityPrompt = await showCustomPrompt('ATENCIÓN: Para confirmar la eliminación definitiva de todos los clientes seleccionados, por favor escribe la palabra "ELIMINAR" en mayúsculas:', '', 'Confirmación de Seguridad', 'alert-triangle');
+      if (securityPrompt !== 'ELIMINAR') {
+        await showCustomAlert('Confirmación incorrecta. La eliminación ha sido cancelada.', 'Cancelado', 'info');
+        return;
+      }
+
+      try {
+        let successCount = 0;
+        let failCount = 0;
+        let lastError = '';
+
+        for (const tenantId of ids) {
+          try {
+            const response = await fetch('/api/admin/tenants/' + tenantId, { method: 'DELETE' });
+            if (response.ok) {
+              successCount++;
+            } else {
+              const resData = await response.json();
+              failCount++;
+              lastError = resData.error || 'Error desconocido';
+            }
+          } catch (err) {
+            failCount++;
+            lastError = err.message;
+          }
+        }
+
+        // Reset select all check
+        const master = document.getElementById('accounting-select-all');
+        if (master) master.checked = false;
+        updateDeleteSelectedAccountingButtonState();
+
+        // Reload data
+        await fetchArchivedTenants();
+        await fetchTenants();
+
+        if (failCount === 0) {
+          await showCustomAlert(`Se han eliminado ${successCount} clientes permanentemente con éxito.`, 'Clientes Eliminados', 'success');
+        } else {
+          await showCustomAlert(`Se eliminaron ${successCount} clientes con éxito, pero fallaron ${failCount}. Último error: ${lastError}`, 'Borrado Parcial', 'warning');
+        }
+      } catch (err) {
+        await showCustomAlert('Error al eliminar clientes seleccionados: ' + err.message, 'Error', 'error');
       }
     }
 
@@ -13709,8 +13868,15 @@
       const tbody = document.getElementById('accounting-tbody');
       tbody.innerHTML = '';
 
+      // Reset select-all checkbox and button state
+      const master = document.getElementById('accounting-select-all');
+      if (master) master.checked = false;
+      if (typeof updateDeleteSelectedAccountingButtonState === 'function') {
+        updateDeleteSelectedAccountingButtonState();
+      }
+
       if (activeTenants.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay cobros recurrentes activos.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay cobros recurrentes activos.</td></tr>`;
         return;
       }
 
@@ -13725,13 +13891,16 @@
           : `<span style="font-size: 0.8rem; color: var(--text-muted);">Manual</span>`;
 
         row.innerHTML = `
-          <td style="font-weight: 600; color: #fff;">${tenant.business_name}</td>
-          <td>${tenant.subscription_plan || 'Estándar'}</td>
-          <td style="font-weight: 600;">${price.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
-          <td>${tenant.billing_cycle === 'annually' ? 'Anual' : 'Mensual'}</td>
-          <td>${safeFormatDate(tenant.contract_start_date)}</td>
-          <td><span class="badge badge-success">Pagado / Recurrente 🟢</span></td>
-          <td>${actionBtn}</td>
+          <td style="width: 40px; text-align: center;">
+            <input type="checkbox" class="accounting-checkbox" value="${tenant.id}" onclick="updateDeleteSelectedAccountingButtonState()" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
+          </td>
+          <td style="font-weight: 600; color: #fff; word-break: break-word;">${tenant.business_name}</td>
+          <td style="width: 100px;">${tenant.subscription_plan || 'Estándar'}</td>
+          <td style="width: 100px; font-weight: 600;">${price.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+          <td style="width: 80px;">${tenant.billing_cycle === 'annually' ? 'Anual' : 'Mensual'}</td>
+          <td style="width: 110px;">${safeFormatDate(tenant.contract_start_date)}</td>
+          <td style="width: 150px;"><span class="badge badge-success">Pagado / Recurrente 🟢</span></td>
+          <td style="width: 110px; text-align: center;">${actionBtn}</td>
         `;
         tbody.appendChild(row);
       });
