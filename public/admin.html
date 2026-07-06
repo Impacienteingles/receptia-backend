@@ -1815,7 +1815,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.1.6</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.1.7</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2021,6 +2021,10 @@
           <i data-lucide="megaphone"></i>
           <span>Promociones</span>
         </button>
+        <button class="nav-item" id="btn-tab-email-campaigns" onclick="switchTab('email-campaigns')">
+          <i data-lucide="mail"></i>
+          <span>Email Marketing</span>
+        </button>
         <button class="nav-item" id="btn-tab-optimization" onclick="switchTab('optimization')">
           <i data-lucide="sparkles"></i>
           <span>Optimización</span>
@@ -2039,7 +2043,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.1.6</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.1.7</span>
       </div>
     </aside>
 
@@ -2062,7 +2066,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.6</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.7</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -3871,6 +3875,73 @@
           </div>
         </div>
 
+        <!-- TAB 5D: EMAIL MARKETING Y CAMPAÑAS -->
+        <div id="tab-email-campaigns" class="tab-content">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+              <h2 class="card-title" style="margin: 0;">
+                <span>
+                  <i data-lucide="mail" style="color: var(--primary-light);"></i>
+                  Campañas de Email Marketing
+                </span>
+              </h2>
+              <button class="btn btn-primary" onclick="openCreateCampaignWizard()" style="padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Crear Campaña
+              </button>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem;">
+              Diseña y despacha campañas de marketing por correo electrónico dirigidas a prospectos o clientes activos. El sistema realiza el seguimiento de la tasa de apertura, clics en enlaces y conversiones de contratación de forma automatizada.
+            </p>
+
+            <!-- PANEL DE MÉTRICAS GENERALES -->
+            <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+              <div class="card metric-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px;">
+                <span class="metric-label" style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Campañas Totales</span>
+                <span class="metric-value" id="email-marketing-total-campaigns" style="font-size: 1.8rem; font-weight: 700; color: #fff; display: block; margin-top: 0.5rem;">0</span>
+              </div>
+              <div class="card metric-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px;">
+                <span class="metric-label" style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Tasa de Apertura Promedio</span>
+                <span class="metric-value" id="email-marketing-avg-open" style="font-size: 1.8rem; font-weight: 700; color: #3b82f6; display: block; margin-top: 0.5rem;">0%</span>
+              </div>
+              <div class="card metric-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px;">
+                <span class="metric-label" style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Tasa de Clics Promedio</span>
+                <span class="metric-value" id="email-marketing-avg-click" style="font-size: 1.8rem; font-weight: 700; color: #8b5cf6; display: block; margin-top: 0.5rem;">0%</span>
+              </div>
+              <div class="card metric-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px;">
+                <span class="metric-label" style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Conversiones (Éxito)</span>
+                <span class="metric-value" id="email-marketing-total-conversions" style="font-size: 1.8rem; font-weight: 700; color: #10b981; display: block; margin-top: 0.5rem;">0%</span>
+              </div>
+            </div>
+
+            <!-- TABLA DE HISTORIAL DE CAMPAÑAS -->
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nombre de Campaña</th>
+                    <th>Asunto</th>
+                    <th>Plantilla</th>
+                    <th>Destinatarios</th>
+                    <th>Aperturas</th>
+                    <th>Clics</th>
+                    <th>Conversión/Éxito</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="email-campaigns-tbody">
+                  <tr>
+                    <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                      Cargando historial de campañas de marketing...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
         <!-- TAB 5B: OPTIMIZACIÓN Y AUTO-REPARACIÓN CON IA -->
         <div id="tab-optimization" class="tab-content">
           <div class="card">
@@ -4891,6 +4962,174 @@
         <button type="button" id="confirm-send-email-btn" class="btn" style="padding: 0.6rem 1.25rem; border-radius: 6px; display: flex; align-items: center; gap: 0.4rem; background: #10b981; border-color: #10b981; color: #fff; cursor: pointer; border: none; font-weight: 600; font-size: 0.8rem;">
           <i data-lucide="check" style="width: 15px; height: 15px;"></i> Dar Visto Bueno
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL WIZARD CREAR CAMPAÑA DE EMAIL MARKETING -->
+  <div class="modal" id="email-campaign-wizard-modal" style="display: none; align-items: center; justify-content: center; z-index: 1000; background: rgba(0, 0, 0, 0.8); position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div class="modal-content" style="max-width: 900px; width: 90%; max-height: 90vh; display: flex; flex-direction: column; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; flex-shrink: 0;">
+        <h3 style="color: #fff; font-size: 1.25rem; font-family: 'Outfit', sans-serif; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="mail" style="color: var(--primary);"></i>
+          Asistente de Campaña de Email Marketing
+        </h3>
+        <button onclick="closeCreateCampaignWizard()" style="background: none; border: none; color: var(--text-muted); cursor: pointer;" title="Cerrar">
+          <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+      </div>
+
+      <!-- Pasos Indicadores -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); flex-shrink: 0;">
+        <div id="wizard-step-indicator-1" style="color: var(--primary); font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+          <span style="background: var(--primary); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">1</span> Configuración y Plantilla
+        </div>
+        <div style="color: var(--text-muted); font-size: 0.9rem;">➔</div>
+        <div id="wizard-step-indicator-2" style="color: var(--text-muted); font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+          <span style="background: rgba(255,255,255,0.1); color: var(--text-muted); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">2</span> Selección de Destinatarios
+        </div>
+        <div style="color: var(--text-muted); font-size: 0.9rem;">➔</div>
+        <div id="wizard-step-indicator-3" style="color: var(--text-muted); font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+          <span style="background: rgba(255,255,255,0.1); color: var(--text-muted); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">3</span> Revisión y Envío
+        </div>
+      </div>
+
+      <!-- PASO 1 CONTENT -->
+      <div id="wizard-step-1" style="display: flex; flex-direction: column; gap: 1rem; flex: 1; overflow-y: auto; padding-right: 0.5rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <label style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Nombre de la Campaña (Interno)</label>
+              <input type="text" id="wizard-campaign-name" placeholder="Ej: Reactivación Verano 2026" style="padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <label style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Asunto del Correo (Público)</label>
+              <input type="text" id="wizard-campaign-subject" placeholder="Ej: ¡Te extrañamos! Agenda tu cita hoy con IA" style="padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <label style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Seleccionar Plantilla</label>
+              <select id="wizard-campaign-template" onchange="updateWizardTemplatePreview()" style="padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; width: 100%;">
+                <option value="corandar_elegant">Corandar Elegant (Blanco corporativo)</option>
+                <option value="receptia_launch">Receptia Launch (Lanzamiento tecnológico oscuro)</option>
+                <option value="receptia_newsletter">Receptia Newsletter (Boletín minimalista)</option>
+              </select>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Mensaje / Contenido</label>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Usa <code>{{name}}</code> para el nombre.</span>
+              </div>
+              <textarea id="wizard-campaign-body" placeholder="Hola {{name}},\n\nHace tiempo que no te vemos en nuestro centro. Queríamos contarte que ahora puedes agendar citas las 24 horas del día de manera inmediata pulsando en el siguiente enlace." style="height: 140px; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; font-family: inherit; resize: none;" oninput="updateWizardTemplatePreview()"></textarea>
+            </div>
+          </div>
+          
+          <!-- Vista previa visual -->
+          <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+            <label style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Vista Previa de la Plantilla</label>
+            <div id="wizard-template-preview-container" style="border: 1px solid var(--border-color); border-radius: 8px; flex: 1; background: #fff; overflow-y: auto; min-height: 380px; max-height: 380px;">
+              <!-- Se inyecta dinámicamente el HTML de la plantilla seleccionada -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2 CONTENT -->
+      <div id="wizard-step-2" style="display: none; flex-direction: column; gap: 1rem; flex: 1; overflow-y: auto; padding-right: 0.5rem;">
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+          <label style="color: #fff; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Orígenes de Destinatarios</label>
+          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text-muted); font-size: 0.85rem;">
+              <input type="checkbox" id="wizard-origin-prospects" checked onchange="toggleWizardContactsOrigin()" style="width: 16px; height: 16px; accent-color: var(--primary);"> Prospectos de Supabase
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text-muted); font-size: 0.85rem;">
+              <input type="checkbox" id="wizard-origin-clients" checked onchange="toggleWizardContactsOrigin()" style="width: 16px; height: 16px; accent-color: var(--primary);"> Clientes Activos (Inquilinos)
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text-muted); font-size: 0.85rem;">
+              <input type="checkbox" id="wizard-origin-manual" onchange="toggleWizardContactsOrigin()" style="width: 16px; height: 16px; accent-color: var(--primary);"> Correos Manuales
+            </label>
+          </div>
+        </div>
+
+        <div id="wizard-manual-emails-wrapper" style="display: none; flex-direction: column; gap: 0.25rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+          <label style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Correos Manuales (Separados por coma)</label>
+          <textarea id="wizard-manual-emails" placeholder="ejemplo1@gmail.com, ejemplo2@hotmail.com" style="height: 60px; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; font-family: monospace; font-size: 0.85rem; resize: none;" oninput="processWizardManualEmails()"></textarea>
+        </div>
+
+        <!-- Buscador y Tabla de Selección de Contactos -->
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-height: 200px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <input type="text" id="wizard-contacts-search" placeholder="Filtrar contactos por nombre o correo..." style="width: 100%; max-width: 320px; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff; font-size: 0.85rem;" oninput="filterWizardContacts()">
+            <span id="wizard-selected-contacts-count" style="font-size: 0.85rem; font-weight: 600; color: var(--primary-light);">0 contactos seleccionados</span>
+          </div>
+          <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 40px; text-align: center;"><input type="checkbox" id="wizard-select-all-contacts" onchange="toggleWizardSelectAllContacts()" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);"></th>
+                  <th>Contacto / Negocio</th>
+                  <th>Email</th>
+                  <th>Teléfono</th>
+                  <th>Origen</th>
+                </tr>
+              </thead>
+              <tbody id="wizard-contacts-tbody">
+                <!-- Se inyectan los contactos -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 3 CONTENT -->
+      <div id="wizard-step-3" style="display: none; flex-direction: column; gap: 1rem; flex: 1; overflow-y: auto;">
+        <div style="background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.15); border-radius: 8px; padding: 1rem; display: flex; align-items: flex-start; gap: 0.75rem;">
+          <i data-lucide="check-circle" style="color: #10b981; width: 24px; height: 24px; flex-shrink: 0;"></i>
+          <div>
+            <h4 style="color: #fff; font-size: 0.95rem; font-weight: 700; margin: 0 0 0.25rem 0;">Campaña Lista para ser Enviada</h4>
+            <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">Por favor, revisa detalladamente el resumen antes de presionar el botón "Lanzar Campaña". Una vez disparada, el envío se procesará y se notificará en pantalla.</p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem;">
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Nombre de Campaña (Interno)</span>
+              <strong id="wizard-summary-name" style="font-size: 1.05rem; color: #fff; display: block; margin-top: 0.2rem;">-</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Asunto del Correo</span>
+              <strong id="wizard-summary-subject" style="font-size: 1.05rem; color: #fff; display: block; margin-top: 0.2rem;">-</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Plantilla Seleccionada</span>
+              <span id="wizard-summary-template" style="font-size: 0.95rem; color: var(--primary-light); font-weight: 600; display: block; margin-top: 0.2rem;">-</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1rem; border-left: 1px solid var(--border-color); padding-left: 1.5rem;">
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block;">Total de Destinatarios</span>
+              <span id="wizard-summary-recipients-count" style="font-size: 2rem; font-weight: 800; color: #fff; display: block; margin-top: 0.2rem;">0</span>
+            </div>
+            <div id="wizard-summary-origin-breakdown" style="font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem;">
+              <!-- Se inyecta desglose de orígenes -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de Navegación del Wizard -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0;">
+        <button id="wizard-btn-prev" class="btn btn-secondary" onclick="wizardPrevStep()" disabled style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+          Anterior
+        </button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="wizard-btn-next" class="btn btn-primary" onclick="wizardNextStep()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+            Siguiente
+          </button>
+          <button id="wizard-btn-submit" class="btn" onclick="submitEmailCampaign()" style="display: none; padding: 0.5rem 1.25rem; font-size: 0.85rem; font-weight: 700; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+            Lanzar Campaña
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -6038,6 +6277,9 @@
         fetchGlobalKnowledge();
       } else if (tabName === 'dashboard') {
         initDashboard();
+      } else if (tabName === 'email-campaigns') {
+        fetchEmailCampaigns();
+        fetchEmailMarketingContacts();
       } else if (tabName === 'optimization') {
         loadOptimizationBackups();
       } else if (tabName === 'promotions') {
@@ -6074,6 +6316,588 @@
       if (activeBtn) {
         activeBtn.classList.add('active-tab');
         activeBtn.style.color = '#fff';
+      }
+    }
+
+    // =====================================================================
+    // SISTEMA DE EMAIL MARKETING (LOGICA FRONTEND)
+    // =====================================================================
+    let emailMarketingAllContacts = []; // Listado de { id, name, email, phone, type }
+    let emailMarketingSelectedIds = new Set(); // IDs seleccionados
+    let emailMarketingWizardStep = 1;
+    let emailMarketingManualEmails = [];
+
+    // Cargar historial de campañas
+    async function fetchEmailCampaigns() {
+      try {
+        const response = await fetch('/api/admin/email-marketing/campaigns');
+        if (!response.ok) throw new Error('Error al obtener campañas');
+        const campaigns = await response.json();
+        
+        // Renderizar tabla
+        const tbody = document.getElementById('email-campaigns-tbody');
+        if (campaigns.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No hay campañas de email marketing enviadas.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = campaigns.map(c => {
+          const stats = c.stats || { total: 0, sent: 0, opened: 0, clicked: 0, converted: 0, openRate: 0, clickRate: 0, conversionRate: 0 };
+          const dateStr = new Date(c.created_at).toLocaleDateString('es-ES', {
+            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+          const statusBadge = c.status === 'completed' 
+            ? `<span style="background: rgba(16,185,129,0.1); color: #10b981; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Completado</span>`
+            : c.status === 'sending'
+            ? `<span style="background: rgba(59,130,246,0.1); color: #3b82f6; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Enviando...</span>`
+            : `<span style="background: rgba(239,68,68,0.1); color: #ef4444; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Fallido</span>`;
+
+          const templateName = c.template_id === 'corandar_elegant' ? 'Corandar Elegant' : c.template_id === 'receptia_launch' ? 'Receptia Launch' : 'Receptia Newsletter';
+
+          return `
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 1rem; font-weight: 600; color: #fff;">${escapeHtml(c.name)}</td>
+              <td style="padding: 1rem; color: var(--text-muted);">${escapeHtml(c.subject)}</td>
+              <td style="padding: 1rem; color: var(--text-muted); font-size: 0.85rem;">${templateName}</td>
+              <td style="padding: 1rem; font-weight: 600; color: #fff; text-align: center;">${stats.total}</td>
+              <td style="padding: 1rem; text-align: center;">
+                <span style="color: #3b82f6; font-weight: 600;">${stats.openRate}%</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">(${stats.opened + stats.clicked + stats.converted} de ${stats.total})</span>
+              </td>
+              <td style="padding: 1rem; text-align: center;">
+                <span style="color: #8b5cf6; font-weight: 600;">${stats.clickRate}%</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">(${stats.clicked + stats.converted} de ${stats.total})</span>
+              </td>
+              <td style="padding: 1rem; text-align: center;">
+                <span style="color: #10b981; font-weight: 600;">${stats.conversionRate}%</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">(${stats.converted} de ${stats.total})</span>
+              </td>
+              <td style="padding: 1rem; color: var(--text-muted); font-size: 0.8rem;">${dateStr}</td>
+              <td style="padding: 1rem; text-align: right;">${statusBadge}</td>
+            </tr>
+          `;
+        }).join('');
+
+        // Calcular agregados para tarjetas superiores
+        const totalCampaigns = campaigns.length;
+        let sumOpenRate = 0;
+        let sumClickRate = 0;
+        let sumConversionRate = 0;
+
+        campaigns.forEach(c => {
+          const stats = c.stats || { total: 0, opened: 0, clicked: 0, converted: 0, openRate: 0, clickRate: 0, conversionRate: 0 };
+          sumOpenRate += stats.openRate;
+          sumClickRate += stats.clickRate;
+          sumConversionRate += stats.conversionRate;
+        });
+
+        const avgOpen = totalCampaigns > 0 ? Math.round(sumOpenRate / totalCampaigns) : 0;
+        const avgClick = totalCampaigns > 0 ? Math.round(sumClickRate / totalCampaigns) : 0;
+        const avgConversion = totalCampaigns > 0 ? Math.round(sumConversionRate / totalCampaigns) : 0;
+
+        document.getElementById('email-marketing-total-campaigns').innerText = totalCampaigns;
+        document.getElementById('email-marketing-avg-open').innerText = `${avgOpen}%`;
+        document.getElementById('email-marketing-avg-click').innerText = `${avgClick}%`;
+        document.getElementById('email-marketing-total-conversions').innerText = `${avgConversion}%`;
+
+      } catch (err) {
+        console.error('[fetchEmailCampaigns] Error:', err);
+        showToast('Error al cargar historial de campañas', 'error');
+      }
+    }
+
+    // Cargar contactos disponibles para marketing
+    async function fetchEmailMarketingContacts() {
+      try {
+        const response = await fetch('/api/admin/email-marketing/contacts');
+        if (!response.ok) throw new Error('Error al obtener contactos');
+        const data = await response.json();
+
+        const prospects = (data.prospects || []).map(p => ({
+          id: p.id,
+          name: p.business_name || 'Prospecto sin Nombre',
+          email: p.email,
+          phone: p.phone || '-',
+          type: 'prospect'
+        }));
+
+        const clients = (data.clients || []).map(c => ({
+          id: c.id,
+          name: c.business_name || 'Cliente sin Nombre',
+          email: c.email,
+          phone: c.phone || '-',
+          type: 'client'
+        }));
+
+        emailMarketingAllContacts = [...prospects, ...clients];
+        renderWizardContacts();
+      } catch (err) {
+        console.error('[fetchEmailMarketingContacts] Error:', err);
+        showToast('Error al cargar contactos de marketing', 'error');
+      }
+    }
+
+    // Abrir asistente (Wizard)
+    function openCreateCampaignWizard() {
+      emailMarketingWizardStep = 1;
+      emailMarketingSelectedIds.clear();
+      emailMarketingManualEmails = [];
+
+      document.getElementById('wizard-campaign-name').value = '';
+      document.getElementById('wizard-campaign-subject').value = '';
+      document.getElementById('wizard-campaign-template').value = 'corandar_elegant';
+      document.getElementById('wizard-campaign-body').value = '';
+      document.getElementById('wizard-manual-emails').value = '';
+      document.getElementById('wizard-contacts-search').value = '';
+      document.getElementById('wizard-select-all-contacts').checked = false;
+
+      document.getElementById('wizard-origin-prospects').checked = true;
+      document.getElementById('wizard-origin-clients').checked = true;
+      document.getElementById('wizard-origin-manual').checked = false;
+
+      document.getElementById('wizard-manual-emails-wrapper').style.display = 'none';
+
+      // Preseleccionar todos los de Supabase por defecto
+      toggleWizardContactsOrigin();
+      switchWizardStep(1);
+
+      document.getElementById('email-campaign-wizard-modal').style.display = 'flex';
+      updateWizardTemplatePreview();
+    }
+
+    // Cerrar asistente
+    function closeCreateCampaignWizard() {
+      document.getElementById('email-campaign-wizard-modal').style.display = 'none';
+    }
+
+    // Cambiar entre orígenes de contactos en el wizard
+    function toggleWizardContactsOrigin() {
+      const showManual = document.getElementById('wizard-origin-manual').checked;
+      document.getElementById('wizard-manual-emails-wrapper').style.display = showManual ? 'flex' : 'none';
+
+      // Pre-seleccionar/Deseleccionar en bloque según checks
+      const selectProspects = document.getElementById('wizard-origin-prospects').checked;
+      const selectClients = document.getElementById('wizard-origin-clients').checked;
+
+      emailMarketingSelectedIds.clear();
+
+      emailMarketingAllContacts.forEach(c => {
+        if (c.type === 'prospect' && selectProspects && c.email) {
+          emailMarketingSelectedIds.add(c.id);
+        } else if (c.type === 'client' && selectClients && c.email) {
+          emailMarketingSelectedIds.add(c.id);
+        }
+      });
+
+      // Añadir los manuales cargados si los hay
+      emailMarketingManualEmails.forEach(c => {
+        emailMarketingSelectedIds.add(c.id);
+      });
+
+      renderWizardContacts();
+      updateWizardSelectedCount();
+    }
+
+    // Procesar emails manuales
+    function processWizardManualEmails() {
+      const val = document.getElementById('wizard-manual-emails').value;
+      const lines = val.split(/[,\n]/);
+      
+      // Eliminar manuales antiguos de la lista
+      emailMarketingAllContacts = emailMarketingAllContacts.filter(c => c.type !== 'manual');
+      emailMarketingManualEmails.forEach(m => emailMarketingSelectedIds.delete(m.id));
+      emailMarketingManualEmails = [];
+
+      lines.forEach((email, idx) => {
+        const cleanEmail = email.trim();
+        if (cleanEmail && cleanEmail.includes('@')) {
+          const manualContact = {
+            id: `manual-${idx}`,
+            name: cleanEmail.split('@')[0],
+            email: cleanEmail,
+            phone: '-',
+            type: 'manual'
+          };
+          emailMarketingManualEmails.push(manualContact);
+          emailMarketingAllContacts.push(manualContact);
+          emailMarketingSelectedIds.add(manualContact.id);
+        }
+      });
+
+      renderWizardContacts();
+      updateWizardSelectedCount();
+    }
+
+    // Renderizar lista de contactos del wizard
+    function renderWizardContacts() {
+      const tbody = document.getElementById('wizard-contacts-tbody');
+      const search = document.getElementById('wizard-contacts-search').value.toLowerCase();
+
+      const selectProspects = document.getElementById('wizard-origin-prospects').checked;
+      const selectClients = document.getElementById('wizard-origin-clients').checked;
+      const selectManual = document.getElementById('wizard-origin-manual').checked;
+
+      const filtered = emailMarketingAllContacts.filter(c => {
+        // Filtrar por origen
+        if (c.type === 'prospect' && !selectProspects) return false;
+        if (c.type === 'client' && !selectClients) return false;
+        if (c.type === 'manual' && !selectManual) return false;
+
+        // Filtrar por buscador
+        if (!c.email) return false;
+        if (search) {
+          return c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search);
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1rem;">No hay contactos que coincidan con la selección.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(c => {
+        const isChecked = emailMarketingSelectedIds.has(c.id) ? 'checked' : '';
+        const originLabel = c.type === 'prospect' 
+          ? `<span style="background: rgba(139,92,246,0.1); color: #8b5cf6; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Prospecto</span>`
+          : c.type === 'client'
+          ? `<span style="background: rgba(16,185,129,0.1); color: #10b981; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Cliente</span>`
+          : `<span style="background: rgba(245,158,11,0.1); color: #f59e0b; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Manual</span>`;
+
+        return `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <td style="text-align: center; padding: 0.5rem;"><input type="checkbox" ${isChecked} onchange="toggleWizardContactSelect('${c.id}')" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);"></td>
+            <td style="padding: 0.5rem; color: #fff; font-weight: 500; font-size: 0.85rem;">${escapeHtml(c.name)}</td>
+            <td style="padding: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">${escapeHtml(c.email)}</td>
+            <td style="padding: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">${escapeHtml(c.phone)}</td>
+            <td style="padding: 0.5rem; text-align: right;">${originLabel}</td>
+          </tr>
+        `;
+      }).join('');
+
+      // Comprobar si todos están seleccionados
+      const allSelected = filtered.every(c => emailMarketingSelectedIds.has(c.id));
+      document.getElementById('wizard-select-all-contacts').checked = filtered.length > 0 && allSelected;
+    }
+
+    // Seleccionar/Deseleccionar un contacto individual
+    function toggleWizardContactSelect(id) {
+      if (emailMarketingSelectedIds.has(id)) {
+        emailMarketingSelectedIds.delete(id);
+      } else {
+        emailMarketingSelectedIds.add(id);
+      }
+      updateWizardSelectedCount();
+      // Refrescar para actualizar check superior si corresponde
+      renderWizardContacts();
+    }
+
+    // Seleccionar/Deseleccionar todos los contactos filtrados
+    function toggleWizardSelectAllContacts() {
+      const isChecked = document.getElementById('wizard-select-all-contacts').checked;
+      const search = document.getElementById('wizard-contacts-search').value.toLowerCase();
+
+      const selectProspects = document.getElementById('wizard-origin-prospects').checked;
+      const selectClients = document.getElementById('wizard-origin-clients').checked;
+      const selectManual = document.getElementById('wizard-origin-manual').checked;
+
+      emailMarketingAllContacts.forEach(c => {
+        // Solo actuar sobre los visibles en el filtro
+        const matchOrigin = (c.type === 'prospect' && selectProspects) || 
+                            (c.type === 'client' && selectClients) || 
+                            (c.type === 'manual' && selectManual);
+
+        const matchSearch = !search || c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search);
+
+        if (matchOrigin && matchSearch) {
+          if (isChecked) {
+            emailMarketingSelectedIds.add(c.id);
+          } else {
+            emailMarketingSelectedIds.delete(c.id);
+          }
+        }
+      });
+
+      renderWizardContacts();
+      updateWizardSelectedCount();
+    }
+
+    // Filtrar contactos con el buscador
+    function filterWizardContacts() {
+      renderWizardContacts();
+    }
+
+    // Actualizar contador del pie de paso 2
+    function updateWizardSelectedCount() {
+      const count = emailMarketingSelectedIds.size;
+      document.getElementById('wizard-selected-contacts-count').innerText = `${count} contactos seleccionados`;
+    }
+
+    // Renderizar plantilla para la vista previa visual (Paso 1)
+    function updateWizardTemplatePreview() {
+      const templateId = document.getElementById('wizard-campaign-template').value;
+      const subject = document.getElementById('wizard-campaign-subject').value || 'Asunto del correo';
+      const body = document.getElementById('wizard-campaign-body').value || 'Hola {{name}},\n\nEste es el contenido de prueba de tu correo.';
+
+      const formattedBody = body
+        .split('\n')
+        .map(p => p.trim() ? `<p style="margin: 0 0 1rem 0; line-height: 1.6; color: #374151;">${p}</p>` : '')
+        .join('');
+
+      let previewHtml = '';
+
+      if (templateId === 'corandar_elegant') {
+        previewHtml = `
+          <div style="background-color: #f3f4f6; padding: 1.5rem 0.5rem; font-family: sans-serif; font-size: 14px;">
+            <div style="max-width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+              <div style="background-color: #ffffff; padding: 1rem; text-align: center; border-bottom: 1px solid #f3f4f6;">
+                <div style="display: inline-block; background-color: #ffffff; padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid #e5e7eb;">
+                  <span style="font-weight: 800; font-size: 1rem; color: #111827;">CORANDAR</span>
+                </div>
+              </div>
+              <div style="padding: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1.15rem; font-weight: 700; color: #111827;">${escapeHtml(subject)}</h3>
+                <div style="font-size: 0.9rem; color: #374151;">
+                  ${formattedBody.replace(/{{name}}/g, 'Carlos')}
+                </div>
+                <div style="margin-top: 1.5rem; text-align: center;">
+                  <a href="#" onclick="return false;" style="background-color: #111827; color: #ffffff; padding: 0.6rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem; display: inline-block;">
+                    Comenzar Ahora
+                  </a>
+                </div>
+              </div>
+              <div style="background-color: #fafafa; padding: 1.25rem; border-top: 1px solid #f3f4f6; text-align: center;">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                  <span style="font-weight: 800; font-size: 0.65rem; color: #111827; border: 1px solid #e5e7eb; padding: 0.2rem 0.4rem; border-radius: 4px; background: #fff;">Corandar</span>
+                  <span style="color: #d1d5db; font-size: 0.8rem;">+</span>
+                  <span style="font-weight: 800; font-size: 0.65rem; color: #ffffff; background: #7c3aed; padding: 0.2rem 0.4rem; border-radius: 4px;">Receptia AI</span>
+                </div>
+                <p style="margin: 0; font-size: 0.7rem; color: #9ca3af;">© 2026 Corandar S.L. Todos los derechos reservados.</p>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (templateId === 'receptia_launch') {
+        const techBody = body.split('\n').map(p => p.trim() ? `<p style="margin: 0 0 1rem 0; line-height: 1.6; color: #d1d5db;">${p}</p>` : '').join('');
+        previewHtml = `
+          <div style="background-color: #0b0f19; padding: 1.5rem 0.5rem; font-family: sans-serif; font-size: 14px;">
+            <div style="max-width: 100%; background-color: #111827; border-radius: 10px; overflow: hidden; border: 1px solid #1f2937;">
+              <div style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 1.25rem; text-align: center;">
+                <span style="font-weight: 800; font-size: 1.1rem; color: #ffffff;">🔮 Receptia AI</span>
+                <p style="color: rgba(255,255,255,0.8); font-size: 0.75rem; margin: 0.25rem 0 0 0;">La revolución del agendamiento por IA</p>
+              </div>
+              <div style="padding: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1.15rem; font-weight: 700; color: #ffffff;">${escapeHtml(subject)}</h3>
+                <div style="font-size: 0.9rem; color: #d1d5db;">
+                  ${techBody.replace(/{{name}}/g, 'Carlos')}
+                </div>
+                <div style="margin-top: 1.5rem; text-align: center;">
+                  <a href="#" onclick="return false;" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: #ffffff; padding: 0.6rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 0.85rem; display: inline-block; box-shadow: 0 4px 10px rgba(124,58,237,0.3);">
+                    Activar Mi Asistente IA
+                  </a>
+                </div>
+              </div>
+              <div style="background-color: #0b0f19; padding: 1.25rem; border-top: 1px solid #1f2937; text-align: center;">
+                <p style="margin: 0; font-size: 0.7rem; color: #6b7280;">© 2026 Receptia Inc. Todos los derechos reservados.</p>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        previewHtml = `
+          <div style="background-color: #f9fafb; padding: 1.5rem 0.5rem; font-family: sans-serif; font-size: 14px;">
+            <div style="max-width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
+              <div style="background-color: #7c3aed; height: 4px;"></div>
+              <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 800; font-size: 1rem; color: #7c3aed;">🔮 RECEPTIA NEWS</span>
+                <span style="font-size: 0.7rem; color: #9ca3af;">Boletín Mensual</span>
+              </div>
+              <div style="padding: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1.15rem; font-weight: 700; color: #111827;">${escapeHtml(subject)}</h3>
+                <div style="font-size: 0.9rem; color: #374151;">
+                  ${formattedBody.replace(/{{name}}/g, 'Carlos')}
+                </div>
+                <div style="margin-top: 1.5rem; text-align: center;">
+                  <a href="#" onclick="return false;" style="background-color: #7c3aed; color: #ffffff; padding: 0.55rem 1.25rem; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 0.8rem; display: inline-block;">
+                    Ver novedades en la web
+                  </a>
+                </div>
+              </div>
+              <div style="background-color: #f9fafb; padding: 1rem; border-top: 1px solid #f3f4f6; text-align: center;">
+                <p style="margin: 0; font-size: 0.7rem; color: #9ca3af;">© 2026 Receptia S.L. Todos los derechos reservados.</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Insertar en contenedor de preview
+      const container = document.getElementById('wizard-template-preview-container');
+      container.innerHTML = previewHtml;
+    }
+
+    // Control de Flujo del Wizard
+    function switchWizardStep(step) {
+      emailMarketingWizardStep = step;
+
+      // Ocultar todos los pasos
+      document.getElementById('wizard-step-1').style.display = 'none';
+      document.getElementById('wizard-step-2').style.display = 'none';
+      document.getElementById('wizard-step-3').style.display = 'none';
+
+      // Mostrar el activo
+      document.getElementById(`wizard-step-${step}`).style.display = 'flex';
+
+      // Actualizar indicadores visuales
+      for (let i = 1; i <= 3; i++) {
+        const ind = document.getElementById(`wizard-step-indicator-${i}`);
+        const circle = ind.querySelector('span');
+        if (i === step) {
+          ind.style.color = 'var(--primary)';
+          ind.style.fontWeight = '600';
+          circle.style.background = 'var(--primary)';
+          circle.style.color = '#fff';
+        } else if (i < step) {
+          ind.style.color = '#10b981'; // Completado verde
+          ind.style.fontWeight = '600';
+          circle.style.background = '#10b981';
+          circle.style.color = '#fff';
+        } else {
+          ind.style.color = 'var(--text-muted)';
+          ind.style.fontWeight = '500';
+          circle.style.background = 'rgba(255,255,255,0.1)';
+          circle.style.color = 'var(--text-muted)';
+        }
+      }
+
+      // Habilitar/deshabilitar botones
+      document.getElementById('wizard-btn-prev').disabled = step === 1;
+      
+      if (step === 3) {
+        document.getElementById('wizard-btn-next').style.display = 'none';
+        document.getElementById('wizard-btn-submit').style.display = 'inline-block';
+        renderWizardSummary();
+      } else {
+        document.getElementById('wizard-btn-next').style.display = 'inline-block';
+        document.getElementById('wizard-btn-submit').style.display = 'none';
+      }
+    }
+
+    function wizardNextStep() {
+      if (emailMarketingWizardStep === 1) {
+        // Validaciones paso 1
+        const name = document.getElementById('wizard-campaign-name').value.trim();
+        const subject = document.getElementById('wizard-campaign-subject').value.trim();
+        const body = document.getElementById('wizard-campaign-body').value.trim();
+
+        if (!name || !subject || !body) {
+          showToast('Por favor, rellena todos los campos del correo.', 'warning');
+          return;
+        }
+        switchWizardStep(2);
+      } else if (emailMarketingWizardStep === 2) {
+        // Validaciones paso 2
+        if (emailMarketingSelectedIds.size === 0) {
+          showToast('Selecciona al menos un destinatario para lanzar la campaña.', 'warning');
+          return;
+        }
+        switchWizardStep(3);
+      }
+    }
+
+    function wizardPrevStep() {
+      if (emailMarketingWizardStep > 1) {
+        switchWizardStep(emailMarketingWizardStep - 1);
+      }
+    }
+
+    // Renderizar resumen del paso 3
+    function renderWizardSummary() {
+      const name = document.getElementById('wizard-campaign-name').value.trim();
+      const subject = document.getElementById('wizard-campaign-subject').value.trim();
+      const templateId = document.getElementById('wizard-campaign-template').value;
+
+      document.getElementById('wizard-summary-name').innerText = name;
+      document.getElementById('wizard-summary-subject').innerText = subject;
+      
+      const tempLabel = templateId === 'corandar_elegant' ? 'Corandar Elegant (Fondo Blanco)' : templateId === 'receptia_launch' ? 'Receptia Launch (Oscuro tecnológico)' : 'Receptia Newsletter (Minimalista)';
+      document.getElementById('wizard-summary-template').innerText = tempLabel;
+
+      const total = emailMarketingSelectedIds.size;
+      document.getElementById('wizard-summary-recipients-count').innerText = total;
+
+      // Calcular desglose de orígenes
+      let countProspects = 0;
+      let countClients = 0;
+      let countManual = 0;
+
+      emailMarketingAllContacts.forEach(c => {
+        if (emailMarketingSelectedIds.has(c.id)) {
+          if (c.type === 'prospect') countProspects++;
+          else if (c.type === 'client' && c.id.indexOf('manual') !== 0) countClients++;
+          else countManual++;
+        }
+      });
+
+      document.getElementById('wizard-summary-origin-breakdown').innerHTML = `
+        <div>• Prospectos de Supabase: <strong>${countProspects}</strong></div>
+        <div>• Clientes Activos (Inquilinos): <strong>${countClients}</strong></div>
+        <div>• Correos Manuales: <strong>${countManual}</strong></div>
+      `;
+    }
+
+    // Enviar campaña de email marketing
+    async function submitEmailCampaign() {
+      const name = document.getElementById('wizard-campaign-name').value.trim();
+      const subject = document.getElementById('wizard-campaign-subject').value.trim();
+      const template_id = document.getElementById('wizard-campaign-template').value;
+      const body_content = document.getElementById('wizard-campaign-body').value.trim();
+
+      // Recopilar destinatarios seleccionados
+      const recipients = [];
+      emailMarketingAllContacts.forEach(c => {
+        if (emailMarketingSelectedIds.has(c.id)) {
+          recipients.push({
+            name: c.name,
+            email: c.email,
+            type: c.type
+          });
+        }
+      });
+
+      const btn = document.getElementById('wizard-btn-submit');
+      const originalText = btn.innerText;
+      btn.innerText = 'Enviando...';
+      btn.disabled = true;
+
+      try {
+        const response = await fetch('/api/admin/email-marketing/campaigns', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'admin-pin': adminToken || localStorage.getItem('admin_token') || ''
+          },
+          body: JSON.stringify({
+            name,
+            subject,
+            template_id,
+            body_content,
+            recipients
+          })
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Error al lanzar la campaña');
+
+        showToast(`¡Campaña lanzada con éxito! Enviados: ${result.sent}, Fallidos: ${result.failed}`, 'success');
+        closeCreateCampaignWizard();
+        fetchEmailCampaigns(); // Recargar historial
+      } catch (err) {
+        console.error('[submitEmailCampaign] Error:', err);
+        showToast(err.message, 'error');
+      } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
       }
     }
 
@@ -9349,10 +10173,10 @@
         // Botones de estado — suspender o reactivar según el estado actual
         const isSuspended = tenant.subscription_status === 'paused';
         const suspendBtn = isSuspended
-          ? `<button class="btn btn-secondary" onclick="openReactivateConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #4ade80; border-color: rgba(74, 222, 128, 0.3);" title="Reactivar cliente">
+          ? `<button class="btn btn-secondary" onclick="openReactivateConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #4ade80; border-color: rgba(74, 222, 128, 0.3);" title="Reactivar cliente">
                <i data-lucide="play-circle" style="width: 13px; height: 13px;"></i> Reactivar
              </button>`
-          : `<button class="btn btn-secondary" onclick="openSuspendConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);" title="Suspender servicio">
+          : `<button class="btn btn-secondary" onclick="openSuspendConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);" title="Suspender servicio">
                <i data-lucide="pause-circle" style="width: 13px; height: 13px;"></i> Suspender
              </button>`;
 
@@ -9363,33 +10187,35 @@
           <td>${tenant.subscription_plan || 'Estándar'}</td>
           <td>${dateStr}</td>
           <td>${statusBadge}</td>
-          <td style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
-            <button class="btn btn-secondary" onclick="loadTenantToEdit('${tenant.id}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
-              <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Editar
-            </button>
-            <button class="btn btn-secondary" onclick="duplicateTenant('${tenant.id}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #34d399; border-color: rgba(52, 211, 153, 0.3);" title="Duplicar ficha de cliente">
-              <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Duplicar
-            </button>
-            <button class="btn btn-secondary" onclick="copyClientLinkToClipboard('${tenant.id}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: var(--primary-hover); border-color: rgba(139, 92, 246, 0.3);" title="Copiar enlace de acceso">
-              <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Enlace
-            </button>
-            <button class="btn btn-secondary" onclick="emergencyAccessToClient('${tenant.id}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);" title="Acceso de urgencia al panel de cliente">
-              <i data-lucide="shield-alert" style="width: 13px; height: 13px;"></i> Urgencia
-            </button>
-            ${suspendBtn}
-            <button class="btn btn-secondary" onclick="openArchiveConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Archivar cliente">
-              <i data-lucide="archive" style="width: 13px; height: 13px;"></i> Archivar
-            </button>
-            ${tenant.signed_contract_content ? `
-            <button class="btn btn-secondary" onclick="downloadClientContractPDFDirect('${tenant.id}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
-              <i data-lucide="download" style="width: 14px; height: 14px;"></i> Contrato
-            </button>
-            ` : ''}
-            ${tenant.retell_agent_id ? `
-            <button class="btn" onclick="window.startWebRTCCall('${tenant.retell_agent_id}', '${tenant.business_name.replace(/'/g,"\\'")}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%); height: auto; border: none; box-shadow: none;">
-              <i data-lucide="phone" style="width: 14px; height: 14px;"></i> Probar IA
-            </button>
-            ` : ''}
+          <td style="white-space: nowrap; width: 1%;">
+            <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: nowrap; justify-content: flex-start;">
+              <button class="btn btn-secondary" onclick="loadTenantToEdit('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
+                <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Editar
+              </button>
+              <button class="btn btn-secondary" onclick="duplicateTenant('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #34d399; border-color: rgba(52, 211, 153, 0.3);" title="Duplicar ficha de cliente">
+                <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Duplicar
+              </button>
+              <button class="btn btn-secondary" onclick="copyClientLinkToClipboard('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: var(--primary-hover); border-color: rgba(139, 92, 246, 0.3);" title="Copiar enlace de acceso">
+                <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Enlace
+              </button>
+              <button class="btn btn-secondary" onclick="emergencyAccessToClient('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);" title="Acceso de urgencia al panel de cliente">
+                <i data-lucide="shield-alert" style="width: 13px; height: 13px;"></i> Urgencia
+              </button>
+              ${suspendBtn}
+              <button class="btn btn-secondary" onclick="openArchiveConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Archivar cliente">
+                <i data-lucide="archive" style="width: 13px; height: 13px;"></i> Archivar
+              </button>
+              ${tenant.signed_contract_content ? `
+              <button class="btn btn-secondary" onclick="downloadClientContractPDFDirect('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
+                <i data-lucide="download" style="width: 14px; height: 14px;"></i> Contrato
+              </button>
+              ` : ''}
+              ${tenant.retell_agent_id ? `
+              <button class="btn" onclick="window.startWebRTCCall('${tenant.retell_agent_id}', '${tenant.business_name.replace(/'/g,"\\'")}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%); height: auto; border: none; box-shadow: none;">
+                <i data-lucide="phone" style="width: 14px; height: 14px;"></i> Probar IA
+              </button>
+              ` : ''}
+            </div>
           </td>
         `;
         tbody.appendChild(row);

@@ -16,6 +16,7 @@ import referralsRouter from './routes/referrals';
 import virtualPhonesRouter from './routes/virtual-phones';
 import zadarmaRouter from './routes/zadarma';
 import elevenlabsRouter from './routes/elevenlabs';
+import emailMarketingRouter from './routes/email-marketing';
 import { getAuthUrl, getTokensFromCode, updateAppointment, deleteAppointment } from './services/googleCalendar';
 import { supabase, getSettingVal, clearSettingsCache } from './services/supabase';
 import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellAgent, resolveAgentName, createRetellAgentForTenant } from './services/retell';
@@ -2483,6 +2484,71 @@ app.get('/api/payments/invoices', async (req, res): Promise<void> => {
     console.error('Error al listar facturas de Stripe:', err.message);
     res.status(500).json({ error: err.message });
   }
+});
+
+// =====================================================================
+// Endpoints Públicos de Tracking para Campañas de Email Marketing
+// =====================================================================
+app.get('/api/public/email-campaigns/track-open/:recipient_id', async (req, res): Promise<void> => {
+  const { recipient_id } = req.params;
+  try {
+    if (recipient_id) {
+      const { data: recipient } = await supabase
+        .from('email_campaign_recipients')
+        .select('status')
+        .eq('id', recipient_id)
+        .maybeSingle();
+
+      if (recipient && recipient.status === 'sent') {
+        await supabase
+          .from('email_campaign_recipients')
+          .update({
+            status: 'opened',
+            opened_at: new Date().toISOString()
+          })
+          .eq('id', recipient_id);
+      }
+    }
+  } catch (err: any) {
+    console.error('[Tracking Pixel Error]:', err.message);
+  }
+
+  const gifBase64 = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  const img = Buffer.from(gifBase64, 'base64');
+  res.writeHead(200, {
+    'Content-Type': 'image/gif',
+    'Content-Length': img.length,
+    'Cache-Control': 'no-store, no-cache, must-revalidate, private'
+  });
+  res.end(img);
+});
+
+app.get('/api/public/email-campaigns/track-click/:recipient_id', async (req, res): Promise<void> => {
+  const { recipient_id } = req.params;
+  const redirectUrl = (req.query.redirect as string) || 'https://receptia.corandar.com';
+  try {
+    if (recipient_id) {
+      const { data: recipient } = await supabase
+        .from('email_campaign_recipients')
+        .select('status')
+        .eq('id', recipient_id)
+        .maybeSingle();
+
+      if (recipient && (recipient.status === 'sent' || recipient.status === 'opened')) {
+        await supabase
+          .from('email_campaign_recipients')
+          .update({
+            status: 'clicked',
+            clicked_at: new Date().toISOString()
+          })
+          .eq('id', recipient_id);
+      }
+    }
+  } catch (err: any) {
+    console.error('[Click Track Error]:', err.message);
+  }
+
+  res.redirect(redirectUrl);
 });
 
 // 3. Webhook de Stripe para notificaciones asíncronas en la nube
@@ -5280,6 +5346,7 @@ app.use('/api/referrals', referralsRouter);
 app.use('/api/admin/virtual-phones', virtualPhonesRouter);
 app.use('/api/admin/zadarma', zadarmaRouter);
 app.use('/api/admin/elevenlabs', elevenlabsRouter);
+app.use('/api/admin/email-marketing', emailMarketingRouter);
 
 
 
@@ -5548,6 +5615,58 @@ async function runDatabaseMigrations() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
       );
+    `);
+
+    // Crear tabla email_campaigns si no existe
+    await clientInstance.query(`
+      CREATE TABLE IF NOT EXISTS email_campaigns (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR NOT NULL,
+        subject VARCHAR NOT NULL,
+        template_id VARCHAR NOT NULL,
+        body_content TEXT,
+        status VARCHAR DEFAULT 'completed',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
+    `);
+
+    // Crear tabla email_campaign_recipients si no existe
+    await clientInstance.query(`
+      CREATE TABLE IF NOT EXISTS email_campaign_recipients (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        campaign_id UUID REFERENCES email_campaigns(id) ON DELETE CASCADE,
+        email VARCHAR NOT NULL,
+        name VARCHAR,
+        recipient_type VARCHAR NOT NULL, -- 'prospect', 'client', 'manual'
+        status VARCHAR DEFAULT 'sent', -- 'sent', 'opened', 'clicked', 'converted'
+        opened_at TIMESTAMP WITH TIME ZONE,
+        clicked_at TIMESTAMP WITH TIME ZONE,
+        converted_at TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
+    `);
+
+    // Crear trigger para conversión automática de inquilinos
+    await clientInstance.query(`
+      CREATE OR REPLACE FUNCTION handle_tenant_conversion_trigger()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        IF (NEW.subscription_status = 'active' OR NEW.subscription_status = 'trial') THEN
+          UPDATE email_campaign_recipients
+          SET status = 'converted',
+              converted_at = timezone('utc'::text, now())
+          WHERE LOWER(email) = LOWER(NEW.email)
+            AND status != 'converted';
+        END IF;
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+
+      DROP TRIGGER IF EXISTS trg_tenant_conversion ON tenants;
+      CREATE TRIGGER trg_tenant_conversion
+      AFTER INSERT OR UPDATE ON tenants
+      FOR EACH ROW
+      EXECUTE FUNCTION handle_tenant_conversion_trigger();
     `);
 
     // 3. Notificar a PostgREST
