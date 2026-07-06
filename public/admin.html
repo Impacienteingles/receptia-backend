@@ -2381,8 +2381,8 @@
                 <div class="form-group">
                   <label for="phone-provider">Proveedor de Telefonía:</label>
                   <select id="phone-provider">
+                    <option value="zadarma" selected>Zadarma (Conexión SIP Manual)</option>
                     <option value="retell">Retell AI (Auto-Compra Directa)</option>
-                    <option value="zadarma">Zadarma (Conexión SIP Manual)</option>
                   </select>
                 </div>
 
@@ -10877,7 +10877,7 @@
         btnTestCall.style.display = agentIdVal ? 'flex' : 'none';
       }
 
-      const provider = tenant.phone_provider || 'retell';
+      const provider = tenant.phone_provider || 'zadarma';
       document.getElementById('phone-provider').value = provider;
       
       document.getElementById('manual-phone-fields').style.display = 'none';
@@ -11283,7 +11283,7 @@
       const btnTestCall = document.getElementById('btn-test-webrtc-call');
       if (btnTestCall) btnTestCall.style.display = 'none';
 
-      document.getElementById('phone-provider').value = tenant.phone_provider || 'retell';
+      document.getElementById('phone-provider').value = tenant.phone_provider || 'zadarma';
       document.getElementById('phone-number').value = '';
       
       document.getElementById('business-description').value = tenant.business_description || '';
