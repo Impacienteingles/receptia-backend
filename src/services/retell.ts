@@ -1,6 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
-import { getSettingVal } from './supabase';
+import { supabase, getSettingVal } from './supabase';
 
 dotenv.config();
 
@@ -451,22 +451,50 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
       // Combinar tool_ids y built_in_tools
       if (agentPayload.conversation_config.agent.prompt) {
         (agentPayload.conversation_config.agent.prompt as any).tool_ids = currentTools;
-        (agentPayload.conversation_config.agent.prompt as any).built_in_tools = getAgentRes.data.conversation_config?.agent?.prompt?.built_in_tools || {
+
+        // Configurar herramientas de sistema (built_in_tools)
+        const isDemoDept = tenant.id === 'd1180213-8036-4acd-a6de-3e3287ba73dc';
+        const builtInTools: any = {
           end_call: {
             name: 'end_call',
             params: {
               system_tool_type: 'end_call'
             },
             type: 'system'
-          },
-          transfer_to_number: {
-            name: 'transfer_to_number',
-            params: {
-              system_tool_type: 'transfer_to_number'
-            },
-            type: 'system'
           }
         };
+
+        if (isDemoDept) {
+          const { data: otherTenants } = await supabase
+            .from('tenants')
+            .select('id, business_name, retell_agent_id')
+            .neq('id', tenant.id)
+            .eq('is_archived', false)
+            .in('subscription_status', ['active', 'trial'])
+            .not('retell_agent_id', 'is', null);
+
+          if (otherTenants && otherTenants.length > 0) {
+            const transfers = otherTenants
+              .filter(t => t.retell_agent_id && t.retell_agent_id.trim() !== '')
+              .map(t => ({
+                agent_id: t.retell_agent_id,
+                condition: `El usuario solicita escuchar la demostración de ${t.business_name}`
+              }));
+
+            if (transfers.length > 0) {
+              builtInTools.transfer_to_agent = {
+                name: 'transfer_to_agent',
+                params: {
+                  system_tool_type: 'transfer_to_agent',
+                  transfers: transfers
+                },
+                type: 'system'
+              };
+            }
+          }
+        }
+
+        (agentPayload.conversation_config.agent.prompt as any).built_in_tools = builtInTools;
       }
     } catch (getErr: any) {
       console.warn(`Could not fetch agent details for mapping tool_ids:`, getErr.message);

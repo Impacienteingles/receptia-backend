@@ -7,10 +7,11 @@ dotenv.config();
 async function main() {
   console.log('🏁 Iniciando resincronización de todos los agentes de Retell...');
 
-  // 1. Obtener todos los inquilinos
   const { data: tenants, error } = await supabase
     .from('tenants')
-    .select('*');
+    .select('*')
+    .eq('is_archived', false)
+    .in('subscription_status', ['active', 'trial']);
 
   if (error) {
     console.error('❌ Error al obtener inquilinos de Supabase:', error.message);

@@ -239,6 +239,48 @@ async function setupElevenLabs(tenantId: string) {
   const voiceResp = (tenant.voice_responsiveness !== undefined && tenant.voice_responsiveness !== null) ? Number(tenant.voice_responsiveness) : 1.0;
   const computedTurnTimeout = Math.max(0.5, Math.min(3.0, 1.2 / (voiceResp || 1.0)));
 
+  // Configurar herramientas de sistema (built_in_tools)
+  const isDemoDept = tenant.id === 'd1180213-8036-4acd-a6de-3e3287ba73dc';
+  const builtInTools: any = {
+    end_call: {
+      name: 'end_call',
+      params: {
+        system_tool_type: 'end_call'
+      },
+      type: 'system'
+    }
+  };
+
+  if (isDemoDept) {
+    const { data: otherTenants } = await supabase
+      .from('tenants')
+      .select('id, business_name, retell_agent_id')
+      .neq('id', tenant.id)
+      .eq('is_archived', false)
+      .in('subscription_status', ['active', 'trial'])
+      .not('retell_agent_id', 'is', null);
+
+    if (otherTenants && otherTenants.length > 0) {
+      const transfers = otherTenants
+        .filter(t => t.retell_agent_id && t.retell_agent_id.trim() !== '')
+        .map(t => ({
+          agent_id: t.retell_agent_id,
+          condition: `El usuario solicita escuchar la demostración de ${t.business_name}`
+        }));
+
+      if (transfers.length > 0) {
+        builtInTools.transfer_to_agent = {
+          name: 'transfer_to_agent',
+          params: {
+            system_tool_type: 'transfer_to_agent',
+            transfers: transfers
+          },
+          type: 'system'
+        };
+      }
+    }
+  }
+
   const agentPayload = {
     name: tenant.business_name,
     conversation_config: {
@@ -249,22 +291,7 @@ async function setupElevenLabs(tenantId: string) {
           tool_ids: toolIds,
           llm: 'gpt-4o-mini',
           temperature: 0.3,
-          built_in_tools: {
-            end_call: {
-              name: 'end_call',
-              params: {
-                system_tool_type: 'end_call'
-              },
-              type: 'system'
-            },
-            transfer_to_number: {
-              name: 'transfer_to_number',
-              params: {
-                system_tool_type: 'transfer_to_number'
-              },
-              type: 'system'
-            }
-          }
+          built_in_tools: builtInTools
         },
         language: 'es'
       },
