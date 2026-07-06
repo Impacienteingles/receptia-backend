@@ -12,6 +12,13 @@
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2">
   <link rel="icon" type="image/png" href="/favicon.png?v=2">
   <script>
+    // Capturar errores JS globales para diagnóstico en QA/Producción
+    window.onerror = function(message, source, lineno, colno, error) {
+      console.error("Global JS Error:", message, "at", source, ":", lineno, ":", colno);
+      alert("Error de Script detectado:\n" + message + "\n\nArchivo: " + source + "\nLínea: " + lineno + "\nColumna: " + colno);
+      return false;
+    };
+
     // Desactivar y limpiar Service Workers y cachés previas para evitar bloqueos/reversión de versión
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -7302,39 +7309,47 @@
     // Validar o registrar la Contraseña
     async function handlePinSubmit(tenant) {
       if (isSubmittingPin) return;
-      
-      const emailInput = document.getElementById('client-login-email');
-      const email = emailInput ? emailInput.value.trim() : '';
-      const pin = pinInput.value.trim();
-      
-      if (!email) {
-        showToast('Por favor, introduce tu correo electrónico.', 'error');
-        if (emailInput) emailInput.focus();
-        return;
-      }
-      
-      if (!tenant.admin_pin) {
-        // Validación estricta para nueva contraseña
-        if (pin.length < 8) {
-          showToast('La contraseña debe tener al menos 8 caracteres.', 'error');
-          return;
-        }
-      } else {
-        if (pin.length === 0) {
-          showToast('Por favor, introduce tu contraseña.', 'error');
-          return;
-        }
-      }
-
-      const rememberEl = document.getElementById('pin-remember');
-      const remember = rememberEl ? rememberEl.checked : false;
-
       isSubmittingPin = true;
-      if (!tenant.admin_pin) {
-        // Registrar nueva contraseña en Supabase
-        try {
-          btnPinSubmit.disabled = true;
-          btnPinSubmit.innerText = 'Guardando...';
+      
+      try {
+        const emailInput = document.getElementById('client-login-email');
+        const email = emailInput ? emailInput.value.trim() : '';
+        const pinInput = document.getElementById('pin-input');
+        const pin = pinInput ? pinInput.value.trim() : '';
+        const pinError = document.getElementById('pin-error');
+        const btnPinSubmit = document.getElementById('btn-pin-submit');
+        
+        if (!email) {
+          showToast('Por favor, introduce tu correo electrónico.', 'error');
+          if (emailInput) emailInput.focus();
+          isSubmittingPin = false;
+          return;
+        }
+        
+        if (!tenant.admin_pin) {
+          // Nueva contraseña
+          if (pin.length < 8) {
+            showToast('La contraseña debe tener al menos 8 caracteres.', 'error');
+            isSubmittingPin = false;
+            return;
+          }
+        } else {
+          if (pin.length === 0) {
+            showToast('Por favor, introduce tu contraseña.', 'error');
+            isSubmittingPin = false;
+            return;
+          }
+        }
+
+        const rememberEl = document.getElementById('pin-remember');
+        const remember = rememberEl ? rememberEl.checked : false;
+
+        if (!tenant.admin_pin) {
+          // Registrar nueva contraseña en Supabase
+          if (btnPinSubmit) {
+            btnPinSubmit.disabled = true;
+            btnPinSubmit.innerText = 'Guardando...';
+          }
           
           const response = await fetch('/api/tenants', {
             method: 'POST',
@@ -7359,16 +7374,8 @@
 
           showToast('Contraseña configurada correctamente.');
           dismissPinModal();
-        } catch (err) {
-          showToast(err.message, 'error');
-          btnPinSubmit.disabled = false;
-          btnPinSubmit.innerText = 'Establecer Contraseña y Entrar';
-        } finally {
-          isSubmittingPin = false;
-        }
-      } else {
-        // Validar contraseña ingresada
-        try {
+        } else {
+          // Validar contraseña ingresada
           const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -7398,17 +7405,21 @@
           } else {
             const errData = await response.json().catch(() => ({}));
             showToast(errData.error || 'Contraseña incorrecta. Inténtalo de nuevo.', 'error');
-            pinError.innerText = errData.error || 'Contraseña incorrecta. Inténtalo de nuevo.';
-            pinError.style.display = 'block';
-            pinInput.value = '';
-            pinInput.focus();
+            if (pinError) {
+              pinError.innerText = errData.error || 'Contraseña incorrecta. Inténtalo de nuevo.';
+              pinError.style.display = 'block';
+            }
+            if (pinInput) {
+              pinInput.value = '';
+              pinInput.focus();
+            }
           }
-        } catch (err) {
-          console.error(err);
-          showToast('Error al validar la contraseña de acceso.', 'error');
-        } finally {
-          isSubmittingPin = false;
         }
+      } catch (err) {
+        console.error("Error in handlePinSubmit:", err);
+        showToast('Error al validar la contraseña de acceso: ' + err.message, 'error');
+      } finally {
+        isSubmittingPin = false;
       }
     }
 
