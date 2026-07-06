@@ -1823,7 +1823,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.1.16</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.2.0</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2051,7 +2051,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.1.16</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.2.0</span>
       </div>
     </aside>
 
@@ -2074,7 +2074,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.16</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.2.0</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -14667,7 +14667,7 @@
     window.openVoiceCatalogManager = function() {
       document.getElementById('voice-catalog-manager-modal').style.display = 'flex';
       renderManagerCatalogList();
-      fetchRetellAgentsForCatalog();
+      fetchPlatformAgentsForCatalog();
     };
 
     window.closeVoiceCatalogManager = function() {
@@ -14716,39 +14716,81 @@
       lucide.createIcons();
     }
 
-    async function fetchRetellAgentsForCatalog() {
+    async function fetchPlatformAgentsForCatalog() {
       const select = document.getElementById('catalog-retell-agent-select');
       if (!select) return;
-      select.innerHTML = '<option value="">Cargando agentes de Retell...</option>';
+      select.innerHTML = '<option value="">Cargando agentes...</option>';
       
       try {
-        const res = await fetch('/api/retell-agents');
-        if (!res.ok) throw new Error('API Error');
-        const data = await res.json();
-        retellAgentsList = data || [];
-        
+        // Fetch Retell agents
+        let retellAgents = [];
+        try {
+          const res = await fetch('/api/retell-agents');
+          if (res.ok) retellAgents = await res.json();
+        } catch (e) {
+          console.error('Error fetching Retell agents:', e);
+        }
+
+        // Fetch ElevenLabs agents
+        let elevenLabsAgents = [];
+        try {
+          const res = await fetch('/api/elevenlabs-agents');
+          if (res.ok) elevenLabsAgents = await res.json();
+        } catch (e) {
+          console.error('Error fetching ElevenLabs agents:', e);
+        }
+
         select.innerHTML = '<option value="">-- Selecciona un agente para importar --</option>';
-        retellAgentsList.forEach(agent => {
-          const opt = document.createElement('option');
-          opt.value = agent.agent_id;
-          opt.innerText = `${agent.agent_name || 'Sin nombre'} (${agent.agent_id})`;
-          select.appendChild(opt);
-        });
+
+        if (elevenLabsAgents.length > 0) {
+          const group = document.createElement('optgroup');
+          group.label = 'Agentes de ElevenLabs';
+          elevenLabsAgents.forEach(agent => {
+            const opt = document.createElement('option');
+            opt.value = `elevenlabs:${agent.agent_id}`;
+            opt.innerText = `${agent.name || 'Sin nombre'} (${agent.agent_id})`;
+            group.appendChild(opt);
+          });
+          select.appendChild(group);
+        }
+
+        if (retellAgents.length > 0) {
+          const group = document.createElement('optgroup');
+          group.label = 'Agentes de Retell AI';
+          retellAgents.forEach(agent => {
+            const opt = document.createElement('option');
+            opt.value = `retell:${agent.agent_id}`;
+            opt.innerText = `${agent.agent_name || 'Sin nombre'} (${agent.agent_id})`;
+            group.appendChild(opt);
+          });
+          select.appendChild(group);
+        }
+
+        window.platformAgentsList = {
+          retell: retellAgents,
+          elevenlabs: elevenLabsAgents
+        };
       } catch (err) {
-        console.error('Error fetching retell agents for catalog:', err);
-        select.innerHTML = '<option value="">Error al cargar agentes de Retell</option>';
+        console.error('Error fetching platform agents for catalog:', err);
+        select.innerHTML = '<option value="">Error al cargar agentes</option>';
       }
     }
 
     window.onCatalogAgentSelectChange = function() {
-      const agentId = document.getElementById('catalog-retell-agent-select').value;
-      if (!agentId) return;
+      const selectedValue = document.getElementById('catalog-retell-agent-select').value;
+      if (!selectedValue) return;
       
-      const agent = retellAgentsList.find(a => a.agent_id === agentId);
+      const [providerKey, agentId] = selectedValue.split(':');
+      let agent = null;
+      if (providerKey === 'retell') {
+        agent = window.platformAgentsList?.retell?.find(a => a.agent_id === agentId);
+      } else if (providerKey === 'elevenlabs') {
+        agent = window.platformAgentsList?.elevenlabs?.find(a => a.agent_id === agentId);
+      }
+      
       if (!agent) return;
       
-      // Auto-rellenar campos en base al agente de Retell
-      let cleanName = agent.agent_name || '';
+      let cleanName = (providerKey === 'retell' ? agent.agent_name : agent.name) || '';
       if (cleanName.includes('-')) {
         cleanName = cleanName.split('-')[0].trim();
       }
@@ -14756,18 +14798,22 @@
       document.getElementById('catalog-voice-name').value = cleanName;
       document.getElementById('catalog-retell-id').value = agent.agent_id;
       
-      // Intentar auto-rellenar proveedor y ID de voz
-      const voiceId = agent.voice_id || '';
-      document.getElementById('catalog-voice-id').value = voiceId;
-      
-      if (voiceId.startsWith('cartesia-') || voiceId.startsWith('cartesia:')) {
-        document.getElementById('catalog-voice-provider').value = 'Cartesia';
-      } else if (voiceId.startsWith('elevenlabs_') || voiceId.startsWith('elevenlabs:') || voiceId.startsWith('11labs_')) {
+      if (providerKey === 'elevenlabs') {
         document.getElementById('catalog-voice-provider').value = 'ElevenLabs';
-      } else if (voiceId.startsWith('openai-') || voiceId.startsWith('openai:')) {
-        document.getElementById('catalog-voice-provider').value = 'OpenAI';
+        document.getElementById('catalog-voice-id').value = agent.agent_id;
       } else {
-        document.getElementById('catalog-voice-provider').value = 'Platform';
+        const voiceId = agent.voice_id || '';
+        document.getElementById('catalog-voice-id').value = voiceId;
+        
+        if (voiceId.startsWith('cartesia-') || voiceId.startsWith('cartesia:')) {
+          document.getElementById('catalog-voice-provider').value = 'Cartesia';
+        } else if (voiceId.startsWith('elevenlabs_') || voiceId.startsWith('elevenlabs:') || voiceId.startsWith('11labs_')) {
+          document.getElementById('catalog-voice-provider').value = 'ElevenLabs';
+        } else if (voiceId.startsWith('openai-') || voiceId.startsWith('openai:')) {
+          document.getElementById('catalog-voice-provider').value = 'OpenAI';
+        } else {
+          document.getElementById('catalog-voice-provider').value = 'Platform';
+        }
       }
     };
 
@@ -16799,25 +16845,25 @@
           </div>
         </div>
         
-        <!-- COLUMNA DERECHA: AÑADIR AGENTE DE RETELL -->
+        <!-- COLUMNA DERECHA: AÑADIR AGENTE -->
         <div style="display: flex; flex-direction: column; gap: 1rem;">
           <h3 style="color: #fff; font-size: 1rem; margin-top: 0; margin-bottom: 0.5rem; font-family: 'Outfit';">Añadir Voz al Catálogo</h3>
           
           <div class="form-group">
-            <label for="catalog-retell-agent-select" style="font-size: 0.8rem; color: var(--text-muted);">Vincular con Agente de Retell AI:</label>
+            <label for="catalog-retell-agent-select" style="font-size: 0.8rem; color: var(--text-muted);">Vincular con Agente (ElevenLabs/Retell):</label>
             <select id="catalog-retell-agent-select" onchange="onCatalogAgentSelectChange()" style="width: 100%; padding: 0.6rem; border-radius: 6px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); color: #fff;">
-              <option value="">Cargando agentes de Retell...</option>
+              <option value="">Cargando agentes...</option>
             </select>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
             <div class="form-group">
               <label for="catalog-voice-id" style="font-size: 0.8rem; color: var(--text-muted);">ID de la Voz/Agente:</label>
-              <input type="text" id="catalog-voice-id" placeholder="ej. cartesia-Elena" style="padding: 0.6rem; width: 100%;" required>
+              <input type="text" id="catalog-voice-id" placeholder="ej. 21m0aVPqzz9cUBIzhVIt" style="padding: 0.6rem; width: 100%;" required>
             </div>
             <div class="form-group">
               <label for="catalog-voice-name" style="font-size: 0.8rem; color: var(--text-muted);">Nombre para Mostrar:</label>
-              <input type="text" id="catalog-voice-name" placeholder="ej. Elena" style="padding: 0.6rem; width: 100%;" required>
+              <input type="text" id="catalog-voice-name" placeholder="ej. Rachel" style="padding: 0.6rem; width: 100%;" required>
             </div>
           </div>
 
@@ -16842,11 +16888,11 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
             <div class="form-group">
               <label for="catalog-voice-provider" style="font-size: 0.8rem; color: var(--text-muted);">Proveedor:</label>
-              <input type="text" id="catalog-voice-provider" placeholder="ej. Cartesia" style="padding: 0.6rem; width: 100%;" required>
+              <input type="text" id="catalog-voice-provider" placeholder="ej. ElevenLabs" style="padding: 0.6rem; width: 100%;" required>
             </div>
             <div class="form-group">
-              <label for="catalog-retell-id" style="font-size: 0.8rem; color: var(--text-muted);">ID de Agente Retell:</label>
-              <input type="text" id="catalog-retell-id" placeholder="ej. agent_XXXX" style="padding: 0.6rem; width: 100%;">
+              <label for="catalog-retell-id" style="font-size: 0.8rem; color: var(--text-muted);">ID de Agente Asociado:</label>
+              <input type="text" id="catalog-retell-id" placeholder="ej. Agent ID de ElevenLabs/Retell" style="padding: 0.6rem; width: 100%;">
             </div>
           </div>
 

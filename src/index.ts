@@ -4789,6 +4789,29 @@ app.get('/api/retell-agents', async (req, res): Promise<void> => {
   }
 });
 
+// GET: Obtener lista de agentes reales desde ElevenLabs
+app.get('/api/elevenlabs-agents', async (req, res): Promise<void> => {
+  try {
+    const apiKey = await getSettingVal('ELEVENLABS_API_KEY');
+    if (!apiKey || apiKey === 'YOUR_ELEVENLABS_API_KEY') {
+      res.status(400).json({ error: 'La API Key de ElevenLabs no está configurada.' });
+      return;
+    }
+
+    console.log('[Catalog API] Listando agentes de ElevenLabs...');
+    const response = await axios.get('https://api.elevenlabs.io/v1/convai/agents', {
+      headers: {
+        'xi-api-key': apiKey
+      }
+    });
+
+    res.json(response.data?.agents || []);
+  } catch (err: any) {
+    console.error('Error al listar agentes de ElevenLabs:', err.response?.data || err.message);
+    res.status(500).json({ error: err.response?.data?.message || err.message });
+  }
+});
+
 // POST: Responder mensajes del widget de chat público
 app.post('/api/chat/widget', async (req, res): Promise<void> => {
   const { tenant_id, message, session_id } = req.body;
