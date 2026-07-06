@@ -105,6 +105,22 @@ Debes comenzar la llamada saludando EXACTAMENTE de la siguiente manera:
 5. **Brevedad:** Mantén respuestas cortas, directas y sumamente profesionales.
 `;
   }
+  if (tenant.id === '62d1ed82-287c-4329-941b-50b578c15b14') {
+    const madridTimeStr = new Intl.DateTimeFormat('es-ES', {
+      timeZone: 'Europe/Madrid',
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).format(new Date());
+
+    let customPrompt = tenant.custom_instructions || '';
+    customPrompt = customPrompt.replace(/\{\{current_time_Europe_Madrid\}\}/g, madridTimeStr);
+    return customPrompt;
+  }
 
   const businessName = tenant.business_name || 'el negocio';
 
