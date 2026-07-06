@@ -214,6 +214,9 @@ async function setupElevenLabs(tenantId: string) {
     firstMessage = 'Hola, bienvenido al canal de atención al cliente de Receptia. ¿En qué puedo ayudarte hoy?';
   }
 
+  const voiceResp = (tenant.voice_responsiveness !== undefined && tenant.voice_responsiveness !== null) ? Number(tenant.voice_responsiveness) : 1.0;
+  const computedTurnTimeout = Math.max(0.5, Math.min(3.0, 1.2 / (voiceResp || 1.0)));
+
   const agentPayload = {
     name: tenant.business_name,
     conversation_config: {
@@ -245,8 +248,9 @@ async function setupElevenLabs(tenantId: string) {
         model: 'gpt-4o-mini',
         temperature: 0.3
       },
-      conversation: {
-        turn_timeout: 3.5
+      turn: {
+        turn_timeout: 1,
+        turn_eagerness: 'eager'
       }
     }
   };

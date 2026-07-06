@@ -2370,6 +2370,177 @@ app.post('/api/admin/restore', async (req, res): Promise<void> => {
   }
 });
 
+// 8.1. Backup en la Nube: Crear copia
+app.post('/api/admin/cloud-backup', async (req, res): Promise<void> => {
+  try {
+    const { backup_name } = req.body;
+    const finalName = backup_name || `Copia en la nube - ${new Date().toISOString().replace('T', ' ').substring(0, 19)}`;
+
+    const backupData: Record<string, any[]> = {};
+    const tables = [
+      'plans',
+      'settings',
+      'contract_templates',
+      'comerciales',
+      'email_unsubscribes',
+      'email_campaigns',
+      'tenants',
+      'appointments',
+      'call_logs',
+      'chat_messages',
+      'blocked_hours',
+      'caller_memories',
+      'referrals',
+      'referral_commissions',
+      'outbound_campaigns',
+      'outbound_campaign_recipients',
+      'prospects',
+      'prospect_activities',
+      'virtual_phones',
+      'comercial_payouts',
+      'comercial_commissions',
+      'email_campaign_recipients',
+      'accounting_transactions'
+    ];
+
+    for (const table of tables) {
+      const { data, error } = await supabase.from(table).select('*');
+      if (error) {
+        throw new Error(`Error al leer tabla ${table}: ${error.message}`);
+      }
+      backupData[table] = data || [];
+    }
+
+    const { data: inserted, error: insertError } = await supabase
+      .from('cloud_backups')
+      .insert({
+        backup_name: finalName,
+        backup_data: backupData
+      })
+      .select('id, backup_name, created_at')
+      .single();
+
+    if (insertError) {
+      throw insertError;
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Copia de seguridad en la nube creada correctamente.',
+      backup: inserted
+    });
+  } catch (err: any) {
+    console.error('Error al crear copia de seguridad en la nube:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 8.2. Backup en la Nube: Listar copias
+app.get('/api/admin/cloud-backups', async (req, res): Promise<void> => {
+  try {
+    const { data, error } = await supabase
+      .from('cloud_backups')
+      .select('id, backup_name, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json({ status: 'success', backups: data || [] });
+  } catch (err: any) {
+    console.error('Error al listar copias de seguridad en la nube:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 8.3. Backup en la Nube: Eliminar copia
+app.delete('/api/admin/cloud-backup/:id', async (req, res): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase
+      .from('cloud_backups')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    res.json({ status: 'success', message: 'Copia de seguridad en la nube eliminada.' });
+  } catch (err: any) {
+    console.error('Error al eliminar copia de seguridad en la nube:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 8.4. Backup en la Nube: Restaurar copia
+app.post('/api/admin/cloud-restore', async (req, res): Promise<void> => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      res.status(400).json({ error: 'Falta el ID de la copia de seguridad para restaurar.' });
+      return;
+    }
+
+    const { data: backupRecord, error: fetchError } = await supabase
+      .from('cloud_backups')
+      .select('backup_data')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !backupRecord) {
+      res.status(404).json({ error: 'No se encontró la copia de seguridad en la nube especificada.' });
+      return;
+    }
+
+    const backupData = backupRecord.backup_data;
+    const tables = [
+      'plans',
+      'settings',
+      'contract_templates',
+      'comerciales',
+      'email_unsubscribes',
+      'email_campaigns',
+      'tenants',
+      'appointments',
+      'call_logs',
+      'chat_messages',
+      'blocked_hours',
+      'caller_memories',
+      'referrals',
+      'referral_commissions',
+      'outbound_campaigns',
+      'outbound_campaign_recipients',
+      'prospects',
+      'prospect_activities',
+      'virtual_phones',
+      'comercial_payouts',
+      'comercial_commissions',
+      'email_campaign_recipients',
+      'accounting_transactions'
+    ];
+
+    const restoredStatus: Record<string, number> = {};
+
+    for (const table of tables) {
+      const records = backupData[table];
+      if (Array.isArray(records) && records.length > 0) {
+        const { error } = await supabase.from(table).upsert(records);
+        if (error) {
+          throw new Error(`Error al restaurar tabla ${table}: ${error.message}`);
+        }
+        restoredStatus[table] = records.length;
+      } else {
+        restoredStatus[table] = 0;
+      }
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Copia de seguridad en la nube restaurada correctamente.',
+      restoredStatus
+    });
+  } catch (err: any) {
+    console.error('Error al restaurar copia de seguridad en la nube:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ========================================================
 // INTEGRACIÓN CON STRIPE BILLING (MONETIZACIÓN SAAS)
 // ========================================================
@@ -6246,6 +6417,16 @@ async function runDatabaseMigrations() {
       AFTER INSERT OR UPDATE ON tenants
       FOR EACH ROW
       EXECUTE FUNCTION handle_tenant_conversion_trigger();
+    `);
+
+    // Crear tabla cloud_backups si no existe
+    await clientInstance.query(`
+      CREATE TABLE IF NOT EXISTS cloud_backups (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        backup_name VARCHAR NOT NULL,
+        backup_data JSONB NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
     `);
 
     // 3. Notificar a PostgREST
