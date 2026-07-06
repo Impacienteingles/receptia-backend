@@ -445,8 +445,14 @@ function resolveAgentName(voiceId: string): string {
   if (id.includes('alejandro')) return 'Alejandro';
   if (id.includes('sarah')) return 'Sarah';
   if (id.includes('daniel')) return 'Daniel';
+  if (id.includes('sofia')) return 'Sofía';
   if (id.includes('hailey') || id.includes('elena')) return 'Elena';
-  if (id.includes('eryldjeaddain9sdjamx') || id.includes('gabriela')) return 'Gabriela';
+  if (id.includes('eryldjeaddain9sdjamx') || id.includes('gabriela') || id.includes('c3e5212df87e5341a06ad66e66')) return 'Gabriela';
+  if (id.includes('cristina')) return 'Cristina';
+  if (id.includes('alice') || id.includes('xb7h8msujpsbsdyk0k2')) return 'Alice';
+  if (id.includes('jessica') || id.includes('cgsgspj2msm6clmckdw9')) return 'Jessica';
+  if (id.includes('valeria') || id.includes('wwdaer5vld7sa27ddcli')) return 'Valeria';
+  if (id.includes('carolina') || id.includes('z24cewyh9yhrpkmbku69')) return 'Carolina';
   return 'Elena';
 }
 

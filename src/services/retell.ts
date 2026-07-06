@@ -73,6 +73,11 @@ export function resolveAgentName(voiceId: string): string {
   if (id.includes('sofia')) return 'Sofía';
   if (id.includes('hailey') || id.includes('elena')) return 'Elena';
   if (id.includes('eryldjeaddain9sdjamx') || id.includes('gabriela') || id.includes('c3e5212df87e5341a06ad66e66')) return 'Gabriela';
+  if (id.includes('cristina')) return 'Cristina';
+  if (id.includes('alice') || id.includes('xb7h8msujpsbsdyk0k2')) return 'Alice';
+  if (id.includes('jessica') || id.includes('cgsgspj2msm6clmckdw9')) return 'Jessica';
+  if (id.includes('valeria') || id.includes('wwdaer5vld7sa27ddcli')) return 'Valeria';
+  if (id.includes('carolina') || id.includes('z24cewyh9yhrpkmbku69')) return 'Carolina';
   return 'Sofía';
 }
 
@@ -390,6 +395,16 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
       firstMessage = 'Hola, bienvenido al canal de atención al cliente de Receptia. ¿En qué puedo ayudarte hoy?';
     }
 
+    let cleanVoiceId = tenant.voice_id || '';
+    if (cleanVoiceId.startsWith('elevenlabs_')) {
+      cleanVoiceId = cleanVoiceId.replace('elevenlabs_', '');
+    } else if (cleanVoiceId.startsWith('elevenlabs:')) {
+      cleanVoiceId = cleanVoiceId.replace('elevenlabs:', '');
+    } else if (cleanVoiceId.startsWith('11labs_')) {
+      cleanVoiceId = cleanVoiceId.replace('11labs_', '');
+    }
+    const finalVoiceId = (cleanVoiceId && !cleanVoiceId.includes('cartesia') && cleanVoiceId.length === 20) ? cleanVoiceId : 'ERYLdjEaddaiN9sDjaMX';
+
     const agentPayload = {
       name: tenant.business_name,
       conversation_config: {
@@ -399,7 +414,7 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
             prompt: systemPrompt
           },
           voice: {
-            voice_id: tenant.voice_id || 'ERYLdjEaddaiN9sDjaMX',
+            voice_id: finalVoiceId,
             speed: tenant.personality_speed !== undefined ? Number(tenant.personality_speed) : (tenant.voice_speed !== undefined ? Number(tenant.voice_speed) : 1.09),
             stability: tenant.voice_temperature !== undefined ? Math.max(0, Math.min(1, Number(tenant.voice_temperature) * 0.4)) : 0.40,
             similarity_boost: 0.85

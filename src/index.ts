@@ -4591,6 +4591,46 @@ const DEFAULT_PREMIUM_VOICES = [
     flag: '<img src="https://flagcdn.com/w20/us.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
     previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/daniel.mp3',
     retell_agent_id: 'agent_daniel_default_retell_id'
+  },
+  {
+    id: 'elevenlabs_WwdAeR5vLd7Sa27ddCLi',
+    name: 'Valeria',
+    lang: 'es-LA',
+    langName: 'Español Latino',
+    gender: 'Femenino',
+    provider: 'ElevenLabs',
+    flag: '<img src="https://flagcdn.com/w20/mx.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: 'https://storage.googleapis.com/eleven-public-prod/database/workspace/1e0ed333cdf84056a91c444d973a0282/voices/WwdAeR5vLd7Sa27ddCLi/vgFagzms8lULREjFZZpU.mp3'
+  },
+  {
+    id: 'elevenlabs_z24CeWYH9yhrPKMBKU69',
+    name: 'Carolina',
+    lang: 'es-LA',
+    langName: 'Español Latino',
+    gender: 'Femenino',
+    provider: 'ElevenLabs',
+    flag: '<img src="https://flagcdn.com/w20/mx.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: 'https://storage.googleapis.com/eleven-public-prod/database/workspace/f6dd95dbd4ce46039c82a3aca2a11a00/voices/z24CeWYH9yhrPKMBKU69/db094b36-f7c4-42d0-b815-29fbb73c0041.mp3'
+  },
+  {
+    id: 'elevenlabs_Xb7hH8MSUJpSbSDYk0k2',
+    name: 'Alice',
+    lang: 'en-US',
+    langName: 'Inglés EE.UU.',
+    gender: 'Femenino',
+    provider: 'ElevenLabs',
+    flag: '<img src="https://flagcdn.com/w20/us.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/Xb7hH8MSUJpSbSDYk0k2/d10f7534-11f6-41fe-a012-2de1e482d336.mp3'
+  },
+  {
+    id: 'elevenlabs_cgSgspJ2msm6clMCkdW9',
+    name: 'Jessica',
+    lang: 'en-US',
+    langName: 'Inglés EE.UU.',
+    gender: 'Femenino',
+    provider: 'ElevenLabs',
+    flag: '<img src="https://flagcdn.com/w20/us.png" style="width: 16px; height: 11px; border-radius: 1px; object-fit: cover; vertical-align: middle; margin-right: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">',
+    previewUrl: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/cgSgspJ2msm6clMCkdW9/56a97bf8-b69b-448f-846c-c3a11683d45a.mp3'
   }
 ];
 

@@ -225,6 +225,16 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
       firstMessage = 'Hola, bienvenido al canal de atención al cliente de Receptia. ¿En qué puedo ayudarte hoy?';
     }
 
+    let cleanVoiceId = tenant.voice_id || '';
+    if (cleanVoiceId.startsWith('elevenlabs_')) {
+      cleanVoiceId = cleanVoiceId.replace('elevenlabs_', '');
+    } else if (cleanVoiceId.startsWith('elevenlabs:')) {
+      cleanVoiceId = cleanVoiceId.replace('elevenlabs:', '');
+    } else if (cleanVoiceId.startsWith('11labs_')) {
+      cleanVoiceId = cleanVoiceId.replace('11labs_', '');
+    }
+    const finalVoiceId = (cleanVoiceId && !cleanVoiceId.includes('cartesia') && cleanVoiceId.length === 20) ? cleanVoiceId : 'ERYLdjEaddaiN9sDjaMX';
+
     const agentPayload = {
       name: tenant.business_name,
       conversation_config: {
@@ -247,7 +257,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
         },
         tts: {
           model_id: 'eleven_flash_v2_5',
-          voice_id: (!tenant.voice_id || tenant.voice_id.includes('cartesia') || tenant.voice_id.length !== 20) ? 'ERYLdjEaddaiN9sDjaMX' : tenant.voice_id, // Gabriela voice
+          voice_id: finalVoiceId,
           speed: 1.09,
           stability: 0.40,
           similarity_boost: 0.85
