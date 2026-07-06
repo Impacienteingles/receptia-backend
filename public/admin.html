@@ -1823,7 +1823,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.1.8</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.1.9</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2051,7 +2051,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.1.8</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.1.9</span>
       </div>
     </aside>
 
@@ -2074,7 +2074,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.8</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.9</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2892,12 +2892,11 @@
                       <th onclick="sortClients('subscription_status')" style="cursor: pointer; user-select: none; white-space: nowrap;">
                         Estado <span id="sort-icon-subscription_status" style="color: rgba(255,255,255,0.2);">↕</span>
                       </th>
-                      <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody id="clients-tbody">
                     <tr>
-                      <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                      <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                         Cargando base de clientes de Supabase...
                       </td>
                     </tr>
@@ -5012,7 +5011,7 @@
             </div>
             <div style="display: flex; flex-direction: column; gap: 0.25rem;">
               <label style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Asunto del Correo (Público)</label>
-              <input type="text" id="wizard-campaign-subject" placeholder="Ej: ¡Te extrañamos! Agenda tu cita hoy con IA" style="padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff;">
+              <input type="text" id="wizard-campaign-subject" placeholder="Ej: ¡Te extrañamos! Agenda tu cita hoy con IA" style="padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: #fff;" oninput="updateWizardTemplatePreview()">
             </div>
             <div style="display: flex; flex-direction: column; gap: 0.25rem;">
               <label style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">Seleccionar Plantilla</label>
@@ -5050,7 +5049,7 @@
               <input type="checkbox" id="wizard-origin-prospects" checked onchange="toggleWizardContactsOrigin()" style="width: 16px; height: 16px; accent-color: var(--primary);"> Prospectos de Supabase
             </label>
             <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text-muted); font-size: 0.85rem;">
-              <input type="checkbox" id="wizard-origin-clients" checked onchange="toggleWizardContactsOrigin()" style="width: 16px; height: 16px; accent-color: var(--primary);"> Clientes Activos (Inquilinos)
+              <input type="checkbox" id="wizard-origin-clients" checked onchange="toggleWizardContactsOrigin()" style="width: 16px; height: 16px; accent-color: var(--primary);"> Clientes Activos
             </label>
             <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text-muted); font-size: 0.85rem;">
               <input type="checkbox" id="wizard-origin-manual" onchange="toggleWizardContactsOrigin()" style="width: 16px; height: 16px; accent-color: var(--primary);"> Correos Manuales
@@ -6330,6 +6329,15 @@
     // =====================================================================
     // SISTEMA DE EMAIL MARKETING (LOGICA FRONTEND)
     // =====================================================================
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
     let emailMarketingAllContacts = []; // Listado de { id, name, email, phone, type }
     let emailMarketingSelectedIds = new Set(); // IDs seleccionados
     let emailMarketingWizardStep = 1;
@@ -6446,7 +6454,25 @@
     }
 
     // Abrir asistente (Wizard)
-    function openCreateCampaignWizard() {
+    async function openCreateCampaignWizard() {
+      const btn = document.querySelector('button[onclick="openCreateCampaignWizard()"]');
+      const originalHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = 'Cargando...';
+      }
+
+      try {
+        await fetchEmailMarketingContacts();
+      } catch (err) {
+        console.error('Error al precargar contactos:', err);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+        }
+      }
+
       emailMarketingWizardStep = 1;
       emailMarketingSelectedIds.clear();
       emailMarketingManualEmails = [];
@@ -6849,7 +6875,7 @@
 
       document.getElementById('wizard-summary-origin-breakdown').innerHTML = `
         <div>• Prospectos de Supabase: <strong>${countProspects}</strong></div>
-        <div>• Clientes Activos (Inquilinos): <strong>${countClients}</strong></div>
+        <div>• Clientes Activos: <strong>${countClients}</strong></div>
         <div>• Correos Manuales: <strong>${countManual}</strong></div>
       `;
     }
@@ -10156,7 +10182,7 @@
       updateSortHeaderUI();
 
       if (tenantsList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No se encontraron clientes registrados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No se encontraron clientes registrados.</td></tr>`;
         return;
       }
 
@@ -10189,42 +10215,42 @@
              </button>`;
 
         row.innerHTML = `
-          <td style="font-weight: 600; color: #fff;">${tenant.business_name}</td>
+          <td style="font-weight: 600; color: #fff;">
+            <div>${tenant.business_name}</div>
+            <div style="margin-top: 0.4rem; display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; justify-content: flex-start;">
+              <button class="btn btn-secondary" onclick="loadTenantToEdit('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto;">
+                <i data-lucide="edit-3" style="width: 12px; height: 12px;"></i> Editar
+              </button>
+              <button class="btn btn-secondary" onclick="duplicateTenant('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #34d399; border-color: rgba(52, 211, 153, 0.3);" title="Duplicar ficha de cliente">
+                <i data-lucide="copy" style="width: 12px; height: 12px;"></i> Duplicar
+              </button>
+              <button class="btn btn-secondary" onclick="copyClientLinkToClipboard('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: var(--primary-hover); border-color: rgba(139, 92, 246, 0.3);" title="Copiar enlace de acceso">
+                <i data-lucide="link" style="width: 12px; height: 12px;"></i> Enlace
+              </button>
+              <button class="btn btn-secondary" onclick="emergencyAccessToClient('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);" title="Acceso de urgencia al panel de cliente">
+                <i data-lucide="shield-alert" style="width: 12px; height: 12px;"></i> Urgencia
+              </button>
+              ${suspendBtn}
+              <button class="btn btn-secondary" onclick="openArchiveConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Archivar cliente">
+                <i data-lucide="archive" style="width: 12px; height: 12px;"></i> Archivar
+              </button>
+              ${tenant.signed_contract_content ? `
+              <button class="btn btn-secondary" onclick="downloadClientContractPDFDirect('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto;">
+                <i data-lucide="download" style="width: 12px; height: 12px;"></i> Contrato
+              </button>
+              ` : ''}
+              ${tenant.retell_agent_id ? `
+              <button class="btn" onclick="window.startWebRTCCall('${tenant.retell_agent_id}', '${tenant.business_name.replace(/'/g,"\\'")}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%); height: auto; border: none; box-shadow: none;">
+                <i data-lucide="phone" style="width: 12px; height: 12px;"></i> Probar IA
+              </button>
+              ` : ''}
+            </div>
+          </td>
           <td>${tenant.email}</td>
           <td style="font-family: monospace;">${tenant.phone_number || 'No asignado'}</td>
           <td>${tenant.subscription_plan || 'Estándar'}</td>
           <td>${dateStr}</td>
           <td>${statusBadge}</td>
-          <td style="white-space: nowrap; width: 1%;">
-            <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: nowrap; justify-content: flex-start;">
-              <button class="btn btn-secondary" onclick="loadTenantToEdit('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
-                <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i> Editar
-              </button>
-              <button class="btn btn-secondary" onclick="duplicateTenant('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #34d399; border-color: rgba(52, 211, 153, 0.3);" title="Duplicar ficha de cliente">
-                <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Duplicar
-              </button>
-              <button class="btn btn-secondary" onclick="copyClientLinkToClipboard('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: var(--primary-hover); border-color: rgba(139, 92, 246, 0.3);" title="Copiar enlace de acceso">
-                <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Enlace
-              </button>
-              <button class="btn btn-secondary" onclick="emergencyAccessToClient('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);" title="Acceso de urgencia al panel de cliente">
-                <i data-lucide="shield-alert" style="width: 13px; height: 13px;"></i> Urgencia
-              </button>
-              ${suspendBtn}
-              <button class="btn btn-secondary" onclick="openArchiveConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Archivar cliente">
-                <i data-lucide="archive" style="width: 13px; height: 13px;"></i> Archivar
-              </button>
-              ${tenant.signed_contract_content ? `
-              <button class="btn btn-secondary" onclick="downloadClientContractPDFDirect('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto;">
-                <i data-lucide="download" style="width: 14px; height: 14px;"></i> Contrato
-              </button>
-              ` : ''}
-              ${tenant.retell_agent_id ? `
-              <button class="btn" onclick="window.startWebRTCCall('${tenant.retell_agent_id}', '${tenant.business_name.replace(/'/g,"\\'")}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%); height: auto; border: none; box-shadow: none;">
-                <i data-lucide="phone" style="width: 14px; height: 14px;"></i> Probar IA
-              </button>
-              ` : ''}
-            </div>
-          </td>
         `;
         tbody.appendChild(row);
       });
