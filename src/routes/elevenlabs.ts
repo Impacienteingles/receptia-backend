@@ -131,7 +131,8 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
                 name: { type: 'string', description: 'Nombre completo.' },
                 phone: { type: 'string', description: 'Teléfono.' },
                 specialty: { type: 'string', description: 'Servicio.' },
-                email: { type: 'string', description: 'Email.' }
+                email: { type: 'string', description: 'Email.' },
+                duration: { type: 'integer', description: 'Duración en minutos (opcional). Obligatorio si reservas citas individuales de un grupo/acompañantes.' }
               },
               required: ['date', 'time', 'name', 'phone', 'specialty']
             }

@@ -75,6 +75,7 @@ interface BookingArgs {
   email?: string;
   specialty: string;
   professional?: string;
+  duration?: number;
 }
 
 /**
@@ -148,7 +149,7 @@ export async function processBookingFlow(
     !!tenantDetails.agenda_optimization_enabled || !!workingHoursObj?.agenda_optimization_enabled
   );
 
-  const durationMinutes = calculateDuration(specialty, tenantId);
+  const durationMinutes = args.duration ? Number(args.duration) : calculateDuration(specialty, tenantId);
   const numBlocksNeeded = Math.ceil(durationMinutes / slotDurationMin);
 
   const neededSlots: string[] = [];

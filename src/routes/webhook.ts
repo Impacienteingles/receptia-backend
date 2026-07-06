@@ -487,7 +487,7 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
     console.log('Webhook recibido para book-appointment:', JSON.stringify(req.body));
     
     const args = req.body.args || req.body || {};
-    const { date, time, name, email, phone, specialty, professional } = args;
+    const { date, time, name, email, phone, specialty, professional, duration } = args;
 
     if (!date || !time || !name || !phone || !specialty) {
       res.status(400).json({ 

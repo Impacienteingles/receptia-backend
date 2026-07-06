@@ -136,6 +136,10 @@ export async function setupAgent(webhookUrl: string): Promise<string> {
               type: 'string',
               description: 'Especialidad médica (Medicina General, Odontología o Fisioterapia).',
             },
+            duration: {
+              type: 'integer',
+              description: 'Duración de la cita en minutos (opcional). Obligatorio si reservas citas individuales de un grupo/acompañantes.',
+            },
           },
           required: ['date', 'time', 'name', 'phone', 'specialty'],
         },

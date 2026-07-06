@@ -2092,6 +2092,10 @@ app.post('/api/admin/tenants', async (req, res): Promise<void> => {
                   type: 'string',
                   description: 'Servicio o especialidad solicitada.',
                 },
+                duration: {
+                  type: 'integer',
+                  description: 'Duración de la cita en minutos (opcional). Obligatorio si reservas citas individuales de un grupo/acompañantes.',
+                },
               },
               required: ['date', 'time', 'name', 'email', 'phone', 'specialty'],
             },
