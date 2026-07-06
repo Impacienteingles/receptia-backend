@@ -7373,7 +7373,8 @@
           sessionStorage.setItem('current_tenant_pin', pin);
 
           showToast('Contraseña configurada correctamente.');
-          dismissPinModal();
+          window.location.href = `/app.html?tenant_id=${updatedTenant.id}`;
+          return;
         } else {
           // Validar contraseña ingresada
           const response = await fetch('/api/auth/login', {
@@ -7393,15 +7394,9 @@
             }
             sessionStorage.setItem('current_tenant_pin', pin);
 
-            // Redirigir a la URL del inquilino real si es diferente del de la URL actual
-            const currentUrlParams = new URLSearchParams(window.location.search);
-            if (currentUrlParams.get('tenant_id') !== realTenantId) {
-              window.location.href = `/app.html?tenant_id=${realTenantId}`;
-              return;
-            }
-
-            await loadTenantData(realTenantId);
-            dismissPinModal();
+            // Redirigir/Recargar siempre para una inicialización limpia
+            window.location.href = `/app.html?tenant_id=${realTenantId}`;
+            return;
           } else {
             const errData = await response.json().catch(() => ({}));
             showToast(errData.error || 'Contraseña incorrecta. Inténtalo de nuevo.', 'error');
