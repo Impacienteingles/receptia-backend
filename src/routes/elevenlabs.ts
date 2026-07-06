@@ -242,7 +242,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
 
     let firstMessage = `${tenant.business_name}, ¿en qué le puedo ayudar?`;
     if (tenant.business_name.includes('Demostraciones')) {
-      firstMessage = 'Hola, estás llamando al Departamento de Demostraciones de Receptia. ¿De qué negocio te gustaría escuchar la demostración hoy?';
+      firstMessage = 'Hola, bienvenido al departamento de demostraciones de Receptia. ¿En qué te puedo ayudar hoy? ¿Has llamado para escuchar la demostración de algún negocio en concreto?';
     } else if (tenant.business_name.includes('Atención al Cliente')) {
       firstMessage = 'Hola, bienvenido al canal de atención al cliente de Receptia. ¿En qué puedo ayudarte hoy?';
     }
