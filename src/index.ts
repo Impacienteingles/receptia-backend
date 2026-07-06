@@ -4050,6 +4050,34 @@ app.post('/api/admin/transactions', async (req, res): Promise<void> => {
   }
 });
 
+app.put('/api/admin/transactions/:id', async (req, res): Promise<void> => {
+  const { id } = req.params;
+  const { type, concept, amount, date } = req.body;
+  if (!type || !concept || amount === undefined) {
+    res.status(400).json({ error: 'Tipo, concepto e importe son obligatorios.' });
+    return;
+  }
+  try {
+    const { data, error } = await supabase
+      .from('accounting_transactions')
+      .update({
+        type,
+        concept,
+        amount: Number(amount),
+        date: date || new Date().toISOString().split('T')[0]
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ status: 'success', transaction: data });
+  } catch (err: any) {
+    console.error('Error al actualizar transacción:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.delete('/api/admin/transactions/:id', async (req, res): Promise<void> => {
   const { id } = req.params;
   try {
@@ -4062,6 +4090,34 @@ app.delete('/api/admin/transactions/:id', async (req, res): Promise<void> => {
     res.json({ status: 'success', message: 'Transacción eliminada.' });
   } catch (err: any) {
     console.error('Error al eliminar transacción:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/admin/transactions', async (req, res): Promise<void> => {
+  const { ids, all } = req.body;
+  try {
+    if (all === true) {
+      const { error } = await supabase
+        .from('accounting_transactions')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+
+      if (error) throw error;
+      res.json({ status: 'success', message: 'Todas las transacciones eliminadas.' });
+    } else if (Array.isArray(ids) && ids.length > 0) {
+      const { error } = await supabase
+        .from('accounting_transactions')
+        .delete()
+        .in('id', ids);
+
+      if (error) throw error;
+      res.json({ status: 'success', message: `${ids.length} transacciones eliminadas.` });
+    } else {
+      res.status(400).json({ error: 'Debes proporcionar un array de IDs en "ids" o establecer "all" en true.' });
+    }
+  } catch (err: any) {
+    console.error('Error al eliminar transacciones:', err);
     res.status(500).json({ error: err.message });
   }
 });
