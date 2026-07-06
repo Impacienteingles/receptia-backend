@@ -452,8 +452,20 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
       if (agentPayload.conversation_config.agent.prompt) {
         (agentPayload.conversation_config.agent.prompt as any).tool_ids = currentTools;
         (agentPayload.conversation_config.agent.prompt as any).built_in_tools = getAgentRes.data.conversation_config?.agent?.prompt?.built_in_tools || {
-          end_call: { enabled: true },
-          transfer_to_number: { enabled: true }
+          end_call: {
+            name: 'end_call',
+            params: {
+              system_tool_type: 'end_call'
+            },
+            type: 'system'
+          },
+          transfer_to_number: {
+            name: 'transfer_to_number',
+            params: {
+              system_tool_type: 'transfer_to_number'
+            },
+            type: 'system'
+          }
         };
       }
     } catch (getErr: any) {

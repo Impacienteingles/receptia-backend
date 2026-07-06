@@ -256,6 +256,13 @@ async function setupElevenLabs(tenantId: string) {
                 system_tool_type: 'end_call'
               },
               type: 'system'
+            },
+            transfer_to_number: {
+              name: 'transfer_to_number',
+              params: {
+                system_tool_type: 'transfer_to_number'
+              },
+              type: 'system'
             }
           }
         },
