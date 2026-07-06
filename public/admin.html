@@ -1823,7 +1823,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.2.2</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.2.3</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2051,7 +2051,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.2.2</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.2.3</span>
       </div>
     </aside>
 
@@ -2074,7 +2074,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.2.2</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.2.3</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -10807,11 +10807,14 @@
       const temp = tenant.voice_temperature !== undefined && tenant.voice_temperature !== null ? Number(tenant.voice_temperature) : 1.0;
       const resp = tenant.voice_responsiveness !== undefined && tenant.voice_responsiveness !== null ? Number(tenant.voice_responsiveness) : 1.0;
       document.getElementById('voice-speed').value = speed;
-      document.getElementById('voice-speed-val').innerText = speed.toFixed(2);
+      const speedVal = document.getElementById('voice-speed-val');
+      if (speedVal) speedVal.innerText = speed.toFixed(2);
       document.getElementById('voice-temperature').value = temp;
-      document.getElementById('voice-temperature-val').innerText = temp.toFixed(2);
+      const tempVal = document.getElementById('voice-temperature-val');
+      if (tempVal) tempVal.innerText = temp.toFixed(2);
       document.getElementById('voice-responsiveness').value = resp;
-      document.getElementById('voice-responsiveness-val').innerText = resp.toFixed(2);
+      const respVal = document.getElementById('voice-responsiveness-val');
+      if (respVal) respVal.innerText = resp.toFixed(2);
       const isVoiceLocked = !!tenant.voice_locked;
       const voiceLockCheckbox = document.getElementById('voice-locked-toggle');
       if (voiceLockCheckbox) {
@@ -10849,7 +10852,8 @@
       const checkTrial = document.getElementById('is-trial-checkbox');
       if (checkTrial) {
         checkTrial.checked = !!tenant.is_trial || tenant.subscription_status === 'trial';
-        priceAmount.disabled = checkTrial.checked;
+        const priceAmountInput = document.getElementById('price-amount');
+        if (priceAmountInput) priceAmountInput.disabled = checkTrial.checked;
       }
       document.getElementById('subscription-plan').value = tenant.subscription_plan || 'Plan Mensual Estándar';
       document.getElementById('billing-cycle').value = tenant.billing_cycle || 'monthly';
