@@ -1280,7 +1280,7 @@
       <img src="/receptia_logo.png" alt="Logo Receptia" style="width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Panel Protegido
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.25</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.26</span>
       </h3>
       <p id="pin-description" style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Por favor, introduce tu contraseña de acceso para gestionar tu agenda de citas.</p>
       
@@ -1315,8 +1315,8 @@
       </button>
 
       <!-- Descripción del propósito de la aplicación para revisión de Google OAuth -->
-      <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem; text-align: left; font-size: 0.8rem; color: var(--text-muted); line-height: 1.45;">
-        <p style="margin-bottom: 0.5rem; font-weight: 600; color: #e2e8f0; display: flex; align-items: center; gap: 0.3rem;">
+      <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem; text-align: center; font-size: 0.8rem; color: var(--text-muted); line-height: 1.45;">
+        <p style="margin-bottom: 0.5rem; font-weight: 600; color: #e2e8f0; display: flex; align-items: center; justify-content: center; gap: 0.3rem;">
           <i data-lucide="info" style="width: 14px; height: 14px; color: var(--primary);"></i> Sobre la aplicación Receptia:
         </p>
         Receptia es una plataforma de recepcionista virtual por Inteligencia Artificial desarrollada por Corandar. Esta aplicación utiliza la integración con Google Calendar para gestionar de forma automatizada, en tiempo real y por vía telefónica, las citas, cancelaciones, reprogramaciones y consulta de disponibilidad de horarios de los clientes registrados.
@@ -2431,7 +2431,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.25</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.26</span>
           <button onclick="handleClientLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -7279,12 +7279,12 @@
 
       if (!tenant.admin_pin) {
         // No tiene contraseña, pedir establecer una nueva (registro inicial del cliente)
-        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.25</span>`;
+        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.26</span>`;
         pinDescription.innerText = 'Este es tu primer acceso. Crea una contraseña segura de al menos 8 caracteres para proteger tu panel de citas.';
         btnPinSubmit.innerText = 'Establecer Contraseña y Entrar';
       } else {
         // Ya tiene contraseña, pedirla
-        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.25</span>`;
+        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.26</span>`;
         pinDescription.innerText = 'Introduce tu contraseña de acceso para autorizar el ingreso al panel.';
         btnPinSubmit.innerText = 'Acceder al Panel';
       }
@@ -7376,15 +7376,29 @@
           });
           
           if (response.ok) {
+            const loginResult = await response.json();
+            const realTenantId = loginResult.tenant_id;
+
             if (remember) {
               localStorage.setItem('current_tenant_pin', pin);
             } else {
               localStorage.removeItem('current_tenant_pin');
             }
             sessionStorage.setItem('current_tenant_pin', pin);
-            await loadTenantData(tenant.id);
+
+            // Redirigir a la URL del inquilino real si es diferente del de la URL actual
+            const currentUrlParams = new URLSearchParams(window.location.search);
+            if (currentUrlParams.get('tenant_id') !== realTenantId) {
+              window.location.href = `/app.html?tenant_id=${realTenantId}`;
+              return;
+            }
+
+            await loadTenantData(realTenantId);
             dismissPinModal();
           } else {
+            const errData = await response.json().catch(() => ({}));
+            showToast(errData.error || 'Contraseña incorrecta. Inténtalo de nuevo.', 'error');
+            pinError.innerText = errData.error || 'Contraseña incorrecta. Inténtalo de nuevo.';
             pinError.style.display = 'block';
             pinInput.value = '';
             pinInput.focus();
