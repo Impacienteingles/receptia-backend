@@ -2362,7 +2362,7 @@
     }
   </script>
 
-  <div class="app-container">
+  <div class="app-container" style="display: none;">
     
     <!-- MENU LATERAL (SIDEBAR) -->
     <aside class="sidebar" id="sidebar-menu">
@@ -4391,7 +4391,7 @@
       
       if (savedPin && (
         urlStr.includes('/api/client/') ||
-        urlStr.includes('/api/tenants/') ||
+        urlStr.includes('/api/tenants') ||
         urlStr.includes('/api/campaigns') ||
         urlStr.includes('/api/payments/') ||
         urlStr.includes('/api/integrations/') ||
@@ -7419,7 +7419,10 @@
     }
 
     function dismissPinModal() {
-      pinModal.style.display = 'none';
+      const pinModal = document.getElementById('pin-modal');
+      if (pinModal) pinModal.style.display = 'none';
+      const appContainer = document.querySelector('.app-container');
+      if (appContainer) appContainer.style.display = 'flex';
       initializeClientDashboard();
     }
 
@@ -8624,6 +8627,7 @@
       applyPlanConstraints();
       } catch (err) {
         console.error('Error in initializeClientDashboard:', err);
+        showToast('Error al inicializar el panel: ' + err.message, 'error');
       }
     }
 
