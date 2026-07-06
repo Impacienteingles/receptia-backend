@@ -251,6 +251,15 @@ async function setupElevenLabs(tenantId: string) {
       turn: {
         turn_timeout: 1,
         turn_eagerness: 'eager'
+      },
+      conversation: {
+        client_events: [
+          'audio',
+          'agent_response',
+          'user_transcript',
+          'agent_response_correction',
+          'agent_tool_response'
+        ]
       }
     }
   };

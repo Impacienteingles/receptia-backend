@@ -272,6 +272,15 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
         turn: {
           turn_timeout: 1,
           turn_eagerness: 'eager'
+        },
+        conversation: {
+          client_events: [
+            'audio',
+            'agent_response',
+            'user_transcript',
+            'agent_response_correction',
+            'agent_tool_response'
+          ]
         }
       }
     };
