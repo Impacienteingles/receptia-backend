@@ -2151,7 +2151,7 @@
           }
           sessionStorage.setItem('current_tenant_pin', pin);
           closeLandingLoginModal();
-          window.location.href = `/app.html?tenant_id=${data.tenant_id}`;
+          window.location.href = `/app.html?tenant_id=${data.tenant_id}&pin=${encodeURIComponent(pin)}`;
         } else {
           throw new Error('Respuesta inválida del servidor.');
         }
@@ -7183,9 +7183,16 @@
     // Cargar datos de inquilino por ID
     async function loadTenantData(id) {
       try {
-        const savedPin = sessionStorage.getItem('current_tenant_pin') || localStorage.getItem('current_tenant_pin') || '';
         const urlParams = new URLSearchParams(window.location.search);
+        const urlPin = urlParams.get('pin') || '';
+        const savedPin = urlPin || sessionStorage.getItem('current_tenant_pin') || localStorage.getItem('current_tenant_pin') || '';
         const adminToken = urlParams.get('admin_token') || sessionStorage.getItem('admin_token') || '';
+        
+        if (urlPin) {
+          try {
+            sessionStorage.setItem('current_tenant_pin', urlPin);
+          } catch (e) {}
+        }
         
         let url = `/api/tenants?id=${id}`;
         if (savedPin) url += `&pin=${encodeURIComponent(savedPin)}`;
@@ -7383,7 +7390,7 @@
           sessionStorage.setItem('current_tenant_pin', pin);
 
           showToast('Contraseña configurada correctamente.');
-          window.location.href = `/app.html?tenant_id=${updatedTenant.id}`;
+          window.location.href = `/app.html?tenant_id=${updatedTenant.id}&pin=${encodeURIComponent(pin)}`;
           return;
         } else {
           // Validar contraseña ingresada
@@ -7405,7 +7412,7 @@
             sessionStorage.setItem('current_tenant_pin', pin);
 
             // Redirigir/Recargar siempre para una inicialización limpia
-            window.location.href = `/app.html?tenant_id=${realTenantId}`;
+            window.location.href = `/app.html?tenant_id=${realTenantId}&pin=${encodeURIComponent(pin)}`;
             return;
           } else {
             const errData = await response.json().catch(() => ({}));
@@ -7433,6 +7440,16 @@
       if (pinModal) pinModal.style.display = 'none';
       const appContainer = document.querySelector('.app-container');
       if (appContainer) appContainer.style.display = 'flex';
+      
+      // Limpiar el parámetro 'pin' de la URL por seguridad y limpieza visual
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('pin')) {
+        urlParams.delete('pin');
+        const newSearch = urlParams.toString();
+        const newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '');
+        window.history.replaceState({}, document.title, newUrl);
+      }
+
       initializeClientDashboard();
     }
 
