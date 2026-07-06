@@ -735,14 +735,16 @@
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       background: var(--modal-overlay);
       backdrop-filter: blur(8px);
-      z-index: 1000;
+      z-index: 100000;
       display: none;
       align-items: center;
       justify-content: center;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     .modal-content {
@@ -1271,7 +1273,7 @@
       <img src="/receptia_logo.png" alt="Logo Receptia" style="width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Panel Protegido
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.17</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.18</span>
       </h3>
       <p id="pin-description" style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Por favor, introduce tu contraseña de acceso para gestionar tu agenda de citas.</p>
       
@@ -2422,7 +2424,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.17</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.18</span>
           <button onclick="handleClientLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -3308,14 +3310,22 @@
 
                   <!-- Campo de semana para Semanal -->
                   <div class="form-group" id="block-week-group" style="display: none; flex: 1.5; min-width: 145px;">
-                    <label for="block-week" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Seleccionar Semana:</label>
-                    <input type="week" id="block-week" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.85rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Seleccionar Semana:</label>
+                    <button type="button" onclick="openMultiWeekModal()" class="btn btn-outline" id="block-week-label" style="width: 100%; height: 38px; font-size: 0.85rem; font-weight: 500; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: #fff; text-align: left; display: flex; align-items: center; gap: 0.4rem; padding: 0 0.75rem; font-family: inherit;">
+                      <i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                      <span>Seleccionar Semana...</span>
+                    </button>
+                    <input type="hidden" id="block-week" value="">
                   </div>
 
                   <!-- Campo de mes para Mensual -->
                   <div class="form-group" id="block-month-group" style="display: none; flex: 1.5; min-width: 145px;">
-                    <label for="block-month" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Seleccionar Mes:</label>
-                    <input type="month" id="block-month" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; padding: 0.5rem; font-size: 0.85rem; height: 38px; box-sizing: border-box; font-family: inherit;">
+                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Seleccionar Mes:</label>
+                    <button type="button" onclick="openMultiMonthModal()" class="btn btn-outline" id="block-month-label" style="width: 100%; height: 38px; font-size: 0.85rem; font-weight: 500; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: #fff; text-align: left; display: flex; align-items: center; gap: 0.4rem; padding: 0 0.75rem; font-family: inherit;">
+                      <i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                      <span>Seleccionar Mes...</span>
+                    </button>
+                    <input type="hidden" id="block-month" value="">
                   </div>
 
                   <div class="form-group" style="flex: 1; min-width: 95px;">
@@ -3363,46 +3373,6 @@
                   </div>
                 </div>
               </div>
-
-              <!-- Modal de selección de múltiples fechas (Calendario) -->
-              <div class="modal" id="multi-date-modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
-                <div style="background: #111827; border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 1rem;">
-                  <h3 style="color: #fff; margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
-                    <i data-lucide="calendar" style="color: var(--primary);"></i>
-                    Seleccionar Días a Bloquear
-                  </h3>
-                  
-                  <!-- Selector de Mes/Año de Navegación -->
-                  <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 8px;">
-                    <button type="button" onclick="navigateMultiCalendar(-1)" style="background: none; border: none; color: #fff; cursor: pointer; padding: 0.25rem;"><i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i></button>
-                    <span id="multi-calendar-month-year" style="color: #fff; font-weight: 600; font-size: 0.9rem;">Julio 2026</span>
-                    <button type="button" onclick="navigateMultiCalendar(1)" style="background: none; border: none; color: #fff; cursor: pointer; padding: 0.25rem;"><i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i></button>
-                  </div>
-
-                  <!-- Cuadrícula de Calendario -->
-                  <div>
-                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: bold; color: var(--text-muted); margin-bottom: 0.5rem;">
-                      <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
-                    </div>
-                    <div id="multi-calendar-days" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; text-align: center;">
-                      <!-- Dinámico -->
-                    </div>
-                  </div>
-
-                  <div style="font-size: 0.8rem; color: var(--text-muted); max-height: 80px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
-                    <strong>Días seleccionados:</strong>
-                    <div id="multi-calendar-selected-list" style="margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.25rem;">
-                      <!-- Lista de tags -->
-                    </div>
-                  </div>
-
-                  <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="closeMultiDateModal()" style="height: 38px; font-size: 0.85rem;">Cancelar</button>
-                    <button type="button" class="btn" onclick="confirmMultiDateSelection()" style="height: 38px; font-size: 0.85rem; background: var(--primary);">Confirmar Selección</button>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             <div id="settings-tab-canales" class="settings-tab-content" style="display: none; flex-direction: column; gap: 1.5rem;">
               <!-- Sección Canales y Módulos Avanzados SaaS -->
@@ -4094,6 +4064,114 @@
           <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Actualizar
         </button>
         <button class="btn" onclick="closeViewCampaignModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de selección de múltiples fechas (Calendario) -->
+  <div class="modal" id="multi-date-modal" style="z-index: 99999;">
+    <div class="modal-content" style="max-width: 400px; width: 90%; gap: 1rem;">
+      <h3 style="color: #fff; margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
+        <i data-lucide="calendar" style="color: var(--primary);"></i>
+        Seleccionar Días a Bloquear
+      </h3>
+      
+      <!-- Selector de Mes/Año de Navegación -->
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 8px;">
+        <button type="button" onclick="navigateMultiCalendar(-1)" style="background: none; border: none; color: #fff; cursor: pointer; padding: 0.25rem;"><i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i></button>
+        <span id="multi-calendar-month-year" style="color: #fff; font-weight: 600; font-size: 0.9rem;">Julio 2026</span>
+        <button type="button" onclick="navigateMultiCalendar(1)" style="background: none; border: none; color: #fff; cursor: pointer; padding: 0.25rem;"><i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i></button>
+      </div>
+
+      <!-- Cuadrícula de Calendario -->
+      <div>
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: bold; color: var(--text-muted); margin-bottom: 0.5rem;">
+          <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
+        </div>
+        <div id="multi-calendar-days" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; text-align: center;">
+          <!-- Dinámico -->
+        </div>
+      </div>
+
+      <div style="font-size: 0.8rem; color: var(--text-muted); max-height: 80px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
+        <strong>Días seleccionados:</strong>
+        <div id="multi-calendar-selected-list" style="margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.25rem;">
+          <!-- Lista de tags -->
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeMultiDateModal()" style="height: 38px; font-size: 0.85rem;">Cancelar</button>
+        <button type="button" class="btn" onclick="confirmMultiDateSelection()" style="height: 38px; font-size: 0.85rem; background: var(--primary);">Confirmar Selección</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de selección de semana (Calendario de Semanas) -->
+  <div class="modal" id="multi-week-modal" style="z-index: 99999;">
+    <div class="modal-content" style="max-width: 400px; width: 90%; gap: 1rem;">
+      <h3 style="color: #fff; margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
+        <i data-lucide="calendar" style="color: var(--primary);"></i>
+        Seleccionar Semana a Bloquear
+      </h3>
+      
+      <!-- Selector de Mes/Año de Navegación -->
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 8px;">
+        <button type="button" onclick="navigateMultiWeekCalendar(-1)" style="background: none; border: none; color: #fff; cursor: pointer; padding: 0.25rem;"><i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i></button>
+        <span id="multi-week-calendar-month-year" style="color: #fff; font-weight: 600; font-size: 0.9rem;">Julio 2026</span>
+        <button type="button" onclick="navigateMultiWeekCalendar(1)" style="background: none; border: none; color: #fff; cursor: pointer; padding: 0.25rem;"><i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i></button>
+      </div>
+
+      <!-- Cuadrícula de Calendario -->
+      <div>
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: bold; color: var(--text-muted); margin-bottom: 0.5rem;">
+          <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
+        </div>
+        <div id="multi-week-calendar-days" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; text-align: center;">
+          <!-- Dinámico -->
+        </div>
+      </div>
+
+      <div style="font-size: 0.8rem; color: var(--text-muted); background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
+        <strong>Semana seleccionada:</strong>
+        <span id="multi-week-calendar-selection-text" style="display: block; margin-top: 0.25rem; color: #fff; font-weight: 600;">Ninguna seleccionada</span>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeMultiWeekModal()" style="height: 38px; font-size: 0.85rem;">Cancelar</button>
+        <button type="button" class="btn" onclick="confirmMultiWeekSelection()" style="height: 38px; font-size: 0.85rem; background: var(--primary);">Confirmar Semana</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de selección de mes -->
+  <div class="modal" id="multi-month-modal" style="z-index: 99999;">
+    <div class="modal-content" style="max-width: 400px; width: 90%; gap: 1rem;">
+      <h3 style="color: #fff; margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; font-family: 'Outfit', sans-serif;">
+        <i data-lucide="calendar" style="color: var(--primary);"></i>
+        Seleccionar Mes a Bloquear
+      </h3>
+      
+      <!-- Selector de Año de Navegación -->
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 8px;">
+        <button type="button" onclick="navigateMultiMonthYear(-1)" style="background: none; border: none; color: #fff; cursor: pointer; padding: 0.25rem;"><i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i></button>
+        <span id="multi-month-year-display" style="color: #fff; font-weight: 600; font-size: 0.9rem;">2026</span>
+        <button type="button" onclick="navigateMultiMonthYear(1)" style="background: none; border: none; color: #fff; cursor: pointer; padding: 0.25rem;"><i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i></button>
+      </div>
+
+      <!-- Cuadrícula de Meses (3x4) -->
+      <div id="multi-month-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center;">
+        <!-- Dinámico -->
+      </div>
+
+      <div style="font-size: 0.8rem; color: var(--text-muted); background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
+        <strong>Mes seleccionado:</strong>
+        <span id="multi-month-selection-text" style="display: block; margin-top: 0.25rem; color: #fff; font-weight: 600;">Ninguno seleccionado</span>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeMultiMonthModal()" style="height: 38px; font-size: 0.85rem;">Cancelar</button>
+        <button type="button" class="btn" onclick="confirmMultiMonthSelection()" style="height: 38px; font-size: 0.85rem; background: var(--primary);">Confirmar Mes</button>
       </div>
     </div>
   </div>
@@ -5153,6 +5231,271 @@
       if (modal) modal.style.display = 'none';
     };
 
+    // ISO Week calculation utility helper
+    function getISOWeekString(d) {
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+      const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+      return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+    }
+
+    // --- GESTIÓN DE SELECCIÓN DE SEMANAS (CUSTOM MODAL) ---
+    let currentWeekCalendarMonth = new Date().getMonth();
+    let currentWeekCalendarYear = new Date().getFullYear();
+    let selectedBlockedWeek = ''; // format: 'YYYY-Wxx'
+
+    window.openMultiWeekModal = function() {
+      const modal = document.getElementById('multi-week-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        renderMultiWeekCalendar();
+      }
+    };
+
+    window.closeMultiWeekModal = function() {
+      const modal = document.getElementById('multi-week-modal');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.navigateMultiWeekCalendar = function(direction) {
+      currentWeekCalendarMonth += direction;
+      if (currentWeekCalendarMonth < 0) {
+        currentWeekCalendarMonth = 11;
+        currentWeekCalendarYear--;
+      } else if (currentWeekCalendarMonth > 11) {
+        currentWeekCalendarMonth = 0;
+        currentWeekCalendarYear++;
+      }
+      renderMultiWeekCalendar();
+    };
+
+    function renderMultiWeekCalendar() {
+      const monthNames = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+      ];
+      
+      const headerSpan = document.getElementById('multi-week-calendar-month-year');
+      if (headerSpan) headerSpan.innerText = `${monthNames[currentWeekCalendarMonth]} ${currentWeekCalendarYear}`;
+      
+      const daysContainer = document.getElementById('multi-week-calendar-days');
+      if (!daysContainer) return;
+      daysContainer.innerHTML = '';
+      
+      const firstDay = new Date(currentWeekCalendarYear, currentWeekCalendarMonth, 1);
+      let startDayOfWeek = firstDay.getDay();
+      if (startDayOfWeek === 0) startDayOfWeek = 6;
+      else startDayOfWeek--;
+      
+      const daysInMonth = new Date(currentWeekCalendarYear, currentWeekCalendarMonth + 1, 0).getDate();
+      
+      for (let i = 0; i < startDayOfWeek; i++) {
+        const emptyDiv = document.createElement('div');
+        daysContainer.appendChild(emptyDiv);
+      }
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayBtn = document.createElement('button');
+        dayBtn.type = 'button';
+        dayBtn.innerText = day;
+        
+        const dayDate = new Date(currentWeekCalendarYear, currentWeekCalendarMonth, day);
+        const weekVal = getISOWeekString(dayDate);
+        
+        dayBtn.setAttribute('data-week', weekVal);
+        dayBtn.style.background = 'none';
+        dayBtn.style.border = 'none';
+        dayBtn.style.color = '#fff';
+        dayBtn.style.padding = '0.5rem 0';
+        dayBtn.style.cursor = 'pointer';
+        dayBtn.style.fontSize = '0.85rem';
+        dayBtn.style.borderRadius = '50%';
+        dayBtn.style.width = '32px';
+        dayBtn.style.height = '32px';
+        dayBtn.style.margin = '0 auto';
+        dayBtn.style.display = 'flex';
+        dayBtn.style.alignItems = 'center';
+        dayBtn.style.justifyContent = 'center';
+        dayBtn.style.transition = 'all 0.15s';
+        
+        if (selectedBlockedWeek === weekVal) {
+          dayBtn.style.background = 'var(--primary)';
+          dayBtn.style.color = '#fff';
+        }
+        
+        dayBtn.onmouseover = () => {
+          const allButtons = daysContainer.querySelectorAll('button');
+          allButtons.forEach(btn => {
+            if (btn.getAttribute('data-week') === weekVal) {
+              btn.style.background = 'rgba(139, 92, 246, 0.25)';
+              btn.style.color = '#fff';
+            }
+          });
+        };
+        
+        dayBtn.onmouseout = () => {
+          const allButtons = daysContainer.querySelectorAll('button');
+          allButtons.forEach(btn => {
+            const btnWeek = btn.getAttribute('data-week');
+            if (btnWeek !== selectedBlockedWeek) {
+              btn.style.background = 'none';
+              btn.style.color = '#fff';
+            } else {
+              btn.style.background = 'var(--primary)';
+              btn.style.color = '#fff';
+            }
+          });
+        };
+        
+        dayBtn.onclick = () => {
+          selectedBlockedWeek = weekVal;
+          const mondayStr = getMondayOfWeekString(weekVal);
+          const mondayDate = new Date(mondayStr + 'T00:00:00');
+          const sundayDate = new Date(mondayDate.getTime() + 6 * 24 * 60 * 60 * 1000);
+          const format = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+          const selectionTextEl = document.getElementById('multi-week-calendar-selection-text');
+          if (selectionTextEl) {
+            selectionTextEl.innerText = `Semana ${weekVal.split('-W')[1]} (${currentWeekCalendarYear}): de ${format(mondayDate)} al ${format(sundayDate)}`;
+          }
+          renderMultiWeekCalendar();
+        };
+        
+        daysContainer.appendChild(dayBtn);
+      }
+    }
+
+    window.confirmMultiWeekSelection = function() {
+      const input = document.getElementById('block-week');
+      const label = document.getElementById('block-week-label');
+      if (input && label) {
+        if (selectedBlockedWeek) {
+          input.value = selectedBlockedWeek;
+          const mondayStr = getMondayOfWeekString(selectedBlockedWeek);
+          const mondayDate = new Date(mondayStr + 'T00:00:00');
+          const sundayDate = new Date(mondayDate.getTime() + 6 * 24 * 60 * 60 * 1000);
+          const format = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+          
+          label.innerHTML = `<i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--success);"></i> <span>Sem. ${selectedBlockedWeek.split('-W')[1]} (${format(mondayDate)} a ${format(sundayDate)})</span>`;
+          label.style.color = 'var(--success)';
+        } else {
+          input.value = '';
+          label.innerHTML = `<i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i> <span>Seleccionar Semana...</span>`;
+          label.style.color = '#fff';
+        }
+      }
+      lucide.createIcons();
+      closeMultiWeekModal();
+    };
+
+    // --- GESTIÓN DE SELECCIÓN DE MESES (CUSTOM MODAL) ---
+    let currentMonthYear = new Date().getFullYear();
+    let selectedBlockedMonth = ''; // format: 'YYYY-MM'
+
+    window.openMultiMonthModal = function() {
+      const modal = document.getElementById('multi-month-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        renderMultiMonthGrid();
+      }
+    };
+
+    window.closeMultiMonthModal = function() {
+      const modal = document.getElementById('multi-month-modal');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.navigateMultiMonthYear = function(direction) {
+      currentMonthYear += direction;
+      renderMultiMonthGrid();
+    };
+
+    function renderMultiMonthGrid() {
+      const monthNames = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+      ];
+      const shortMonthNames = [
+        "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+      ];
+      
+      const yearDisplay = document.getElementById('multi-month-year-display');
+      if (yearDisplay) yearDisplay.innerText = currentMonthYear;
+      
+      const gridContainer = document.getElementById('multi-month-grid');
+      if (!gridContainer) return;
+      gridContainer.innerHTML = '';
+      
+      for (let i = 0; i < 12; i++) {
+        const monthBtn = document.createElement('button');
+        monthBtn.type = 'button';
+        monthBtn.innerText = shortMonthNames[i];
+        
+        const monthVal = `${currentMonthYear}-${String(i + 1).padStart(2, '0')}`;
+        
+        monthBtn.style.background = 'rgba(255,255,255,0.02)';
+        monthBtn.style.border = '1px solid var(--border-color)';
+        monthBtn.style.color = '#fff';
+        monthBtn.style.padding = '0.75rem 0.5rem';
+        monthBtn.style.borderRadius = '8px';
+        monthBtn.style.cursor = 'pointer';
+        monthBtn.style.fontSize = '0.9rem';
+        monthBtn.style.fontWeight = '500';
+        monthBtn.style.transition = 'all 0.15s';
+        
+        if (selectedBlockedMonth === monthVal) {
+          monthBtn.style.background = 'var(--primary)';
+          monthBtn.style.borderColor = 'var(--primary)';
+          monthBtn.style.color = '#fff';
+        } else {
+          monthBtn.onmouseover = () => {
+            monthBtn.style.background = 'rgba(139, 92, 246, 0.15)';
+            monthBtn.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+          };
+          monthBtn.onmouseout = () => {
+            monthBtn.style.background = 'rgba(255,255,255,0.02)';
+            monthBtn.style.borderColor = 'var(--border-color)';
+          };
+        }
+        
+        monthBtn.onclick = () => {
+          selectedBlockedMonth = monthVal;
+          const selectionTextEl = document.getElementById('multi-month-selection-text');
+          if (selectionTextEl) {
+            selectionTextEl.innerText = `${monthNames[i]} de ${currentMonthYear}`;
+          }
+          renderMultiMonthGrid();
+        };
+        
+        gridContainer.appendChild(monthBtn);
+      }
+    }
+
+    window.confirmMultiMonthSelection = function() {
+      const input = document.getElementById('block-month');
+      const label = document.getElementById('block-month-label');
+      if (input && label) {
+        if (selectedBlockedMonth) {
+          input.value = selectedBlockedMonth;
+          const [yyyy, mm] = selectedBlockedMonth.split('-');
+          const monthNames = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+          ];
+          const monthName = monthNames[parseInt(mm, 10) - 1];
+          label.innerHTML = `<i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--success);"></i> <span>Mes: ${monthName} ${yyyy}</span>`;
+          label.style.color = 'var(--success)';
+        } else {
+          input.value = '';
+          label.innerHTML = `<i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i> <span>Seleccionar Mes...</span>`;
+          label.style.color = '#fff';
+        }
+      }
+      lucide.createIcons();
+      closeMultiMonthModal();
+    };
+
     window.navigateMultiCalendar = function(direction) {
       currentMultiCalendarMonth += direction;
       if (currentMultiCalendarMonth < 0) {
@@ -5573,6 +5916,27 @@
           label.innerHTML = `<i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i> <span>Seleccionar Días...</span>`;
           label.style.color = '#fff';
         }
+        
+        // Reset Week selection
+        selectedBlockedWeek = '';
+        const weekInput = document.getElementById('block-week');
+        if (weekInput) weekInput.value = '';
+        const weekLabel = document.getElementById('block-week-label');
+        if (weekLabel) {
+          weekLabel.innerHTML = `<i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i> <span>Seleccionar Semana...</span>`;
+          weekLabel.style.color = '#fff';
+        }
+
+        // Reset Month selection
+        selectedBlockedMonth = '';
+        const monthInput = document.getElementById('block-month');
+        if (monthInput) monthInput.value = '';
+        const monthLabel = document.getElementById('block-month-label');
+        if (monthLabel) {
+          monthLabel.innerHTML = `<i data-lucide="calendar" style="width: 16px; height: 16px; color: var(--primary);"></i> <span>Seleccionar Mes...</span>`;
+          monthLabel.style.color = '#fff';
+        }
+
         lucide.createIcons();
         fetchBlockedHours();
       } catch (err) {
@@ -6876,12 +7240,12 @@
 
       if (!tenant.admin_pin) {
         // No tiene contraseña, pedir establecer una nueva (registro inicial del cliente)
-        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.17</span>`;
+        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.18</span>`;
         pinDescription.innerText = 'Este es tu primer acceso. Crea una contraseña segura de al menos 8 caracteres para proteger tu panel de citas.';
         btnPinSubmit.innerText = 'Establecer Contraseña y Entrar';
       } else {
         // Ya tiene contraseña, pedirla
-        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.17</span>`;
+        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.18</span>`;
         pinDescription.innerText = 'Introduce tu contraseña de acceso para autorizar el ingreso al panel.';
         btnPinSubmit.innerText = 'Acceder al Panel';
       }
