@@ -246,6 +246,8 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
           prompt: {
             prompt: systemPrompt,
             tool_ids: toolIds,
+            llm: 'gpt-4o-mini',
+            temperature: 0.3,
             built_in_tools: {
               end_call: {
                 name: 'end_call',
@@ -264,10 +266,6 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
           speed: 1.09,
           stability: 0.40,
           similarity_boost: 0.85
-        },
-        llm: {
-          model: 'gpt-4o-mini',
-          temperature: 0.3
         },
         turn: {
           turn_timeout: 1,
