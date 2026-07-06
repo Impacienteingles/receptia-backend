@@ -97,6 +97,28 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
       {
         tool_config: {
           type: 'webhook',
+          name: 'obtener_recuerdos_cliente',
+          description: 'Recupera silenciosamente un historial de resúmenes de las llamadas previas que ha realizado este cliente en los últimos 7 días.',
+          api_schema: {
+            url: `${webhookBaseUrl}/api/webhook/obtener-recuerdo-cliente?tenant_id=${tenantId}`,
+            method: 'POST',
+            request_headers: { 'Content-Type': 'application/json' },
+            request_body_schema: {
+              type: 'object',
+              properties: {
+                phone: {
+                  type: 'string',
+                  dynamic_variable: 'system__caller_id'
+                }
+              },
+              required: ['phone']
+            }
+          }
+        }
+      },
+      {
+        tool_config: {
+          type: 'webhook',
           name: 'consultar_disponibilidad',
           description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
           api_schema: {
