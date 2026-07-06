@@ -1823,7 +1823,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.2.0</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.2.1</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2051,7 +2051,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.2.0</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.2.1</span>
       </div>
     </aside>
 
@@ -2074,7 +2074,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.2.0</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.2.1</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2250,7 +2250,8 @@
                 <button type="button" class="form-tab-btn" onclick="switchFormTab('voice')" id="tab-btn-voice">
                   <i data-lucide="mic" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 0.25rem;"></i> Voz y Teléfono
                 </button>
-                <button type="button" class="form-tab-btn" onclick="switchFormTab('modules')" id="tab-btn-modules">
+                <!-- Módulos e IA tab hidden to simplify client setup -->
+                <button type="button" class="form-tab-btn" onclick="switchFormTab('modules')" id="tab-btn-modules" style="display: none;">
                   <i data-lucide="brain" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 0.25rem;"></i> Módulos e IA
                 </button>
                 <button type="button" class="form-tab-btn" onclick="switchFormTab('billing')" id="tab-btn-billing">
@@ -2304,6 +2305,17 @@
                   <label for="pricing-details">Tarifas y Precios (para que los informe la IA de viva voz):</label>
                   <textarea id="pricing-details" rows="3" required placeholder="Precios y detalles de los servicios principales..."></textarea>
                 </div>
+
+                <!-- HORARIOS DE TRABAJO -->
+                <div class="section-divider" style="grid-column: span 2;">
+                  <i data-lucide="calendar"></i> Horario de Trabajo y Apertura
+                </div>
+
+                <div class="form-group full-width">
+                  <div class="schedule-builder" id="schedule-builder-container">
+                    <!-- Generado dinámicamente -->
+                  </div>
+                </div>
               </div>
 
               <!-- PESTAÑA 2: CONFIGURACIÓN DE VOZ -->
@@ -2338,20 +2350,11 @@
                   </div>
                 </div>
                 
-                <!-- Ajustes de Velocidad, Naturalidad y Pausas (Sliders) -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; margin-top: 0.75rem; grid-column: span 2;">
-                  <div>
-                    <label for="voice-speed" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Velocidad de Habla: <span id="voice-speed-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
-                    <input type="range" id="voice-speed" min="0.8" max="1.2" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-speed-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof updateVoicePlaybackRate === 'function') updateVoicePlaybackRate(this.value); if (typeof onSpeedChange === 'function') onSpeedChange(this.value);">
-                  </div>
-                  <div>
-                    <label for="voice-temperature" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Naturalidad / Variabilidad: <span id="voice-temperature-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
-                    <input type="range" id="voice-temperature" min="0.5" max="1.5" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-temperature-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof onTemperatureChange === 'function') onTemperatureChange(this.value);">
-                  </div>
-                  <div>
-                    <label for="voice-responsiveness" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">Pausas de Respuesta: <span id="voice-responsiveness-val" style="color: var(--primary-light); font-weight: bold;">1.00</span></label>
-                    <input type="range" id="voice-responsiveness" min="0.0" max="1.0" step="0.05" value="1.0" style="width: 100%; accent-color: var(--primary); cursor: pointer;" oninput="document.getElementById('voice-responsiveness-val').innerText = Number(this.value).toFixed(2); if (typeof saveDraftToLocalStorage === 'function') saveDraftToLocalStorage(); if (typeof onResponsivenessChange === 'function') onResponsivenessChange(this.value);">
-                  </div>
+                <!-- Ajustes de Velocidad, Naturalidad y Pausas (Sliders) - Ocultos para simplificar -->
+                <div style="display: none;">
+                  <input type="range" id="voice-speed" min="0.8" max="1.2" step="0.05" value="1.0">
+                  <input type="range" id="voice-temperature" min="0.5" max="1.5" step="0.05" value="1.0">
+                  <input type="range" id="voice-responsiveness" min="0.0" max="1.0" step="0.05" value="1.0">
                 </div>
 
                 <!-- Bloqueo de configuración de voz en el panel de administrador -->
@@ -2413,117 +2416,26 @@
                   <!-- Hidden input to hold the actual selected ID -->
                   <input type="hidden" id="client-virtual-phone-id" value="">
                 </div>
+
+                <!-- INSTRUCCIONES PERSONALIZADAS DE PERSONALIDAD -->
+                <div class="section-divider" style="grid-column: span 2;">
+                  <i data-lucide="brain"></i> Instrucciones de Personalidad y Comportamiento de la IA
+                </div>
+
+                <div class="form-group full-width" style="grid-column: span 2;">
+                  <label for="custom-instructions">Reglas y Comportamiento Específico para la IA (Instrucciones en Lenguaje Natural):</label>
+                  <textarea id="custom-instructions" rows="6" placeholder="Escribe aquí las pautas del tono, personalidad y reglas específicas sobre cómo contestar (ej. 'Sé muy alegre y entusiasta, trata de tú al cliente, etc.')." style="width: 100%; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: #fff; padding: 0.8rem; font-family: inherit; font-size: 0.9rem; line-height: 1.5;"></textarea>
+                </div>
               </div>
 
-              <!-- PESTAÑA 3: MÓDULOS E IA -->
-              <div id="form-tab-content-modules" class="form-tab-content form-grid">
-                <!-- HORARIOS DE TRABAJO -->
-                <div class="section-divider">
-                  <i data-lucide="calendar"></i> Constructor de Horarios de Trabajo
-                </div>
-
-                <div class="form-group full-width">
-                  <div class="schedule-builder" id="schedule-builder-container">
-                    <!-- Generado dinámicamente -->
-                  </div>
-                </div>
-
-                <!-- CONFIGURACIÓN DE PROPUESTAS DE ÉXITO SAAS -->
-                <div class="section-divider" style="grid-column: span 2;">
-                  <i data-lucide="sparkles"></i> Módulos Avanzados SaaS
-                </div>
-
-                <!-- 1. WhatsApp Reminders -->
-                <div class="form-group" style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(16, 185, 129, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(16, 185, 129, 0.2); grid-column: span 2;">
-                  <div style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem;">
-                    <input type="checkbox" id="whatsapp-reminders-enabled" style="width: 18px; height: 18px; accent-color: var(--success);" onchange="saveDraftToLocalStorage();">
-                    <label for="whatsapp-reminders-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                      Habilitar Recordatorios automáticos de WhatsApp 💬
-                    </label>
-                  </div>
-                </div>
-
-                <!-- 1b. Email Notifications -->
-                <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(59, 130, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
-                  <input type="checkbox" id="email-notifications-enabled" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="saveDraftToLocalStorage()">
-                  <label for="email-notifications-enabled" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                    Habilitar Notificaciones por Correo Electrónico ✉️
-                  </label>
-                </div>
-
-                <!-- 2.5. Regla de descansos (Break Rule) -->
-                <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(59, 130, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); grid-column: span 2;">
-                  <input type="checkbox" id="client-apply-break-rule" style="width: 18px; height: 18px; accent-color: var(--primary);">
-                  <label for="client-apply-break-rule" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                    Regla de descansos (Evitar citas consecutivas sin pausa) ☕
-                  </label>
-                </div>
-
-                <!-- 3. Multi-Professional -->
-                <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; background: rgba(139, 92, 246, 0.03); padding: 0.75rem 1rem; border-radius: 8px; border: 1px dashed rgba(139, 92, 246, 0.2); grid-column: span 2;">
-                  <input type="checkbox" id="enable-multi-professional" style="width: 18px; height: 18px; accent-color: var(--primary);" onchange="toggleMultiProfessionalInput()">
-                  <label for="enable-multi-professional" style="color: #fff; cursor: pointer; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                    Soporte Multi-Profesional y Multi-Calendario 👥
-                  </label>
-                </div>
-
-                <div class="form-group full-width" id="multi-professional-container" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px;">
-                  <label style="font-weight: 600; color: #fff; margin-bottom: 0.75rem; display: block;">Gestionar Profesionales / Empleados:</label>
-                  <div id="professionals-list-builder" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
-                    <!-- Se inyectarán los profesionales agregados aquí -->
-                  </div>
-                  <button type="button" class="btn btn-secondary" onclick="addProfessionalRow()" style="padding: 0.5rem 1rem; font-size: 0.85rem; width: fit-content;">
-                    <i data-lucide="plus"></i> Agregar Profesional
-                  </button>
-                </div>
-
-                <!-- 4. Knowledge Base (Base de Conocimientos) -->
-                <div class="section-divider">
-                  <i data-lucide="brain"></i> Base de Conocimientos y Entrenamiento
-                </div>
-
-                <div class="form-group full-width">
-                  <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                    <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--primary);"></i>
-                    Subir Documento de Base de Conocimiento (PDF):
-                  </label>
-                  <div style="display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); padding: 1rem; border-radius: 8px;">
-                    <input type="file" id="kb-pdf-file" accept="application/pdf" style="display: none;" onchange="handleKBPdfUpload(this)">
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('kb-pdf-file').click()" style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer;">
-                      <i data-lucide="upload-cloud"></i> Seleccionar PDF
-                    </button>
-                    <span id="kb-pdf-name" style="color: var(--text-muted); font-size: 0.85rem;">Ningún archivo seleccionado</span>
-                    <button type="button" class="btn btn-secondary" id="btn-remove-pdf" onclick="removeKBPdf()" style="display: none; padding: 0.35rem 0.6rem; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
-                      <i data-lucide="x" style="width: 14px; height: 14px;"></i>
-                    </button>
-                  </div>
-                  <!-- Barra de Progreso de Subida de PDF -->
-                  <div id="kb-pdf-progress-container" style="display: none; margin-top: 0.75rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                      <span id="kb-pdf-progress-label" style="font-size: 0.75rem; color: var(--primary-light);">Subiendo documento PDF...</span>
-                      <span id="kb-pdf-progress-percent" style="font-size: 0.75rem; font-weight: bold; color: var(--primary-light);">0%</span>
-                    </div>
-                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; border: 1px solid var(--border-color);">
-                      <div id="kb-pdf-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%); transition: width 0.3s ease; border-radius: 3px;"></div>
-                    </div>
-                  </div>
-                  <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">Sube un archivo PDF (hasta 5MB) con información adicional. El sistema extraerá el texto y lo inyectará directamente en la base de conocimientos abajo.</p>
-                </div>
-
-                <div class="form-group full-width">
-                  <label for="knowledge-base-url">URL Web o Ruta de la Base de Conocimientos:</label>
-                  <input type="text" id="knowledge-base-url" placeholder="ej. https://clinicacarlosromero.com o autogenerado por PDF" oninput="saveDraftToLocalStorage()">
-                </div>
-
-                <div class="form-group full-width">
-                  <label for="knowledge-base-content">Información de Entrenamiento Adicional (Preguntas frecuentes, texto extraído del PDF, detalles):</label>
-                  <textarea id="knowledge-base-content" rows="4" placeholder="ej. ¿Ofrecen parking gratuito? Sí, en el parking de la plaza de Gracia..." oninput="saveDraftToLocalStorage()"></textarea>
-                </div>
-
-                <div class="form-group full-width">
-                  <label for="custom-instructions">Reglas y Comportamiento Específico para la IA (Instrucciones personalizadas):</label>
-                  <textarea id="custom-instructions" rows="3" placeholder="Instrucciones específicas sobre el tono, cómo contestar o reglas obligatorias..."></textarea>
-                </div>
+              <!-- PESTAÑA 3: MÓDULOS E IA - OCULTADA PARA SIMPLIFICAR EL ALTA -->
+              <div id="form-tab-content-modules" class="form-tab-content form-grid" style="display: none !important;">
+                <input type="checkbox" id="whatsapp-reminders-enabled" style="display: none;">
+                <input type="checkbox" id="email-notifications-enabled" style="display: none;">
+                <input type="checkbox" id="client-apply-break-rule" style="display: none;">
+                <input type="checkbox" id="enable-multi-professional" style="display: none;">
+                <input type="text" id="knowledge-base-url" style="display: none;">
+                <textarea id="knowledge-base-content" style="display: none;"></textarea>
               </div>
 
               <!-- PESTAÑA 4: CONTRATO Y FACTURACIÓN -->

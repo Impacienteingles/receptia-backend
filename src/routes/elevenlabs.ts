@@ -41,7 +41,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
     }
 
     // Determine the phone number to configure (use virtual phone number assigned)
-    let assignedPhone = tenant.phone;
+    let assignedPhone = tenant.phone_number;
     // Check if there is an assigned virtual phone in database
     const { data: vpData } = await supabase
       .from('virtual_phones')
@@ -102,7 +102,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
           api_schema: {
             url: `${webhookBaseUrl}/api/webhook/get-availability?tenant_id=${tenantId}`,
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            request_headers: { 'Content-Type': 'application/json' },
             request_body_schema: {
               type: 'object',
               properties: {
@@ -122,7 +122,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
           api_schema: {
             url: `${webhookBaseUrl}/api/webhook/book-appointment?tenant_id=${tenantId}`,
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            request_headers: { 'Content-Type': 'application/json' },
             request_body_schema: {
               type: 'object',
               properties: {
@@ -146,7 +146,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
           api_schema: {
             url: `${webhookBaseUrl}/api/webhook/cancel-appointment?tenant_id=${tenantId}`,
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            request_headers: { 'Content-Type': 'application/json' },
             request_body_schema: {
               type: 'object',
               properties: {
@@ -166,7 +166,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
           api_schema: {
             url: `${webhookBaseUrl}/api/webhook/reschedule-appointment?tenant_id=${tenantId}`,
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            request_headers: { 'Content-Type': 'application/json' },
             request_body_schema: {
               type: 'object',
               properties: {
@@ -188,7 +188,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
           api_schema: {
             url: `${webhookBaseUrl}/api/webhook/get-business-phone?tenant_id=${tenantId}`,
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            request_headers: { 'Content-Type': 'application/json' },
             request_body_schema: {
               type: 'object',
               properties: {
@@ -204,10 +204,10 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
     const toolIds: string[] = [];
     for (const toolDef of toolsDefinitions) {
       try {
-        const createRes = await axios.post('https://api.elevenlabs.io/v1/convai/tools/create', toolDef, {
+        const createRes = await axios.post('https://api.elevenlabs.io/v1/convai/tools', toolDef, {
           headers: { 'xi-api-key': elevenApiKey }
         });
-        toolIds.push(createRes.data.tool_id);
+        toolIds.push(createRes.data.id || createRes.data.tool_id);
       } catch (err: any) {
         console.error(`Error creating tool ${toolDef.tool_config.name}:`, err.response?.data || err.message);
       }
@@ -233,17 +233,23 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
             prompt: systemPrompt,
             tool_ids: toolIds,
             built_in_tools: {
-              end_call: { name: 'end_call' },
-              transfer_to_number: { name: 'transfer_to_number' }
+              end_call: {
+                name: 'end_call',
+                params: {
+                  system_tool_type: 'end_call'
+                },
+                type: 'system'
+              }
             }
           },
-          voice: {
-            voice_id: tenant.voice_id || 'ERYLdjEaddaiN9sDjaMX', // Gabriela voice
-            speed: 1.09,
-            stability: 0.40,
-            similarity_boost: 0.85
-          },
           language: 'es'
+        },
+        tts: {
+          model_id: 'eleven_flash_v2_5',
+          voice_id: (!tenant.voice_id || tenant.voice_id.includes('cartesia') || tenant.voice_id.length !== 20) ? 'ERYLdjEaddaiN9sDjaMX' : tenant.voice_id, // Gabriela voice
+          speed: 1.09,
+          stability: 0.40,
+          similarity_boost: 0.85
         },
         llm: {
           model: 'gpt-4o-mini',

@@ -122,7 +122,10 @@ CREATE TABLE IF NOT EXISTS call_logs (
   transcript TEXT,
   summary TEXT,
   intent_tag TEXT, -- 'Cita Agendada', 'Llamada Perdida', 'Consulta General', 'Queja'
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+  call_id TEXT,
+  retell_call_id TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- 9. Columnas en tenants para propuestas de éxito SaaS

@@ -299,12 +299,40 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
     }
     
     console.log(`Huecos libres filtrados para duración ${durationMinutes} min: ${filteredSlots.join(', ')}`);
+    
+    // Obtener información de horario para la fecha consultada en la zona horaria de Madrid
+    const targetDate = new Date(`${date}T12:00:00`);
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayNamesEs: any = {
+      monday: 'Lunes',
+      tuesday: 'Martes',
+      wednesday: 'Miércoles',
+      thursday: 'Jueves',
+      friday: 'Viernes',
+      saturday: 'Sábado',
+      sunday: 'Domingo'
+    };
+    const dayOfWeek = dayNames[targetDate.getDay()];
+    const dayNameEs = dayNamesEs[dayOfWeek];
+    const shifts = workingHoursObj?.[dayOfWeek] || [];
+    let scheduleInfo = '';
+    
+    if (shifts.length === 0) {
+      scheduleInfo = `El negocio está CERRADO todo el día el ${dayNameEs} (${date}).`;
+    } else {
+      const shiftsStr = shifts.map((s: any) => `de ${s.start} a ${s.end}`).join(' y ');
+      scheduleInfo = `El horario comercial para el ${dayNameEs} (${date}) es únicamente: ${shiftsStr}. Todo horario fuera de este rango está cerrado.`;
+    }
+
+    const messageText = filteredSlots.length > 0 
+      ? `Los siguientes huecos están libres: ${filteredSlots.join(', ')}. Nota de Horario: ${scheduleInfo}`
+      : `No hay huecos disponibles en esta fecha. Nota de Horario: ${scheduleInfo}. Sugiere al paciente otra fecha.`;
+
     res.json({
       status: 'success',
       available_slots: filteredSlots,
-      message: filteredSlots.length > 0 
-        ? `Los siguientes huecos están libres: ${filteredSlots.join(', ')}`
-        : 'No hay huecos disponibles suficientes para esa duración en esta fecha. Sugiere al paciente otra fecha.'
+      message: messageText,
+      schedule_info: scheduleInfo
     });
   } catch (error: any) {
     console.error('Error en /get-availability:', error);

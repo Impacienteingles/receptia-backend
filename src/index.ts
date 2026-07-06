@@ -2627,7 +2627,7 @@ app.get('/api/public/email-campaigns/track-click/:recipient_id', async (req, res
 // =====================================================================
 // Endpoints de Desuscripción (Opt-Out) Públicos
 // =====================================================================
-app.get('/api/public/email-campaigns/unsubscribe/:recipient_id?', async (req, res): Promise<void> => {
+const handleUnsubscribeGet = async (req: any, res: any): Promise<void> => {
   const { recipient_id } = req.params as any;
   let email = '';
   let autoProcessed = false;
@@ -2829,7 +2829,9 @@ app.get('/api/public/email-campaigns/unsubscribe/:recipient_id?', async (req, re
     </body>
     </html>
   `);
-});
+};
+app.get('/api/public/email-campaigns/unsubscribe', handleUnsubscribeGet);
+app.get('/api/public/email-campaigns/unsubscribe/:recipient_id', handleUnsubscribeGet);
 
 app.post('/api/public/email-campaigns/unsubscribe', express.urlencoded({ extended: true }), async (req, res): Promise<void> => {
   const { email } = req.body;
