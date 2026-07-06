@@ -405,6 +405,9 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
     }
     const finalVoiceId = (cleanVoiceId && !cleanVoiceId.includes('cartesia') && cleanVoiceId.length === 20) ? cleanVoiceId : 'ERYLdjEaddaiN9sDjaMX';
 
+    const voiceResp = (tenant.voice_responsiveness !== undefined && tenant.voice_responsiveness !== null) ? Number(tenant.voice_responsiveness) : 1.0;
+    const computedTurnTimeout = Math.max(0.5, Math.min(3.0, 1.2 / (voiceResp || 1.0)));
+
     const agentPayload = {
       name: tenant.business_name,
       conversation_config: {
@@ -412,7 +415,7 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
           first_message: firstMessage,
           prompt: {
             prompt: systemPrompt,
-            llm: 'gemini-2.5-flash',
+            llm: 'gpt-4o-mini',
             temperature: 0.3
           },
           language: 'es'
@@ -425,7 +428,7 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
           similarity_boost: 0.85
         },
         turn: {
-          turn_timeout: 2,
+          turn_timeout: computedTurnTimeout,
           turn_eagerness: 'eager'
         },
         conversation: {
