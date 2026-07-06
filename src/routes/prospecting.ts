@@ -657,7 +657,7 @@ async function generateCartesiaAudio(
   const finalVoiceId = voiceId || 'cefcb124-080b-4655-b31f-932f3ee743de';
   
   // Si no se suministra un guion, usamos el guion dinámico premium por defecto
-  const finalScript = customScript || `Hola, muy buenas. Desde Corándar hemos diseñado un asistente de voz inteligente a medida para su negocio, ${businessName}. Este asistente ya está listo para atender sus llamadas, resolver dudas de sus clientes y gestionar sus citas las veinticuatro horas del día. Además, contará con un período de prueba totalmente gratuito de siete días. Le hemos preparado una simulación de llamada real en su panel de cliente, y puede consultar más información sobre nosotros en la web de Corándar. Acceda hoy mismo utilizando el enlace de este correo y su contraseña temporal: uno dos tres cuatro cinco seis siete ocho. También le invitamos a probar nuestra calculadora de ROI integrada en su panel, con la que podrá estimar el ahorro mensual y las citas que recuperará con Receptia. ¡Esperamos que le guste!`;
+  const finalScript = customScript || `Hola, muy buenas. Desde Corándar hemos diseñado un asistente de voz inteligente a medida para su negocio, ${businessName}. Este asistente ya está listo para atender sus llamadas, resolver dudas de sus clientes y gestionar sus citas las veinticuatro horas del día. Además, contará con un período de prueba totalmente gratuito de tres días. Le hemos preparado una simulación de llamada real en su panel de cliente, y puede consultar más información sobre nosotros en la web de Corándar. Acceda hoy mismo utilizando el enlace de este correo y su contraseña temporal: uno dos tres cuatro cinco seis siete ocho. También le invitamos a probar nuestra calculadora de ROI integrada en su panel, con la que podrá estimar el ahorro mensual y las citas que recuperará con Receptia. ¡Esperamos que le guste!`;
 
   try {
     const response = await axios.post(
@@ -1065,6 +1065,30 @@ router.post('/:id/resend-email', async (req: Request, res: Response): Promise<vo
           emails_sent_count: currentCount + 1
         })
         .eq('id', id);
+
+      if (prospect.demo_tenant_id) {
+        const threeDays = new Date();
+        threeDays.setDate(threeDays.getDate() + 3);
+        const trialEndsStr = threeDays.toISOString().split('T')[0];
+
+        await supabase
+          .from('tenants')
+          .update({
+            is_trial: true,
+            subscription_status: 'trial',
+            trial_ends_at: trialEndsStr,
+            demo_calls_count: 0
+          })
+          .eq('id', prospect.demo_tenant_id);
+
+        await supabase
+          .from('virtual_phones')
+          .update({
+            next_billing_date: trialEndsStr,
+            status: 'assigned'
+          })
+          .eq('tenant_id', prospect.demo_tenant_id);
+      }
     }
 
     res.json({
@@ -1110,7 +1134,7 @@ router.get('/:id/preview-email', async (req: Request, res: Response): Promise<vo
     const { data: bodyExtraVal } = await supabase.from('settings').select('value').eq('key', bodyExtraKey).maybeSingle();
 
     const selectedVoiceId = voiceVal?.value || 'cefcb124-080b-4655-b31f-932f3ee743de'; // Elena por defecto
-    const defaultScriptText = `Hola, muy buenas. Desde Corándar hemos diseñado un asistente de voz inteligente a medida para su negocio, ${prospect.business_name}. Este asistente ya está listo para atender sus llamadas, resolver dudas de sus clientes y gestionar sus citas las veinticuatro horas del día. Además, contará con un período de prueba totalmente gratuito de siete días. Le hemos preparado una simulación de llamada real en su panel de cliente, y puede consultar más información sobre nosotros en la web de Corándar. Acceda hoy mismo utilizando el enlace de este correo y su contraseña temporal: uno dos tres cuatro cinco seis siete ocho. También le invitamos a probar nuestra calculadora de ROI integrada en su panel, con la que podrá estimar el ahorro mensual y las citas que recuperará con Receptia. ¡Esperamos que le guste!`;
+    const defaultScriptText = `Hola, muy buenas. Desde Corándar hemos diseñado un asistente de voz inteligente a medida para su negocio, ${prospect.business_name}. Este asistente ya está listo para atender sus llamadas, resolver dudas de sus clientes y gestionar sus citas las veinticuatro horas del día. Además, contará con un período de prueba totalmente gratuito de tres días. Le hemos preparado una simulación de llamada real en su panel de cliente, y puede consultar más información sobre nosotros en la web de Corándar. Acceda hoy mismo utilizando el enlace de este correo y su contraseña temporal: uno dos tres cuatro cinco seis siete ocho. También le invitamos a probar nuestra calculadora de ROI integrada en su panel, con la que podrá estimar el ahorro mensual y las citas que recuperará con Receptia. ¡Esperamos que le guste!`;
     const selectedScript = scriptVal?.value || defaultScriptText;
 
     const defaultSubject = `🎙️ Corándar ha diseñado un Asistente de Voz IA para ${prospect.business_name}`;

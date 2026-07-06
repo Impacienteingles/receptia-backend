@@ -1454,6 +1454,76 @@ app.patch('/api/admin/tenants/:id/restore', async (req, res): Promise<void> => {
   }
 });
 
+// 6EE. Reactivar el período de prueba de un cliente de forma manual (3 días de prueba)
+app.patch('/api/admin/tenants/:id/reactivate-trial', async (req, res): Promise<void> => {
+  const { id } = req.params;
+  try {
+    const today = new Date();
+    today.setDate(today.getDate() + 3);
+    const newTrialEndsAt = today.toISOString().split('T')[0];
+
+    // Buscar si hay algún teléfono virtual disponible en el inventario
+    const { data: availablePhones } = await supabase
+      .from('virtual_phones')
+      .select('*')
+      .eq('status', 'available')
+      .order('created_at', { ascending: true });
+
+    let assignedPhone = null;
+    let selectedVp = null;
+
+    if (availablePhones && availablePhones.length > 0) {
+      selectedVp = availablePhones[0];
+      assignedPhone = selectedVp.phone_number;
+    }
+
+    // Actualizar inquilino a trial activo
+    const { data: tenant, error: tenantErr } = await supabase
+      .from('tenants')
+      .update({
+        is_trial: true,
+        subscription_status: 'trial',
+        trial_ends_at: newTrialEndsAt,
+        demo_calls_count: 0,
+        phone_number: assignedPhone || null,
+        phone_provider: assignedPhone ? 'zadarma' : 'retell',
+        sip_username: assignedPhone ? selectedVp.sip_username : null,
+        sip_password: assignedPhone ? selectedVp.sip_password : null,
+        sip_server: assignedPhone ? selectedVp.sip_server : null
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (tenantErr) throw tenantErr;
+
+    // Si se asignó un teléfono, actualizar su estado en virtual_phones
+    if (selectedVp) {
+      await supabase
+        .from('virtual_phones')
+        .update({
+          tenant_id: id,
+          status: 'assigned',
+          next_billing_date: newTrialEndsAt
+        })
+        .eq('id', selectedVp.id);
+    }
+
+    console.log(`[Trial Reactivation] Trial reactivado manualmente por 3 días para inquilino ${id}. Teléfono: ${assignedPhone || 'Ninguno disponible'}`);
+
+    res.json({
+      success: true,
+      tenant,
+      message: assignedPhone
+        ? `Período de prueba reactivado con éxito por 3 días. Se asignó automáticamente el número de prueba: ${assignedPhone}`
+        : `Período de prueba reactivado con éxito por 3 días. No había números virtuales disponibles en el inventario.`
+    });
+  } catch (err: any) {
+    console.error('[Trial Reactivation] Error al reactivar trial:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 6F. Eliminar un cliente de forma definitiva (hard delete)
 app.delete('/api/admin/tenants/:id', async (req, res): Promise<void> => {
   const { id } = req.params;
@@ -5411,6 +5481,72 @@ setInterval(async () => {
   }
 }, 5 * 60 * 1000); // Ejecutar cada 5 minutos
 
+// Tarea en segundo plano para liberar teléfonos virtuales de demos expiradas
+async function checkAndReleaseExpiredTrials() {
+  try {
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    // 1. Obtener inquilinos en trial cuya fecha de finalización ya expiró (menor que hoy)
+    const { data: expiredTenants, error: fetchErr } = await supabase
+      .from('tenants')
+      .select('id, business_name, phone_number, trial_ends_at')
+      .eq('subscription_status', 'trial')
+      .lt('trial_ends_at', todayStr);
+
+    if (fetchErr) {
+      console.error('[Expired Trials Release] Error al consultar trials expirados:', fetchErr.message);
+      return;
+    }
+
+    if (expiredTenants && expiredTenants.length > 0) {
+      console.log(`[Expired Trials Release] Se detectaron ${expiredTenants.length} períodos de prueba expirados. Procediendo a liberar recursos...`);
+      
+      for (const tenant of expiredTenants) {
+        console.log(`[Expired Trials Release] Expirando trial para: ${tenant.business_name} (ID: ${tenant.id}, Venció: ${tenant.trial_ends_at})`);
+        
+        // A. Cambiar estado del tenant a trial_expired y desconfigurar el teléfono asignado
+        const { error: updateTenantErr } = await supabase
+          .from('tenants')
+          .update({
+            subscription_status: 'trial_expired',
+            phone_number: null,
+            sip_username: null,
+            sip_password: null,
+            sip_server: null
+          })
+          .eq('id', tenant.id);
+
+        if (updateTenantErr) {
+          console.error(`[Expired Trials Release] Error al actualizar tenant ${tenant.id}:`, updateTenantErr.message);
+          continue;
+        }
+
+        // B. Buscar y liberar los números virtuales asociados a este tenant
+        const { error: releasePhoneErr } = await supabase
+          .from('virtual_phones')
+          .update({
+            tenant_id: null,
+            prospect_id: null,
+            status: 'available',
+            next_billing_date: null
+          })
+          .eq('tenant_id', tenant.id);
+
+        if (releasePhoneErr) {
+          console.error(`[Expired Trials Release] Error al liberar teléfono virtual para tenant ${tenant.id}:`, releasePhoneErr.message);
+        } else {
+          console.log(`[Expired Trials Release] Teléfono virtual liberado con éxito para ${tenant.business_name}.`);
+        }
+      }
+    }
+  } catch (err: any) {
+    console.error('[Expired Trials Release] Error crítico en checkAndReleaseExpiredTrials:', err.message);
+  }
+}
+
+// Ejecutar cada 5 minutos
+setInterval(checkAndReleaseExpiredTrials, 5 * 60 * 1000);
+
 // Migraciones de Base de Datos para Prospección B2B
 async function runDatabaseMigrations() {
   const { Client } = require('pg');
@@ -5868,4 +6004,9 @@ app.listen(PORT, () => {
 
   // Arrancar worker de cola persistente para campañas salientes
   startCampaignWorker();
+
+  // Ejecutar verificación inicial de demos expiradas al arrancar
+  checkAndReleaseExpiredTrials().catch(err => {
+    console.error('[Expired Trials Initial Check] Error:', err.message);
+  });
 });

@@ -1280,7 +1280,7 @@
       <img src="/receptia_logo.png" alt="Logo Receptia" style="width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Panel Protegido
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.24</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.25</span>
       </h3>
       <p id="pin-description" style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Por favor, introduce tu contraseña de acceso para gestionar tu agenda de citas.</p>
       
@@ -2431,7 +2431,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.24</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.25</span>
           <button onclick="handleClientLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -3067,7 +3067,7 @@
                   Llamada de Prueba WebRTC (Sandbox)
                 </h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Llama y conversa directamente con tu asistente de voz IA desde el navegador para probar su comportamiento y afinar sus respuestas en tiempo real antes del uso telefónico.
+                  Llama y conversa directamente con tu asistente de voz IA desde el navegador para probar su comportamiento y afinar sus respuestas en tiempo real antes del uso telefónico. Dispones de un máximo de 5 llamadas de prueba, cada una con una duración límite de 2 minutos.
                 </p>
                  <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 1rem;">
                    <button class="btn" onclick="startClientWebRTCCall()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; background: var(--primary); border: none; cursor: pointer; color: #fff;">
@@ -7279,12 +7279,12 @@
 
       if (!tenant.admin_pin) {
         // No tiene contraseña, pedir establecer una nueva (registro inicial del cliente)
-        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.24</span>`;
+        pinTitle.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.25</span>`;
         pinDescription.innerText = 'Este es tu primer acceso. Crea una contraseña segura de al menos 8 caracteres para proteger tu panel de citas.';
         btnPinSubmit.innerText = 'Establecer Contraseña y Entrar';
       } else {
         // Ya tiene contraseña, pedirla
-        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.24</span>`;
+        pinTitle.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.25</span>`;
         pinDescription.innerText = 'Introduce tu contraseña de acceso para autorizar el ingreso al panel.';
         btnPinSubmit.innerText = 'Acceder al Panel';
       }
@@ -8026,7 +8026,7 @@
       if (urlParams.get('preview_expired') === 'true' || urlParams.get('trial_expired') === 'true') {
         accessBlocked = true;
         document.getElementById('expired-overlay-title').innerText = 'Período de Prueba Finalizado';
-        document.getElementById('expired-overlay-message').innerText = `Tu período de demostración de 7 días gratuitos ha expirado. Selecciona uno de nuestros planes para realizar el pago e iniciar tu suscripción recurrente mensual o anual.`;
+        document.getElementById('expired-overlay-message').innerText = `Tu período de demostración de 3 días gratuitos ha expirado. Selecciona uno de nuestros planes para realizar el pago e iniciar tu suscripción recurrente mensual o anual.`;
       } else if (status === 'paused') {
         accessBlocked = true;
         document.getElementById('expired-overlay-title').innerText = 'Suscripción Inactiva o Suspendida';
@@ -8058,7 +8058,7 @@
         if (diffDays <= 0) {
           accessBlocked = true;
           document.getElementById('expired-overlay-title').innerText = 'Período de Prueba Finalizado';
-          document.getElementById('expired-overlay-message').innerText = `Tu período de demostración de 7 días gratuitos ha expirado. Selecciona uno de nuestros planes para realizar el pago e iniciar tu suscripción recurrente mensual o anual.`;
+          document.getElementById('expired-overlay-message').innerText = `Tu período de demostración de 3 días gratuitos ha expirado. Selecciona uno de nuestros planes para realizar el pago e iniciar tu suscripción recurrente mensual o anual.`;
         } else {
           trialBanner.style.display = 'flex';
           document.getElementById('trial-days-left').innerText = diffDays;
@@ -10619,7 +10619,7 @@ ${cleanAudio}`;
             </div>
             <h1 style="font-size: 1.6rem; color: #fff; margin: 0;" id="expired-overlay-title">Suscripción Inactiva o Demo Finalizada</h1>
             <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 600px; margin: 0 auto; line-height: 1.35;" id="expired-overlay-message">
-              Tu período de prueba de 7 días ha finalizado o tu suscripción se encuentra pausada/cancelada. Para seguir utilizando el agente de voz IA y gestionando tus citas, selecciona uno de nuestros planes a continuación.
+              Tu período de prueba de 3 días ha finalizado o tu suscripción se encuentra pausada/cancelada. Para seguir utilizando el agente de voz IA y gestionando tus citas, selecciona uno de nuestros planes a continuación.
             </p>
             <div id="debug-billing-error" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--error); padding: 0.75rem; border-radius: 8px; font-family: monospace; font-size: 0.8rem; text-align: left; max-width: 600px; margin-top: 0.5rem; white-space: pre-wrap; width: 100%;"></div>
           </div>

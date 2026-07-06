@@ -1823,7 +1823,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.1.9</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.1.10</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2051,7 +2051,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.1.9</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.1.10</span>
       </div>
     </aside>
 
@@ -2074,7 +2074,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.9</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.1.10</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -10197,6 +10197,8 @@
           statusBadge = `<span class="badge badge-danger">Cancelado 🔴</span>`;
         } else if (tenant.subscription_status === 'trial') {
           statusBadge = `<span class="badge badge-info" style="color: #818cf8;">Trial 🔵</span>`;
+        } else if (tenant.subscription_status === 'trial_expired') {
+          statusBadge = `<span class="badge badge-danger" style="color: #ef4444; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2);">Trial Expirado ⏳</span>`;
         }
 
         // Formato fecha
@@ -10213,6 +10215,13 @@
           : `<button class="btn btn-secondary" onclick="openSuspendConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);" title="Suspender servicio">
                <i data-lucide="pause-circle" style="width: 13px; height: 13px;"></i> Suspender
              </button>`;
+
+        const isTrialExpired = tenant.subscription_status === 'trial_expired';
+        const reactivateTrialBtn = isTrialExpired
+          ? `<button class="btn btn-secondary" onclick="reactivateClientTrial('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);" title="Reactivar Demo (Periodo de prueba de 3 días)">
+               <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Reactivar Demo
+             </button>`
+          : '';
 
         row.innerHTML = `
           <td style="font-weight: 600; color: #fff;">
@@ -10231,6 +10240,7 @@
                 <i data-lucide="shield-alert" style="width: 12px; height: 12px;"></i> Urgencia
               </button>
               ${suspendBtn}
+              ${reactivateTrialBtn}
               <button class="btn btn-secondary" onclick="openArchiveConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Archivar cliente">
                 <i data-lucide="archive" style="width: 12px; height: 12px;"></i> Archivar
               </button>
@@ -10521,6 +10531,20 @@
         .then(() => { fetchTenants(); showCustomAlert('Servicio reactivado correctamente.', 'Reactivado', 'success'); })
         .catch(err => showCustomAlert('Error: ' + err.message, 'Error', 'error'));
     }
+
+    async function reactivateClientTrial(tenantId, tenantName) {
+      if (!(await showCustomConfirm('¿Reactivar el período de prueba de 3 días para ' + tenantName + '? Se buscará un número virtual libre para asignarle automáticamente.', 'Reactivar Demo', 'help-circle'))) return;
+      try {
+        const response = await fetch('/api/admin/tenants/' + tenantId + '/reactivate-trial', { method: 'PATCH' });
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.error || 'Error al reactivar el periodo de prueba.');
+        await fetchTenants();
+        await showCustomAlert(resJson.message || 'Demo reactivada correctamente por 3 días.', 'Demo Reactivada', 'success');
+      } catch (err) {
+        await showCustomAlert('Error: ' + err.message, 'Error', 'error');
+      }
+    }
+    window.reactivateClientTrial = reactivateClientTrial;
 
     function openArchiveConfirm(tenantId, tenantName) {
       pendingActionTenantId = tenantId;
