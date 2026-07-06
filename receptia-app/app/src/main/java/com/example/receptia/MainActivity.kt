@@ -35,11 +35,15 @@ class MainActivity : ComponentActivity() {
         settings.useWideViewPort = true
         settings.loadWithOverviewMode = true
         settings.javaScriptCanOpenWindowsAutomatically = true
+        settings.cacheMode = WebSettings.LOAD_NO_CACHE
 
         // Habilitar Cookies
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
         cookieManager.setAcceptThirdPartyCookies(webView, true)
+
+        // Limpiar caché al iniciar para evitar fallos de botones por caché antigua
+        webView.clearCache(true)
 
         // Cargar URL del panel móvil oficial de Receptia
         webView.loadUrl("https://receptia.corandar.com/mobile/index.html")

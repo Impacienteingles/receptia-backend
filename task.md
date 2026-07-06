@@ -47,4 +47,10 @@
 - [x] Config: Increment semantic version in `package.json` to `1.8.49`
 - [x] Config: Update visual version to `v1.1.1` in `public/admin.html`
 - [x] Verify: Build the project and deploy to Render and Vercel
-
+- [ ] APK: Copy receptia-app build to public/descargas/receptia-v1.1.3.apk
+- [ ] APK: Copy client build to 1.- Ejecutables/Receptia-Cliente.apk
+- [ ] APK: Copy commercial build to 1.- Ejecutables/Receptia-Comercial.apk
+- [ ] APK: Copy admin build to 1.- Ejecutables/Receptia-Admin.apk
+- [ ] Version: Update app.html version to v1.1.3 and update APK download links in app.html, index.html and comparar pages
+- [ ] Version: Bump package.json to 1.9.13
+- [ ] Deploy: Build project and deploy to production
