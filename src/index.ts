@@ -2624,6 +2624,340 @@ app.get('/api/public/email-campaigns/track-click/:recipient_id', async (req, res
   res.redirect(redirectUrl);
 });
 
+// =====================================================================
+// Endpoints de Desuscripción (Opt-Out) Públicos
+// =====================================================================
+app.get('/api/public/email-campaigns/unsubscribe/:recipient_id?', async (req, res): Promise<void> => {
+  const { recipient_id } = req.params as any;
+  let email = '';
+  let autoProcessed = false;
+
+  try {
+    if (recipient_id) {
+      const { data: recipient } = await supabase
+        .from('email_campaign_recipients')
+        .select('email')
+        .eq('id', recipient_id)
+        .maybeSingle();
+
+      if (recipient && recipient.email) {
+        email = recipient.email.trim().toLowerCase();
+        
+        // Registrar en desuscritos
+        await supabase
+          .from('email_unsubscribes')
+          .upsert({ email }, { onConflict: 'email' });
+        
+        autoProcessed = true;
+      }
+    }
+  } catch (err: any) {
+    console.error('[Unsubscribe Get Error]:', err.message);
+  }
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Desuscripción | Receptia AI</title>
+      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <style>
+        :root {
+          --bg: #0b0f19;
+          --card-bg: #111827;
+          --primary: #8b5cf6;
+          --primary-hover: #a78bfa;
+          --text: #ffffff;
+          --text-muted: #9ca3af;
+          --border: #1f2937;
+          --success: #10b981;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+          background: var(--bg);
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          text-align: center;
+        }
+        .container {
+          background: var(--card-bg);
+          border: 1px solid var(--border);
+          padding: 3rem 2rem;
+          border-radius: 16px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+          max-width: 480px;
+          width: 90%;
+          transition: all 0.3s ease;
+        }
+        .icon {
+          font-size: 3.5rem;
+          margin-bottom: 1rem;
+          display: inline-block;
+          animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        h1 {
+          font-family: 'Outfit', sans-serif;
+          font-size: 1.75rem;
+          margin: 0 0 1rem 0;
+          font-weight: 700;
+          background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        p {
+          font-size: 0.95rem;
+          color: var(--text-muted);
+          line-height: 1.6;
+          margin: 0 0 2rem 0;
+        }
+        .email-display {
+          background: rgba(139, 92, 246, 0.08);
+          border: 1px solid rgba(139, 92, 246, 0.2);
+          padding: 0.75rem 1.25rem;
+          border-radius: 8px;
+          font-family: monospace;
+          color: #a78bfa;
+          display: inline-block;
+          margin-bottom: 2rem;
+          font-size: 1rem;
+          word-break: break-all;
+        }
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          text-align: left;
+          margin-bottom: 1.5rem;
+        }
+        label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #fff;
+        }
+        input[type="email"] {
+          padding: 0.75rem 1rem;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background: rgba(255,255,255,0.02);
+          color: #fff;
+          font-size: 0.95rem;
+          outline: none;
+          transition: border-color 0.2s;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        input[type="email"]:focus {
+          border-color: var(--primary);
+        }
+        .btn {
+          width: 100%;
+          padding: 0.75rem;
+          background: var(--primary);
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          font-weight: 700;
+          cursor: pointer;
+          font-size: 0.95rem;
+          transition: background-color 0.2s;
+        }
+        .btn:hover {
+          background: var(--primary-hover);
+        }
+        .success-box {
+          border: 1px solid rgba(16, 185, 129, 0.2);
+          background: rgba(16, 185, 129, 0.05);
+          padding: 1.25rem;
+          border-radius: 10px;
+          margin-bottom: 2rem;
+        }
+        .success-title {
+          color: var(--success);
+          font-weight: 700;
+          margin-bottom: 0.5rem;
+          font-size: 1.1rem;
+        }
+        .logo-footer {
+          margin-top: 2.5rem;
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.85rem;
+          color: var(--text-muted);
+          opacity: 0.7;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="icon">✉️</div>
+        
+        ${autoProcessed ? `
+          <h1>Desuscripción Exitosa</h1>
+          <div class="success-box">
+            <div class="success-title">✓ Proceso Completado</div>
+            <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.85);">Tu correo ha sido removido de nuestras listas de difusión.</p>
+          </div>
+          <p>Ya no recibirás más correos electrónicos publicitarios o campañas promocionales en la dirección:</p>
+          <div class="email-display">${email}</div>
+        ` : `
+          <h1>Solicitar Desuscripción</h1>
+          <p>Introduce tu dirección de correo electrónico a continuación para dejar de recibir comunicaciones comerciales de nuestras campañas.</p>
+          
+          <form action="/api/public/email-campaigns/unsubscribe" method="POST">
+            <div class="form-group" style="box-sizing: border-box; width: 100%;">
+              <label for="email">Correo Electrónico</label>
+              <input type="email" id="email" name="email" required placeholder="tu@email.com">
+            </div>
+            <button type="submit" class="btn">Confirmar Desuscripción</button>
+          </form>
+        `}
+        
+        <div class="logo-footer">
+          <span>🔮 Receptia AI</span>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+app.post('/api/public/email-campaigns/unsubscribe', express.urlencoded({ extended: true }), async (req, res): Promise<void> => {
+  const { email } = req.body;
+  let cleanEmail = '';
+  
+  if (email) {
+    try {
+      cleanEmail = email.trim().toLowerCase();
+      await supabase
+        .from('email_unsubscribes')
+        .upsert({ email: cleanEmail }, { onConflict: 'email' });
+    } catch (err: any) {
+      console.error('[Unsubscribe Post Error]:', err.message);
+    }
+  }
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Desuscripción Exitosa | Receptia AI</title>
+      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <style>
+        :root {
+          --bg: #0b0f19;
+          --card-bg: #111827;
+          --primary: #8b5cf6;
+          --text: #ffffff;
+          --text-muted: #9ca3af;
+          --border: #1f2937;
+          --success: #10b981;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+          background: var(--bg);
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          text-align: center;
+        }
+        .container {
+          background: var(--card-bg);
+          border: 1px solid var(--border);
+          padding: 3rem 2rem;
+          border-radius: 16px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+          max-width: 480px;
+          width: 90%;
+        }
+        .icon {
+          font-size: 3.5rem;
+          margin-bottom: 1rem;
+          display: inline-block;
+        }
+        h1 {
+          font-family: 'Outfit', sans-serif;
+          font-size: 1.75rem;
+          margin: 0 0 1rem 0;
+          font-weight: 700;
+          background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        p {
+          font-size: 0.95rem;
+          color: var(--text-muted);
+          line-height: 1.6;
+          margin: 0 0 2rem 0;
+        }
+        .email-display {
+          background: rgba(139, 92, 246, 0.08);
+          border: 1px solid rgba(139, 92, 246, 0.2);
+          padding: 0.75rem 1.25rem;
+          border-radius: 8px;
+          font-family: monospace;
+          color: #a78bfa;
+          display: inline-block;
+          margin-bottom: 2rem;
+          font-size: 1rem;
+          word-break: break-all;
+        }
+        .success-box {
+          border: 1px solid rgba(16, 185, 129, 0.2);
+          background: rgba(16, 185, 129, 0.05);
+          padding: 1.25rem;
+          border-radius: 10px;
+          margin-bottom: 2rem;
+        }
+        .success-title {
+          color: var(--success);
+          font-weight: 700;
+          margin-bottom: 0.5rem;
+          font-size: 1.1rem;
+        }
+        .logo-footer {
+          margin-top: 2.5rem;
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.85rem;
+          color: var(--text-muted);
+          opacity: 0.7;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="icon">✉️</div>
+        <h1>Desuscripción Exitosa</h1>
+        <div class="success-box">
+          <div class="success-title">✓ Proceso Completado</div>
+          <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.85);">Tu correo ha sido removido de nuestras listas de difusión.</p>
+        </div>
+        <p>Ya no recibirás más correos electrónicos publicitarios o campañas promocionales en la dirección:</p>
+        ${cleanEmail ? `<div class="email-display">${cleanEmail}</div>` : ''}
+        <div class="logo-footer">
+          <span>🔮 Receptia AI</span>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
 // 3. Webhook de Stripe para notificaciones asíncronas en la nube
 app.post('/api/payments/webhook', async (req, res): Promise<void> => {
   const sig = req.headers['stripe-signature'];
@@ -5781,6 +6115,15 @@ async function runDatabaseMigrations() {
         opened_at TIMESTAMP WITH TIME ZONE,
         clicked_at TIMESTAMP WITH TIME ZONE,
         converted_at TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+      );
+    `);
+
+    // Crear tabla email_unsubscribes si no existe
+    await clientInstance.query(`
+      CREATE TABLE IF NOT EXISTS email_unsubscribes (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        email VARCHAR UNIQUE NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
       );
     `);

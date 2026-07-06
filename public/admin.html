@@ -5420,6 +5420,74 @@
     // ========================================================
     // CONTROLADORES DE MODAL PERSONALIZADO (ALERT / CONFIRM)
     // ========================================================
+    function showToast(message, type = 'success') {
+      let toast = document.getElementById('toast');
+      if (!toast) {
+        const style = document.createElement('style');
+        style.innerHTML = `
+          .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #1e1b4b;
+            border: 1px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateY(150%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #fff;
+            font-family: sans-serif;
+            font-size: 0.9rem;
+          }
+          .toast.show {
+            transform: translateY(0);
+          }
+        `;
+        document.head.appendChild(style);
+
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        toast.innerHTML = `
+          <i data-lucide="check-circle" style="color: var(--success);" id="toast-icon"></i>
+          <span id="toast-message">Mensaje</span>
+        `;
+        document.body.appendChild(toast);
+      }
+
+      const toastMsg = document.getElementById('toast-message');
+      const toastIcon = document.getElementById('toast-icon');
+      
+      toastMsg.innerText = message;
+      
+      if (type === 'error') {
+        toastIcon.setAttribute('data-lucide', 'alert-circle');
+        toastIcon.style.color = 'var(--error)';
+        toast.style.borderColor = 'var(--error)';
+      } else if (type === 'warning') {
+        toastIcon.setAttribute('data-lucide', 'alert-triangle');
+        toastIcon.style.color = '#f59e0b';
+        toast.style.borderColor = '#f59e0b';
+      } else {
+        toastIcon.setAttribute('data-lucide', 'check-circle');
+        toastIcon.style.color = 'var(--success)';
+        toast.style.borderColor = 'var(--primary)';
+      }
+      
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4000);
+    }
+
     function showCustomAlert(message, title = 'Notificación', icon = 'info') {
       return new Promise((resolve) => {
         const modal = document.getElementById('custom-modal');

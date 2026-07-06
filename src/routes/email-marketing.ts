@@ -136,12 +136,23 @@ router.post('/campaigns', async (req: Request, res: Response): Promise<void> => 
     const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
     const baseUrl = `${protocol}://${host}`;
 
+    // Obtener lista de emails desuscritos
+    const { data: unsubscribedRecords } = await supabase
+      .from('email_unsubscribes')
+      .select('email');
+
+    const unsubscribedEmails = new Set(
+      (unsubscribedRecords || []).map((u: any) => u.email.trim().toLowerCase())
+    );
+
     // 2. Procesar destinatarios
     let sentCount = 0;
     let failedCount = 0;
 
     for (const r of recipients) {
       if (!r.email) continue;
+      const cleanEmail = r.email.trim().toLowerCase();
+      const isUnsubscribed = unsubscribedEmails.has(cleanEmail);
 
       try {
         // Guardar destinatario en la base de datos
@@ -149,10 +160,10 @@ router.post('/campaigns', async (req: Request, res: Response): Promise<void> => 
           .from('email_campaign_recipients')
           .insert({
             campaign_id: campaign.id,
-            email: r.email.trim().toLowerCase(),
+            email: cleanEmail,
             name: r.name || null,
             recipient_type: r.type || 'manual',
-            status: 'sent'
+            status: isUnsubscribed ? 'unsubscribed' : 'sent'
           })
           .select()
           .single();
@@ -160,6 +171,12 @@ router.post('/campaigns', async (req: Request, res: Response): Promise<void> => 
         if (rErr || !recipientRecord) {
           console.error(`[Email Marketing] Error al insertar destinatario ${r.email}:`, rErr);
           failedCount++;
+          continue;
+        }
+
+        // Si está desuscrito, no enviamos y pasamos al siguiente
+        if (isUnsubscribed) {
+          console.log(`[Email Marketing] Omitiendo envío a dirección desuscrita: ${cleanEmail}`);
           continue;
         }
 
@@ -300,7 +317,7 @@ function buildHtmlFromTemplate(templateId: string, subject: string, bodyText: st
                 <span style="font-weight: 800; font-size: 0.75rem; color: #ffffff;">Receptia AI</span>
               </div>
             </div>
-            <p style="margin: 0; font-size: 0.8rem; color: #9ca3af; line-height: 1.5;">Este mensaje fue enviado por el sistema de marketing inteligente de Corandar.<br>© 2026 Corandar S.L. Todos los derechos reservados.</p>
+            <p style="margin: 0; font-size: 0.8rem; color: #9ca3af; line-height: 1.5;">Este mensaje fue enviado por el sistema de marketing inteligente de Corandar.<br>© 2026 Corandar S.L. Todos los derechos reservados.<br><span style="font-size: 0.75rem; color: #9ca3af;">Si no deseas recibir más correos de este tipo, puedes desuscribirte haciendo clic <a href="${baseUrl}/api/public/email-campaigns/unsubscribe/${recipientId}" target="_blank" style="color: #6b7280; text-decoration: underline;">aquí</a>.</span></p>
           </div>
 
         </div>
@@ -354,7 +371,7 @@ function buildHtmlFromTemplate(templateId: string, subject: string, bodyText: st
                 <span style="font-weight: 800; font-size: 0.75rem; color: #d1d5db;">Receptia Admin</span>
               </div>
             </div>
-            <p style="margin: 0; font-size: 0.75rem; color: #6b7280; line-height: 1.5;">Este es un comunicado comercial enviado por Receptia Inc.<br>Para asegurar la entrega, añade soporte@corandar.com a tu libreta de direcciones.</p>
+            <p style="margin: 0; font-size: 0.75rem; color: #6b7280; line-height: 1.5;">Este es un comunicado comercial enviado por Receptia Inc.<br>Para asegurar la entrega, añade soporte@corandar.com a tu libreta de direcciones.<br><span style="font-size: 0.7rem; color: #6b7280;">Si no deseas recibir más correos de este tipo, puedes desuscribirte haciendo clic <a href="${baseUrl}/api/public/email-campaigns/unsubscribe/${recipientId}" target="_blank" style="color: #4b5563; text-decoration: underline;">aquí</a>.</span></p>
           </div>
 
         </div>
@@ -396,7 +413,7 @@ function buildHtmlFromTemplate(templateId: string, subject: string, bodyText: st
 
           <!-- Footer -->
           <div style="background-color: #f9fafb; padding: 1.5rem 2rem; border-top: 1px solid #f3f4f6; text-align: center;">
-            <p style="margin: 0; font-size: 0.75rem; color: #9ca3af; line-height: 1.5;">© 2026 Receptia S.L. Todos los derechos reservados.</p>
+            <p style="margin: 0; font-size: 0.75rem; color: #9ca3af; line-height: 1.5;">© 2026 Receptia S.L. Todos los derechos reservados.<br><span style="font-size: 0.7rem; color: #9ca3af;">Si no deseas recibir más correos de este tipo, puedes desuscribirte haciendo clic <a href="${baseUrl}/api/public/email-campaigns/unsubscribe/${recipientId}" target="_blank" style="color: #6b7280; text-decoration: underline;">aquí</a>.</span></p>
           </div>
 
         </div>
