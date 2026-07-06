@@ -7834,12 +7834,10 @@
           throw new Error(errRes.error || 'Error al guardar los ajustes.');
         }
 
-        // Si se han modificado las credenciales del admin, actualizar en sessionStorage/localStorage
-        const newUserEl = document.getElementById('setting-admin-user');
+        // Si se ha modificado la contraseña del admin y no es la enmascarada, actualizar en sessionStorage/localStorage
         const newPassEl = document.getElementById('setting-admin-pass');
-        if (newUserEl && newPassEl && newUserEl.value.trim() !== '' && newPassEl.value.trim() !== '') {
-          const rawCreds = `${newUserEl.value.trim()}:${newPassEl.value}`;
-          const newToken = btoa(unescape(encodeURIComponent(rawCreds)));
+        if (newPassEl && newPassEl.value.trim() !== '' && !newPassEl.value.includes('••••')) {
+          const newToken = newPassEl.value.trim();
           sessionStorage.setItem('admin_token', newToken);
           if (localStorage.getItem('admin_token')) {
             localStorage.setItem('admin_token', newToken);
