@@ -362,297 +362,81 @@ ${globalKnowledge && globalKnowledge.trim() !== '' ? `\n# DIRECTIVAS GENERALES D
 }
 
 /**
- * Sincroniza la voz y el prompt del agente de Retell AI con los datos del inquilino guardados.
+ * Sincroniza la voz y el prompt del agente de ElevenLabs con los datos del inquilino guardados.
  */
 export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) {
   const agentId = tenant.retell_agent_id;
-  if (!agentId || agentId === 'YOUR_RETELL_AGENT_ID' || agentId.trim() === '') {
-    console.warn('⚠️ No se ha configurado retell_agent_id para el inquilino. Omitiendo sincronización con Retell AI.');
+  if (!agentId || agentId.trim() === '' || agentId === 'YOUR_RETELL_AGENT_ID') {
+    console.warn('⚠️ No se ha configurado agent_id para el inquilino. Omitiendo sincronización.');
     return;
   }
 
-  const apiKey = await getSettingVal('RETELL_API_KEY');
-  if (!apiKey || apiKey === 'YOUR_RETELL_API_KEY' || apiKey.trim() === '') {
-    console.warn('⚠️ RETELL_API_KEY no configurada. Omitiendo sincronización con Retell AI.');
+  const elevenApiKey = await getSettingVal('ELEVENLABS_API_KEY') || process.env.ELEVENLABS_API_KEY;
+  if (!elevenApiKey || elevenApiKey.trim() === '') {
+    console.warn('⚠️ ELEVENLABS_API_KEY no configurada. Omitiendo sincronización con ElevenLabs.');
     return;
   }
 
   try {
-    console.log(`\n🔄 Sincronizando Retell AI para ${tenant.email} (Agente: ${agentId})...`);
+    console.log(`\n🔄 Sincronizando ElevenLabs para ${tenant.email} (Agente: ${agentId})...`);
 
-    // 1. Obtener el agente existente para extraer el llm_id y tipo
-    const agentRes = await retellClient.get(`/get-agent/${agentId}`);
-    const responseEngine = agentRes.data.response_engine;
-    const llmId = responseEngine?.llm_id;
-    if (responseEngine?.type === 'retell-llm' && llmId) {
-      // 2. Compilar el prompt dinámico y actualizar el LLM de Retell
-      const globalKnowledge = await getSettingVal('global_ai_knowledge') || '';
-      const systemPrompt = compileSystemPrompt(tenant, globalKnowledge);
-      console.log(`⚙️ Actualizando el LLM ${llmId} con el prompt personalizado y herramientas...`);
-      let tools: any[] = [];
-      try {
-        tools = [
-          {
-            type: 'end_call',
-            name: 'end_call',
-            description: 'Finaliza y cuelga la llamada telefónica con el usuario. Ejecútalo únicamente después de despedirte formalmente del cliente.'
-          },
-          {
-            type: 'custom',
-            name: 'consultar_disponibilidad',
-            description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
-            url: `${webhookBaseUrl}/api/webhook/get-availability?tenant_id=${tenant.id}`,
-            parameters: {
-              type: 'object',
-              properties: {
-                date: {
-                  type: 'string',
-                  description: 'La fecha para la cual se desea consultar la disponibilidad en formato YYYY-MM-DD.',
-                },
-                specialty: {
-                  type: 'string',
-                  description: 'El servicio, especialidad o descripción de las personas que asistirán a la cita (ej. corte de caballero y dos niños) para calcular correctamente la duración.',
-                }
-              },
-              required: ['date'],
-            },
-          },
-          {
-            type: 'custom',
-            name: 'crear_cita',
-            description: 'Reserva una cita en el calendario tras confirmar los datos con el paciente/cliente.',
-            url: `${webhookBaseUrl}/api/webhook/book-appointment?tenant_id=${tenant.id}`,
-            parameters: {
-              type: 'object',
-              properties: {
-                date: {
-                  type: 'string',
-                  description: 'La fecha de la cita en formato YYYY-MM-DD.',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Nombre y apellidos completos del paciente/cliente.',
-                },
-                specialty: {
-                  type: 'string',
-                  description: 'Servicio o especialidad solicitada.',
-                },
-                time: {
-                  type: 'string',
-                  description: 'La hora seleccionada por el paciente en formato HH:MM (ej. 09:30).',
-                },
-                phone: {
-                  type: 'string',
-                  description: 'Número de teléfono de contacto.',
-                },
-                email: {
-                  type: 'string',
-                  description: 'Dirección de correo electrónico del paciente/cliente.',
-                }
-              },
-              required: ['date', 'time', 'name', 'phone', 'specialty'],
-            },
-          },
-          {
-            type: 'custom',
-            name: 'cancelar_cita',
-            description: 'Cancela y elimina una cita existente en el calendario.',
-            url: `${webhookBaseUrl}/api/webhook/cancel-appointment?tenant_id=${tenant.id}`,
-            parameters: {
-              type: 'object',
-              properties: {
-                date: {
-                  type: 'string',
-                  description: 'La fecha de la cita que se desea cancelar en formato YYYY-MM-DD.',
-                },
-                phone: {
-                  type: 'string',
-                  description: 'El número de teléfono de contacto del cliente.',
-                },
-                email: {
-                  type: 'string',
-                  description: 'El correo electrónico del cliente.',
-                },
-                time: {
-                  type: 'string',
-                  description: 'La hora de la cita que se desea cancelar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
-                }
-              },
-              required: ['date', 'phone'],
-            },
-          },
-          {
-            type: 'custom',
-            name: 'reprogramar_cita',
-            description: 'Reprograma o modifica la fecha y hora de una cita existente a una nueva fecha y hora.',
-            url: `${webhookBaseUrl}/api/webhook/reschedule-appointment?tenant_id=${tenant.id}`,
-            parameters: {
-              type: 'object',
-              properties: {
-                original_date: {
-                  type: 'string',
-                  description: 'La fecha actual original de la cita que se quiere cambiar en formato YYYY-MM-DD.',
-                },
-                new_date: {
-                  type: 'string',
-                  description: 'La nueva fecha deseada para la cita en formato YYYY-MM-DD.',
-                },
-                new_time: {
-                  type: 'string',
-                  description: 'La nueva hora deseada para la cita en formato HH:MM.',
-                },
-                phone: {
-                  type: 'string',
-                  description: 'El número de teléfono de contacto del cliente.',
-                },
-                email: {
-                  type: 'string',
-                  description: 'El correo electrónico del cliente.',
-                },
-                original_time: {
-                  type: 'string',
-                  description: 'La hora original de la cita que se desea cambiar en formato HH:MM (opcional, útil si hay varias citas el mismo día).'
-                }
-              },
-              required: ['original_date', 'new_date', 'new_time', 'phone'],
-            },
-          },
-          {
-            type: 'custom',
-            name: 'verificar_pago',
-            description: 'Verifica si el cliente ya ha completado el pago de la fianza por Stripe para confirmar la cita.',
-            url: `${webhookBaseUrl}/api/webhook/verify-payment?tenant_id=${tenant.id}`,
-            parameters: {
-              type: 'object',
-              properties: {
-                phone: {
-                  type: 'string',
-                  description: 'El número de teléfono del cliente (facilita el mismo número desde el que llama).'
-                }
-              },
-              required: ['phone']
-            }
-          },
-          {
-            type: 'custom',
-            name: 'obtener_recuerdos_cliente',
-            description: 'Recupera silenciosamente un historial de resúmenes de las llamadas previas que ha realizado este cliente en los últimos 7 días.',
-            url: `${webhookBaseUrl}/api/webhook/obtener-recuerdo-cliente?tenant_id=${tenant.id}`,
-            parameters: {
-              type: 'object',
-              properties: {
-                phone: {
-                  type: 'string',
-                  description: 'El número de teléfono del cliente para buscar sus recuerdos (opcional, el backend resolverá el número de la llamada automáticamente si no se envía).'
-                }
-              }
-            }
-          }
-        ];
+    const globalKnowledge = await getSettingVal('global_ai_knowledge') || '';
+    const systemPrompt = compileSystemPrompt(tenant, globalKnowledge);
 
-        if (tenant.transfer_phone_number && tenant.transfer_phone_number.trim() !== '') {
-          tools.push({
-            type: 'transfer_call',
-            name: 'transferir_llamada_encargado',
-            description: 'Transfiere la llamada de forma inmediata al gerente o encargado humano del negocio. Utilízalo si el cliente pide hablar con un humano, si la consulta está fuera de tu base de conocimiento, o si estás confundido y no puedes dar una respuesta correcta.',
-            transfer_destination: {
-              type: 'predefined',
-              number: formatE164(tenant.transfer_phone_number.trim())
-            },
-            transfer_option: {
-              type: 'cold_transfer'
-            }
-          });
-        }
-
-        await retellClient.patch(`/update-retell-llm/${llmId}`, {
-          general_prompt: systemPrompt,
-          model: 'gpt-4o',
-          general_tools: tools
-        });
-        console.log('✅ Prompt y herramientas del LLM de Retell AI actualizados.');
-      } catch (llmErr: any) {
-        const errStatus = llmErr.response?.status;
-        const errMsg = llmErr.response?.data?.message || llmErr.message || '';
-        if (errStatus === 422 || errStatus === 400 || errMsg.includes('published') || errMsg.includes('Cannot update published')) {
-          console.warn(`⚠️ El LLM ${llmId} está asociado a un agente publicado y es inmutable. Creando un nuevo LLM y re-asociándolo al agente...`);
-          try {
-            const llmRes = await retellClient.post('/create-retell-llm', {
-              general_prompt: systemPrompt,
-              model: 'gpt-4o',
-              general_tools: tools
-            });
-            const newLlmId = llmRes.data.llm_id;
-            console.log(`✅ Nuevo LLM creado con ID: ${newLlmId}`);
-
-            await retellClient.patch(`/update-agent/${agentId}`, {
-              response_engine: {
-                type: 'retell-llm',
-                llm_id: newLlmId
-              }
-            });
-            console.log('✅ Agente de Retell AI actualizado exitosamente con el nuevo LLM.');
-          } catch (createErr: any) {
-            console.error('❌ Error al recrear LLM o re-asociar al agente:', createErr.response?.data || createErr.message);
-            throw createErr;
-          }
-        } else {
-          throw llmErr;
-        }
-      }
-    } else {
-      console.log(`ℹ️ El agente ${agentId} es de tipo "${responseEngine?.type || 'desconocido'}" (no utiliza Retell LLM dinámico). Omitiendo actualización del prompt.`);
+    let firstMessage = `${tenant.business_name}, ¿en qué le puedo ayudar?`;
+    if (tenant.business_name.includes('Demostraciones')) {
+      firstMessage = 'Hola, estás llamando al Departamento de Demostraciones de Receptia. ¿De qué negocio te gustaría escuchar la demostración hoy?';
+    } else if (tenant.business_name.includes('Atención al Cliente')) {
+      firstMessage = 'Hola, bienvenido al canal de atención al cliente de Receptia. ¿En qué puedo ayudarte hoy?';
     }
 
-    // 3. Actualizar la configuración del Agente (Voz y Webhook)
-    console.log(`⚙️ Actualizando el agente ${agentId} (Voz: ${tenant.voice_id})...`);
-    
-    // Configurar la URL de eventos del webhook
-    const cleanWebhookBase = webhookBaseUrl.endsWith('/') ? webhookBaseUrl.slice(0, -1) : webhookBaseUrl;
-    const agentPayload: any = {
-      webhook_url: `${cleanWebhookBase}/api/webhook/agent-events`,
-      reminder_max_count: 0,
+    const agentPayload = {
+      name: tenant.business_name,
+      conversation_config: {
+        agent: {
+          first_message: firstMessage,
+          prompt: {
+            prompt: systemPrompt
+          },
+          voice: {
+            voice_id: tenant.voice_id || 'ERYLdjEaddaiN9sDjaMX',
+            speed: tenant.personality_speed !== undefined ? Number(tenant.personality_speed) : (tenant.voice_speed !== undefined ? Number(tenant.voice_speed) : 1.09),
+            stability: tenant.voice_temperature !== undefined ? Math.max(0, Math.min(1, Number(tenant.voice_temperature) * 0.4)) : 0.40,
+            similarity_boost: 0.85
+          }
+        }
+      }
     };
 
-    const requestedVoiceId = formatVoiceId(tenant.voice_id);
-    if (requestedVoiceId && !requestedVoiceId.startsWith('custom_voice_')) {
-      agentPayload.voice_id = requestedVoiceId;
-    }
-
-    if (tenant.personality_speed !== undefined && tenant.personality_speed !== null) {
-      agentPayload.voice_speed = Number(tenant.personality_speed);
-    } else if (tenant.voice_speed !== undefined && tenant.voice_speed !== null) {
-      agentPayload.voice_speed = Number(tenant.voice_speed);
-    }
-    if (tenant.voice_temperature !== undefined && tenant.voice_temperature !== null) {
-      agentPayload.voice_temperature = Number(tenant.voice_temperature);
-    }
-    if (tenant.voice_responsiveness !== undefined && tenant.voice_responsiveness !== null) {
-      agentPayload.responsiveness = Number(tenant.voice_responsiveness);
-    } else {
-      agentPayload.responsiveness = 1.0;
-    }
-    agentPayload.interruption_sensitivity = 0.8;
-
+    // Obtener la configuración actual del agente de ElevenLabs para no perder sus tool_ids
     try {
-      await retellClient.patch(`/update-agent/${agentId}`, agentPayload);
-    } catch (patchErr: any) {
-      const errStatus = patchErr.response?.status;
-      const errMsg = patchErr.response?.data?.message || patchErr.message || '';
+      const getAgentRes = await axios.get(`https://api.elevenlabs.io/v1/convai/agents/${agentId}`, {
+        headers: { 'xi-api-key': elevenApiKey }
+      });
+      const currentTools = getAgentRes.data.conversation_config?.agent?.prompt?.tool_ids || [];
       
-      if (errStatus === 404 && requestedVoiceId && requestedVoiceId !== 'cartesia-Sofia') {
-        console.warn(`⚠️ La voz "${requestedVoiceId}" no existe en Retell AI. Reintentando con voz por defecto (cartesia-Sofia)...`);
-        agentPayload.voice_id = 'cartesia-Sofia';
-        await retellClient.patch(`/update-agent/${agentId}`, agentPayload);
-      } else if (errStatus === 422 || errStatus === 400 || errMsg.includes('published') || errMsg.includes('Cannot update published')) {
-        throw new Error('El agente está publicado en Retell AI y es inmutable. Para aplicar los cambios de voz, despublícalo o crea un borrador en el panel de Retell AI.');
-      } else {
-        throw patchErr;
+      // Combinar tool_ids y built_in_tools
+      if (agentPayload.conversation_config.agent.prompt) {
+        (agentPayload.conversation_config.agent.prompt as any).tool_ids = currentTools;
+        (agentPayload.conversation_config.agent.prompt as any).built_in_tools = getAgentRes.data.conversation_config?.agent?.prompt?.built_in_tools || {
+          end_call: { name: 'end_call' },
+          transfer_to_number: { name: 'transfer_to_number' }
+        };
       }
+    } catch (getErr: any) {
+      console.warn(`Could not fetch agent details for mapping tool_ids:`, getErr.message);
     }
-    console.log('✅ Agente de Retell AI actualizado exitosamente.');
+
+    await axios.patch(`https://api.elevenlabs.io/v1/convai/agents/${agentId}`, agentPayload, {
+      headers: { 
+        'xi-api-key': elevenApiKey,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('✅ Agente de ElevenLabs sincronizado y actualizado exitosamente.');
   } catch (error: any) {
-    console.error('❌ Error al sincronizar con Retell AI:', error.response?.data || error.message);
+    console.error('❌ Error al sincronizar con ElevenLabs:', error.response?.data || error.message);
     throw error;
   }
 }

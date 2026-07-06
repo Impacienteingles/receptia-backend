@@ -1275,4 +1275,64 @@ router.post('/elevenlabs-events', async (req: Request, res: Response): Promise<v
   }
 });
 
+/**
+ * Webhook para que ElevenLabs consulte el número de teléfono virtual de un negocio por su nombre.
+ */
+router.post('/get-business-phone', async (req: Request, res: Response): Promise<void> => {
+  const businessNameInput = req.body.business_name || req.body.args?.business_name || '';
+  console.log(`[Webhook get-business-phone] Buscando teléfono para: "${businessNameInput}"`);
+
+  if (!businessNameInput || typeof businessNameInput !== 'string' || businessNameInput.trim() === '') {
+    res.json({ error: 'El nombre del negocio no fue especificado.' });
+    return;
+  }
+
+  try {
+    const cleanSearch = businessNameInput.trim().toLowerCase();
+
+    // Consultar todos los tenants para hacer una comparación de texto flexible (fuzzy/includes)
+    const { data: tenants, error } = await supabase
+      .from('tenants')
+      .select('id, business_name, phone_number');
+
+    if (error || !tenants) {
+      throw new Error(error?.message || 'No se pudieron consultar los inquilinos.');
+    }
+
+    // Buscar coincidencia flexible
+    const matchedTenant = tenants.find(t => {
+      const name = (t.business_name || '').toLowerCase();
+      // Comparación bidireccional de subcadena
+      return name.includes(cleanSearch) || cleanSearch.includes(name);
+    });
+
+    if (!matchedTenant) {
+      console.warn(`[Webhook get-business-phone] No se encontró coincidencia para: "${businessNameInput}"`);
+      res.json({ error: 'Negocio no encontrado o no tiene demostración disponible.' });
+      return;
+    }
+
+    // Buscar su teléfono virtual asignado en virtual_phones
+    const { data: vpData } = await supabase
+      .from('virtual_phones')
+      .select('phone_number')
+      .eq('tenant_id', matchedTenant.id)
+      .maybeSingle();
+
+    const finalPhone = vpData?.phone_number || matchedTenant.phone_number;
+
+    if (!finalPhone) {
+      console.warn(`[Webhook get-business-phone] El negocio "${matchedTenant.business_name}" no tiene teléfono configurado.`);
+      res.json({ error: 'El negocio no tiene un número de teléfono configurado para demostraciones.' });
+      return;
+    }
+
+    console.log(`[Webhook get-business-phone] Coincidencia encontrada: "${matchedTenant.business_name}" -> Teléfono: ${finalPhone}`);
+    res.json({ phone_number: finalPhone, business_name: matchedTenant.business_name });
+  } catch (err: any) {
+    console.error('Error en /get-business-phone:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

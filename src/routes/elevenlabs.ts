@@ -72,7 +72,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
     });
     
     const existingTools = listRes.data.tools || [];
-    const targetToolNames = ['consultar_disponibilidad', 'crear_cita', 'cancelar_cita', 'reprogramar_cita'];
+    const targetToolNames = ['consultar_disponibilidad', 'crear_cita', 'cancelar_cita', 'reprogramar_cita', 'obtener_telefono_negocio'];
     
     for (const tool of existingTools) {
       const toolName = tool.tool_config?.name;
@@ -179,6 +179,25 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
             }
           }
         }
+      },
+      {
+        tool_config: {
+          type: 'webhook',
+          name: 'obtener_telefono_negocio',
+          description: 'Busca el número de teléfono virtual de un negocio por su nombre para poder transferirle la llamada.',
+          api_schema: {
+            url: `${webhookBaseUrl}/api/webhook/get-business-phone?tenant_id=${tenantId}`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            request_body_schema: {
+              type: 'object',
+              properties: {
+                business_name: { type: 'string', description: 'El nombre del negocio del que se desea buscar el teléfono o demostración.' }
+              },
+              required: ['business_name']
+            }
+          }
+        }
       }
     ];
 
@@ -198,16 +217,24 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
     let agentId = tenant.retell_agent_id;
     let isNewAgent = false;
 
+    let firstMessage = `${tenant.business_name}, ¿en qué le puedo ayudar?`;
+    if (tenant.business_name.includes('Demostraciones')) {
+      firstMessage = 'Hola, estás llamando al Departamento de Demostraciones de Receptia. ¿De qué negocio te gustaría escuchar la demostración hoy?';
+    } else if (tenant.business_name.includes('Atención al Cliente')) {
+      firstMessage = 'Hola, bienvenido al canal de atención al cliente de Receptia. ¿En qué puedo ayudarte hoy?';
+    }
+
     const agentPayload = {
       name: tenant.business_name,
       conversation_config: {
         agent: {
-          first_message: `${tenant.business_name}, ¿en qué le puedo ayudar?`,
+          first_message: firstMessage,
           prompt: {
             prompt: systemPrompt,
             tool_ids: toolIds,
             built_in_tools: {
-              end_call: { name: 'end_call' }
+              end_call: { name: 'end_call' },
+              transfer_to_number: { name: 'transfer_to_number' }
             }
           },
           voice: {
