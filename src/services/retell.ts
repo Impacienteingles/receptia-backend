@@ -144,7 +144,13 @@ No intentes dar citas ni responder preguntas sobre precios o servicios. Limítat
   const description = tenant.business_description || 'Ofrecemos la mejor atención profesional y personalizada.';
   const pricing = tenant.pricing_details || 'Consulta nuestras tarifas con recepción.';
   const customInst = tenant.custom_instructions || 'Tratar siempre al paciente de usted, con empatía y profesionalidad.';
-  const agentName = resolveAgentName(tenant.voice_id);
+  
+  // Extraer nombre del agente de las instrucciones personalizadas si se especifica (ej. "Eres Laura, la asistente...")
+  let agentName = resolveAgentName(tenant.voice_id);
+  const nameMatch = customInst.match(/Eres\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)/);
+  if (nameMatch && nameMatch[1]) {
+    agentName = nameMatch[1];
+  }
 
   // Formatear el horario comercial para el prompt
   let workingHoursText = '';
