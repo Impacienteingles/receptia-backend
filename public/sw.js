@@ -1,25 +1,24 @@
-const CACHE_NAME = 'receptia-admin-v1';
-const urlsToCache = [
-  '/admin.html',
-  '/receptia_logo.png'
-];
-
 self.addEventListener('install', event => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => {
+      return self.registration.unregister();
+    }).then(() => {
+      return self.clients.claim();
+    })
   );
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
-  );
+  // Always fetch directly from network, never cache
+  return fetch(event.request);
 });
