@@ -316,6 +316,7 @@ async function setupElevenLabs(tenantId: string) {
 
 async function main() {
   const newTenants = [
+    { id: '62d1ed82-287c-4329-941b-50b578c15b14', name: 'Peluquería Carlos Romero' },
     { id: '22222222-2222-2222-2222-222222222222', name: 'Peluquería Duo Peluqueros' },
     { id: '33333333-3333-3333-3333-333333333333', name: 'Peluquería La Niña de los Peines' },
     { id: '44444444-4444-4444-4444-444444444444', name: 'Caravaning Plaza' },

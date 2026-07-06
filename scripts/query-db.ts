@@ -1,16 +1,17 @@
 import { supabase } from '../src/services/supabase';
 
 async function run() {
-  const { data: tenants, error: tErr } = await supabase
+  const { data: tenant, error: tErr } = await supabase
     .from('tenants')
     .select('*')
-    .limit(1);
+    .eq('id', '62d1ed82-287c-4329-941b-50b578c15b14')
+    .single();
   
   if (tErr) {
-    console.error('Error fetching tenants:', tErr);
+    console.error('Error fetching tenant:', tErr);
   } else {
-    console.log('--- TENANTS ---');
-    console.log(JSON.stringify(tenants, null, 2));
+    console.log('--- CARLOS ROMERO TENANT ---');
+    console.log(JSON.stringify(tenant, null, 2));
   }
 
   const { data: phones, error: pErr } = await supabase

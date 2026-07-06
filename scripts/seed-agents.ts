@@ -7,8 +7,10 @@ async function seed() {
   console.log('Updating Demostración agent...');
   const { error: errDemo } = await supabase
     .from('tenants')
-    .update({
+    .upsert({
+      id: 'd1180213-8036-4acd-a6de-3e3287ba73dc',
       business_name: 'Receptia Departamento de Demostraciones',
+      email: 'demo@receptia.ai',
       business_description: 'Departamento de Demostraciones de Receptia. Atiende a futuros clientes para mostrarles cómo funcionan los recepcionistas virtuales por IA de Receptia.',
       pricing_details: 'Demostración gratuita de 5 minutos.',
       custom_instructions: 'Preséntate siempre como asistente virtual del departamento de demostraciones de Receptia. Pregunta al usuario el nombre del negocio del que desea escuchar la demostración. Usa la herramienta "obtener_telefono_negocio" para obtener el número de teléfono virtual del negocio solicitado. Si la herramienta devuelve un número de teléfono, dile al usuario de forma muy amable "Perfecto, te voy a transferir ahora mismo con el agente de [nombre del negocio] para que escuches su demostración" y llama inmediatamente a la herramienta del sistema "transfer_to_number" pasándole el número devuelto. Si la herramienta no encuentra el negocio o no devuelve ningún número, indícale amablemente que en este momento solo tenemos disponible la demostración de "Peluquería Carlos Romero". Ofrécete a transferirle a esa demostración.',
@@ -23,8 +25,7 @@ async function seed() {
         sunday: [{ start: '00:00', end: '23:59' }],
         apply_break_rule: false
       }
-    })
-    .eq('id', 'd1180213-8036-4acd-a6de-3e3287ba73dc');
+    }, { onConflict: 'id' });
 
   if (errDemo) {
     console.error('Error updating Demostración:', errDemo);
