@@ -9348,6 +9348,9 @@
             <button class="btn btn-secondary" onclick="copyClientLinkToClipboard('${tenant.id}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: var(--primary-hover); border-color: rgba(139, 92, 246, 0.3);" title="Copiar enlace de acceso">
               <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Enlace
             </button>
+            <button class="btn btn-secondary" onclick="emergencyAccessToClient('${tenant.id}')" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);" title="Acceso de urgencia al panel de cliente">
+              <i data-lucide="shield-alert" style="width: 13px; height: 13px;"></i> Urgencia
+            </button>
             ${suspendBtn}
             <button class="btn btn-secondary" onclick="openArchiveConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.3rem 0.5rem; font-size: 0.75rem; height: auto; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="Archivar cliente">
               <i data-lucide="archive" style="width: 13px; height: 13px;"></i> Archivar
@@ -9401,6 +9404,12 @@
       }
       document.body.removeChild(tempInput);
     }
+
+    window.emergencyAccessToClient = function(tenantId) {
+      const token = sessionStorage.getItem('admin_token') || localStorage.getItem('admin_token') || '';
+      const url = `/?tenant_id=${tenantId}&bypass_pin=true&admin_token=${encodeURIComponent(token)}`;
+      window.open(url, '_blank');
+    };
 
     // =====================================================================
     // GESTIÓN DEL CICLO DE VIDA DE CLIENTES
