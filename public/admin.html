@@ -3130,10 +3130,10 @@
             </div>
 
             <!-- Contenedor de dos columnas para registro manual y listado -->
-            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 290px 1fr; gap: 2rem; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
               
               <!-- Formulario de Transacción Manual -->
-              <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div style="display: flex; flex-direction: column; gap: 1rem; width: 290px; max-width: 100%;">
                 <h3 style="font-size: 1.1rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;" id="transaction-form-title">
                   <i data-lucide="plus-circle" style="color: var(--primary);"></i>
                   Registrar Transacción Manual
@@ -3155,7 +3155,7 @@
                   
                   <div class="form-group">
                     <label for="trans-amount">Importe (€):</label>
-                    <input type="number" id="trans-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                    <input type="number" id="trans-amount" step="0.01" placeholder="0.00" required>
                   </div>
                   
                   <div class="form-group">
@@ -3182,6 +3182,9 @@
                     Transacciones Extraordinarias
                   </h3>
                   <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="printAccountingReport()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; color: var(--primary-light); border-color: rgba(139, 92, 246, 0.2); display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(139, 92, 246, 0.1); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'" onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'">
+                      <i data-lucide="printer" style="width: 14px; height: 14px;"></i> Imprimir PDF
+                    </button>
                     <button type="button" id="btn-delete-selected-transactions" class="btn btn-secondary" onclick="deleteSelectedTransactions()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; color: var(--error); border-color: rgba(239, 68, 68, 0.2); display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.1); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
                       <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Eliminar Seleccionadas (<span id="selected-transactions-count">0</span>)
                     </button>
@@ -3992,21 +3995,7 @@
               </div>
             </div>
 
-            <!-- AUDITOR DE PROMPTS Y AGENTES -->
-            <div style="background: rgba(139, 92, 246, 0.03); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap;">
-              <div style="flex: 1; min-width: 280px;">
-                <h4 style="color: #fff; font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                  <i data-lucide="cpu" style="color: var(--primary-light);"></i>
-                  Auditoría y Afinamiento de Prompts de Voz
-                </h4>
-                <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4;">
-                  El agente inteligente puede analizar las conversaciones previas (tabla de recuerdos) y reescribir de forma autónoma las instrucciones del sistema en Retell AI para solucionar objeciones o malentendidos de la IA de voz.
-                </p>
-              </div>
-              <button class="btn" onclick="triggerVoicePromptAudit()" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);">
-                <i data-lucide="eye"></i> Auditar Prompts de Retell
-              </button>
-            </div>
+
           </div>
         </div>
 
@@ -9531,6 +9520,137 @@
         grid.style.pointerEvents = isLocked ? 'none' : 'auto';
         grid.style.opacity = isLocked ? '0.4' : '1';
       }
+    }
+
+    function printAccountingReport() {
+      const mrrVal = document.getElementById('metric-mrr').innerText;
+      const totalIncomeVal = document.getElementById('metric-total-income').innerText;
+      const totalExpensesVal = document.getElementById('metric-total-expenses').innerText;
+      const netProfitVal = document.getElementById('metric-net-profit').innerText;
+
+      let transRowsHtml = '';
+      allTransactions.forEach(t => {
+        const formattedDate = t.date || '';
+        const formattedConcept = t.concept || '';
+        const formattedAmount = (Number(t.amount) || 0).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+        const formattedType = t.type === 'income' ? 'Ingreso 🟢' : 'Gasto 🔴';
+        transRowsHtml += `
+          <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedDate}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedConcept}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold; color: \${t.type === 'income' ? '#10B981' : '#EF4444'}">\${formattedAmount}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedType}</td>
+          </tr>
+        `;
+      });
+
+      let recurrentRowsHtml = '';
+      const activeTenants = allTenants.filter(t => t.subscription_status === 'active');
+      activeTenants.forEach(t => {
+        const formattedBusiness = t.business_name || t.email;
+        const formattedPlan = t.plan_id || 'Básico';
+        const formattedAmount = (Number(t.price_amount) || 0).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+        const formattedCycle = t.billing_cycle === 'annually' ? 'Anual' : 'Mensual';
+        const formattedDate = t.created_at ? new Date(t.created_at).toLocaleDateString('es-ES') : '-';
+        recurrentRowsHtml += `
+          <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedBusiness}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedPlan}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold; color: #10B981">\${formattedAmount}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedCycle}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">\${formattedDate}</td>
+          </tr>
+        `;
+      });
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(\`
+        <html>
+          <head>
+            <title>Informe de Contabilidad - Receptia</title>
+            <style>
+              body { font-family: 'Arial', sans-serif; color: #333; margin: 40px; }
+              .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #8b5cf6; padding-bottom: 20px; margin-bottom: 30px; }
+              .header h1 { margin: 0; font-size: 24px; color: #8b5cf6; }
+              .header .date { font-size: 14px; color: #666; }
+              .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 40px; }
+              .metric-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; text-align: center; background: #f8fafc; }
+              .metric-label { font-size: 12px; color: #64748b; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
+              .metric-val { font-size: 18px; font-weight: bold; color: #0f172a; }
+              h2 { font-size: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px; color: #1e293b; }
+              table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px; }
+              th { text-align: left; background: #f1f5f9; padding: 8px; font-weight: bold; border-bottom: 2px solid #cbd5e1; }
+              tr:nth-child(even) { background: #f8fafc; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>Receptia - Informe Financiero</h1>
+              <span class="date">Fecha de Emisión: \${new Date().toLocaleDateString('es-ES')}</span>
+            </div>
+            
+            <div class="metrics">
+              <div class="metric-box">
+                <div class="metric-label">MRR (Mensual)</div>
+                <div class="metric-val">\${mrrVal}</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-label">Ingresos Totales</div>
+                <div class="metric-val" style="color: #10B981;">\${totalIncomeVal}</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-label">Gastos Totales</div>
+                <div class="metric-val" style="color: #EF4444;">\${totalExpensesVal}</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-label">Beneficio Neto</div>
+                <div class="metric-val">\${netProfitVal}</div>
+              </div>
+            </div>
+
+            <h2>Ingresos Recurrentes por Clientes SaaS</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente / Negocio</th>
+                  <th>Plan</th>
+                  <th>Importe</th>
+                  <th>Ciclo</th>
+                  <th>Fecha Alta</th>
+                </tr>
+              </thead>
+              <tbody>
+                \${recurrentRowsHtml || '<tr><td colspan="5" style="text-align: center; color: #666; padding: 10px;">No hay cobros recurrentes activos.</td></tr>'}
+              </tbody>
+            </table>
+
+            <h2>Transacciones Extraordinarias (Manuales)</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Concepto</th>
+                  <th>Importe</th>
+                  <th>Tipo</th>
+                </tr>
+              </thead>
+              <tbody>
+                \${transRowsHtml || '<tr><td colspan="4" style="text-align: center; color: #666; padding: 10px;">No hay transacciones registradas.</td></tr>'}
+              </tbody>
+            </table>
+
+            <script>
+              window.onload = function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
+                };
+              };
+            </script>
+          </body>
+        </html>
+      \`);
+      printWindow.document.close();
     }
 
     async function saveManualTransaction(e) {
@@ -15942,13 +16062,7 @@
       }
     }
 
-    function triggerVoicePromptAudit() {
-      showProgressModal('Analizando llamadas recientes...', 'El Agente de Auditoría de Prompts está revisando las conversaciones fallidas y la base de recuerdos en Supabase para redactar sugerencias automáticas de mejora...');
-      setTimeout(() => {
-        closeProgressModal();
-        showCustomAlert('Auditoría Finalizada', 'El agente analizó las llamadas recientes. Los prompts activos de los agentes conversacionales en Retell AI ya se encuentran 100% afinados y actualizados con las directrices más óptimas de negocio.', 'success');
-      }, 3000);
-    }
+
 
     // --- GESTIÓN DE PROMOCIONES Y REFERIDOS (ADMIN) ---
     function switchPromoSubtab(subtabName) {
