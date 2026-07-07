@@ -1823,7 +1823,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.9.44</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.9.45</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2051,7 +2051,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.9.44</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.9.45</span>
       </div>
     </aside>
 
@@ -2074,7 +2074,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.44</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.45</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2785,38 +2785,33 @@
                 <input type="text" id="client-search" placeholder="Buscar cliente por negocio, email o número de teléfono..." style="flex: 1;" oninput="filterClientsTable()">
               </div>
 
-              <div class="table-responsive">
-                <table>
-                  <thead>
-                    <tr>
-                      <th onclick="sortClients('business_name')" style="cursor: pointer; user-select: none; white-space: nowrap;">
-                        Negocio <span id="sort-icon-business_name" style="color: rgba(255,255,255,0.2);">↕</span>
-                      </th>
-                      <th onclick="sortClients('email')" style="cursor: pointer; user-select: none; white-space: nowrap;">
-                        Email <span id="sort-icon-email" style="color: rgba(255,255,255,0.2);">↕</span>
-                      </th>
-                      <th onclick="sortClients('phone_number')" style="cursor: pointer; user-select: none; white-space: nowrap;">
-                        Teléfono / SIP <span id="sort-icon-phone_number" style="color: rgba(255,255,255,0.2);">↕</span>
-                      </th>
-                      <th onclick="sortClients('subscription_plan')" style="cursor: pointer; user-select: none; white-space: nowrap;">
-                        Plan <span id="sort-icon-subscription_plan" style="color: rgba(255,255,255,0.2);">↕</span>
-                      </th>
-                      <th onclick="sortClients('contract_start_date')" style="cursor: pointer; user-select: none; white-space: nowrap;">
-                        Alta <span id="sort-icon-contract_start_date" style="color: rgba(255,255,255,0.2);">↕</span>
-                      </th>
-                      <th onclick="sortClients('subscription_status')" style="cursor: pointer; user-select: none; white-space: nowrap;">
-                        Estado <span id="sort-icon-subscription_status" style="color: rgba(255,255,255,0.2);">↕</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody id="clients-tbody">
-                    <tr>
-                      <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        Cargando base de clientes de Supabase...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <!-- Cabecera de Ordenación (Horizontal) -->
+              <div style="display: grid; grid-template-columns: 2fr 2fr 1.5fr 1fr 1fr 1fr; gap: 1rem; padding: 0.75rem 1.25rem; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border-color); margin-bottom: 0.5rem; box-sizing: border-box;">
+                <div onclick="sortClients('business_name')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                  Negocio <span id="sort-icon-business_name" style="color: rgba(255,255,255,0.2);">↕</span>
+                </div>
+                <div onclick="sortClients('email')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                  Email <span id="sort-icon-email" style="color: rgba(255,255,255,0.2);">↕</span>
+                </div>
+                <div onclick="sortClients('phone_number')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                  Teléfono / SIP <span id="sort-icon-phone_number" style="color: rgba(255,255,255,0.2);">↕</span>
+                </div>
+                <div onclick="sortClients('subscription_plan')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                  Plan <span id="sort-icon-subscription_plan" style="color: rgba(255,255,255,0.2);">↕</span>
+                </div>
+                <div onclick="sortClients('contract_start_date')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                  Alta <span id="sort-icon-contract_start_date" style="color: rgba(255,255,255,0.2);">↕</span>
+                </div>
+                <div onclick="sortClients('subscription_status')" style="cursor: pointer; user-select: none; white-space: nowrap;">
+                  Estado <span id="sort-icon-subscription_status" style="color: rgba(255,255,255,0.2);">↕</span>
+                </div>
+              </div>
+
+              <!-- Listado de Tarjetas Horizontales -->
+              <div id="clients-cards-container" style="display: flex; flex-direction: column; gap: 1rem; min-height: 200px;">
+                <div style="text-align: center; color: var(--text-muted); padding: 2rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid var(--border-color);">
+                  Cargando base de clientes de Supabase...
+                </div>
               </div>
             </div>
 
@@ -10579,8 +10574,8 @@
 
     // Renderizar la tabla de base de clientes
     function renderClientsTable(filteredData = null) {
-      const tbody = document.getElementById('clients-tbody');
-      tbody.innerHTML = '';
+      const container = document.getElementById('clients-cards-container');
+      container.innerHTML = '';
       
       let tenantsList = [...(filteredData || allTenants)];
 
@@ -10606,13 +10601,17 @@
       updateSortHeaderUI();
 
       if (tenantsList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No se encontraron clientes registrados.</td></tr>`;
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid var(--border-color);">No se encontraron clientes registrados.</div>`;
         return;
       }
 
       tenantsList.forEach(tenant => {
-        const row = document.createElement('tr');
-        
+        // Si el nombre contiene Receptia (insensible a mayúsculas), el fondo es gris oscuro
+        const isReceptia = tenant.business_name.toLowerCase().includes('receptia');
+        const cardBg = isReceptia 
+          ? 'background: rgba(100, 110, 120, 0.25); border: 1px solid rgba(140, 140, 140, 0.4);' 
+          : 'background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);';
+
         // Estado badge
         let statusBadge = `<span class="badge badge-success">Activo 🟢</span>`;
         if (tenant.subscription_status === 'paused') {
@@ -10647,51 +10646,62 @@
              </button>`
           : '';
 
-        row.innerHTML = `
-          <td style="font-weight: 600; color: #fff; border-bottom: none;">${tenant.business_name}</td>
-          <td style="border-bottom: none;">${tenant.email}</td>
-          <td style="font-family: monospace; border-bottom: none;">${tenant.phone_number || 'No asignado'}</td>
-          <td style="border-bottom: none;">${tenant.subscription_plan || 'Estándar'}</td>
-          <td style="border-bottom: none;">${dateStr}</td>
-          <td style="border-bottom: none;">${statusBadge}</td>
-        `;
-        tbody.appendChild(row);
+        const card = document.createElement('div');
+        card.style.cssText = `${cardBg} border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; transition: transform 0.2s, box-shadow 0.2s; box-sizing: border-box;`;
+        
+        // Add hover effect
+        card.onmouseover = () => {
+          card.style.transform = 'translateY(-2px)';
+          card.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
+        };
+        card.onmouseout = () => {
+          card.style.transform = 'translateY(0)';
+          card.style.boxShadow = 'none';
+        };
 
-        const actionRow = document.createElement('tr');
-        actionRow.innerHTML = `
-          <td colspan="6" style="padding-top: 0.2rem; padding-bottom: 0.75rem;">
-            <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; width: 100%;">
-              <button class="btn btn-secondary" onclick="loadTenantToEdit('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; flex-shrink: 0;">
-                <i data-lucide="edit-3" style="width: 12px; height: 12px;"></i> Editar
-              </button>
-              <button class="btn btn-secondary" onclick="duplicateTenant('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #34d399; border-color: rgba(52, 211, 153, 0.3); flex-shrink: 0;" title="Duplicar ficha de cliente">
-                <i data-lucide="copy" style="width: 12px; height: 12px;"></i> Duplicar
-              </button>
-              <button class="btn btn-secondary" onclick="copyClientLinkToClipboard('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: var(--primary-hover); border-color: rgba(139, 92, 246, 0.3); flex-shrink: 0;" title="Copiar enlace de acceso">
-                <i data-lucide="link" style="width: 12px; height: 12px;"></i> Enlace
-              </button>
-              <button class="btn btn-secondary" onclick="emergencyAccessToClient('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); flex-shrink: 0;" title="Acceso de urgencia al panel de cliente">
-                <i data-lucide="shield-alert" style="width: 12px; height: 12px;"></i> Urgencia
-              </button>
-              ${suspendBtn}
-              ${reactivateTrialBtn}
-              <button class="btn btn-secondary" onclick="openArchiveConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #ef4444; border-color: rgba(239, 68, 68, 0.3); flex-shrink: 0;" title="Archivar cliente">
-                <i data-lucide="archive" style="width: 12px; height: 12px;"></i> Archivar
-              </button>
-              ${tenant.signed_contract_content ? `
-              <button class="btn btn-secondary" onclick="downloadClientContractPDFDirect('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; flex-shrink: 0;">
-                <i data-lucide="download" style="width: 12px; height: 12px;"></i> Contrato
-              </button>
-              ` : ''}
-              ${tenant.retell_agent_id ? `
-              <button class="btn" onclick="window.startWebRTCCall('${tenant.retell_agent_id}', '${tenant.business_name.replace(/'/g,"\\'")}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%); height: auto; border: none; box-shadow: none; flex-shrink: 0;">
-                <i data-lucide="phone" style="width: 12px; height: 12px;"></i> Probar IA
-              </button>
-              ` : ''}
-            </div>
-          </td>
+        card.innerHTML = `
+          <!-- Fila superior de detalles horizontales -->
+          <div style="display: grid; grid-template-columns: 2fr 2fr 1.5fr 1fr 1fr 1fr; gap: 1rem; align-items: center; width: 100%;">
+            <div style="font-weight: 700; color: #fff; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${tenant.business_name}">${tenant.business_name}</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${tenant.email}">${tenant.email}</div>
+            <div style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">${tenant.phone_number || 'No asignado'}</div>
+            <div style="font-size: 0.85rem; color: #fff;">${tenant.subscription_plan || 'Estándar'}</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">${dateStr}</div>
+            <div>${statusBadge}</div>
+          </div>
+          
+          <!-- Fila inferior de acciones -->
+          <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; justify-content: flex-start; margin-top: 0.25rem; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.5rem; width: 100%;">
+            <button class="btn btn-secondary" onclick="loadTenantToEdit('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; flex-shrink: 0;">
+              <i data-lucide="edit-3" style="width: 12px; height: 12px;"></i> Editar
+            </button>
+            <button class="btn btn-secondary" onclick="duplicateTenant('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #34d399; border-color: rgba(52, 211, 153, 0.3); flex-shrink: 0;" title="Duplicar ficha de cliente">
+              <i data-lucide="copy" style="width: 12px; height: 12px;"></i> Duplicar
+            </button>
+            <button class="btn btn-secondary" onclick="copyClientLinkToClipboard('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: var(--primary-hover); border-color: rgba(139, 92, 246, 0.3); flex-shrink: 0;" title="Copiar enlace de acceso">
+              <i data-lucide="link" style="width: 12px; height: 12px;"></i> Enlace
+            </button>
+            <button class="btn btn-secondary" onclick="emergencyAccessToClient('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); flex-shrink: 0;" title="Acceso de urgencia al panel de cliente">
+              <i data-lucide="shield-alert" style="width: 12px; height: 12px;"></i> Urgencia
+            </button>
+            ${suspendBtn}
+            ${reactivateTrialBtn}
+            <button class="btn btn-secondary" onclick="openArchiveConfirm('${tenant.id}', '${tenant.business_name.replace(/'/g,"\\'")}', this)" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; color: #ef4444; border-color: rgba(239, 68, 68, 0.3); flex-shrink: 0;" title="Archivar cliente">
+              <i data-lucide="archive" style="width: 12px; height: 12px;"></i> Archivar
+            </button>
+            ${tenant.signed_contract_content ? `
+            <button class="btn btn-secondary" onclick="downloadClientContractPDFDirect('${tenant.id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; height: auto; flex-shrink: 0;">
+              <i data-lucide="download" style="width: 12px; height: 12px;"></i> Contrato
+            </button>
+            ` : ''}
+            ${tenant.retell_agent_id ? `
+            <button class="btn" onclick="window.startWebRTCCall('${tenant.retell_agent_id}', '${tenant.business_name.replace(/'/g,"\\'")}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.25rem 0.45rem; font-size: 0.7rem; background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%); height: auto; border: none; box-shadow: none; flex-shrink: 0;">
+              <i data-lucide="phone" style="width: 12px; height: 12px;"></i> Probar IA
+            </button>
+            ` : ''}
+          </div>
         `;
-        tbody.appendChild(actionRow);
+        container.appendChild(card);
       });
       lucide.createIcons();
     }
