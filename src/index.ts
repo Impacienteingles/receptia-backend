@@ -5224,21 +5224,43 @@ app.post('/api/admin/sync-retell', async (req, res): Promise<void> => {
   }
 });
 
-// POST: Crear un nuevo agente en ElevenLabs en caliente para un cliente existente
+// POST: Crear un nuevo agente en Retell AI en caliente para un cliente existente
 app.post('/api/admin/tenants/:id/create-retell-agent', async (req, res): Promise<void> => {
   const { id } = req.params;
   try {
-    const host = req.get('host') || 'localhost:3000';
-    const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
-    const url = `${protocol}://${host}/api/admin/elevenlabs/tenants/${id}/setup-elevenlabs`;
-    
-    console.log(`[Hot Provisioning] Delegando creación/configuración de ElevenLabs para tenant: ${id} a ${url}`);
-    
-    const { data: setupRes } = await axios.post(url);
-    res.json({ success: true, agent_id: setupRes.agent_id });
+    const { data: tenant, error } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !tenant) {
+      res.status(404).json({ error: 'Inquilino no encontrado.' });
+      return;
+    }
+
+    let webhookBaseUrl = process.env.WEBHOOK_BASE_URL;
+    if (!webhookBaseUrl) {
+      const host = req.get('host') || '';
+      const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https';
+      webhookBaseUrl = `${protocol}://${host}`;
+    }
+
+    console.log(`[Hot Provisioning] Creando nuevo agente en Retell AI para ${tenant.email} (UUID: ${id})...`);
+    const agentId = await createRetellAgentForTenant(tenant, webhookBaseUrl);
+
+    // Actualizar retell_agent_id en Supabase
+    const { error: dbErr } = await supabase
+      .from('tenants')
+      .update({ retell_agent_id: agentId })
+      .eq('id', id);
+
+    if (dbErr) throw dbErr;
+
+    res.json({ success: true, agent_id: agentId });
   } catch (err: any) {
-    console.error('Error al crear agente en ElevenLabs:', err.response?.data || err.message);
-    res.status(500).json({ error: err.response?.data?.error || err.message });
+    console.error('Error al crear agente en Retell:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -5502,28 +5524,30 @@ app.post('/api/admin/test-agent-call', async (req, res): Promise<void> => {
     return;
   }
   try {
-    const apiKey = await getSettingVal('ELEVENLABS_API_KEY') || process.env.ELEVENLABS_API_KEY;
-    if (!apiKey || apiKey === 'YOUR_ELEVENLABS_API_KEY' || apiKey.trim() === '') {
-      res.status(400).json({ error: 'La clave ELEVENLABS_API_KEY no está configurada. Por favor, añádela en la pestaña de Ajustes.' });
+    const apiKey = await getSettingVal('RETELL_API_KEY') || process.env.RETELL_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_RETELL_API_KEY' || apiKey.trim() === '') {
+      res.status(400).json({ error: 'La clave RETELL_API_KEY no está configurada. Por favor, añádela en la pestaña de Ajustes.' });
       return;
     }
     
-    console.log(`[Test Call] Solicitando signed URL de ElevenLabs para el agente: ${agent_id}...`);
-    const response = await axios.get(
-      `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agent_id}`,
+    console.log(`[Test Call] Solicitando web call token a Retell para el agente: ${agent_id}...`);
+    const response = await axios.post(
+      'https://api.retellai.com/v2/create-web-call',
+      { agent_id: agent_id },
       {
         headers: {
-          'xi-api-key': apiKey
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
         }
       }
     );
     
-    if (!response.data || !response.data.signed_url) {
-      throw new Error('No se recibió la URL firmada de ElevenLabs.');
+    if (!response.data || !response.data.access_token) {
+      throw new Error('No se recibió el access_token de Retell AI.');
     }
     
     res.json({
-      signed_url: response.data.signed_url
+      access_token: response.data.access_token
     });
   } catch (err: any) {
     console.error('Error al iniciar llamada de prueba:', err.response?.data || err.message);
@@ -5591,28 +5615,30 @@ app.post('/api/client/test-agent-call', async (req, res): Promise<void> => {
       }
     }
 
-    const apiKey = await getSettingVal('ELEVENLABS_API_KEY') || process.env.ELEVENLABS_API_KEY;
-    if (!apiKey || apiKey === 'YOUR_ELEVENLABS_API_KEY' || apiKey.trim() === '') {
-      res.status(400).json({ error: 'La clave de ElevenLabs no está configurada.' });
+    const apiKey = await getSettingVal('RETELL_API_KEY') || process.env.RETELL_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_RETELL_API_KEY' || apiKey.trim() === '') {
+      res.status(400).json({ error: 'La clave de Retell AI no está configurada.' });
       return;
     }
 
-    console.log(`[Client Test Call] Solicitando signed URL de ElevenLabs para el agente: ${tenant.retell_agent_id}...`);
-    const response = await axios.get(
-      `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${tenant.retell_agent_id}`,
+    console.log(`[Client Test Call] Solicitando web call token a Retell para el agente: ${tenant.retell_agent_id}...`);
+    const response = await axios.post(
+      'https://api.retellai.com/v2/create-web-call',
+      { agent_id: tenant.retell_agent_id },
       {
         headers: {
-          'xi-api-key': apiKey
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
         }
       }
     );
 
-    if (!response.data || !response.data.signed_url) {
-      throw new Error('No se recibió la URL firmada de ElevenLabs.');
+    if (!response.data || !response.data.access_token) {
+      throw new Error('No se recibió el access_token de Retell AI.');
     }
 
     res.json({
-      signed_url: response.data.signed_url,
+      access_token: response.data.access_token,
       demo_calls_count: isTrial && tenant.demo_calls_count !== undefined ? nextCount : undefined
     });
   } catch (err: any) {

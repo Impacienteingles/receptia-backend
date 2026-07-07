@@ -1887,7 +1887,7 @@
       <h2 style="color: #fff; font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem 0;">Consola de Administración</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Inicia sesión con tus credenciales de administrador para continuar.
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.9.50</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.0</span>
       </p>
       
       <form id="admin-gate-form" onsubmit="handleAdminGateSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
@@ -2115,7 +2115,7 @@
       <div class="sidebar-copyright" style="margin-top: auto; padding: 0.75rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
         Desarrollado por <a href="https://corandar.com" target="_blank" style="color: var(--primary-hover); text-decoration: none; font-weight: 600;">© Corandar 2026</a>
         <br>
-        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.9.50</span>
+        <span style="font-size: 0.65rem; opacity: 0.8; display: block; margin-top: 0.25rem;">Admin v1.0.0</span>
       </div>
     </aside>
 
@@ -2138,7 +2138,7 @@
             <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
             <span>Master Admin</span>
           </div>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.50</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.0</span>
           <button onclick="handleAdminLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -2430,11 +2430,11 @@
                 </div>
 
                 <div class="form-group" id="agent-id-group">
-                  <label for="retell-agent-id">ID de Agente ElevenLabs:</label>
+                  <label for="retell-agent-id">ID de Agente Retell AI:</label>
                   <div style="display: flex; gap: 0.5rem; align-items: center;">
                     <input type="text" id="retell-agent-id" placeholder="Autogenerado al crear o introduce ID existente" style="flex: 1; padding: 0.8rem;">
                     <button type="button" class="btn btn-secondary" id="btn-provision-retell-agent" onclick="handleProvisionRetellAgentButton()" style="padding: 0.8rem 1rem; display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap; background: rgba(139, 92, 246, 0.15); color: var(--primary-hover); border: 1px solid rgba(139, 92, 246, 0.3);">
-                      <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Crear en ElevenLabs
+                      <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Crear en Retell AI
                     </button>
                     <button type="button" class="btn" id="btn-test-webrtc-call" onclick="startWebRTCCallFromForm()" style="padding: 0.8rem 1rem; display: none; white-space: nowrap; align-items: center; gap: 0.25rem; background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%);">
                       <i data-lucide="phone" style="width: 16px; height: 16px;"></i> Probar
@@ -8884,7 +8884,7 @@
     async function handleProvisionRetellAgentButton() {
       // 1. Validar que tengamos un cliente seleccionado
       if (!editingTenantId) {
-        showCustomAlert('Por favor, registra y guarda primero el cliente antes de aprovisionar su Agente de ElevenLabs en caliente.', 'Cliente no Guardado', 'warning');
+        showCustomAlert('Por favor, registra y guarda primero el cliente antes de aprovisionar su Agente de Retell AI en caliente.', 'Cliente no Guardado', 'warning');
         return;
       }
 
@@ -8892,7 +8892,7 @@
       const currentAgentId = document.getElementById('retell-agent-id').value.trim();
       if (currentAgentId && currentAgentId !== 'YOUR_RETELL_AGENT_ID' && !currentAgentId.includes('default_retell_id') && currentAgentId.trim() !== '') {
         const confirmResult = await new Promise((resolve) => {
-          const ok = confirm(`Este cliente ya tiene un Agente de ElevenLabs asignado (${currentAgentId}).\n\nSi creas uno nuevo, se reemplazará y se desvinculará del anterior en Receptia.\n\n¿Estás seguro de que deseas continuar?`);
+          const ok = confirm(`Este cliente ya tiene un Agente de Retell AI asignado (${currentAgentId}).\n\nSi creas uno nuevo, se reemplazará y se desvinculará del anterior en Receptia.\n\n¿Estás seguro de que deseas continuar?`);
           resolve(ok);
         });
         if (!confirmResult) return;
@@ -8938,7 +8938,7 @@
           btnTestCall.style.display = 'flex';
         }
 
-        showCustomAlert('El Agente de Voz y su LLM se han creado exitosamente en tu cuenta de ElevenLabs y se han vinculado a este cliente.', 'Agente Creado', 'success');
+        showCustomAlert('El Agente de Voz y su LLM se han creado exitosamente en tu cuenta de Retell AI y se han vinculado a este cliente.', 'Agente Creado', 'success');
         
         // Recargar los datos de los clientes en segundo plano
         if (typeof fetchTenants === 'function') {
@@ -16870,18 +16870,18 @@
     };
   </script>
 
-  <!-- Carga del SDK de ElevenLabs y lógica de WebRTC -->
+  <!-- Carga del SDK de Retell y lógica de WebRTC -->
   <script type="module">
-    import { Conversation } from 'https://cdn.jsdelivr.net/npm/@elevenlabs/client/+esm';
+    import { RetellWebClient } from 'https://cdn.jsdelivr.net/npm/retell-client-js-sdk/+esm';
 
-    let conversationInstance = null;
+    let sdkClient = null;
     let callTimer = null;
     let callSeconds = 0;
 
     // Exponer las funciones al objeto global window
     window.startWebRTCCall = async function(agentId, clientName) {
       if (!agentId || agentId === 'YOUR_RETELL_AGENT_ID' || agentId.trim() === '') {
-        showCustomAlert('Este cliente no tiene un ID de agente de ElevenLabs asignado.', 'Sin Agente', 'warning');
+        showCustomAlert('Este cliente no tiene un ID de agente de Retell AI asignado.', 'Sin Agente', 'warning');
         return;
       }
 
@@ -16916,7 +16916,7 @@
         statusText.innerText = 'Conectando micrófono...';
         await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        // 2. Obtener signed URL para ElevenLabs
+        // 2. Obtener token ephemeral de llamada web
         const response = await fetch('/api/admin/test-agent-call', {
           method: 'POST',
           headers: {
@@ -16927,47 +16927,54 @@
 
         if (!response.ok) {
           const errRes = await response.json();
-          throw new Error(errRes.error || 'No se pudo obtener la URL firmada de la llamada.');
+          throw new Error(errRes.error || 'No se pudo obtener el token de llamada.');
         }
 
         const data = await response.json();
-        const signed_url = data.signed_url;
+        const access_token = data.access_token;
 
-        // 3. Inicializar e iniciar el SDK
-        statusText.innerText = 'Conectando con ElevenLabs...';
-        conversationInstance = await Conversation.startSession({
-          signedUrl: signed_url,
-          onConnect: ({ conversationId }) => {
-            console.log('[WebRTC] Conectado con conversación:', conversationId);
-            statusText.innerText = 'Llamada Activa (Habla con la IA)';
-            statusText.style.color = 'var(--success)';
-            
-            pulseRing1.classList.add('active');
-            pulseRing2.classList.add('active');
-            micBg.classList.add('active');
+        // 3. Inicializar el SDK
+        sdkClient = new RetellWebClient();
+        
+        // Registrar callbacks del SDK
+        sdkClient.on('call_started', () => {
+          console.log('[WebRTC] Llamada iniciada correctamente');
+          statusText.innerText = 'Llamada Activa (Habla con la IA)';
+          statusText.style.color = 'var(--success)';
+          
+          pulseRing1.classList.add('active');
+          pulseRing2.classList.add('active');
+          micBg.classList.add('active');
 
-            // Iniciar contador de duración
-            callSeconds = 0;
-            if (callTimer) clearInterval(callTimer);
-            callTimer = setInterval(() => {
-              callSeconds++;
-              const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-              const secs = String(callSeconds % 60).padStart(2, '0');
-              durationText.innerText = `${mins}:${secs}`;
-            }, 1000);
-          },
-          onDisconnect: () => {
-            console.log('[WebRTC] Desconectado');
-            statusText.innerText = 'Llamada Finalizada';
-            statusText.style.color = 'var(--text-muted)';
-            window.stopWebRTCCall(true); // limpia interfaz pero mantiene modal abierto brevemente
-          },
-          onError: (err) => {
-            console.error('[WebRTC] Error durante la llamada:', err);
-            statusText.innerText = 'Error en la llamada';
-            statusText.style.color = 'var(--error)';
-            window.stopWebRTCCall(true);
-          }
+          // Iniciar contador de duración
+          callSeconds = 0;
+          if (callTimer) clearInterval(callTimer);
+          callTimer = setInterval(() => {
+            callSeconds++;
+            const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+            const secs = String(callSeconds % 60).padStart(2, '0');
+            durationText.innerText = `${mins}:${secs}`;
+          }, 1000);
+        });
+
+        sdkClient.on('call_ended', () => {
+          console.log('[WebRTC] Llamada finalizada por el servidor');
+          statusText.innerText = 'Llamada Finalizada';
+          statusText.style.color = 'var(--text-muted)';
+          window.stopWebRTCCall(true); // limpia interfaz pero mantiene modal abierto brevemente
+        });
+
+        sdkClient.on('error', (err) => {
+          console.error('[WebRTC] Error durante la llamada:', err);
+          statusText.innerText = 'Error en la llamada';
+          statusText.style.color = 'var(--error)';
+          window.stopWebRTCCall(true);
+        });
+
+        // 4. Iniciar la llamada con el token
+        await sdkClient.startCall({
+          accessToken: access_token,
+          sampleRate: 24000
         });
 
       } catch (err) {
@@ -16987,7 +16994,7 @@
       }
     };
 
-    window.stopWebRTCCall = async function(keepModalOpen = false) {
+    window.stopWebRTCCall = function(keepModalOpen = false) {
       console.log('[WebRTC] Finalizando llamada...');
       
       if (callTimer) {
@@ -16995,13 +17002,13 @@
         callTimer = null;
       }
 
-      if (conversationInstance) {
+      if (sdkClient) {
         try {
-          await conversationInstance.endSession();
+          sdkClient.stopCall();
         } catch (e) {
           console.warn('[WebRTC] Error al parar llamada en SDK:', e);
         }
-        conversationInstance = null;
+        sdkClient = null;
       }
 
       const pulseRing1 = document.getElementById('webrtc-pulse-ring-1');

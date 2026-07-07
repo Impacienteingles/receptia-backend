@@ -1349,7 +1349,7 @@
       <img src="/receptia_logo.png" alt="Logo Receptia" style="width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Panel Protegido
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.9.50</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.0.0</span>
       </h3>
       <p id="pin-description" style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Por favor, introduce tu contraseña de acceso para gestionar tu agenda de citas.</p>
       
@@ -1958,7 +1958,7 @@
               <li><i data-lucide="check"></i> <strong>7 Días de Prueba Gratis</strong></li>
               <li><i data-lucide="check"></i> Todo lo del Plan Estándar</li>
               <li><i data-lucide="check"></i> Conexión SIP Zadarma avanzada</li>
-              <li><i data-lucide="check"></i> Soporte de Voz ElevenLabs de alta calidad</li>
+              <li><i data-lucide="check"></i> Soporte de Voz Retell AI de alta calidad</li>
               <li><i data-lucide="check"></i> Prompt e instrucciones optimizadas</li>
               <li><i data-lucide="check"></i> Hasta 500 minutos incluidos / mes</li>
               <li><i data-lucide="check"></i> Minuto adicional a 0.35€/min</li>
@@ -2500,7 +2500,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.50</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.0.0</span>
           <button onclick="handleClientLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -3133,17 +3133,16 @@
               <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%); border-color: rgba(139, 92, 246, 0.2);">
                 <h3 style="color: #fff; margin-top: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
                   <i data-lucide="sparkles" style="color: var(--primary-hover); width: 20px; height: 20px;"></i>
-                  Llamada de Prueba WebRTC (Sandbox)
+                  Llamada de Prueba (Sandbox)
                 </h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Llama y conversa directamente con tu asistente de voz IA desde el navegador para probar su comportamiento y afinar sus respuestas en tiempo real antes del uso telefónico. Dispones de un máximo de 5 llamadas de prueba, cada una con una duración límite de 2 minutos.
+                  Prueba tu asistente de voz IA para verificar su comportamiento y afinar sus respuestas en tiempo real antes del uso telefónico.
                 </p>
                  <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 1rem;">
                    <button class="btn" onclick="startClientWebRTCCall()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.85rem; height: 38px; border-radius: 8px; background: var(--primary); border: none; cursor: pointer; color: #fff;">
                      <i data-lucide="phone"></i>
                      Iniciar Llamada de Prueba
                    </button>
-                   <div id="demo-trials-count" style="display: none; font-size: 0.85rem; font-weight: 500;"></div>
                  </div>
               </div>
 
@@ -3212,7 +3211,7 @@
                   Clonación de Voz Express (Click & Clone)
                 </h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
-                  Clona tu propia voz o la de un locutor en sólo 30 segundos usando ElevenLabs. Puedes grabar directamente desde tu micrófono o subir un archivo de audio (.mp3 o .wav).
+                  Clona tu propia voz o la de un locutor en sólo 30 segundos usando Retell AI. Puedes grabar directamente desde tu micrófono o subir un archivo de audio (.mp3 o .wav).
                 </p>
                 
                 <div style="background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
@@ -6920,7 +6919,7 @@
     }
 
     // --- LLAMADA WEBRTC CLIENTE (SANDBOX) ---
-    let clientConversationInstance = null;
+    let clientRetellInstance = null;
     let clientCallTimer = null;
     let clientCallSeconds = 0;
     let clientCallWarningTimeout = null;
@@ -6960,9 +6959,9 @@
         // 1. Permiso micrófono
         await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        statusText.innerText = 'Iniciando conexión con ElevenLabs...';
+        statusText.innerText = 'Iniciando conexión con Retell AI...';
         
-        // 2. Obtener signed URL para ElevenLabs
+        // 2. Obtener token ephemeral para Retell AI
         const response = await fetch('/api/client/test-agent-call', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -6975,7 +6974,7 @@
         }
 
         const data = await response.json();
-        const signed_url = data.signed_url;
+        const access_token = data.access_token;
 
         if (data.demo_calls_count !== undefined && currentTenant) {
           currentTenant.demo_calls_count = data.demo_calls_count;
@@ -6997,62 +6996,69 @@
           }
         }
 
-        // 3. Cargar dinámicamente el SDK de ElevenLabs
-        const { Conversation } = await import('https://cdn.jsdelivr.net/npm/@elevenlabs/client/+esm');
+        // 3. Cargar dinámicamente el SDK de Retell
+        const { RetellWebClient } = await import('https://cdn.jsdelivr.net/npm/retell-client-js-sdk/+esm');
         
         statusText.innerText = 'Conectando...';
-        clientConversationInstance = await Conversation.startSession({
-          signedUrl: signed_url,
-          onConnect: ({ conversationId }) => {
-            console.log('[WebRTC Client] Llamada activa');
-            statusText.innerText = 'Llamada Activa (Habla con la IA)';
-            statusText.style.color = 'var(--success)';
-            
-            if (pulseRing1) pulseRing1.classList.add('active');
-            if (pulseRing2) pulseRing2.classList.add('active');
-            if (micBg) micBg.classList.add('active');
+        clientRetellInstance = new RetellWebClient();
+        
+        clientRetellInstance.on('call_started', () => {
+          console.log('[WebRTC Client] Llamada activa');
+          statusText.innerText = 'Llamada Activa (Habla con la IA)';
+          statusText.style.color = 'var(--success)';
+          
+          if (pulseRing1) pulseRing1.classList.add('active');
+          if (pulseRing2) pulseRing2.classList.add('active');
+          if (micBg) micBg.classList.add('active');
 
-            clientCallSeconds = 0;
-            if (clientCallTimer) clearInterval(clientCallTimer);
-            clientCallTimer = setInterval(() => {
-              clientCallSeconds++;
-              const mins = String(Math.floor(clientCallSeconds / 60)).padStart(2, '0');
-              const secs = String(clientCallSeconds % 60).padStart(2, '0');
-              durationText.innerText = `${mins}:${secs}`;
-            }, 1000);
+          clientCallSeconds = 0;
+          if (clientCallTimer) clearInterval(clientCallTimer);
+          clientCallTimer = setInterval(() => {
+            clientCallSeconds++;
+            const mins = String(Math.floor(clientCallSeconds / 60)).padStart(2, '0');
+            const secs = String(clientCallSeconds % 60).padStart(2, '0');
+            durationText.innerText = `${mins}:${secs}`;
+          }, 1000);
 
-            // Límite de 2 minutos (120s) para llamadas Sandbox
-            // A los 100 segundos (quedando 20s) se emite la advertencia por voz
-            clientCallWarningTimeout = setTimeout(() => {
-              console.log('[WebRTC Client] Reproduciendo advertencia de finalización de llamada...');
-              if ('speechSynthesis' in window) {
-                const msg = new SpeechSynthesisUtterance("Se está llegando al final de la llamada de prueba.");
-                msg.lang = "es-ES";
-                const voices = window.speechSynthesis.getVoices();
-                const esVoice = voices.find(v => v.lang.startsWith('es'));
-                if (esVoice) msg.voice = esVoice;
-                window.speechSynthesis.speak(msg);
-              }
-            }, 100000); // 100 segundos
-            
-            clientCallLimitTimeout = setTimeout(() => {
-              console.log('[WebRTC Client] Límite de 2 minutos alcanzado. Cortando llamada.');
-              showToast('Llamada de prueba finalizada por límite de tiempo de 2 minutos.', 'info');
-              stopClientWebRTCCall(true);
-            }, 120000); // 120 segundos
-          },
-          onDisconnect: () => {
-            console.log('[WebRTC Client] Llamada terminada');
-            statusText.innerText = 'Llamada Finalizada';
-            statusText.style.color = 'var(--text-muted)';
+          // Límite de 2 minutos (120s) para llamadas Sandbox
+          // A los 100 segundos (quedando 20s) se emite la advertencia por voz
+          clientCallWarningTimeout = setTimeout(() => {
+            console.log('[WebRTC Client] Reproduciendo advertencia de finalización de llamada...');
+            if ('speechSynthesis' in window) {
+              const msg = new SpeechSynthesisUtterance("Se está llegando al final de la llamada de prueba.");
+              msg.lang = "es-ES";
+              const voices = window.speechSynthesis.getVoices();
+              const esVoice = voices.find(v => v.lang.startsWith('es'));
+              if (esVoice) msg.voice = esVoice;
+              window.speechSynthesis.speak(msg);
+            }
+          }, 100000); // 100 segundos
+          
+          clientCallLimitTimeout = setTimeout(() => {
+            console.log('[WebRTC Client] Límite de 2 minutos alcanzado. Cortando llamada.');
+            showToast('Llamada de prueba finalizada por límite de tiempo de 2 minutos.', 'info');
             stopClientWebRTCCall(true);
-          },
-          onError: (err) => {
-            console.error('[WebRTC Client] Error:', err);
-            statusText.innerText = 'Error en la llamada';
-            statusText.style.color = 'var(--error)';
-            stopClientWebRTCCall(true);
-          }
+          }, 120000); // 120 segundos
+        });
+
+        clientRetellInstance.on('call_ended', () => {
+          console.log('[WebRTC Client] Llamada terminada por el servidor');
+          statusText.innerText = 'Llamada Finalizada';
+          statusText.style.color = 'var(--text-muted)';
+          stopClientWebRTCCall(true);
+        });
+
+        clientRetellInstance.on('error', (err) => {
+          console.error('[WebRTC Client] Error:', err);
+          statusText.innerText = 'Error en la llamada';
+          statusText.style.color = 'var(--error)';
+          stopClientWebRTCCall(true);
+        });
+
+        // 4. Iniciar llamada
+        await clientRetellInstance.startCall({
+          accessToken: access_token,
+          sampleRate: 24000
         });
 
       } catch (err) {
@@ -7089,9 +7095,9 @@
         clientCallLimitTimeout = null;
       }
 
-      if (clientConversationInstance) {
+      if (clientRetellInstance) {
         try {
-          await clientConversationInstance.endSession();
+          clientRetellInstance.stopCall();
         } catch (e) {
           console.warn('[WebRTC Client] Error al parar llamada:', e);
         }
@@ -7357,12 +7363,12 @@
 
         if (!tenant.admin_pin) {
           // No tiene contraseña, pedir establecer una nueva (registro inicial del cliente)
-          if (pinTitleEl) pinTitleEl.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.9.50</span>`;
+          if (pinTitleEl) pinTitleEl.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.0</span>`;
           if (pinDescriptionEl) pinDescriptionEl.innerText = 'Este es tu primer acceso. Crea una contraseña segura de al menos 8 caracteres para proteger tu panel de citas.';
           if (btnPinSubmitEl) btnPinSubmitEl.innerText = 'Establecer Contraseña y Entrar';
         } else {
           // Ya tiene contraseña, pedirla
-          if (pinTitleEl) pinTitleEl.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.9.50</span>`;
+          if (pinTitleEl) pinTitleEl.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.0.0</span>`;
           if (pinDescriptionEl) pinDescriptionEl.innerText = 'Introduce tu contraseña de acceso para autorizar el ingreso al panel.';
           if (btnPinSubmitEl) btnPinSubmitEl.innerText = 'Acceder al Panel';
         }
