@@ -64,7 +64,7 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
 
     // 2. Compile system prompt
     const globalKnowledge = await getSettingVal('global_ai_knowledge') || '';
-    const systemPrompt = compileSystemPrompt(tenant, globalKnowledge);
+    const systemPrompt = compileSystemPrompt(tenant, globalKnowledge, true);
 
     // 3. Clean up existing tools in ElevenLabs for this tenant only
     const listRes = await axios.get('https://api.elevenlabs.io/v1/convai/tools', {
@@ -325,8 +325,8 @@ router.post('/tenants/:id/setup-elevenlabs', async (req: Request, res: Response)
           similarity_boost: 0.85
         },
         turn: {
-          turn_timeout: 1,
-          turn_eagerness: 'eager'
+          turn_timeout: Math.max(1.0, computedTurnTimeout),
+          turn_eagerness: 'normal'
         },
         conversation: {
           client_events: [

@@ -85,7 +85,7 @@ export function resolveAgentName(voiceId: string): string {
 /**
  * Compila el prompt de sistema dinámico para un inquilino inyectando todos sus detalles de negocio.
  */
-export function compileSystemPrompt(tenant: any, globalKnowledge?: string): string {
+export function compileSystemPrompt(tenant: any, globalKnowledge?: string, isElevenLabs: boolean = false): string {
   if (tenant.id === 'd1180213-8036-4acd-a6de-3e3287ba73dc') {
     return `
 # ROL Y CONTEXTO
@@ -107,19 +107,22 @@ Debes comenzar la llamada saludando EXACTAMENTE de la siguiente manera:
 `;
   }
   if (tenant.id === '62d1ed82-287c-4329-941b-50b578c15b14') {
-    const madridTimeStr = new Intl.DateTimeFormat('es-ES', {
-      timeZone: 'Europe/Madrid',
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }).format(new Date());
-
     let customPrompt = tenant.custom_instructions || '';
-    customPrompt = customPrompt.replace(/\{\{current_time_Europe_Madrid\}\}/g, madridTimeStr);
+    if (isElevenLabs) {
+      customPrompt = customPrompt.replace(/\{\{current_time_Europe_Madrid\}\}/g, '{{system__time}}');
+    } else {
+      const madridTimeStr = new Intl.DateTimeFormat('es-ES', {
+        timeZone: 'Europe/Madrid',
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).format(new Date());
+      customPrompt = customPrompt.replace(/\{\{current_time_Europe_Madrid\}\}/g, madridTimeStr);
+    }
     return customPrompt;
   }
 
@@ -139,12 +142,14 @@ No intentes dar citas ni responder preguntas sobre precios o servicios. Limítat
 `;
   }
 
-  const todayISO = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Madrid',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
+  const todayISO = isElevenLabs
+    ? '{{system__time}}'
+    : new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Europe/Madrid',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(new Date());
 
   const options: Intl.DateTimeFormatOptions = {
     timeZone: 'Europe/Madrid',
@@ -156,7 +161,9 @@ No intentes dar citas ni responder preguntas sobre precios o servicios. Limítat
   const specialtiesList = tenant.specialties && tenant.specialties.length > 0
     ? tenant.specialties.join(', ')
     : 'Servicios Generales';
-  const todayFormatted = new Intl.DateTimeFormat('es-ES', options).format(new Date());
+  const todayFormatted = isElevenLabs
+    ? '{{system__time}}'
+    : new Intl.DateTimeFormat('es-ES', options).format(new Date());
 
   const description = tenant.business_description || 'Ofrecemos la mejor atención profesional y personalizada.';
   const pricing = tenant.pricing_details || 'Consulta nuestras tarifas con recepción.';
@@ -430,7 +437,7 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
     console.log(`\n🔄 Sincronizando ElevenLabs para ${tenant.email} (Agente: ${agentId})...`);
 
     const globalKnowledge = await getSettingVal('global_ai_knowledge') || '';
-    const systemPrompt = compileSystemPrompt(tenant, globalKnowledge);
+    const systemPrompt = compileSystemPrompt(tenant, globalKnowledge, true);
 
     let firstMessage = `${tenant.business_name}, ¿en qué le puedo ayudar?`;
     if (tenant.business_name.includes('Demostraciones')) {
@@ -472,8 +479,8 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
           similarity_boost: 0.85
         },
         turn: {
-          turn_timeout: computedTurnTimeout,
-          turn_eagerness: 'eager'
+          turn_timeout: Math.max(1.0, computedTurnTimeout),
+          turn_eagerness: 'normal'
         },
         conversation: {
           client_events: [
