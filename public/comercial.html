@@ -177,6 +177,39 @@
       color: #0f172a !important;
     }
 
+    /* Mantener verdes, rojos y amarillos/naranjas en métricas, tarjetas y contabilidad en modo claro */
+    [data-theme="light"] .metric-val[id="metric-total-income"],
+    [data-theme="light"] .metric-val[id="metric-converted-leads"],
+    [data-theme="light"] .metric-val[style*="10B981"],
+    [data-theme="light"] .metric-val[style*="10b981"],
+    [data-theme="light"] .metric-val[style*="success"],
+    [data-theme="light"] .metric-val[style*="059669"],
+    [data-theme="light"] *[style*="color: var(--success)"],
+    [data-theme="light"] *[style*="color:var(--success)"] {
+      color: #059669 !important;
+    }
+
+    [data-theme="light"] .metric-val[id="metric-total-expenses"],
+    [data-theme="light"] .metric-val[style*="EF4444"],
+    [data-theme="light"] .metric-val[style*="ef4444"],
+    [data-theme="light"] .metric-val[style*="error"],
+    [data-theme="light"] .metric-val[style*="dc2626"],
+    [data-theme="light"] *[style*="color: var(--error)"],
+    [data-theme="light"] *[style*="color:var(--error)"] {
+      color: #dc2626 !important;
+    }
+
+    [data-theme="light"] .metric-val[id="metric-pending-balance"],
+    [data-theme="light"] .metric-val[style*="f59e0b"],
+    [data-theme="light"] .metric-val[style*="F59E0B"],
+    [data-theme="light"] .metric-val[style*="warning"],
+    [data-theme="light"] *[style*="color: var(--warning)"],
+    [data-theme="light"] *[style*="color:var(--warning)"],
+    [data-theme="light"] *[style*="color: #f59e0b"],
+    [data-theme="light"] *[style*="color:#f59e0b"] {
+      color: #d97706 !important;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -742,7 +775,7 @@
           <img src="/receptia_logo.png" alt="Receptia Logo" style="width: 40px; height: 40px; border-radius: 8px;">
           <h2 style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif;">Receptia B2B</h2>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.9.49</span></p>
+        <p style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" id="login-welcome-text">Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.9.50</span></p>
       </div>
 
       <form id="login-form" novalidate onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem;">
@@ -785,7 +818,7 @@
       <div class="logo-container">
         <img src="/receptia_logo.png" alt="Receptia Logo">
         <span>Receptia Comercial</span>
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.9.49</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); margin-left: 0.75rem;">v1.9.50</span>
       </div>
 
       <div class="user-info">
@@ -1448,7 +1481,7 @@
 
     // Inicializar
     window.addEventListener('DOMContentLoaded', async () => {
-      console.log('[Receptia Comercial v1.9.49] Inicializando panel...');
+      console.log('[Receptia Comercial v1.9.50] Inicializando panel...');
       const urlParams = new URLSearchParams(window.location.search);
       currentAccessUrl = urlParams.get('c') || '';
       console.log('[Receptia] Token de acceso detectado:', currentAccessUrl ? `"${currentAccessUrl}"` : '(ninguno)');
@@ -1479,7 +1512,7 @@
               }
               const loginWelcome = document.getElementById('login-welcome-text');
               if (loginWelcome) {
-                loginWelcome.innerHTML = `Bienvenido, ${agent.name} <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.9.49</span>`;
+                loginWelcome.innerHTML = `Bienvenido, ${agent.name} <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.9.50</span>`;
               }
             } else {
               // Si la sesión activa ya coincide, entramos directo
@@ -1528,7 +1561,7 @@
       emailInput.disabled = false;
       emailInput.removeAttribute('disabled');
       emailInput.setAttribute('required', 'true');
-      loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.9.49</span>`;
+      loginWelcome.innerHTML = `Panel del Agente Comercial <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">v1.9.50</span>`;
       pinInput.value = '';
     }
 

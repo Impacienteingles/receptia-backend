@@ -204,6 +204,39 @@
       color: #0f172a !important;
     }
 
+    /* Mantener verdes, rojos y amarillos/naranjas en métricas, tarjetas y contabilidad en modo claro */
+    [data-theme="light"] .metric-val[id="metric-total-income"],
+    [data-theme="light"] .metric-val[id="metric-converted-leads"],
+    [data-theme="light"] .metric-val[style*="10B981"],
+    [data-theme="light"] .metric-val[style*="10b981"],
+    [data-theme="light"] .metric-val[style*="success"],
+    [data-theme="light"] .metric-val[style*="059669"],
+    [data-theme="light"] *[style*="color: var(--success)"],
+    [data-theme="light"] *[style*="color:var(--success)"] {
+      color: #059669 !important;
+    }
+
+    [data-theme="light"] .metric-val[id="metric-total-expenses"],
+    [data-theme="light"] .metric-val[style*="EF4444"],
+    [data-theme="light"] .metric-val[style*="ef4444"],
+    [data-theme="light"] .metric-val[style*="error"],
+    [data-theme="light"] .metric-val[style*="dc2626"],
+    [data-theme="light"] *[style*="color: var(--error)"],
+    [data-theme="light"] *[style*="color:var(--error)"] {
+      color: #dc2626 !important;
+    }
+
+    [data-theme="light"] .metric-val[id="metric-pending-balance"],
+    [data-theme="light"] .metric-val[style*="f59e0b"],
+    [data-theme="light"] .metric-val[style*="F59E0B"],
+    [data-theme="light"] .metric-val[style*="warning"],
+    [data-theme="light"] *[style*="color: var(--warning)"],
+    [data-theme="light"] *[style*="color:var(--warning)"],
+    [data-theme="light"] *[style*="color: #f59e0b"],
+    [data-theme="light"] *[style*="color:#f59e0b"] {
+      color: #d97706 !important;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -1316,7 +1349,7 @@
       <img src="/receptia_logo.png" alt="Logo Receptia" style="width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
       <h3 id="pin-title" style="color: #fff; font-size: 1.4rem; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
         Panel Protegido
-        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.9.49</span>
+        <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);">v1.9.50</span>
       </h3>
       <p id="pin-description" style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">Por favor, introduce tu contraseña de acceso para gestionar tu agenda de citas.</p>
       
@@ -2467,7 +2500,7 @@
           <button id="theme-toggle-btn" onclick="toggleTheme()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);" title="Cambiar tema">
             <i data-lucide="sun" id="theme-toggle-icon" style="width: 16px; height: 16px;"></i>
           </button>
-          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.49</span>
+          <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">v1.9.50</span>
           <button onclick="handleClientLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; cursor: pointer; padding: 0.4rem 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'" title="Cerrar sesión">
             <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
             <span>Salir</span>
@@ -7324,12 +7357,12 @@
 
         if (!tenant.admin_pin) {
           // No tiene contraseña, pedir establecer una nueva (registro inicial del cliente)
-          if (pinTitleEl) pinTitleEl.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.9.49</span>`;
+          if (pinTitleEl) pinTitleEl.innerHTML = `Establece tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.9.50</span>`;
           if (pinDescriptionEl) pinDescriptionEl.innerText = 'Este es tu primer acceso. Crea una contraseña segura de al menos 8 caracteres para proteger tu panel de citas.';
           if (btnPinSubmitEl) btnPinSubmitEl.innerText = 'Establecer Contraseña y Entrar';
         } else {
           // Ya tiene contraseña, pedirla
-          if (pinTitleEl) pinTitleEl.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.9.49</span>`;
+          if (pinTitleEl) pinTitleEl.innerHTML = `Introduce tu Contraseña <span style="font-family: monospace; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); margin-left: 0.5rem; vertical-align: middle;">v1.9.50</span>`;
           if (pinDescriptionEl) pinDescriptionEl.innerText = 'Introduce tu contraseña de acceso para autorizar el ingreso al panel.';
           if (btnPinSubmitEl) btnPinSubmitEl.innerText = 'Acceder al Panel';
         }
