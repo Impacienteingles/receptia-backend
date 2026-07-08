@@ -1080,7 +1080,22 @@ const callMutexes: { [callId: string]: Promise<void> } = {};
  */
 router.post('/agent-events', async (req: Request, res: Response): Promise<void> => {
   console.log('Webhook de evento de agente recibido:', JSON.stringify(req.body));
-  const { event, call } = req.body;
+  
+  // Guardar log de depuración en la base de datos Supabase
+  try {
+    await supabase.from('settings').upsert({
+      key: 'webhook_debug_last_log',
+      value: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        body: req.body,
+        headers: req.headers
+      })
+    }, { onConflict: 'key' });
+  } catch (dbErr: any) {
+    console.error('Error al guardar log de depuración en settings:', dbErr.message);
+  }
+
+  const { event, call } = req.body || {};
   
   if (event === 'call_analyzed' || event === 'call_ended') {
     const callId = call?.call_id;
