@@ -324,9 +324,25 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
       scheduleInfo = `El horario comercial para el ${dayNameEs} (${date}) es únicamente: ${shiftsStr}. Todo horario fuera de este rango está cerrado.`;
     }
 
+    const nowMadrid = new Date();
+    const madridDateStr = nowMadrid.toLocaleDateString('es-ES', {
+      timeZone: 'Europe/Madrid',
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    const madridTimeStr = nowMadrid.toLocaleTimeString('es-ES', {
+      timeZone: 'Europe/Madrid',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    const prefixInfo = `[INFO DE REFERENCIA TEMPORAL REAL: La fecha y hora exactas de este momento en España son: ${madridDateStr} a las ${madridTimeStr}]. `;
+
     const messageText = filteredSlots.length > 0 
-      ? `Los siguientes huecos están libres: ${filteredSlots.join(', ')}. Nota de Horario: ${scheduleInfo}`
-      : `No hay huecos disponibles en esta fecha. Nota de Horario: ${scheduleInfo}. Sugiere al paciente otra fecha.`;
+      ? `${prefixInfo}Los siguientes huecos están libres: ${filteredSlots.join(', ')}. Nota de Horario: ${scheduleInfo}`
+      : `${prefixInfo}No hay huecos disponibles en esta fecha. Nota de Horario: ${scheduleInfo}. Sugiere al paciente otra fecha.`;
 
     res.json({
       status: 'success',
