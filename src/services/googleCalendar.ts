@@ -295,8 +295,30 @@ export async function listFreeSlots(
     const slotEnd = slotStart + stepMs;
 
     // Evitar ofrecer huecos en el pasado para el día de hoy
-    if (slotStart < Date.now()) {
-      continue;
+    const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' });
+    if (dateStr === todayStr) {
+      const nowMadrid = new Date();
+      const madridTimeStr = nowMadrid.toLocaleTimeString('es-ES', {
+        timeZone: 'Europe/Madrid',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      const [nowH, nowM] = madridTimeStr.split(':').map(Number);
+      const nowMinutes = nowH * 60 + nowM;
+
+      const slotTimeStr = slot.toLocaleTimeString('es-ES', {
+        timeZone: 'Europe/Madrid',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      const [slotH, slotM] = slotTimeStr.split(':').map(Number);
+      const slotMinutes = slotH * 60 + slotM;
+
+      if (slotMinutes <= nowMinutes) {
+        continue;
+      }
     }
 
     const isBusy = events.some((event: any) => {
