@@ -307,8 +307,13 @@ export async function listFreeSlots(
       const [nowH, nowM] = madridTimeStr.split(':').map(Number);
       const nowMinutes = nowH * 60 + nowM;
 
-      const slotH = slot.getUTCHours();
-      const slotM = slot.getUTCMinutes();
+      const slotTimeStr = slot.toLocaleTimeString('es-ES', {
+        timeZone: 'Europe/Madrid',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      const [slotH, slotM] = slotTimeStr.split(':').map(Number);
       const slotMinutes = slotH * 60 + slotM;
 
       if (slotMinutes <= nowMinutes) {
