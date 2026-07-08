@@ -156,20 +156,29 @@ function calculateDuration(specialty: string, tenantId: string): number {
 
   const text = (specialty || '').toLowerCase();
   
-  if ((text.includes('tres') || text.includes('3')) && text.includes('niño') && text.includes('caballero')) {
-    return 60;
-  }
-  if ((text.includes('dos') || text.includes('2')) && text.includes('niño') && text.includes('caballero')) {
-    return 45;
-  }
-  if ((text.includes('un') || text.includes('1')) && text.includes('niño') && text.includes('caballero')) {
-    return 30;
-  }
-  if (text.includes('corte') || text.includes('pelo') || text.includes('caballero') || text.includes('niño')) {
-    return 15;
+  // Contar personas de forma dinámica y matemática
+  let persons = 1;
+  
+  // Buscar palabras de números escritos o dígitos
+  if (text.includes('cuatro') || text.includes('4')) {
+    persons = 4;
+  } else if (text.includes('tres') || text.includes('3') || text.includes('dos hijos') || text.includes('dos niños') || text.includes('2 hijos') || text.includes('2 niños')) {
+    persons = 3;
+  } else if (text.includes('dos') || text.includes('2') || text.includes('un hijo') || text.includes('un niño') || text.includes('1 hijo') || text.includes('1 niño')) {
+    persons = 2;
   }
   
-  return 15; // Por defecto para esta peluquería (1 bloque = 15 min)
+  // Caso especial: "hijo y yo" o "niño y yo" son 2 personas
+  if (text.includes('hijo y yo') || text.includes('niño y yo') || text.includes('acompañante y yo')) {
+    persons = 2;
+  }
+  
+  // Caso especial: "mis dos hijos y yo" o "mis 2 hijos y yo" o "yo y mis dos hijos" son 3 personas
+  if (text.includes('dos hijos y yo') || text.includes('2 hijos y yo') || text.includes('dos niños y yo') || text.includes('2 niños y yo') || text.includes('yo y mis dos hijos') || text.includes('yo y mis 2 hijos')) {
+    persons = 3;
+  }
+
+  return persons * 15; // Cada servicio dura 15 minutos en Carlos Romero (1 bloque = 15 min)
 }
 
 /**
