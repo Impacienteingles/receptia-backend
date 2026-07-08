@@ -324,6 +324,30 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
       scheduleInfo = `El horario comercial para el ${dayNameEs} (${date}) es únicamente: ${shiftsStr}. Todo horario fuera de este rango está cerrado.`;
     }
 
+    const parseTimeToMinutes = (t: string) => {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    };
+    const formatMinutesToTime = (m: number) => {
+      const h = Math.floor(m / 60);
+      const min = m % 60;
+      return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+    };
+
+    const allDaySlots: string[] = [];
+    const stepMin = slotDurationMin;
+    for (const shift of shifts) {
+      if (!shift.start || !shift.end) continue;
+      let currentMin = parseTimeToMinutes(shift.start);
+      const endMin = parseTimeToMinutes(shift.end);
+      while (currentMin + stepMin <= endMin) {
+        allDaySlots.push(formatMinutesToTime(currentMin));
+        currentMin += stepMin;
+      }
+    }
+
+    const busySlots = allDaySlots.filter(s => !filteredSlots.includes(s));
+
     const nowMadrid = new Date();
     const madridDateStr = nowMadrid.toLocaleDateString('es-ES', {
       timeZone: 'Europe/Madrid',
@@ -339,14 +363,19 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
       hour12: false
     });
     const prefixInfo = `[INFO DE REFERENCIA TEMPORAL REAL: La fecha y hora exactas de este momento en España son: ${madridDateStr} a las ${madridTimeStr}]. `;
+    
+    const busySlotsInfoText = busySlots.length > 0
+      ? `Los siguientes huecos están OCUPADOS o en el pasado y no se pueden reservar de ninguna manera: ${busySlots.join(', ')}.`
+      : 'No hay huecos ocupados para hoy.';
 
     const messageText = filteredSlots.length > 0 
-      ? `${prefixInfo}Los siguientes huecos están libres: ${filteredSlots.join(', ')}. Nota de Horario: ${scheduleInfo}`
-      : `${prefixInfo}No hay huecos disponibles en esta fecha. Nota de Horario: ${scheduleInfo}. Sugiere al paciente otra fecha.`;
+      ? `${prefixInfo}${busySlotsInfoText} Los siguientes huecos están libres y sí se pueden reservar: ${filteredSlots.join(', ')}. Nota de Horario: ${scheduleInfo}`
+      : `${prefixInfo}${busySlotsInfoText} No hay huecos disponibles en esta fecha. Nota de Horario: ${scheduleInfo}. Sugiere al paciente otra fecha.`;
 
     res.json({
       status: 'success',
       available_slots: filteredSlots,
+      busy_slots: busySlots,
       message: messageText,
       schedule_info: scheduleInfo
     });
