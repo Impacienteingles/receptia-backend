@@ -241,7 +241,18 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
     if (typeof workingHoursObj === 'string') {
       try { workingHoursObj = JSON.parse(workingHoursObj); } catch (e) {}
     }
-    const applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14' || !!workingHoursObj?.apply_break_rule;
+
+    const specialty = args.specialty || '';
+    const durationMinutes = calculateDuration(specialty, tenantId);
+    const numBlocksNeeded = Math.ceil(durationMinutes / slotDurationMin);
+
+    let applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14' || !!workingHoursObj?.apply_break_rule;
+    
+    // Si viene más de 2 personas (duración > 30 minutos en Carlos Romero), desactivamos la regla de descansos
+    if (tenantId === '62d1ed82-287c-4329-941b-50b578c15b14' && durationMinutes > 30) {
+      applyBreakRule = false;
+      console.log(`[Peluquería Carlos Romero] Detectada reserva para más de 2 personas (Duración: ${durationMinutes} min). Desactivando regla de descansos.`);
+    }
 
     console.log(`Buscando disponibilidad para la fecha: ${date} (Tenant: ${tenantId}) (Calendario: ${calendarId}) (Slot: ${slotDurationMin}m) (BreakRule: ${applyBreakRule})`);
     const freeSlots = await listFreeSlots(
@@ -265,9 +276,6 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
 
     // Filtrar huecos libres según la duración requerida de la especialidad
     let filteredSlots = nonBlockedSlots;
-    const specialty = args.specialty || '';
-    const durationMinutes = calculateDuration(specialty, tenantId);
-    const numBlocksNeeded = Math.ceil(durationMinutes / slotDurationMin);
 
     if (tenantId === '62d1ed82-287c-4329-941b-50b578c15b14') {
       // Para Carlos Romero, no filtramos por bloques consecutivos de duración en la API,
