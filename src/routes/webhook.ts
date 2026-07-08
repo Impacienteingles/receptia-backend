@@ -674,7 +674,7 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
     const cleanSearchPhone = resolvedPhone.replace(/\D/g, '').slice(-9);
     const cleanSearchEmail = normalizedEmail ? normalizedEmail.trim().toLowerCase() : '';
 
-    const matchedApp = (allApps || []).find(app => {
+    let matchedApp = (allApps || []).find(app => {
       const cleanAppPhone = (app.patient_phone || '').replace(/\D/g, '').slice(-9);
       const phoneMatches = cleanAppPhone && cleanSearchPhone && cleanAppPhone === cleanSearchPhone;
       const emailMatches = cleanSearchEmail && app.patient_email && app.patient_email.trim().toLowerCase() === cleanSearchEmail;
@@ -692,6 +692,60 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
       }
       return true;
     });
+
+    // BÚSQUEDA HÍBRIDA EN CALIENTE EN GOOGLE CALENDAR
+    if (!matchedApp) {
+      console.log(`[Cancel-Appointment] Cita no encontrada en Supabase. Consultando Google Calendar directamente...`);
+      try {
+        const { getCalendarClient } = require('../services/googleCalendar');
+        const calendar = await getCalendarClient(tenantDetails.google_refresh_token);
+        const response = await calendar.events.list({
+          calendarId: 'primary',
+          timeMin: startRange,
+          timeMax: endRange,
+          singleEvents: true
+        });
+        const events = response.data.items || [];
+        
+        const matchedEvent = events.find((evt: any) => {
+          const summary = (evt.summary || '').toLowerCase();
+          const description = (evt.description || '').toLowerCase();
+          
+          const hasPhone = summary.includes(cleanSearchPhone) || description.includes(cleanSearchPhone);
+          const hasEmail = cleanSearchEmail && (summary.includes(cleanSearchEmail) || description.includes(cleanSearchEmail));
+          
+          if (!hasPhone && !hasEmail) return false;
+          
+          if (time && time.trim() !== '') {
+            const eventStart = new Date(evt.start.dateTime).toLocaleTimeString('es-ES', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              timeZone: 'Europe/Madrid'
+            });
+            return eventStart === time.trim();
+          }
+          return true;
+        });
+
+        if (matchedEvent) {
+          console.log(`[Cancel-Appointment] Cita manual/externa encontrada en Google Calendar: "${matchedEvent.summary}"`);
+          matchedApp = {
+            id: 'temp-calendar-event',
+            tenant_id: tenantId,
+            patient_name: matchedEvent.summary || 'Cliente',
+            patient_phone: resolvedPhone,
+            patient_email: normalizedEmail,
+            date_time: matchedEvent.start.dateTime,
+            google_event_id: matchedEvent.id,
+            google_calendar_id: 'primary',
+            specialty: 'Servicio'
+          };
+        }
+      } catch (calErr: any) {
+        console.warn('[Cancel-Appointment] Error al buscar en Google Calendar en caliente:', calErr.message || calErr);
+      }
+    }
 
     if (!matchedApp) {
       console.warn(`No se encontró ninguna cita para cancelar el ${date}${time ? ' a las ' + time : ''} con teléfono ${resolvedPhone} o email ${normalizedEmail}.`);
@@ -719,14 +773,16 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
       }
     }
 
-    // 2. Eliminar de Supabase
-    const { error: deleteErr } = await supabase
-      .from('appointments')
-      .delete()
-      .eq('id', appToCancel.id);
+    // 2. Eliminar de Supabase (solo si existía en la DB local)
+    if (appToCancel.id !== 'temp-calendar-event') {
+      const { error: deleteErr } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appToCancel.id);
 
-    if (deleteErr) {
-      throw deleteErr;
+      if (deleteErr) {
+        throw deleteErr;
+      }
     }
 
     console.log(`✅ Cita del ${date} para ${appToCancel.patient_name} cancelada correctamente.`);
@@ -827,7 +883,7 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
     const cleanSearchPhone = resolvedPhone.replace(/\D/g, '').slice(-9);
     const cleanSearchEmail = normalizedEmail ? normalizedEmail.trim().toLowerCase() : '';
 
-    const matchedApp = (allApps || []).find(app => {
+    let matchedApp = (allApps || []).find(app => {
       const cleanAppPhone = (app.patient_phone || '').replace(/\D/g, '').slice(-9);
       const phoneMatches = cleanAppPhone && cleanSearchPhone && cleanAppPhone === cleanSearchPhone;
       const emailMatches = cleanSearchEmail && app.patient_email && app.patient_email.trim().toLowerCase() === cleanSearchEmail;
@@ -845,6 +901,60 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
       }
       return true;
     });
+
+    // BÚSQUEDA HÍBRIDA EN CALIENTE EN GOOGLE CALENDAR
+    if (!matchedApp) {
+      console.log(`[Reschedule-Appointment] Cita no encontrada en Supabase. Consultando Google Calendar directamente...`);
+      try {
+        const { getCalendarClient } = require('../services/googleCalendar');
+        const calendar = await getCalendarClient(tenantDetails.google_refresh_token);
+        const response = await calendar.events.list({
+          calendarId: 'primary',
+          timeMin: startRange,
+          timeMax: endRange,
+          singleEvents: true
+        });
+        const events = response.data.items || [];
+        
+        const matchedEvent = events.find((evt: any) => {
+          const summary = (evt.summary || '').toLowerCase();
+          const description = (evt.description || '').toLowerCase();
+          
+          const hasPhone = summary.includes(cleanSearchPhone) || description.includes(cleanSearchPhone);
+          const hasEmail = cleanSearchEmail && (summary.includes(cleanSearchEmail) || description.includes(cleanSearchEmail));
+          
+          if (!hasPhone && !hasEmail) return false;
+          
+          if (original_time && original_time.trim() !== '') {
+            const eventStart = new Date(evt.start.dateTime).toLocaleTimeString('es-ES', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              timeZone: 'Europe/Madrid'
+            });
+            return eventStart === original_time.trim();
+          }
+          return true;
+        });
+
+        if (matchedEvent) {
+          console.log(`[Reschedule-Appointment] Cita manual/externa encontrada en Google Calendar: "${matchedEvent.summary}"`);
+          matchedApp = {
+            id: 'temp-calendar-event',
+            tenant_id: tenantId,
+            patient_name: matchedEvent.summary || 'Cliente',
+            patient_phone: resolvedPhone,
+            patient_email: normalizedEmail,
+            date_time: matchedEvent.start.dateTime,
+            google_event_id: matchedEvent.id,
+            google_calendar_id: 'primary',
+            specialty: 'Servicio'
+          };
+        }
+      } catch (calErr: any) {
+        console.warn('[Reschedule-Appointment] Error al buscar en Google Calendar en caliente:', calErr.message || calErr);
+      }
+    }
 
     if (!matchedApp) {
       res.json({
@@ -928,14 +1038,16 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
       }
     }
 
-    // 4. Modificar en Supabase
-    const { error: updateErr } = await supabase
-      .from('appointments')
-      .update({ date_time: newDateTime })
-      .eq('id', appToReschedule.id);
+    // 4. Modificar en Supabase (solo si existía en la DB local)
+    if (appToReschedule.id !== 'temp-calendar-event') {
+      const { error: updateErr } = await supabase
+        .from('appointments')
+        .update({ date_time: newDateTime })
+        .eq('id', appToReschedule.id);
 
-    if (updateErr) {
-      throw updateErr;
+      if (updateErr) {
+        throw updateErr;
+      }
     }
 
     console.log(`✅ Cita reprogramada con éxito al ${new_date} a las ${new_time}.`);
