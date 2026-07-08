@@ -108,8 +108,43 @@ Debes comenzar la llamada saludando EXACTAMENTE de la siguiente manera:
   }
   if (tenant.id === '62d1ed82-287c-4329-941b-50b578c15b14') {
     let customPrompt = tenant.custom_instructions || '';
+    
+    // Quitar del customPrompt cualquier bloque estático antiguo de fecha o vacaciones
+    customPrompt = customPrompt.replace(/# CONTEXTO TEMPORAL[\s\S]*?(?=# PERSONA Y ROL|# PRIVACIDAD|# INFORMACIÓN)/g, '');
+    customPrompt = customPrompt.replace(/# MODO VACACIONES[\s\S]*?(?=# PERSONA Y ROL|# PRIVACIDAD|# INFORMACIÓN)/g, '');
+
+    // Construir bloque de contexto temporal dinámico
+    const todayISO = isElevenLabs
+      ? '{{system__time}}'
+      : new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Europe/Madrid',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }).format(new Date());
+
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: 'Europe/Madrid',
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+    const todayFormatted = isElevenLabs
+      ? '{{system__time}}'
+      : new Intl.DateTimeFormat('es-ES', options).format(new Date());
+
+    let prefix = `# CONTEXTO TEMPORAL\nLa fecha actual de hoy es: ${todayFormatted} (en formato YYYY-MM-DD: ${todayISO}). Úsala como referencia para calcular fechas relativas como "mañana" (que corresponde al día posterior de la fecha de hoy), "el próximo martes", "la semana que viene", etc.\n\n`;
+
+    // Si tiene modo vacaciones activo en la base de datos, inyectar el bloque dinámico
+    if (tenant.vacation_mode) {
+      prefix += `# MODO VACACIONES / CIERRE TEMPORAL ACTIVO (CRÍTICO)\nEl establecimiento se encuentra CERRADO por vacaciones o cese temporal de actividad.\n1. Debes comunicar amablemente en la conversación que el negocio está cerrado debido al siguiente motivo/mensaje: "${tenant.vacation_message || 'Estamos cerrados por vacaciones'}".\n2. Todavía puedes agendar nuevas citas en Google Calendar si el usuario lo desea, pero debes indicarle explícitamente que la reserva debe programarse para después del periodo de vacaciones o reapertura del establecimiento, asegurando que sea una fecha y hora hábiles normales.\n\n`;
+    }
+
+    let finalPrompt = prefix + customPrompt.trim();
+
     if (isElevenLabs) {
-      customPrompt = customPrompt.replace(/\{\{current_time_Europe_Madrid\}\}/g, '{{system__time}}');
+      finalPrompt = finalPrompt.replace(/\{\{current_time_Europe_Madrid\}\}/g, '{{system__time}}');
     } else {
       const madridTimeStr = new Intl.DateTimeFormat('es-ES', {
         timeZone: 'Europe/Madrid',
@@ -121,9 +156,9 @@ Debes comenzar la llamada saludando EXACTAMENTE de la siguiente manera:
         minute: '2-digit',
         second: '2-digit'
       }).format(new Date());
-      customPrompt = customPrompt.replace(/\{\{current_time_Europe_Madrid\}\}/g, madridTimeStr);
+      finalPrompt = finalPrompt.replace(/\{\{current_time_Europe_Madrid\}\}/g, madridTimeStr);
     }
-    return customPrompt;
+    return finalPrompt;
   }
 
   const businessName = tenant.business_name || 'el negocio';
