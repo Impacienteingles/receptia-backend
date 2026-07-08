@@ -655,28 +655,10 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
       throw new Error(`No se pudo encontrar el LLM asociado al agente: ${agentId}`);
     }
 
-    // 3. Actualizar el LLM en Retell
-    console.log(`⚙️ [Retell Service] Actualizando LLM ${llmId} con nuevo prompt...`);
+    // 3. Actualizar el LLM en Retell (Solo herramientas dinámicas, NO el prompt)
+    console.log(`⚙️ [Retell Service] Actualizando herramientas en LLM ${llmId}...`);
     await retellClient.patch(`/update-retell-llm/${llmId}`, {
-      general_prompt: systemPrompt,
       general_tools: tools
-    });
-
-    // 4. Actualizar el Agente en Retell
-    console.log(`⚙️ [Retell Service] Actualizando Agente ${agentId} (Voz: ${voiceId})...`);
-    const speed = tenant.personality_speed !== undefined && tenant.personality_speed !== null 
-      ? Number(tenant.personality_speed) 
-      : (tenant.voice_speed !== undefined && tenant.voice_speed !== null ? Number(tenant.voice_speed) : 1.0);
-    const temp = tenant.voice_temperature !== undefined && tenant.voice_temperature !== null ? Number(tenant.voice_temperature) : 1.0;
-    const resp = tenant.voice_responsiveness !== undefined && tenant.voice_responsiveness !== null ? Number(tenant.voice_responsiveness) : 1.0;
-
-    await retellClient.patch(`/update-agent/${agentId}`, {
-      agent_name: `${agentName} - ${tenant.business_name}`,
-      voice_id: voiceId,
-      voice_speed: speed,
-      voice_temperature: temp,
-      responsiveness: resp,
-      interruption_sensitivity: 0.8
     });
 
     console.log('✅ Agente de Retell AI sincronizado y actualizado exitosamente.');
