@@ -535,10 +535,6 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
             phone: {
               type: 'string',
               description: 'Número de teléfono de contacto.',
-            },
-            email: {
-              type: 'string',
-              description: 'Dirección de correo electrónico del paciente/cliente.',
             }
           },
           required: ['date', 'time', 'name', 'phone', 'specialty'],
@@ -561,10 +557,6 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
             phone: {
               type: 'string',
               description: 'El número de teléfono de contacto del cliente.',
-            },
-            email: {
-              type: 'string',
-              description: 'El correo electrónico del cliente.',
             },
             time: {
               type: 'string',
@@ -599,10 +591,6 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
             phone: {
               type: 'string',
               description: 'El número de teléfono de contacto del cliente.',
-            },
-            email: {
-              type: 'string',
-              description: 'El correo electrónico del cliente.',
             },
             original_time: {
               type: 'string',
