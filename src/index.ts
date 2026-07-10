@@ -23,6 +23,7 @@ import { syncTenantWithRetell, compileSystemPrompt, formatVoiceId, deleteRetellA
 import { createStripeCheckoutSession, createStripePortalSession, getStripeClient, createStripeAddonCheckoutSession } from './services/stripe';
 import axios from 'axios';
 import { sendWhatsAppMessage } from './services/whatsapp';
+import { sendToN8N } from './services/n8n';
 import { processChatbotMessage } from './services/chatbot';
 import { 
   initWhatsAppWebSession, 
@@ -3230,11 +3231,19 @@ app.post('/api/payments/webhook', async (req, res): Promise<void> => {
               } else {
                 const tenant = appointment.tenants;
 
-                await supabase
+                const { data: dbApp } = await supabase
                   .from('appointments')
                   .update({ status: 'confirmed' })
-                  .eq('id', appointmentId);
+                  .eq('id', appointmentId)
+                  .select()
+                  .single();
                 console.log(`Cita ${appointmentId} marcada como confirmed.`);
+
+                if (dbApp) {
+                  sendToN8N('appointment_created', tenantId, dbApp).catch(err =>
+                    console.error('[n8n Integration Error] Fallo al enviar al webhook de n8n:', err)
+                  );
+                }
 
                 const depositAmount = tenant.no_show_deposit_amount || 10.00;
                 await supabase

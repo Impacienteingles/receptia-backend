@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { bookAppointment, listFreeSlots } from './googleCalendar';
 import { createNoShowDepositSession } from './stripe';
 import { sendWhatsAppMessage } from './whatsapp';
+import { sendToN8N } from './n8n';
 
 /**
  * Resuelve el número de teléfono real del llamante si es un placeholder.
@@ -270,7 +271,7 @@ export async function processBookingFlow(
     );
 
     // 6B. Registrar en Supabase con status: confirmed
-    const { error: dbErr } = await supabase
+    const { data: dbApp, error: dbErr } = await supabase
       .from('appointments')
       .insert({
         tenant_id: tenantId,
@@ -283,10 +284,17 @@ export async function processBookingFlow(
         google_event_id: event.id,
         google_calendar_id: calendarId,
         professional_name: matchedProfName
-      });
+      })
+      .select()
+      .single();
 
     if (dbErr) {
       console.warn('⚠️ No se pudo guardar la cita en la tabla appointments de Supabase:', dbErr.message);
+    } else if (dbApp) {
+      // Disparar integración de n8n
+      sendToN8N('appointment_created', tenantId, dbApp).catch(err =>
+        console.error('[n8n Integration Error] Fallo al enviar al webhook de n8n:', err)
+      );
     }
 
     // 7B. Enviar mensaje de WhatsApp de confirmación directa

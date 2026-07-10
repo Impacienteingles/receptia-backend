@@ -4,6 +4,7 @@ import { supabase } from '../services/supabase';
 import { sendWhatsAppMessage } from '../services/whatsapp';
 import { processMeteredBillingForCall } from '../services/stripe';
 import { processBookingFlow } from '../services/booking-flow';
+import { sendToN8N } from '../services/n8n';
 
 const router = Router();
 
@@ -849,6 +850,14 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
 
     console.log(`✅ Cita del ${date} para ${appToCancel.patient_name} cancelada correctamente.`);
 
+    // Disparar integración de n8n
+    sendToN8N('appointment_cancelled', tenantId, {
+      ...appToCancel,
+      status: 'cancelled'
+    }).catch(err =>
+      console.error('[n8n Integration Error] Fallo al enviar al webhook de n8n:', err)
+    );
+
     // Enviar confirmación por WhatsApp (si está habilitado)
     if (tenantDetails.client_whatsapp_enabled !== false && tenantDetails.whatsapp_immediate_notification_enabled !== false) {
       const msg = `Cancelación de Cita ❌\n\nHola ${appToCancel.patient_name}, le confirmamos que su cita en ${tenantDetails.business_name} para el día ${date} ha sido cancelada correctamente.\n\nSentimos las molestias y esperamos verle en otra ocasión.`;
@@ -1101,18 +1110,29 @@ router.post('/reschedule-appointment', async (req: Request, res: Response): Prom
     }
 
     // 4. Modificar en Supabase (solo si existía en la DB local)
+    let finalApp = { ...appToReschedule, date_time: newDateTime };
     if (appToReschedule.id !== 'temp-calendar-event') {
-      const { error: updateErr } = await supabase
+      const { data: dbApp, error: updateErr } = await supabase
         .from('appointments')
         .update({ date_time: newDateTime })
-        .eq('id', appToReschedule.id);
+        .eq('id', appToReschedule.id)
+        .select()
+        .single();
 
       if (updateErr) {
         throw updateErr;
       }
+      if (dbApp) {
+        finalApp = dbApp;
+      }
     }
 
     console.log(`✅ Cita reprogramada con éxito al ${new_date} a las ${new_time}.`);
+
+    // Disparar integración de n8n
+    sendToN8N('appointment_rescheduled', tenantId, finalApp).catch(err =>
+      console.error('[n8n Integration Error] Fallo al enviar al webhook de n8n:', err)
+    );
 
     // Enviar confirmación por WhatsApp (si está habilitado)
     if (tenantDetails.client_whatsapp_enabled !== false && tenantDetails.whatsapp_immediate_notification_enabled !== false) {
