@@ -1253,9 +1253,11 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
             }
           }
 
+          let finalLog = null;
+
           if (existingLog) {
             console.log(`[Webhook] Registro de llamada existente detectado (ID: ${existingLog.id}). Actualizando con datos más recientes...`);
-            await supabase
+            const { data: dbLog } = await supabase
               .from('call_logs')
               .update({
                 call_duration: durationSeconds,
@@ -1264,9 +1266,12 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
                 summary: summary || existingLog.summary,
                 intent_tag: intentTag
               })
-              .eq('id', existingLog.id);
+              .eq('id', existingLog.id)
+              .select()
+              .single();
+            finalLog = dbLog;
           } else {
-            await supabase
+            const { data: dbLog } = await supabase
               .from('call_logs')
               .insert({
                 tenant_id: tenant.id,
@@ -1276,8 +1281,17 @@ router.post('/agent-events', async (req: Request, res: Response): Promise<void> 
                 transcript,
                 summary,
                 intent_tag: intentTag
-              });
+              })
+              .select()
+              .single();
+            finalLog = dbLog;
             console.log(`✅ Registro de llamada guardado para el cliente: ${tenant.id}`);
+          }
+
+          if (finalLog) {
+            sendToN8N('call_ended', tenant.id, finalLog).catch(err =>
+              console.error('[n8n Integration Error] Fallo al enviar llamada finalizada a n8n:', err)
+            );
           }
 
           // Guardar el recuerdo en caller_memories para la memoria de la IA de 7 días
