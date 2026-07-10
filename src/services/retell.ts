@@ -489,6 +489,8 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
         name: 'consultar_disponibilidad',
         description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
         url: `${webhookBaseUrl}/api/webhook/get-availability?tenant_id=${tenant.id}`,
+        speak_during_execution: true,
+        execution_message_description: "Di textualmente y con pausas naturales: 'Espera un poco que voy a mirar la agenda... a ver, a ver... ya mismo lo tengo...'. Usa puntos suspensivos para las pausas.",
         parameters: {
           type: 'object',
           properties: {
@@ -509,6 +511,8 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
         name: 'crear_cita',
         description: 'Reserva una cita en el calendario tras confirmar los datos con el paciente/cliente.',
         url: `${webhookBaseUrl}/api/webhook/book-appointment?tenant_id=${tenant.id}`,
+        speak_during_execution: true,
+        execution_message_description: "Di textualmente y con pausas naturales: 'Deme un instante mientras registro su cita... a ver... ya casi está...'. Usa puntos suspensivos para las pausas.",
         parameters: {
           type: 'object',
           properties: {
@@ -545,6 +549,8 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
         name: 'cancelar_cita',
         description: 'Cancela y elimina una cita existente en el calendario.',
         url: `${webhookBaseUrl}/api/webhook/cancel-appointment?tenant_id=${tenant.id}`,
+        speak_during_execution: true,
+        execution_message_description: "Di textualmente y con pausas naturales: 'Espere un segundo mientras cancelo su cita... a ver... ya mismo se procesa...'. Usa puntos suspensivos para las pausas.",
         parameters: {
           type: 'object',
           properties: {
@@ -573,6 +579,8 @@ export async function syncTenantWithRetell(tenant: any, webhookBaseUrl: string) 
         name: 'reprogramar_cita',
         description: 'Reprograma o modifica la fecha y hora de una cita existente a una nueva fecha y hora.',
         url: `${webhookBaseUrl}/api/webhook/reschedule-appointment?tenant_id=${tenant.id}`,
+        speak_during_execution: true,
+        execution_message_description: "Di textualmente y con pausas naturales: 'Espera un poco que voy a modificar su cita... a ver, a ver... ya mismo lo actualizo...'. Usa puntos suspensivos para las pausas.",
         parameters: {
           type: 'object',
           properties: {
