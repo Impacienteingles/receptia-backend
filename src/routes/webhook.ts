@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { listFreeSlots, bookAppointment, deleteAppointment, updateAppointment } from '../services/googleCalendar';
+import { listFreeSlotsCalCom as listFreeSlots, bookAppointmentCalCom as bookAppointment, deleteAppointmentCalCom as deleteAppointment, updateAppointmentCalCom as updateAppointment } from '../services/calCom';
 import { supabase } from '../services/supabase';
 import { sendWhatsAppMessage } from '../services/whatsapp';
 import { processMeteredBillingForCall } from '../services/stripe';
@@ -1591,6 +1591,105 @@ router.post('/get-business-phone', async (req: Request, res: Response): Promise<
     console.error('Error en /get-business-phone:', err.message);
     res.status(500).json({ error: err.message });
   }
+});
+
+// Webhook de callback para Vapi.ai (reporte de fin de llamada)
+router.post('/vapi-callback', async (req: Request, res: Response) => {
+  const message = req.body.message;
+  console.log(`[Vapi Webhook] Recibido evento de tipo: ${message?.type}`);
+
+  if (message?.type === 'end-of-call-report') {
+    const call = message.call;
+    const callId = call?.id;
+    const assistantId = call?.assistantId;
+    const callerPhone = call?.customer?.number || 'Desconocido';
+    const recordingUrl = call?.recordingUrl;
+    const summary = call?.analysis?.summary || call?.summary || '';
+    const transcript = call?.transcript || '';
+    const durationSeconds = Math.round(Number(call?.duration || 0));
+
+    console.log(`[Vapi Callback] Procesando llamada finalizada: CallID: ${callId} | AssistantID: ${assistantId} | Teléfono: ${callerPhone} | Duración: ${durationSeconds}s`);
+
+    try {
+      // Buscar el inquilino (tenant) usando el retell_agent_id (donde guardamos el Vapi Assistant ID)
+      const { data: tenant, error: tErr } = await supabase
+        .from('tenants')
+        .select('id, text_back_enabled, text_back_message, phone_number')
+        .eq('retell_agent_id', assistantId)
+        .maybeSingle();
+
+      if (!tenant) {
+        console.warn(`[Vapi Callback] No se encontró ningún inquilino con Vapi Assistant ID: ${assistantId}`);
+        res.status(200).json({ status: 'ignored', message: 'No tenant matched Assistant ID' });
+        return;
+      }
+
+      // Determinar la intención
+      let intentTag = 'Consulta General';
+      if (summary.toLowerCase().includes('cita agendada') || summary.toLowerCase().includes('reserva') || summary.toLowerCase().includes('agendó') || summary.toLowerCase().includes('cita creada')) {
+        intentTag = 'Cita Agendada';
+      } else if (summary.toLowerCase().includes('reclamación') || summary.toLowerCase().includes('queja') || summary.toLowerCase().includes('molesto')) {
+        intentTag = 'Queja';
+      } else if (durationSeconds < 10) {
+        intentTag = 'Llamada Perdida';
+      }
+
+      // Identificador único de llamada para evitar duplicados en la base de datos
+      const phoneWithCallId = callId ? `${callerPhone}|vapi:${callId}` : callerPhone;
+
+      console.log(`[Vapi Callback] Guardando registro de llamada en Supabase para el tenant: ${tenant.id}`);
+
+      const { data: dbLog, error: insertError } = await supabase
+        .from('call_logs')
+        .insert({
+          tenant_id: tenant.id,
+          caller_phone: phoneWithCallId,
+          call_duration: durationSeconds,
+          recording_url: recordingUrl,
+          transcript,
+          summary,
+          intent_tag: intentTag
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('[Vapi Callback] Error al guardar en call_logs:', insertError.message);
+      } else if (dbLog) {
+        console.log(`✅ Registro de llamada guardado con ID: ${dbLog.id}`);
+
+        // Disparar la automatización de n8n
+        sendToN8N('call_ended', tenant.id, dbLog).catch(err =>
+          console.error('[Vapi Callback n8n Error] Fallo al notificar llamada finalizada a n8n:', err)
+        );
+
+        // Guardar el recuerdo en caller_memories para la memoria conversacional persistente
+        if (summary && callerPhone && callerPhone !== 'Desconocido') {
+          const cleanPhone = String(callerPhone).trim();
+          const { error: memErr } = await supabase
+            .from('caller_memories')
+            .upsert({
+              tenant_id: tenant.id,
+              caller_phone: cleanPhone,
+              memory_text: `El cliente llamó el ${new Date().toLocaleDateString('es-ES')}. Resumen: ${summary}`,
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'tenant_id,caller_phone'
+            });
+
+          if (memErr) {
+            console.error('[Vapi Callback Memory Error] Error al guardar memoria del cliente:', memErr.message);
+          } else {
+            console.log(`✅ Memoria persistente guardada con éxito para el teléfono: ${cleanPhone}`);
+          }
+        }
+      }
+    } catch (err: any) {
+      console.error('[Vapi Callback Error] Fallo general de procesamiento:', err.message);
+    }
+  }
+
+  res.status(200).json({ status: 'ok' });
 });
 
 export default router;

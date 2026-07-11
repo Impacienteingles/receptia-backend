@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { supabase, getSettingVal } from './supabase';
 import { compileSystemPrompt, resolveAgentName } from './retell';
-import { listFreeSlots, deleteAppointment, updateAppointment } from './googleCalendar';
+import { listFreeSlotsCalCom as listFreeSlots, deleteAppointmentCalCom as deleteAppointment, updateAppointmentCalCom as updateAppointment } from './calCom';
 import { processBookingFlow, calculateDuration } from './booking-flow';
 
 // Cache local en memoria para evitar llamadas redundantes a la base de datos de inquilinos por cada mensaje

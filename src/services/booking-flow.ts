@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { bookAppointment, listFreeSlots } from './googleCalendar';
+import { bookAppointmentCalCom as bookAppointment, listFreeSlotsCalCom as listFreeSlots } from './calCom';
 import { createNoShowDepositSession } from './stripe';
 import { sendWhatsAppMessage } from './whatsapp';
 import { sendToN8N } from './n8n';
