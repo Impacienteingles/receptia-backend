@@ -609,12 +609,19 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
     const resolvedPhone = resolvePhoneNumber(phone, req.body);
     console.log(`[Cancel Flow] Resolviendo cancelación para el teléfono: ${resolvedPhone}`);
 
-    // Buscar cita confirmada en Supabase
+    // Buscar cita confirmada en Supabase (blindado contra prefijos de España)
+    let cleanPhone = resolvedPhone;
+    if (resolvedPhone.startsWith('+34') && resolvedPhone.length === 12) {
+      cleanPhone = resolvedPhone.substring(3);
+    } else if (resolvedPhone.startsWith('34') && resolvedPhone.length === 11) {
+      cleanPhone = resolvedPhone.substring(2);
+    }
+
     let query = supabase
       .from('appointments')
       .select('*')
       .eq('tenant_id', tenantId)
-      .eq('patient_phone', resolvedPhone)
+      .or(`patient_phone.eq.${resolvedPhone},patient_phone.eq.${cleanPhone}`)
       .eq('status', 'confirmed');
       
     if (date) {
