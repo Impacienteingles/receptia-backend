@@ -634,7 +634,7 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
       console.error('[Cancel Flow] Error al buscar cita en Supabase:', fetchErr);
       res.json({
         status: 'error',
-        message: 'Ocurrió un error al buscar la cita en la base de datos.'
+        message: 'Ocurrió un error al buscar la cita en la base de datos: ' + fetchErr.message
       });
       return;
     }
