@@ -91,6 +91,7 @@ export async function setupAgent(webhookUrl: string): Promise<string> {
         name: 'consultar_disponibilidad',
         description: 'Consulta los horarios disponibles para una fecha específica (formato YYYY-MM-DD). Devuelve las horas libres en formato HH:MM.',
         url: `${webhookUrl}/api/webhook/get-availability?tenant_id=${tenantId}`,
+        execution_message: 'Miro la agenda.',
         parameters: {
           type: 'object',
           properties: {
@@ -111,6 +112,7 @@ export async function setupAgent(webhookUrl: string): Promise<string> {
         name: 'cancelar_cita',
         description: 'Cancela y elimina una cita existente del cliente en la agenda.',
         url: `${webhookUrl}/api/webhook/cancel-appointment?tenant_id=${tenantId}`,
+        execution_message: 'Miro para anularla.',
         parameters: {
           type: 'object',
           properties: {
@@ -134,6 +136,7 @@ export async function setupAgent(webhookUrl: string): Promise<string> {
         name: 'crear_cita',
         description: 'Reserva una cita en la peluquería en el calendario tras confirmar los datos con el cliente.',
         url: `${webhookUrl}/api/webhook/book-appointment?tenant_id=${tenantId}`,
+        execution_message: 'Te reservo la cita.',
         parameters: {
           type: 'object',
           properties: {

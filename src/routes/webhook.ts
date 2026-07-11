@@ -558,7 +558,10 @@ function resolveAgentName(voiceId: string): string {
  * Resuelve el número de teléfono real del llamante si la IA ha pasado un placeholder o texto.
  */
 function resolvePhoneNumber(phone: string, body: any): string {
-  const trimmed = phone.trim();
+  let trimmed = phone.trim();
+  if (trimmed.includes('|')) {
+    trimmed = trimmed.split('|')[0].trim();
+  }
   const lower = trimmed.toLowerCase();
   
   // Si contiene letras (por ejemplo "mismo", "llama", "este", "llamando"), es un placeholder de la IA
