@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 function getEventTypeId(durationMinutes: number): number {
-  if (durationMinutes <= 15) return 6283580;
-  if (durationMinutes <= 30) return 6283577;
-  return 6283579;
+  if (durationMinutes <= 15) return 6283579; // Cita Peluquería (15 min)
+  return 6283577; // Reunión de 30 min (30 min)
 }
+
 
 /**
  * Consulta la disponibilidad de slots libres en Cal.com (API v2)
