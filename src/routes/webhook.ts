@@ -284,36 +284,7 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
     const blockedRules = dbBlockedHours || [];
     const nonBlockedSlots = freeSlots.filter((slot: string) => !isSlotBlocked(slot, date, blockedRules));
 
-    // Filtrar huecos libres según la duración requerida de la especialidad
-    let filteredSlots = nonBlockedSlots;
-
-    if (numBlocksNeeded > 1 && freeSlots.length > 0) {
-      const resultSlots: string[] = [];
-      for (let i = 0; i < freeSlots.length; i++) {
-        const currentSlot = freeSlots[i];
-        let consecutiveFound = true;
-        const [hour, min] = currentSlot.split(':').map(Number);
-        const nextTime = new Date(`1970-01-01T${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}:00Z`);
-
-        for (let b = 1; b < numBlocksNeeded; b++) {
-          nextTime.setUTCMinutes(nextTime.getUTCMinutes() + slotDurationMin);
-          const nextTimeStr = nextTime.toISOString().substring(11, 16);
-          if (!freeSlots.includes(nextTimeStr)) {
-            consecutiveFound = false;
-            break;
-          }
-        }
-
-        if (consecutiveFound) {
-          resultSlots.push(currentSlot);
-        }
-      }
-      filteredSlots = resultSlots;
-    }
-    
-    console.log(`Huecos libres filtrados para duración ${durationMinutes} min: ${filteredSlots.join(', ')}`);
-    
-    // Obtener información de horario para la fecha consultada en la zona horaria de Madrid
+    // Resolver horario comercial de Supabase para esta fecha
     const targetDate = new Date(`${date}T12:00:00`);
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const dayNamesEs: any = {
@@ -328,14 +299,6 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
     const dayOfWeek = dayNames[targetDate.getDay()];
     const dayNameEs = dayNamesEs[dayOfWeek];
     const shifts = workingHoursObj?.[dayOfWeek] || [];
-    let scheduleInfo = '';
-    
-    if (shifts.length === 0) {
-      scheduleInfo = `El negocio está CERRADO todo el día el ${dayNameEs} (${date}).`;
-    } else {
-      const shiftsStr = shifts.map((s: any) => `de ${s.start} a ${s.end}`).join(' y ');
-      scheduleInfo = `El horario comercial para el ${dayNameEs} (${date}) es únicamente: ${shiftsStr}. Todo horario fuera de este rango está cerrado.`;
-    }
 
     const parseTimeToMinutes = (t: string) => {
       const [h, m] = t.split(':').map(Number);
@@ -346,6 +309,58 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
       const min = m % 60;
       return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
     };
+
+    // 1. Filtrar slots de Cal.com para asegurar que están estrictamente dentro de Supabase shifts (Horario Comercial)
+    let actualOpenSlots = nonBlockedSlots;
+    if (shifts.length > 0) {
+      actualOpenSlots = nonBlockedSlots.filter((slotTime: string) => {
+        const timeMin = parseTimeToMinutes(slotTime);
+        return shifts.some((s: any) => {
+          const startMin = parseTimeToMinutes(s.start);
+          const endMin = parseTimeToMinutes(s.end);
+          return timeMin >= startMin && timeMin < endMin;
+        });
+      });
+    } else {
+      actualOpenSlots = [];
+    }
+
+    // 2. Filtrar huecos libres según la duración requerida de la especialidad (bloques consecutivos)
+    let filteredSlots = actualOpenSlots;
+
+    if (numBlocksNeeded > 1 && actualOpenSlots.length > 0) {
+      const resultSlots: string[] = [];
+      for (let i = 0; i < actualOpenSlots.length; i++) {
+        const currentSlot = actualOpenSlots[i];
+        let consecutiveFound = true;
+        const [hour, min] = currentSlot.split(':').map(Number);
+        const nextTime = new Date(`1970-01-01T${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}:00Z`);
+
+        for (let b = 1; b < numBlocksNeeded; b++) {
+          nextTime.setUTCMinutes(nextTime.getUTCMinutes() + slotDurationMin);
+          const nextTimeStr = nextTime.toISOString().substring(11, 16);
+          if (!actualOpenSlots.includes(nextTimeStr)) {
+            consecutiveFound = false;
+            break;
+          }
+        }
+
+        if (consecutiveFound) {
+          resultSlots.push(currentSlot);
+        }
+      }
+      filteredSlots = resultSlots;
+    }
+    
+    console.log(`Huecos libres filtrados para duración ${durationMinutes} min: ${filteredSlots.join(', ')}`);
+    
+    let scheduleInfo = '';
+    if (shifts.length === 0) {
+      scheduleInfo = `El negocio está CERRADO todo el día el ${dayNameEs} (${date}).`;
+    } else {
+      const shiftsStr = shifts.map((s: any) => `de ${s.start} a ${s.end}`).join(' y ');
+      scheduleInfo = `El horario comercial para el ${dayNameEs} (${date}) es únicamente: ${shiftsStr}. Todo horario fuera de este rango está cerrado.`;
+    }
 
     const allDaySlots: string[] = [];
     const stepMin = slotDurationMin;
