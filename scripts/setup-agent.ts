@@ -36,7 +36,7 @@ function getFormattedToday(): string {
 }
 
 export async function setupAgent(webhookUrl: string): Promise<string> {
-  const existingAgentId: string = 'agent_6712d0dfee1e51d6593032e3e9'; // Carlos Romero en pantalla
+  const existingAgentId: string = 'agent_3588f6d50c5c3034310357228b'; // Carlos Romero en pantalla
   const tenantId = '62d1ed82-287c-4329-941b-50b578c15b14'; // Carlos Romero
   
   console.log(`[Deploy Setup] Leyendo configuraciones de Supabase para el tenant Carlos Romero (${tenantId})...`);
