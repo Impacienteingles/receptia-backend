@@ -625,7 +625,9 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
       .eq('status', 'confirmed');
       
     if (date) {
-      query = query.ilike('date_time', `%${date}%`);
+      const startOfDay = `${date}T00:00:00.000Z`;
+      const endOfDay = `${date}T23:59:59.999Z`;
+      query = query.gte('date_time', startOfDay).lte('date_time', endOfDay);
     }
 
     const { data: apps, error: fetchErr } = await query;
@@ -634,7 +636,7 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
       console.error('[Cancel Flow] Error al buscar cita en Supabase:', fetchErr);
       res.json({
         status: 'error',
-        message: 'Ocurrió un error al buscar la cita en la base de datos: ' + fetchErr.message
+        message: 'Ocurrió un error al buscar la cita en la base de datos.'
       });
       return;
     }
