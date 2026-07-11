@@ -605,7 +605,7 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
       return;
     }
     
-    const resolvedPhone = resolvePhoneNumberForBooking(phone, req.body);
+    const resolvedPhone = resolvePhoneFromWebhook(phone, req.body);
     console.log(`[Cancel Flow] Resolviendo cancelación para el teléfono: ${resolvedPhone}`);
 
     // Buscar cita confirmada en Supabase
