@@ -227,6 +227,8 @@ async function runDeploy() {
     if (process.env.SMTP_USER) envVars.push({ key: 'SMTP_USER', value: process.env.SMTP_USER });
     if (process.env.SMTP_PASS) envVars.push({ key: 'SMTP_PASS', value: process.env.SMTP_PASS });
     if (process.env.CONTACT_RECEIVER_EMAIL) envVars.push({ key: 'CONTACT_RECEIVER_EMAIL', value: process.env.CONTACT_RECEIVER_EMAIL });
+    if (process.env.VAPI_API_KEY) envVars.push({ key: 'VAPI_API_KEY', value: process.env.VAPI_API_KEY });
+    if (process.env.CAL_COM_API_KEY) envVars.push({ key: 'CAL_COM_API_KEY', value: process.env.CAL_COM_API_KEY });
 
     await renderClient.put(`/services/${serviceId}/env-vars`, envVars);
     console.log('✅ Variables de entorno actualizadas.');
