@@ -1,5 +1,4 @@
 const { createClient } = require('@supabase/supabase-js');
-const { compileSystemPrompt } = require('../src/services/retell');
 const axios = require('axios');
 const dotenv = require('dotenv');
 
@@ -25,9 +24,20 @@ const retellClient = axios.create({
   },
 });
 
+function getFormattedToday(): string {
+  const formatter = new Intl.DateTimeFormat('es-ES', {
+    timeZone: 'Europe/Madrid',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  return formatter.format(new Date());
+}
+
 export async function setupAgent(webhookUrl: string): Promise<string> {
-  const existingAgentId = process.env.RETELL_AGENT_ID || 'agent_6712d0dfee1e51d6593032e3e9';
-  const tenantId = '62d1ed82-287c-4329-941b-50b578c15b14'; // Carlos Romero por defecto para este agente de producción
+  const existingAgentId: string = 'agent_6712d0dfee1e51d6593032e3e9'; // Carlos Romero en pantalla
+  const tenantId = '62d1ed82-287c-4329-941b-50b578c15b14'; // Carlos Romero
   
   console.log(`[Deploy Setup] Leyendo configuraciones de Supabase para el tenant Carlos Romero (${tenantId})...`);
   const { data: tenant, error: getError } = await supabase
@@ -40,14 +50,35 @@ export async function setupAgent(webhookUrl: string): Promise<string> {
     throw new Error(`Fallo al leer datos del inquilino de Supabase: ${getError?.message}`);
   }
 
-  console.log('Compilando prompt de sistema refinado en base a Supabase...');
-  const compiledPrompt = compileSystemPrompt(tenant, undefined, false);
+  console.log('Compilando prompt de sistema de Carlos Romero de forma directa y autocontenida...');
+  
+  // Limpiar instrucciones
+  let customPrompt = tenant.custom_instructions || '';
+  customPrompt = customPrompt.replace(/# CONTEXTO TEMPORAL[\s\S]*?(?=# PERSONA Y ROL|# PRIVACIDAD|# INFORMACIÓN)/g, '');
+  customPrompt = customPrompt.replace(/# MODO VACACIONES[\s\S]*?(?=# PERSONA Y ROL|# PRIVACIDAD|# INFORMACIÓN)/g, '');
+
+  const todayISO = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+
+  const todayFormatted = getFormattedToday();
+  
+  let prefix = `# CONTEXTO TEMPORAL\nLa fecha actual de hoy es: ${todayFormatted} (en formato YYYY-MM-DD: ${todayISO}). Úsala como referencia para calcular fechas relativas como "mañana" (que corresponde al día posterior de la fecha de hoy), "el próximo martes", "la semana que viene", etc.\n\n`;
+
+  if (tenant.vacation_mode) {
+    prefix += `# MODO VACACIONES / CIERRE TEMPORAL ACTIVO (CRÍTICO)\nEl establecimiento se encuentra CERRADO por vacaciones o cese temporal de actividad.\n1. Debes comunicar amablemente en la conversación que el negocio está cerrado debido al siguiente motivo/mensaje: "${tenant.vacation_message || 'Estamos cerrados por vacaciones'}".\n2. Todavía puedes agendar nuevas citas en Google Calendar si el usuario lo desea, pero debes indicarle explícitamente que la reserva debe programarse para después del periodo de vacaciones o reapertura del establecimiento, asegurando que sea una fecha y hora hábiles normales.\n\n`;
+  }
+
+  const compiledPrompt = prefix + customPrompt.trim();
 
   const kbId = 'knowledge_base_441d840ae72ab190'; // La nueva base de conocimientos con horarios actualizados
 
   const llmPayload = {
     general_prompt: compiledPrompt,
-    model: 'gpt-4o-mini', // Cambiamos a gpt-4o-mini para máxima velocidad y menor latencia
+    model: 'gpt-4o-mini',
     knowledge_base_ids: [kbId],
     general_tools: [
       {
