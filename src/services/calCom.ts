@@ -58,6 +58,12 @@ export async function listFreeSlotsCalCom(
       });
     });
 
+    let filteredSlots = localSlots;
+    if (applyBreakRule) {
+      const breaks = ['10:30', '11:15', '12:00', '12:45', '13:30', '17:30', '18:15', '19:00', '19:45'];
+      filteredSlots = localSlots.filter((slotTime: string) => !breaks.includes(slotTime));
+    }
+
     // Si la fecha consultada es HOY, filtrar los slots que ya hayan pasado
     const now = new Date();
     const madridToday = now.toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' }); // YYYY-MM-DD en Madrid
@@ -69,10 +75,10 @@ export async function listFreeSlotsCalCom(
         minute: '2-digit',
         hour12: false
       });
-      return localSlots.filter((slotTime: string) => slotTime > currentMadridTime);
+      return filteredSlots.filter((slotTime: string) => slotTime > currentMadridTime);
     }
 
-    return localSlots;
+    return filteredSlots;
   } catch (error: any) {
     console.error('[Cal.com API Error] Error al listar slots libres:', error.response?.data || error.message);
     return [];

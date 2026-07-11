@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { bookAppointmentCalCom as bookAppointment, listFreeSlotsCalCom as listFreeSlots } from './calCom';
+import { bookAppointmentCalCom as bookAppointment, listFreeSlotsCalCom as listFreeSlots, updateAppointmentCalCom } from './calCom';
 import { createNoShowDepositSession } from './stripe';
 import { sendWhatsAppMessage } from './whatsapp';
 import { sendToN8N } from './n8n';
@@ -251,7 +251,73 @@ export async function processBookingFlow(
       message: `Se requiere un depósito de ${depositAmount}€. He enviado un enlace de pago de Stripe por WhatsApp al teléfono del cliente. El cliente debe completar el pago para confirmar la cita.`
     };
   } else {
-    console.log(`[Booking Flow] Fianza desactivada. Creando cita confirmada...`);
+    console.log(`[Booking Flow] Fianza desactivada. Buscando si el cliente ya tiene una cita confirmada previa...`);
+    const cleanPhone = resolvedPhone.split('|')[0].trim();
+    
+    const { data: existingApp } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'confirmed')
+      .like('patient_phone', `${cleanPhone}%`)
+      .order('date_time', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingApp && existingApp.google_event_id) {
+      console.log(`[Booking Flow] Detectada cita confirmada previa (${existingApp.id}, eventId: ${existingApp.google_event_id}). Iniciando reprogramación automática...`);
+      
+      const event = await updateAppointmentCalCom(
+        tenantDetails.google_refresh_token,
+        existingApp.google_event_id,
+        date,
+        time,
+        name,
+        normalizedEmail,
+        resolvedPhone,
+        specialty,
+        calendarId,
+        tenantDetails.business_name,
+        tenantDetails.business_sector,
+        durationMinutes
+      );
+
+      // Actualizar el registro existente en la base de datos
+      const { data: updatedApp, error: dbErr } = await supabase
+        .from('appointments')
+        .update({
+          date_time: event.start?.dateTime || new Date(`${date}T${time}:00`).toISOString(),
+          specialty: specialty,
+          google_event_id: event.id,
+          professional_name: matchedProfName
+        })
+        .eq('id', existingApp.id)
+        .select()
+        .single();
+
+      if (dbErr) {
+        console.warn('⚠️ No se pudo actualizar la cita reprogramada en la base de datos:', dbErr.message);
+      } else if (updatedApp) {
+        // Disparar integración de n8n para cita reprogramada
+        sendToN8N('appointment_rescheduled', tenantId, updatedApp).catch(err =>
+          console.error('[n8n Integration Error] Fallo al enviar reprogramación a n8n:', err)
+        );
+      }
+
+      // Enviar mensaje de WhatsApp de reprogramación
+      const cleanPhoneForWhatsApp = resolvedPhone.split('|')[0].trim();
+      if (tenantDetails.client_whatsapp_enabled !== false && tenantDetails.whatsapp_immediate_notification_enabled !== false) {
+        const msg = `Modificación de Cita 📅🔄\n\nHola ${name}, le confirmamos que hemos modificado su cita en ${tenantDetails.business_name}.\n\n🔹 Servicio: ${specialty}\n🔹 Nueva Fecha: ${date}\n🔹 Nueva Hora: ${time}\n\n¡Le esperamos!`;
+        sendWhatsAppMessage(cleanPhoneForWhatsApp, msg, tenantId).catch(err => console.error('Error al enviar WhatsApp de reprogramación:', err));
+      }
+
+      return {
+        status: 'confirmed',
+        message: 'Cita modificada y confirmada con éxito. Se ha notificado al cliente el cambio por WhatsApp.'
+      };
+    }
+
+    console.log(`[Booking Flow] No se encontró cita previa. Creando cita confirmada desde cero...`);
     
     // 5B. Agendar en Google Calendar normalmente
     const event = await bookAppointment(
