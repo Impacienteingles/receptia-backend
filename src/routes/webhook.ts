@@ -580,6 +580,7 @@ function resolvePhoneNumber(phone: string, body: any): string {
     return '+34600000000';
   }
   
+  return trimmed;
 }
 
 /**
@@ -605,7 +606,7 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
       return;
     }
     
-    const resolvedPhone = resolvePhoneFromWebhook(phone, req.body);
+    const resolvedPhone = resolvePhoneNumber(phone, req.body);
     console.log(`[Cancel Flow] Resolviendo cancelación para el teléfono: ${resolvedPhone}`);
 
     // Buscar cita confirmada en Supabase
