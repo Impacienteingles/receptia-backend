@@ -108,6 +108,25 @@ export async function setupAgent(webhookUrl: string): Promise<string> {
       },
       {
         type: 'custom',
+        name: 'cancelar_cita',
+        description: 'Cancela y elimina una cita existente del cliente en la agenda.',
+        url: `${webhookUrl}/api/webhook/cancel-appointment?tenant_id=${tenantId}`,
+        parameters: {
+          type: 'object',
+          properties: {
+            date: {
+              type: 'string',
+              description: 'La fecha de la cita a cancelar en formato YYYY-MM-DD (ej. 2026-06-20) (opcional).',
+            },
+            time: {
+              type: 'string',
+              description: 'La hora de la cita a cancelar en formato HH:MM (ej. 10:15) (opcional).',
+            }
+          }
+        }
+      },
+      {
+        type: 'custom',
         name: 'crear_cita',
         description: 'Reserva una cita en la peluquería en el calendario tras confirmar los datos con el cliente.',
         url: `${webhookUrl}/api/webhook/book-appointment?tenant_id=${tenantId}`,

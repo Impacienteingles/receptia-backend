@@ -580,8 +580,106 @@ function resolvePhoneNumber(phone: string, body: any): string {
     return '+34600000000';
   }
   
-  return trimmed;
 }
+
+/**
+ * Endpoint para que Retell AI cancele una cita existente.
+ */
+router.post('/cancel-appointment', async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log('Webhook recibido para cancel-appointment:', JSON.stringify(req.body));
+    const args = req.body.args || req.body || {};
+    const date = args.date; // YYYY-MM-DD (Opcional)
+    const time = args.time; // HH:MM (Opcional)
+    
+    const tenantId = await resolveTenantId(req);
+    const tenantDetails = await getTenantDetailsForWebhook(tenantId);
+    
+    let phone = args.phone || req.body.caller_phone || req.body.user_phone_number || req.body.from_number || '';
+    if (!phone && req.body.call) {
+      phone = req.body.call.user_phone_number || req.body.call.from_number || '';
+    }
+    
+    if (!phone) {
+      res.status(400).json({ error: 'El número de teléfono es obligatorio.' });
+      return;
+    }
+    
+    const resolvedPhone = resolvePhoneNumberForBooking(phone, req.body);
+    console.log(`[Cancel Flow] Resolviendo cancelación para el teléfono: ${resolvedPhone}`);
+
+    // Buscar cita confirmada en Supabase
+    let query = supabase
+      .from('appointments')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .eq('patient_phone', resolvedPhone)
+      .eq('status', 'confirmed');
+      
+    if (date) {
+      query = query.ilike('date_time', `%${date}%`);
+    }
+
+    const { data: apps, error: fetchErr } = await query;
+    
+    if (fetchErr) {
+      console.error('[Cancel Flow] Error al buscar cita en Supabase:', fetchErr);
+      res.json({
+        status: 'error',
+        message: 'Ocurrió un error al buscar la cita en la base de datos.'
+      });
+      return;
+    }
+
+    if (!apps || apps.length === 0) {
+      res.json({
+        status: 'error',
+        message: 'No encontré ninguna cita activa en tu agenda con este número de teléfono. Por favor, indícale al cliente amablemente que no dispongo de ninguna reserva activa para él.'
+      });
+      return;
+    }
+
+    // Si hay múltiples citas y no se especificó hora, coger la primera (la más próxima)
+    const appToCancel = apps[0];
+    const bookingUid = appToCancel.google_event_id;
+
+    if (!bookingUid) {
+      res.json({
+        status: 'error',
+        message: 'La cita encontrada no contiene un identificador de agenda de Cal.com válido.'
+      });
+      return;
+    }
+
+    const calApiKey = tenantDetails.cal_com_api_key || process.env.CAL_COM_API_KEY || '';
+    
+    // Cancelar en Cal.com / Google Calendar (usando import deleteAppointment)
+    await deleteAppointment(calApiKey, bookingUid);
+
+    // Actualizar estado en Supabase
+    await supabase
+      .from('appointments')
+      .update({ status: 'cancelled' })
+      .eq('id', appToCancel.id);
+
+    // Disparar integración de n8n
+    sendToN8N('appointment_cancelled', tenantId, { ...appToCancel, status: 'cancelled' }).catch(err =>
+      console.error('[n8n Integration Error] Fallo al enviar al webhook de n8n:', err)
+    );
+
+    res.json({
+      status: 'success',
+      message: `Cita del día ${appToCancel.date_time.substring(0, 10)} cancelada correctamente.`
+    });
+
+  } catch (err: any) {
+    console.error('Error en /cancel-appointment:', err);
+    res.status(500).json({ 
+      error: 'Error interno al procesar la cancelación', 
+      details: err.message 
+    });
+  }
+});
 
 /**
  * Endpoint para que Retell AI cree una cita.
