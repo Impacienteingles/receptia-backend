@@ -557,11 +557,12 @@ router.post('/book-appointment', async (req: Request, res: Response): Promise<vo
     console.log('Webhook recibido para book-appointment:', JSON.stringify(req.body));
     
     const args = req.body.args || req.body || {};
-    const { date, time, name, email, phone, specialty, professional, duration } = args;
+    const { date, time, name, email, phone, professional, duration } = args;
+    let specialty = args.specialty || 'Cita Peluquería';
 
-    if (!date || !time || !name || !phone || !specialty) {
+    if (!date || !time || !name || !phone) {
       res.status(400).json({ 
-        error: 'Todos los campos son requeridos: date, time, name, phone, specialty.' 
+        error: 'Todos los campos son requeridos: date, time, name, phone.' 
       });
       return;
     }
