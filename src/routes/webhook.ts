@@ -254,7 +254,7 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
     }
 
     const specialty = args.specialty || '';
-    const durationMinutes = calculateDuration(specialty, tenantId);
+    const durationMinutes = Number(args.duration || 0) || calculateDuration(specialty, tenantId);
     const numBlocksNeeded = Math.ceil(durationMinutes / slotDurationMin);
 
     let applyBreakRule = tenantId === '62d1ed82-287c-4329-941b-50b578c15b14' || !!workingHoursObj?.apply_break_rule;
