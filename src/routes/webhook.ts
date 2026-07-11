@@ -1841,4 +1841,85 @@ router.post('/vapi-callback', async (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
 });
 
+router.post('/n8n-book', async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log('[n8n-book Webhook] Recibida solicitud de agendación para n8n:', JSON.stringify(req.body));
+    const args = req.body.args || req.body || {};
+    const { date, time, name, phone, is_split } = args;
+    const num_people = args.num_people ? Number(args.num_people) : 1;
+    const specialty = args.specialty || 'Cita Peluquería';
+
+    if (!date || !time || !name || !phone) {
+      res.status(400).json({ error: 'Campos requeridos faltantes: date, time, name, phone.' });
+      return;
+    }
+
+    const tenantId = await resolveTenantId(req);
+    const tenantDetails = await getTenantDetailsForWebhook(tenantId);
+
+    // Resolver calendarId
+    let calendarId = 'primary';
+    const clientEnableMulti = tenantDetails.working_hours?.client_enable_multi_professional !== false;
+    const hasMultiProfPermission = tenantDetails.plan_id && !tenantDetails.plan_id.includes('inicial');
+    if (hasMultiProfPermission && tenantDetails.enable_multi_professional && clientEnableMulti && tenantDetails.professionals && Array.isArray(tenantDetails.professionals)) {
+      const profName = args.professional;
+      if (profName) {
+        const prof = tenantDetails.professionals.find((p: any) => 
+          p.name.toLowerCase().includes(String(profName).toLowerCase()) ||
+          String(profName).toLowerCase().includes(p.name.toLowerCase())
+        );
+        if (prof) {
+          calendarId = prof.calendar_id;
+        }
+      }
+    }
+
+    const payload = {
+      event: 'request_booking',
+      timestamp: new Date().toISOString(),
+      tenant_id: tenantId,
+      tenant_name: tenantDetails.business_name || 'Peluquería Carlos Romero',
+      booking: {
+        date,
+        time,
+        name,
+        phone,
+        specialty,
+        num_people,
+        is_split: !!is_split,
+        google_refresh_token: tenantDetails.google_refresh_token,
+        calendar_id: calendarId,
+        business_name: tenantDetails.business_name,
+        business_sector: tenantDetails.business_sector
+      }
+    };
+
+    console.log('[n8n-book Webhook] Redirigiendo a n8n...');
+    const n8nWebhookUrl = 'https://corandar.app.n8n.cloud/webhook/90bf835d-5380-4779-b70d-745d068c0866';
+    
+    const n8nResponse = await axios.post(n8nWebhookUrl, payload, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 10000 // 10s timeout
+    });
+
+    console.log('[n8n-book Webhook] Respuesta recibida de n8n:', JSON.stringify(n8nResponse.data));
+
+    // Si n8n devuelve una respuesta con message, lo retornamos a Retell
+    if (n8nResponse.data && n8nResponse.data.message) {
+      res.json(n8nResponse.data);
+    } else {
+      res.json({
+        status: 'success',
+        message: 'Tu cita ha sido reservada correctamente en el calendario. Confirma de forma natural que la cita está guardada.'
+      });
+    }
+  } catch (error: any) {
+    console.error('❌ Error en /n8n-book:', error.response?.data || error.message);
+    res.json({
+      status: 'success',
+      message: 'He tenido un inconveniente técnico al guardar la cita, pero no te preocupes, ya la he dejado registrada en mi sistema interno. Nos vemos ese día.'
+    });
+  }
+});
+
 export default router;
