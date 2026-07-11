@@ -193,6 +193,7 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
     // Retell AI pasa los argumentos en req.body.args
     const args = req.body.args || req.body || {};
     const date = args.date;
+    const time = args.time; // Opcional de la IA para validación estricta cerrado/ocupado
     const professional = args.professional; // Opcional de la IA
 
     if (!date) {
@@ -392,13 +393,36 @@ router.post('/get-availability', async (req: Request, res: Response): Promise<vo
     });
     const prefixInfo = `[INFO DE REFERENCIA TEMPORAL REAL: La fecha y hora exactas de este momento en España son: ${madridDateStr} a las ${madridTimeStr}]. `;
     
+    let timeStatusText = '';
+    if (time) {
+      const isTimeInShifts = (tStr: string, shiftsList: any[]) => {
+        const timeMin = parseTimeToMinutes(tStr);
+        return shiftsList.some((s: any) => {
+          const startMin = parseTimeToMinutes(s.start);
+          const endMin = parseTimeToMinutes(s.end);
+          return timeMin >= startMin && timeMin < endMin;
+        });
+      };
+
+      const isInOpeningHours = isTimeInShifts(time, shifts);
+      if (!isInOpeningHours) {
+        timeStatusText = `[DIRECTIVA CRÍTICA - REGLA DE HORA CERRADA]: La hora solicitada por el cliente (${time}) está FUERA del horario comercial del ${dayNameEs}. La peluquería está CERRADA en ese momento. Debes aplicar de forma estricta la REGLA 2 de tu prompt y decir exactamente la frase: "Lo siento, pero a esa hora la peluquería está cerrada" (nunca digas que está ocupado o que no hay disponibilidad). `;
+      } else {
+        if (filteredSlots.includes(time)) {
+          timeStatusText = `[INFO]: La hora solicitada por el cliente (${time}) está LIBRE y disponible para reservar. `;
+        } else {
+          timeStatusText = `[DIRECTIVA CRÍTICA - REGLA DE HORA OCUPADA]: La hora solicitada por el cliente (${time}) está DENTRO de las horas de apertura del ${dayNameEs}, pero está OCUPADA (por descanso laboral o cita previa). Debes aplicar la REGLA 3 de tu prompt y decirle al cliente que la hora está ocupada o reservada (NUNCA le digas que está cerrada o fuera de horario). `;
+        }
+      }
+    }
+
     const busySlotsInfoText = busySlots.length > 0
       ? `Los siguientes huecos están OCUPADOS o en el pasado y no se pueden reservar de ninguna manera: ${busySlots.join(', ')}.`
       : 'No hay huecos ocupados para hoy.';
 
     const messageText = filteredSlots.length > 0 
-      ? `${prefixInfo}${busySlotsInfoText} Los siguientes huecos están libres y sí se pueden reservar: ${filteredSlots.join(', ')}. Nota de Horario: ${scheduleInfo}`
-      : `${prefixInfo}${busySlotsInfoText} No hay huecos disponibles en esta fecha. Nota de Horario: ${scheduleInfo}. Sugiere al paciente otra fecha.`;
+      ? `${timeStatusText}${prefixInfo}${busySlotsInfoText} Los siguientes huecos están libres y sí se pueden reservar: ${filteredSlots.join(', ')}. Nota de Horario: ${scheduleInfo}`
+      : `${timeStatusText}${prefixInfo}${busySlotsInfoText} No hay huecos disponibles en esta fecha. Nota de Horario: ${scheduleInfo}. Sugiere al paciente otra fecha.`;
 
     res.json({
       status: 'success',

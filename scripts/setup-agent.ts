@@ -98,6 +98,10 @@ export async function setupAgent(webhookUrl: string): Promise<string> {
               type: 'string',
               description: 'La fecha para consultar en formato YYYY-MM-DD (ej. 2026-06-20).',
             },
+            time: {
+              type: 'string',
+              description: 'La hora específica consultada por el cliente en formato HH:MM (ej. 10:30) (opcional). Utilízalo siempre que el cliente pida una hora concreta.'
+            }
           },
           required: ['date'],
         },
