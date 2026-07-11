@@ -260,6 +260,7 @@ export async function processBookingFlow(
       .eq('tenant_id', tenantId)
       .eq('status', 'confirmed')
       .like('patient_phone', `${cleanPhone}%`)
+      .not('date_time', 'like', `${date}%`)
       .order('date_time', { ascending: false })
       .limit(1)
       .maybeSingle();
