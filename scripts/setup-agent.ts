@@ -121,6 +121,10 @@ export async function setupAgent(webhookUrl: string): Promise<string> {
             time: {
               type: 'string',
               description: 'La hora de la cita a cancelar en formato HH:MM (ej. 10:15) (opcional).',
+            },
+            phone: {
+              type: 'string',
+              description: 'El número de teléfono móvil de contacto con el que se registró la cita (opcional). Úsalo si la búsqueda por defecto falla o si el cliente te da un número diferente.'
             }
           }
         }

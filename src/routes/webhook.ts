@@ -596,17 +596,20 @@ router.post('/cancel-appointment', async (req: Request, res: Response): Promise<
     const tenantId = await resolveTenantId(req);
     const tenantDetails = await getTenantDetailsForWebhook(tenantId);
     
-    let phone = args.phone || req.body.caller_phone || req.body.user_phone_number || req.body.from_number || '';
-    if (!phone && req.body.call) {
-      phone = req.body.call.user_phone_number || req.body.call.from_number || '';
+    let phoneInput = args.phone || '';
+    if (!phoneInput) {
+      phoneInput = req.body.caller_phone || req.body.user_phone_number || req.body.from_number || '';
+      if (!phoneInput && req.body.call) {
+        phoneInput = req.body.call.user_phone_number || req.body.call.from_number || '';
+      }
     }
     
-    if (!phone) {
+    if (!phoneInput) {
       res.status(400).json({ error: 'El número de teléfono es obligatorio.' });
       return;
     }
     
-    const resolvedPhone = resolvePhoneNumber(phone, req.body);
+    const resolvedPhone = resolvePhoneNumber(phoneInput, req.body);
     console.log(`[Cancel Flow] Resolviendo cancelación para el teléfono: ${resolvedPhone}`);
 
     // Buscar cita confirmada en Supabase (blindado contra prefijos de España)
