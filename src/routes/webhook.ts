@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import axios from 'axios';
 import { listFreeSlotsCalCom as listFreeSlots, bookAppointmentCalCom as bookAppointment, deleteAppointmentCalCom as deleteAppointment, updateAppointmentCalCom as updateAppointment } from '../services/calCom';
 import { supabase } from '../services/supabase';
 import { sendWhatsAppMessage } from '../services/whatsapp';
