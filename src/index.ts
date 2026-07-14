@@ -5288,25 +5288,7 @@ app.get('/api/admin/settings', async (req, res): Promise<void> => {
       throw error;
     }
 
-    // Enmascarar claves privadas
-    const maskedSettings = (data || []).map((s: any) => {
-      const keyUpper = s.key.toUpperCase();
-      const isSensitive = keyUpper.includes('KEY') || 
-                          keyUpper.includes('SECRET') || 
-                          keyUpper.includes('TOKEN') || 
-                          keyUpper.includes('PASSWORD') || 
-                          keyUpper.includes('URL');
-      if (isSensitive && s.value) {
-        if (s.value.length <= 8) {
-          s.value = '••••••••';
-        } else {
-          s.value = s.value.substring(0, 4) + '••••••••' + s.value.substring(s.value.length - 4);
-        }
-      }
-      return s;
-    });
-
-    res.json({ settings: maskedSettings, migration_required: false });
+    res.json({ settings: data || [], migration_required: false });
   } catch (err: any) {
     console.error('Error al obtener ajustes:', err);
     res.status(500).json({ error: err.message });
